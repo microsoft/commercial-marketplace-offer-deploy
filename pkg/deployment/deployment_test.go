@@ -32,6 +32,7 @@ func TestMain(m *testing.M) {
 	location = "eastus"
 
 	setupResourceGroup()
+	deployPolicyDefinition()
 	deployPolicy()
 
 	exitVal := m.Run()
@@ -59,6 +60,63 @@ func setupResourceGroup() {
 	}
 }
 
+func deployPolicyDefinition() {
+	log.Printf("Inside deployPolicyDefinition()")
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		log.Fatalf("failed to obtain a credential: %v", err)
+	}
+	ctx := context.Background()
+	client, err := armpolicy.NewDefinitionsClient(subscriptionId, cred, nil)
+	if err != nil {
+		log.Fatalf("failed to create client: %v", err)
+	}
+	_, err = client.CreateOrUpdate(ctx,
+		"ResourceNaming",
+		armpolicy.Definition{
+			Properties: &armpolicy.DefinitionProperties{
+				Description: to.Ptr("Force resource names to begin with given 'prefix' and/or end with given 'suffix'"),
+				DisplayName: to.Ptr("Enforce resource naming convention"),
+				Metadata: map[string]interface{}{
+					"category": "Naming",
+				},
+				Mode: to.Ptr("All"),
+				// Parameters: map[string]*armpolicy.ParameterDefinitionsValue{
+				// 	"prefix": {
+				// 		Type: to.Ptr(armpolicy.ParameterTypeString),
+				// 		Metadata: &armpolicy.ParameterDefinitionsValueMetadata{
+				// 			Description: to.Ptr("Resource name prefix"),
+				// 			DisplayName: to.Ptr("Prefix"),
+				// 		},
+				// 	},
+				// 	"suffix": {
+				// 		Type: to.Ptr(armpolicy.ParameterTypeString),
+				// 		Metadata: &armpolicy.ParameterDefinitionsValueMetadata{
+				// 			Description: to.Ptr("Resource name suffix"),
+				// 			DisplayName: to.Ptr("Suffix"),
+				// 		},
+				// 	},
+				// },
+				PolicyRule: map[string]interface{}{
+					"if": map[string]interface{}{
+						"not": map[string]interface{}{
+							"field": "name",
+							"like":  "a*b",
+							//"like":  "[concat(parameters('prefix'), '*', parameters('suffix'))]",
+						},
+					},
+					"then": map[string]interface{}{
+						"effect": "deny",
+					},
+				},
+			},
+		},
+		nil)
+	if err != nil {
+		log.Fatalf("failed to finish the request: %v", err)
+	}
+}
+
 func deployPolicy() {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
@@ -70,25 +128,25 @@ func deployPolicy() {
 		log.Fatalf("failed to create client: %v", err)
 	}
 
-	scope := "subscriptions/" + subscriptionId + "/resourceGroups/" + resourceGroupName
+	scope := "/subscriptions/" + subscriptionId + "/resourceGroups/" + resourceGroupName
 	log.Printf("scope is %s", scope)
-	policyDefinitionId := "/providers/Microsoft.Authorization/policyDefinitions/037eea7a-bd0a-46c5-9a66-03aea78705d3"
+	policyDefinitionId := "/subscriptions/" + subscriptionId + "/providers/Microsoft.Authorization/policyDefinitions/ResourceNaming"
 	log.Printf("policyDefinitionId is %s", policyDefinitionId)
 
 	_, err = client.Create(ctx,
 		scope,
-		"CogSvcs",
+		"ResourceName",
 		armpolicy.Assignment{
 			Properties: &armpolicy.AssignmentProperties{
-				Description: to.Ptr("Forces cog service deployments to be locked down"),
-				DisplayName: to.Ptr("Protect Cog Svcs"),
+				Description: to.Ptr("Enforce resource naming conventions"),
+				DisplayName: to.Ptr("Enforce Resource Names"),
 				Scope: &scope,
 				Metadata: map[string]interface{}{
 					"assignedBy": "John Doe",
 				},
 				NonComplianceMessages: []*armpolicy.NonComplianceMessage{
 					{
-						Message: to.Ptr("Cognitive Services must be locked down."),
+						Message: to.Ptr("A resource name was non-complaint.  It must be in the format 'a*b'."),
 					}},
 				PolicyDefinitionID: to.Ptr(policyDefinitionId),
 			},
@@ -113,8 +171,38 @@ func readJson(path string) (map[string]interface{}, error) {
 	return template, nil
 }
 
-func TestDryRun(t *testing.T) {
-	log.Printf("Inside TestDryRun")
+func TestDryRunSuccess(t *testing.T) {
+	log.Printf("Inside TestDryRunSuccess")
+
+	templatePath := "../../test/deployment/cogsvcspub/success/mainTemplate.json" 
+	template, err := readJson(templatePath)
+	if err != nil {
+		t.Errorf("DryRun() could not read templateFile")
+	} 
+
+	parametersPath :=  "../../test/deployment/cogsvcspub/success/parameters.json"
+	parameters, err := readJson(parametersPath)
+	if err != nil {
+		t.Errorf("DryRun() could not read parameters")
+	} 
+
+	deployment := &AzureDeployment{
+		subscriptionId: subscriptionId,
+		location: location,
+		resourceGroupName: resourceGroupName,
+		deploymentName: "modmdeploy",
+		template: template,
+		params: parameters,
+	}
+	if got := DryRun(deployment); len(got) == 0{
+		t.Errorf("DryRun() return json with a lenth of 0")
+	} else {
+		log.Printf("TestDryRunResult - %s", got)
+	}
+}
+
+func TestDryRunFailure(t *testing.T) {
+	log.Printf("Inside TestDryRunFailure")
 
 	templatePath := "../../test/deployment/cogsvcspub/failure/mainTemplate.json" 
 	template, err := readJson(templatePath)
@@ -141,5 +229,4 @@ func TestDryRun(t *testing.T) {
 	} else {
 		log.Printf("TestDryRunResult - %s", got)
 	}
-	
 }
