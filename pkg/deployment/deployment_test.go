@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"fmt"
 	"os"
 	"testing"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
@@ -114,9 +115,11 @@ func deployPolicy() {
 		log.Fatalf("failed to create client: %v", err)
 	}
 
-	scope := "/subscriptions/" + subscriptionId + "/resourceGroups/" + resourceGroupName
+
+	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", subscriptionId, resourceGroupName)
 	log.Printf("scope is %s", scope)
-	policyDefinitionId := "/subscriptions/" + subscriptionId + "/providers/Microsoft.Authorization/policyDefinitions/ResourceNaming"
+	
+	policyDefinitionId := fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Authorization/policyDefinitions/ResourceNaming", subscriptionId)
 	log.Printf("policyDefinitionId is %s", policyDefinitionId)
 
 	_, err = client.Create(ctx,
