@@ -4,13 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"io/ioutil"
-
-	// "encoding/json"
-	// "io/ioutil"
 	"log"
 	"os"
 	"testing"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armpolicy"
@@ -38,20 +34,10 @@ func TestMain(m *testing.M) {
 	exitVal := m.Run()
 	log.Println("Cleaning up resources after the tests here")
 	
-	// err = DeleteResourceGroup(subscriptionId, resourceGroupName)
-	// if err != nil {
-	// 	log.Println("Error deleting resource group ")
-	// }
-
 	os.Exit(exitVal)
 }
 
 func setupResourceGroup() {
-	// err := DeleteResourceGroup(subscriptionId, resourceGroupName)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
 	resp, err := CreateResourceGroup(subscriptionId, resourceGroupName, location)
 	if err != nil {
 		log.Fatal(err)
