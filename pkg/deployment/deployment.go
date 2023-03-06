@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -65,7 +66,7 @@ func DeleteResourceGroup(subscriptionId string, resourceGroupName string) (error
 	return nil
 }
 
-func CreateResourceGroup(subscriptionId string, resourceGroupName string, location string) (*armresources.ResourceGroup, error) {
+func createResourceGroup(subscriptionId string, resourceGroupName string, location string) (*armresources.ResourceGroup, error) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		log.Fatal(err)
@@ -176,4 +177,18 @@ func whatIfDeployment(ctx context.Context, cred azcore.TokenCredential, azureDep
 	}
 
 	return &resp, nil
+}
+
+func readJson(path string) (map[string]interface{}, error) {
+	templateFile, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	template := make(map[string]interface{})
+	if err := json.Unmarshal(templateFile, &template); err != nil {
+		return nil, err
+	}
+
+	return template, nil
 }

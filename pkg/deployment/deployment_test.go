@@ -2,8 +2,6 @@ package deployment
 
 import (
 	"context"
-	"encoding/json"
-	"io/ioutil"
 	"log"
 	"fmt"
 	"os"
@@ -39,7 +37,7 @@ func TestMain(m *testing.M) {
 }
 
 func setupResourceGroup() {
-	resp, err := CreateResourceGroup(subscriptionId, resourceGroupName, location)
+	resp, err := createResourceGroup(subscriptionId, resourceGroupName, location)
 	if err != nil {
 		log.Fatal(err)
 	} else {
@@ -146,19 +144,7 @@ func deployPolicy() {
 	}
 }
 
-func readJson(path string) (map[string]interface{}, error) {
-	templateFile, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
 
-	template := make(map[string]interface{})
-	if err := json.Unmarshal(templateFile, &template); err != nil {
-		return nil, err
-	}
-
-	return template, nil
-}
 
 func TestDryRunSuccess(t *testing.T) {
 	log.Printf("Inside TestDryRunSuccess")
