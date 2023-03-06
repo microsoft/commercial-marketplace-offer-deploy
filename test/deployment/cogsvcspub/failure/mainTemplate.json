@@ -1,0 +1,44 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "name": {
+            "type": "string"
+        },
+        "kind": {
+            "type": "string",
+            "defaultValue": "CognitiveServices"
+        },
+        "sku": {
+            "type": "string",
+            "defaultValue": "S0"
+        },
+        "publicNetworkAccess": {
+            "type": "string",
+            "defaultValue": "Disabled"
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "eastus"
+        }
+    },
+    "resources": [
+        {
+            "apiVersion": "2016-02-01-preview",
+            "name": "[parameters('name')]",
+            "location": "[parameters('location')]",
+            "type": "Microsoft.CognitiveServices/accounts",
+            "kind": "[parameters('kind')]",
+            "sku": {
+              "name": "[parameters('sku')]"
+            },
+            "properties": {
+              "customSubDomainName": "[parameters('name')]",
+              "publicNetworkAccess": "Enabled",
+              "networkAcls": {
+                "defaultAction": "Allow"
+              }
+            }
+        }
+    ]
+}
