@@ -144,8 +144,6 @@ func deployPolicy() {
 	}
 }
 
-
-
 func TestDryRunSuccess(t *testing.T) {
 	log.Printf("Inside TestDryRunSuccess")
 

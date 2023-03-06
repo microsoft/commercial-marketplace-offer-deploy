@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
@@ -65,6 +64,7 @@ func DeleteResourceGroup(subscriptionId string, resourceGroupName string) (error
 	}
 	return nil
 }
+
 
 func createResourceGroup(subscriptionId string, resourceGroupName string, location string) (*armresources.ResourceGroup, error) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
