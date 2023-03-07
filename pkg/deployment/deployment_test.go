@@ -147,13 +147,13 @@ func deployPolicy() {
 func TestDryRunSuccess(t *testing.T) {
 	log.Printf("Inside TestDryRunSuccess")
 
-	templatePath := "../../test/deployment/cogsvcspub/success/mainTemplate.json" 
+	templatePath := "../../test/deployment/resourcename/success/mainTemplate.json" 
 	template, err := readJson(templatePath)
 	if err != nil {
 		t.Errorf("DryRun() could not read templateFile")
 	} 
 
-	parametersPath :=  "../../test/deployment/cogsvcspub/success/parameters.json"
+	parametersPath :=  "../../test/deployment/resourcename/success/parameters.json"
 	parameters, err := readJson(parametersPath)
 	if err != nil {
 		t.Errorf("DryRun() could not read parameters")
@@ -177,13 +177,13 @@ func TestDryRunSuccess(t *testing.T) {
 func TestDryRunFailure(t *testing.T) {
 	log.Printf("Inside TestDryRunFailure")
 
-	templatePath := "../../test/deployment/cogsvcspub/failure/mainTemplate.json" 
+	templatePath := "../../test/deployment/resourcename/failure/mainTemplate.json" 
 	template, err := readJson(templatePath)
 	if err != nil {
 		t.Errorf("DryRun() could not read templateFile")
 	} 
 
-	parametersPath :=  "../../test/deployment/cogsvcspub/failure/parameters.json"
+	parametersPath :=  "../../test/deployment/resourcename/failure/parameters.json"
 	parameters, err := readJson(parametersPath)
 	if err != nil {
 		t.Errorf("DryRun() could not read parameters")
