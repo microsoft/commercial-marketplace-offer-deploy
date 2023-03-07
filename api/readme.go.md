@@ -5,12 +5,12 @@ These settings apply only when `--go` is specified on the command line.
 ``` yaml $(go)
 go:
   license-header: MICROSOFT_MIT_NO_VERSION
-  namespace: deploymentmanager
+  namespace: sdk
   go-version: 1.19
-  clear-output-folder: true
-  module-name: deploymentmanager
-  module: github.com/microsoft/commercial-marketplace-offer-deploy/sdk/$(module-name)
-  output-folder: $(go-sdk-folder)/$(module-name)
+  clear-output-folder: false
+  module-name: sdk
+  module: github.com/microsoft/commercial-marketplace-offer-deploy/sdk
+  output-folder: $(go-sdk-folder) 
 ```
 
 ### Tag: preview-2023-03-01 and go
