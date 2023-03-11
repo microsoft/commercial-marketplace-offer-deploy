@@ -22,6 +22,9 @@ type DryRunResult struct {
 }
 
 type DryRunErrorResponse struct {
+	// READ-ONLY; The error additional info.
+	AdditionalInfo []*ErrorAdditionalInfo `json:"additionalInfo,omitempty" azure:"ro"`
+
 	// READ-ONLY; The error code.
 	Code *string `json:"code,omitempty" azure:"ro"`
 
@@ -33,7 +36,6 @@ type DryRunErrorResponse struct {
 
 	// READ-ONLY; The error details.
 	Details []*DryRunErrorResponse `json:"details,omitempty" azure:"ro"`
-
 }
 
 func DryRun(azureDeployment *AzureDeployment) *DryRunResponse {

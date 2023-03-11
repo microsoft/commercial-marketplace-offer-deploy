@@ -39,7 +39,6 @@ func mapError(armResourceResponse *armresources.ErrorResponse) (*DryRunErrorResp
 	if armResourceResponse == nil {
 		log.Printf("returning nil")
 		return nil, nil
-
 	}
 
 	var dryRunErrorDetails []*DryRunErrorResponse
@@ -54,11 +53,20 @@ func mapError(armResourceResponse *armresources.ErrorResponse) (*DryRunErrorResp
 		}
 	}
 
+	var errorAdditionalInfo []*ErrorAdditionalInfo
+	if armResourceResponse.AdditionalInfo != nil && len(armResourceResponse.AdditionalInfo) > 0 {
+		for _, v := range armResourceResponse.AdditionalInfo {
+			errAddInfo := &ErrorAdditionalInfo { Info: v.Info, Type: v.Type }
+			errorAdditionalInfo = append(errorAdditionalInfo, errAddInfo)
+		}
+	}
+
 	dryRunErrorResponse := DryRunErrorResponse{
 		Message: armResourceResponse.Message,
 		Code: armResourceResponse.Code,
 		Target: armResourceResponse.Target,
 		Details: dryRunErrorDetails,
+		AdditionalInfo: errorAdditionalInfo,
 	}
 
 	return &dryRunErrorResponse, nil
