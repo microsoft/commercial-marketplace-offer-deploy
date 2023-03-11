@@ -3,46 +3,76 @@ package deployment
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 )
 
-type AzureDeployment struct {
-	subscriptionId string
-	location string
-	resourceGroupName string
-	deploymentName string
-	template map[string]interface{}
-	params map[string]interface{}
+func mapResponse(whatIfResponse *armresources.DeploymentsClientWhatIfResponse) (*DryRunResponse, error) {
+	
+	dryRunErrorResponse, err := mapError(whatIfResponse.Error)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Printf("Before creation of DryRunResult")
+	dryRunResult := DryRunResult{
+		Status: whatIfResponse.Status,
+		Error: dryRunErrorResponse,
+	}
+
+	log.Printf("After creation of DryRunResult")
+	dryRunResponse := DryRunResponse{
+		DryRunResult: dryRunResult,
+		//Code: whatIfResponse.,
+	}
+
+	return &dryRunResponse, nil
 }
 
-func (azureDeployment *AzureDeployment) validate() error {
-	if len(azureDeployment.subscriptionId) == 0 {
-		return errors.New("subscriptionId is not set on azureDeployment input struct")
+func mapError(armResourceResponse *armresources.ErrorResponse) (*DryRunErrorResponse, error) {
+	log.Printf("Inside MapError")
+	if armResourceResponse == nil {
+		log.Printf("returning nil")
+		return nil, nil
 	}
-	if len(azureDeployment.location) == 0 {
-		return errors.New("location is not set on azureDeployment input struct")
+
+	var dryRunErrorDetails []*DryRunErrorResponse
+	if armResourceResponse.Details != nil && len(armResourceResponse.Details) > 0 {
+		for _, v := range armResourceResponse.Details {
+			dryRunError, err := mapError(v)
+			if err != nil {
+				log.Printf("There was an error mapping an error detail")
+				return nil, err
+			}
+			dryRunErrorDetails = append(dryRunErrorDetails, dryRunError)
+		}
 	}
-	if len(azureDeployment.resourceGroupName) == 0 {
-		return errors.New("resourceGroupName is not set on azureDeployment input struct")
+
+	var errorAdditionalInfo []*ErrorAdditionalInfo
+	if armResourceResponse.AdditionalInfo != nil && len(armResourceResponse.AdditionalInfo) > 0 {
+		for _, v := range armResourceResponse.AdditionalInfo {
+			errAddInfo := &ErrorAdditionalInfo { Info: v.Info, Type: v.Type }
+			errorAdditionalInfo = append(errorAdditionalInfo, errAddInfo)
+		}
 	}
-	if len(azureDeployment.resourceGroupName) == 0 {
-		return errors.New("resourceGroupName is not set on azureDeployment input struct")
+
+	dryRunErrorResponse := DryRunErrorResponse{
+		Message: armResourceResponse.Message,
+		Code: armResourceResponse.Code,
+		Target: armResourceResponse.Target,
+		Details: dryRunErrorDetails,
+		AdditionalInfo: errorAdditionalInfo,
 	}
-	if azureDeployment.template == nil {
-		return errors.New("template is not set on deployment azureDeployment struct")
-	}
-	// allow params to be empty to support all default params
-	return nil
+
+	return &dryRunErrorResponse, nil
 }
 
-func DeleteResourceGroup(subscriptionId string, resourceGroupName string) (error) {
+func DeleteResourceGroup(subscriptionId string, resourceGroupName string) error {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		log.Fatal(err)
@@ -64,7 +94,6 @@ func DeleteResourceGroup(subscriptionId string, resourceGroupName string) (error
 	}
 	return nil
 }
-
 
 func createResourceGroup(subscriptionId string, resourceGroupName string, location string) (*armresources.ResourceGroup, error) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
@@ -127,56 +156,6 @@ func Create(deploymentName, subscriptionId, resourceGroupName string, template, 
 	}
 
 	return &resp.DeploymentExtended, nil
-}
-
-func DryRun(azureDeployment *AzureDeployment) string {
-	err := azureDeployment.validate()
-	if err != nil {
-		log.Fatal(err)
-	}
-	cred, err := azidentity.NewDefaultAzureCredential(nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx := context.Background()
-
-	whatIfResult, err := whatIfDeployment(ctx, cred, azureDeployment)
-	if err != nil {
-		log.Fatal(err)
-	}
-	whatifdata, _ := json.Marshal(whatIfResult)
-	return string(whatifdata)
-}
-
-func whatIfDeployment(ctx context.Context, cred azcore.TokenCredential, azureDeployment *AzureDeployment) (*armresources.DeploymentsClientWhatIfResponse, error) {
-	deploymentsClient, err := armresources.NewDeploymentsClient(azureDeployment.subscriptionId, cred, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	pollerResp, err := deploymentsClient.BeginWhatIf(
-		ctx,
-		azureDeployment.resourceGroupName,
-		azureDeployment.deploymentName,
-		armresources.DeploymentWhatIf{
-			Properties: &armresources.DeploymentWhatIfProperties{
-				Template:   azureDeployment.template,
-				Parameters: azureDeployment.params,
-				Mode:       to.Ptr(armresources.DeploymentModeIncremental),
-			},
-		},
-		nil)
-
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := pollerResp.PollUntilDone(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return &resp, nil
 }
 
 func readJson(path string) (map[string]interface{}, error) {
