@@ -57,7 +57,7 @@ type DeploymentManagementClientInvokeDeploymentOperationOptions struct {
 // method.
 type DeploymentManagementClientListDeploymentsOptions struct {
 	// Status values that need to be considered for filter
-	Status []Get0ItemsItem
+	Status []Status
 }
 
 // DeploymentManagementClientListOperationsOptions contains the optional parameters for the DeploymentManagementClient.ListOperations

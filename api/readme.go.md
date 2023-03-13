@@ -5,10 +5,7 @@ These settings apply only when `--go` is specified on the command line.
 ``` yaml $(go)
 go:
   license-header: MICROSOFT_MIT_NO_VERSION
-  clear-output-folder: true
-  data-plane: true
-  add-credential: true
-  security: AADToken
+  clear-output-folder: false
   module-version: 0.1.0
   export-clients: true
   output-folder: $(go-sdk-folder) 

@@ -82,7 +82,11 @@
                 "running",
                 "success"
               ],
-              "default": "none"
+              "default": "none",
+              "x-ms-enum": {
+                "name": "status",
+                "modelAsString": true
+              }
             },
             "collectionFormat": "multi"
           }

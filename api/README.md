@@ -25,9 +25,10 @@ To see additional help and options, run:
 These are the global settings for the MarketplaceOfferDeploymentManager API.
 
 ``` yaml
-openapi-type: data-plane
+openapi-type: "data-plane"
+data-plane: true
 override-client-name: DeploymentManagementClient
-security: AADToken
+security: "AADToken"
 tag: preview-2023-03-01
 ```
 

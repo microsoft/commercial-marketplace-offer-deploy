@@ -9,22 +9,22 @@
 
 package generated
 
-type Get0ItemsItem string
+type Status string
 
 const (
-	Get0ItemsItemNone Get0ItemsItem = "none"
-	Get0ItemsItemRunning Get0ItemsItem = "running"
-	Get0ItemsItemScheduled Get0ItemsItem = "scheduled"
-	Get0ItemsItemSuccess Get0ItemsItem = "success"
+	StatusNone Status = "none"
+	StatusRunning Status = "running"
+	StatusScheduled Status = "scheduled"
+	StatusSuccess Status = "success"
 )
 
-// PossibleGet0ItemsItemValues returns the possible values for the Get0ItemsItem const type.
-func PossibleGet0ItemsItemValues() []Get0ItemsItem {
-	return []Get0ItemsItem{	
-		Get0ItemsItemNone,
-		Get0ItemsItemRunning,
-		Get0ItemsItemScheduled,
-		Get0ItemsItemSuccess,
+// PossibleStatusValues returns the possible values for the Status const type.
+func PossibleStatusValues() []Status {
+	return []Status{	
+		StatusNone,
+		StatusRunning,
+		StatusScheduled,
+		StatusSuccess,
 	}
 }
 
