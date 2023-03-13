@@ -62,10 +62,34 @@ func whatIfValidator(azureDeployment *AzureDeployment) *DryRunResponse {
 	return dryResponse
 }
 
+func loadValidators() []DryRunValidator {
+	return []DryRunValidator{
+		WhatIfValidatorFunc(whatIfValidator),
+	}
+}
+
+func validate(validators []DryRunValidator, azureDeployment *AzureDeployment) *DryRunResponse {
+	var responses []*DryRunResponse
+	for _, validator := range validators {
+		res := validator.Validate(azureDeployment)
+		if res != nil {
+			responses = append(responses, res)
+		}
+	}
+	
+	return aggregateResponses(responses)
+}
+
+func aggregateResponses(responses []*DryRunResponse) *DryRunResponse {
+	if responses == nil || len(responses) == 0 {
+		return nil
+	}
+	return responses[0]
+}
+
 func DryRun(azureDeployment *AzureDeployment) *DryRunResponse {
-	validator := WhatIfValidatorFunc(whatIfValidator)
-	res := validator.Validate(azureDeployment)
-	return res
+	validators := loadValidators()
+	return validate(validators, azureDeployment)
 }
 
 func whatIfDeployment(ctx context.Context, cred azcore.TokenCredential, azureDeployment *AzureDeployment) (*armresources.DeploymentsClientWhatIfResponse, error) {
