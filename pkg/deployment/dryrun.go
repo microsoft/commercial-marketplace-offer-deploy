@@ -44,6 +44,7 @@ func whatIfValidator(azureDeployment *AzureDeployment) *DryRunResponse {
 	}
 
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	
 	if err != nil {
 		log.Fatal(err)
 	}
