@@ -63,10 +63,12 @@ func whatIfValidator(azureDeployment *AzureDeployment) *DryRunResponse {
 }
 
 func loadValidators() []DryRunValidator {
+	//todo: load validators from config
 	return []DryRunValidator{
 		WhatIfValidatorFunc(whatIfValidator),
 	}
 }
+
 
 func validate(validators []DryRunValidator, azureDeployment *AzureDeployment) *DryRunResponse {
 	var responses []*DryRunResponse
@@ -84,6 +86,7 @@ func aggregateResponses(responses []*DryRunResponse) *DryRunResponse {
 	if responses == nil || len(responses) == 0 {
 		return nil
 	}
+	//todo: aggregate responses
 	return responses[0]
 }
 
