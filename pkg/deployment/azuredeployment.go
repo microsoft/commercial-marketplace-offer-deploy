@@ -32,6 +32,7 @@ func (azureDeployment *AzureDeployment) validate() (error) {
 	return nil
 }
 
+/*
 type ErrorResponse struct {
 	// READ-ONLY; The error additional info.
 	AdditionalInfo []*ErrorAdditionalInfo `json:"additionalInfo,omitempty" azure:"ro"`
@@ -47,7 +48,7 @@ type ErrorResponse struct {
 
 	// READ-ONLY; The error target.
 	Target *string `json:"target,omitempty" azure:"ro"`
-}
+} */
 
 // ErrorAdditionalInfo - The resource management error additional info.
 type ErrorAdditionalInfo struct {

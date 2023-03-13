@@ -3,7 +3,6 @@ package deployment
 import (
 	"context"
 	"log"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
@@ -38,12 +37,14 @@ type DryRunErrorResponse struct {
 	Details []*DryRunErrorResponse `json:"details,omitempty" azure:"ro"`
 }
 
-func DryRun(azureDeployment *AzureDeployment) *DryRunResponse {
+func whatIfValidator(azureDeployment *AzureDeployment) *DryRunResponse {
 	err := azureDeployment.validate()
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -60,6 +61,39 @@ func DryRun(azureDeployment *AzureDeployment) *DryRunResponse {
 	}
 
 	return dryResponse
+}
+
+func loadValidators() []DryRunValidator {
+	//todo: load validators from config
+	return []DryRunValidator{
+		WhatIfValidatorFunc(whatIfValidator),
+	}
+}
+
+
+func validate(validators []DryRunValidator, azureDeployment *AzureDeployment) *DryRunResponse {
+	var responses []*DryRunResponse
+	for _, validator := range validators {
+		res := validator.Validate(azureDeployment)
+		if res != nil {
+			responses = append(responses, res)
+		}
+	}
+	
+	return aggregateResponses(responses)
+}
+
+func aggregateResponses(responses []*DryRunResponse) *DryRunResponse {
+	if responses == nil || len(responses) == 0 {
+		return nil
+	}
+	//todo: aggregate responses
+	return responses[0]
+}
+
+func DryRun(azureDeployment *AzureDeployment) *DryRunResponse {
+	validators := loadValidators()
+	return validate(validators, azureDeployment)
 }
 
 func whatIfDeployment(ctx context.Context, cred azcore.TokenCredential, azureDeployment *AzureDeployment) (*armresources.DeploymentsClientWhatIfResponse, error) {
