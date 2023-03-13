@@ -2,8 +2,8 @@ package deployment
 
 import (
 	"context"
+	"errors"
 	"log"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
@@ -37,20 +37,16 @@ type DryRunErrorResponse struct {
 	Details []*DryRunErrorResponse `json:"details,omitempty" azure:"ro"`
 }
 
-func whatIfValidator(azureDeployment *AzureDeployment) *DryRunResponse {
-	err := azureDeployment.validate()
+func whatIfValidator(input DryRunValidationInput) *DryRunResponse {
+	if input.azureDeployment == nil {
+		log.Fatal(errors.New("azureDeployment is not set on input struct"))
+	}
+	err := input.azureDeployment.validate()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	cred, err := azidentity.NewDefaultAzureCredential(nil)
-	
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx := context.Background()
-
-	whatIfResult, err := whatIfDeployment(ctx, cred, azureDeployment)
+	whatIfResult, err := whatIfDeployment(input)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -70,11 +66,10 @@ func loadValidators() []DryRunValidator {
 	}
 }
 
-
-func validate(validators []DryRunValidator, azureDeployment *AzureDeployment) *DryRunResponse {
+func validate(validators []DryRunValidator, input DryRunValidationInput) *DryRunResponse {
 	var responses []*DryRunResponse
 	for _, validator := range validators {
-		res := validator.Validate(azureDeployment)
+		res := validator.Validate(input)
 		if res != nil {
 			responses = append(responses, res)
 		}
@@ -92,11 +87,35 @@ func aggregateResponses(responses []*DryRunResponse) *DryRunResponse {
 }
 
 func DryRun(azureDeployment *AzureDeployment) *DryRunResponse {
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		return nil
+	}
 	validators := loadValidators()
-	return validate(validators, azureDeployment)
+	input := DryRunValidationInput{
+		ctx : context.Background(),
+		cred : cred,
+		azureDeployment: azureDeployment,
+	}
+	return validate(validators, input)
 }
 
-func whatIfDeployment(ctx context.Context, cred azcore.TokenCredential, azureDeployment *AzureDeployment) (*armresources.DeploymentsClientWhatIfResponse, error) {
+func whatIfDeployment(input DryRunValidationInput) (*armresources.DeploymentsClientWhatIfResponse, error) {
+	if input.azureDeployment == nil {
+		return nil, errors.New("azureDeployment is nil")
+	}
+	azureDeployment := input.azureDeployment
+	
+	if input.cred == nil {
+		return nil, errors.New("credential is nil")
+	}
+	cred := input.cred
+
+	if input.ctx == nil {
+		return nil, errors.New("context is nil")
+	}
+	ctx := input.ctx
+	
 	deploymentsClient, err := armresources.NewDeploymentsClient(azureDeployment.subscriptionId, cred, nil)
 	if err != nil {
 		return nil, err
