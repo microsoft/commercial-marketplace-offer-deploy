@@ -152,7 +152,7 @@ func Create(deploymentName, subscriptionId, resourceGroupName string, template, 
 
 	resp, err := deploymentPollerResp.PollUntilDone(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("cannot get the create deployment future respone: %v", err)
+		return nil, fmt.Errorf("cannot get the create deployment future response: %v", err)
 	}
 
 	return &resp.DeploymentExtended, nil
