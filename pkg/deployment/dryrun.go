@@ -3,6 +3,10 @@ package deployment
 import (
 	"context"
 	"log"
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
@@ -37,14 +41,22 @@ type DryRunErrorResponse struct {
 	Details []*DryRunErrorResponse `json:"details,omitempty" azure:"ro"`
 }
 
+<<<<<<< HEAD
 func whatIfValidator(azureDeployment *AzureDeployment) *DryRunResponse {
+=======
+func DryRun(azureDeployment *AzureDeployment) *DryRunResponse {
+>>>>>>> main
 	err := azureDeployment.validate()
 	if err != nil {
 		log.Fatal(err)
 	}
+<<<<<<< HEAD
 
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	
+=======
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+>>>>>>> main
 	if err != nil {
 		log.Fatal(err)
 	}
