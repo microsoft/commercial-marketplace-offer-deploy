@@ -7,9 +7,7 @@
 // Changes may cause incorrect behavior and will be lost if the code is regenerated.
 // DO NOT EDIT.
 
-package sdk
-
-const host = "https://partner.microsoft.com/v1"
+package generated
 
 type Get0ItemsItem string
 

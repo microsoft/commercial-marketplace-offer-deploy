@@ -7,7 +7,7 @@
 // Changes may cause incorrect behavior and will be lost if the code is regenerated.
 // DO NOT EDIT.
 
-package sdk
+package generated
 
 import (
 	"encoding/json"
@@ -89,8 +89,10 @@ func (d *Deployment) UnmarshalJSON(data []byte) error {
 // MarshalJSON implements the json.Marshaller interface for type DeploymentOperation.
 func (d DeploymentOperation) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]any)
+	populate(objectMap, "id", d.ID)
 	populate(objectMap, "name", d.Name)
 	populate(objectMap, "parameters", d.Parameters)
+	populateTimeRFC3339(objectMap, "triggeredOn", d.TriggeredOn)
 	return json.Marshal(objectMap)
 }
 
@@ -103,11 +105,17 @@ func (d *DeploymentOperation) UnmarshalJSON(data []byte) error {
 	for key, val := range rawMsg {
 		var err error
 		switch key {
+		case "id":
+				err = unpopulate(val, "ID", &d.ID)
+				delete(rawMsg, key)
 		case "name":
 				err = unpopulate(val, "Name", &d.Name)
 				delete(rawMsg, key)
 		case "parameters":
 				err = unpopulate(val, "Parameters", &d.Parameters)
+				delete(rawMsg, key)
+		case "triggeredOn":
+				err = unpopulateTimeRFC3339(val, "TriggeredOn", &d.TriggeredOn)
 				delete(rawMsg, key)
 		}
 		if err != nil {
@@ -337,6 +345,68 @@ func (e *EventSubscription) UnmarshalJSON(data []byte) error {
 		}
 		if err != nil {
 			return fmt.Errorf("unmarshalling type %T: %v", e, err)
+		}
+	}
+	return nil
+}
+
+// MarshalJSON implements the json.Marshaller interface for type InvokeDeploymentOperation.
+func (i InvokeDeploymentOperation) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]any)
+	populate(objectMap, "name", i.Name)
+	populate(objectMap, "parameters", i.Parameters)
+	return json.Marshal(objectMap)
+}
+
+// UnmarshalJSON implements the json.Unmarshaller interface for type InvokeDeploymentOperation.
+func (i *InvokeDeploymentOperation) UnmarshalJSON(data []byte) error {
+	var rawMsg map[string]json.RawMessage
+	if err := json.Unmarshal(data, &rawMsg); err != nil {
+		return fmt.Errorf("unmarshalling type %T: %v", i, err)
+	}
+	for key, val := range rawMsg {
+		var err error
+		switch key {
+		case "name":
+				err = unpopulate(val, "Name", &i.Name)
+				delete(rawMsg, key)
+		case "parameters":
+				err = unpopulate(val, "Parameters", &i.Parameters)
+				delete(rawMsg, key)
+		}
+		if err != nil {
+			return fmt.Errorf("unmarshalling type %T: %v", i, err)
+		}
+	}
+	return nil
+}
+
+// MarshalJSON implements the json.Marshaller interface for type InvokeDeploymentOperationResult.
+func (i InvokeDeploymentOperationResult) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]any)
+	populate(objectMap, "id", i.ID)
+	populate(objectMap, "name", i.Name)
+	return json.Marshal(objectMap)
+}
+
+// UnmarshalJSON implements the json.Unmarshaller interface for type InvokeDeploymentOperationResult.
+func (i *InvokeDeploymentOperationResult) UnmarshalJSON(data []byte) error {
+	var rawMsg map[string]json.RawMessage
+	if err := json.Unmarshal(data, &rawMsg); err != nil {
+		return fmt.Errorf("unmarshalling type %T: %v", i, err)
+	}
+	for key, val := range rawMsg {
+		var err error
+		switch key {
+		case "id":
+				err = unpopulate(val, "ID", &i.ID)
+				delete(rawMsg, key)
+		case "name":
+				err = unpopulate(val, "Name", &i.Name)
+				delete(rawMsg, key)
+		}
+		if err != nil {
+			return fmt.Errorf("unmarshalling type %T: %v", i, err)
 		}
 	}
 	return nil
