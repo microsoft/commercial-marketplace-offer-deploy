@@ -11,6 +11,7 @@ package generated
 
 import (
 	"context"
+	"errors"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"net/http"
@@ -37,36 +38,116 @@ func NewDeploymentManagementClient(endpoint string, pl runtime.Pipeline) *Deploy
 	return client
 }
 
-// AddDeployment - Add a new deployment to the deployment
+// CreatEventSubscription - Registers a subscription for a particular topic
+// If the operation fails it returns an *azcore.ResponseError type.
+//
+// Generated from API version 0.1.0
+//   - topic - event topic name
+//   - body - Create event subscription
+//   - options - DeploymentManagementClientCreatEventSubscriptionOptions contains the optional parameters for the DeploymentManagementClient.CreatEventSubscription
+//     method.
+func (client *DeploymentManagementClient) CreatEventSubscription(ctx context.Context, topic string, body CreateEventSubscription, options *DeploymentManagementClientCreatEventSubscriptionOptions) (DeploymentManagementClientCreatEventSubscriptionResponse, error) {
+	req, err := client.creatEventSubscriptionCreateRequest(ctx, topic, body, options)
+	if err != nil {
+		return DeploymentManagementClientCreatEventSubscriptionResponse{}, err
+	}
+	resp, err := client.pl.Do(req)
+	if err != nil {
+		return DeploymentManagementClientCreatEventSubscriptionResponse{}, err
+	}
+	if !runtime.HasStatusCode(resp, http.StatusOK, http.StatusMethodNotAllowed) {
+		return DeploymentManagementClientCreatEventSubscriptionResponse{}, runtime.NewResponseError(resp)
+	}
+	return client.creatEventSubscriptionHandleResponse(resp)
+}
+
+// creatEventSubscriptionCreateRequest creates the CreatEventSubscription request.
+func (client *DeploymentManagementClient) creatEventSubscriptionCreateRequest(ctx context.Context, topic string, body CreateEventSubscription, options *DeploymentManagementClientCreatEventSubscriptionOptions) (*policy.Request, error) {
+	urlPath := "/events/{topic}/subscriptions"
+	if topic == "" {
+		return nil, errors.New("parameter topic cannot be empty")
+	}
+	urlPath = strings.ReplaceAll(urlPath, "{topic}", url.PathEscape(topic))
+	req, err := runtime.NewRequest(ctx, http.MethodPost, runtime.JoinPaths(client.endpoint, urlPath))
+	if err != nil {
+		return nil, err
+	}
+	req.Raw().Header["Accept"] = []string{"application/json"}
+	return req, runtime.MarshalAsJSON(req, body)
+}
+
+// creatEventSubscriptionHandleResponse handles the CreatEventSubscription response.
+func (client *DeploymentManagementClient) creatEventSubscriptionHandleResponse(resp *http.Response) (DeploymentManagementClientCreatEventSubscriptionResponse, error) {
+	result := DeploymentManagementClientCreatEventSubscriptionResponse{}
+	if err := runtime.UnmarshalAsJSON(resp, &result.EventSubscription); err != nil {
+		return DeploymentManagementClientCreatEventSubscriptionResponse{}, err
+	}
+	return result, nil
+}
+
+// CreateDeployment - Creates a new deployment instances
 // If the operation fails it returns an *azcore.ResponseError type.
 //
 // Generated from API version 0.1.0
 //   - body - Deployment object that needs to be added to the store
-//   - options - DeploymentManagementClientAddDeploymentOptions contains the optional parameters for the DeploymentManagementClient.AddDeployment
+//   - options - DeploymentManagementClientCreateDeploymentOptions contains the optional parameters for the DeploymentManagementClient.CreateDeployment
 //     method.
-func (client *DeploymentManagementClient) AddDeployment(ctx context.Context, body Deployment, options *DeploymentManagementClientAddDeploymentOptions) (DeploymentManagementClientAddDeploymentResponse, error) {
-	req, err := client.addDeploymentCreateRequest(ctx, body, options)
+func (client *DeploymentManagementClient) CreateDeployment(ctx context.Context, body CreateDeployment, options *DeploymentManagementClientCreateDeploymentOptions) (DeploymentManagementClientCreateDeploymentResponse, error) {
+	req, err := client.createDeploymentCreateRequest(ctx, body, options)
 	if err != nil {
-		return DeploymentManagementClientAddDeploymentResponse{}, err
+		return DeploymentManagementClientCreateDeploymentResponse{}, err
 	}
 	resp, err := client.pl.Do(req)
 	if err != nil {
-		return DeploymentManagementClientAddDeploymentResponse{}, err
+		return DeploymentManagementClientCreateDeploymentResponse{}, err
 	}
 	if !runtime.HasStatusCode(resp, http.StatusMethodNotAllowed) {
-		return DeploymentManagementClientAddDeploymentResponse{}, runtime.NewResponseError(resp)
+		return DeploymentManagementClientCreateDeploymentResponse{}, runtime.NewResponseError(resp)
 	}
-	return DeploymentManagementClientAddDeploymentResponse{}, nil
+	return DeploymentManagementClientCreateDeploymentResponse{}, nil
 }
 
-// addDeploymentCreateRequest creates the AddDeployment request.
-func (client *DeploymentManagementClient) addDeploymentCreateRequest(ctx context.Context, body Deployment, options *DeploymentManagementClientAddDeploymentOptions) (*policy.Request, error) {
+// createDeploymentCreateRequest creates the CreateDeployment request.
+func (client *DeploymentManagementClient) createDeploymentCreateRequest(ctx context.Context, body CreateDeployment, options *DeploymentManagementClientCreateDeploymentOptions) (*policy.Request, error) {
 	urlPath := "/deployments"
 	req, err := runtime.NewRequest(ctx, http.MethodPost, runtime.JoinPaths(client.endpoint, urlPath))
 	if err != nil {
 		return nil, err
 	}
 	return req, runtime.MarshalAsJSON(req, body)
+}
+
+// DeleteEventSubscription - Deletes a subscription to an even topic
+// If the operation fails it returns an *azcore.ResponseError type.
+//
+// Generated from API version 0.1.0
+//   - subscriptionID - ID of subscription
+//   - options - DeploymentManagementClientDeleteEventSubscriptionOptions contains the optional parameters for the DeploymentManagementClient.DeleteEventSubscription
+//     method.
+func (client *DeploymentManagementClient) DeleteEventSubscription(ctx context.Context, subscriptionID string, options *DeploymentManagementClientDeleteEventSubscriptionOptions) (DeploymentManagementClientDeleteEventSubscriptionResponse, error) {
+	req, err := client.deleteEventSubscriptionCreateRequest(ctx, subscriptionID, options)
+	if err != nil {
+		return DeploymentManagementClientDeleteEventSubscriptionResponse{}, err
+	}
+	resp, err := client.pl.Do(req)
+	if err != nil {
+		return DeploymentManagementClientDeleteEventSubscriptionResponse{}, err
+	}
+	if !runtime.HasStatusCode(resp, http.StatusOK, http.StatusBadRequest, http.StatusNotFound) {
+		return DeploymentManagementClientDeleteEventSubscriptionResponse{}, runtime.NewResponseError(resp)
+	}
+	return DeploymentManagementClientDeleteEventSubscriptionResponse{}, nil
+}
+
+// deleteEventSubscriptionCreateRequest creates the DeleteEventSubscription request.
+func (client *DeploymentManagementClient) deleteEventSubscriptionCreateRequest(ctx context.Context, subscriptionID string, options *DeploymentManagementClientDeleteEventSubscriptionOptions) (*policy.Request, error) {
+	urlPath := "/events/subscriptions/{subscriptionId}"
+	urlPath = strings.ReplaceAll(urlPath, "{subscriptionId}", url.PathEscape(subscriptionID))
+	req, err := runtime.NewRequest(ctx, http.MethodDelete, runtime.JoinPaths(client.endpoint, urlPath))
+	if err != nil {
+		return nil, err
+	}
+	return req, nil
 }
 
 // GetDeployment - Returns a single deployment
@@ -112,7 +193,7 @@ func (client *DeploymentManagementClient) getDeploymentHandleResponse(resp *http
 	return result, nil
 }
 
-// GetDeploymentOperation - Gets the state of a command operation that's been triggered
+// GetDeploymentOperation - Gets the state of a command operation that's been invoked
 // If the operation fails it returns an *azcore.ResponseError type.
 //
 // Generated from API version 0.1.0
@@ -149,8 +230,51 @@ func (client *DeploymentManagementClient) getDeploymentOperationCreateRequest(ct
 // getDeploymentOperationHandleResponse handles the GetDeploymentOperation response.
 func (client *DeploymentManagementClient) getDeploymentOperationHandleResponse(resp *http.Response) (DeploymentManagementClientGetDeploymentOperationResponse, error) {
 	result := DeploymentManagementClientGetDeploymentOperationResponse{}
-	if err := runtime.UnmarshalAsJSON(resp, &result.DeploymentOperation); err != nil {
+	if err := runtime.UnmarshalAsJSON(resp, &result.InvokedOperation); err != nil {
 		return DeploymentManagementClientGetDeploymentOperationResponse{}, err
+	}
+	return result, nil
+}
+
+// GetEventSubscription - Gets a subscription to an even topic
+// If the operation fails it returns an *azcore.ResponseError type.
+//
+// Generated from API version 0.1.0
+//   - subscriptionID - ID of subscription
+//   - options - DeploymentManagementClientGetEventSubscriptionOptions contains the optional parameters for the DeploymentManagementClient.GetEventSubscription
+//     method.
+func (client *DeploymentManagementClient) GetEventSubscription(ctx context.Context, subscriptionID string, options *DeploymentManagementClientGetEventSubscriptionOptions) (DeploymentManagementClientGetEventSubscriptionResponse, error) {
+	req, err := client.getEventSubscriptionCreateRequest(ctx, subscriptionID, options)
+	if err != nil {
+		return DeploymentManagementClientGetEventSubscriptionResponse{}, err
+	}
+	resp, err := client.pl.Do(req)
+	if err != nil {
+		return DeploymentManagementClientGetEventSubscriptionResponse{}, err
+	}
+	if !runtime.HasStatusCode(resp, http.StatusOK, http.StatusBadRequest, http.StatusNotFound) {
+		return DeploymentManagementClientGetEventSubscriptionResponse{}, runtime.NewResponseError(resp)
+	}
+	return client.getEventSubscriptionHandleResponse(resp)
+}
+
+// getEventSubscriptionCreateRequest creates the GetEventSubscription request.
+func (client *DeploymentManagementClient) getEventSubscriptionCreateRequest(ctx context.Context, subscriptionID string, options *DeploymentManagementClientGetEventSubscriptionOptions) (*policy.Request, error) {
+	urlPath := "/events/subscriptions/{subscriptionId}"
+	urlPath = strings.ReplaceAll(urlPath, "{subscriptionId}", url.PathEscape(subscriptionID))
+	req, err := runtime.NewRequest(ctx, http.MethodGet, runtime.JoinPaths(client.endpoint, urlPath))
+	if err != nil {
+		return nil, err
+	}
+	req.Raw().Header["Accept"] = []string{"application/json"}
+	return req, nil
+}
+
+// getEventSubscriptionHandleResponse handles the GetEventSubscription response.
+func (client *DeploymentManagementClient) getEventSubscriptionHandleResponse(resp *http.Response) (DeploymentManagementClientGetEventSubscriptionResponse, error) {
+	result := DeploymentManagementClientGetEventSubscriptionResponse{}
+	if err := runtime.UnmarshalAsJSON(resp, &result.EventSubscription); err != nil {
+		return DeploymentManagementClientGetEventSubscriptionResponse{}, err
 	}
 	return result, nil
 }
@@ -196,32 +320,32 @@ func (client *DeploymentManagementClient) getEventsHandleResponse(resp *http.Res
 	return result, nil
 }
 
-// InvokeDeploymentOperation - Invokes a command operation with parameters for a deployment
+// InvokeOperation - Invokes a deployment operation with parameters
 // If the operation fails it returns an *azcore.ResponseError type.
 //
 // Generated from API version 0.1.0
-//   - deploymentID - ID of deployment to return
-//   - body - Deployment operation trigger
-//   - options - DeploymentManagementClientInvokeDeploymentOperationOptions contains the optional parameters for the DeploymentManagementClient.InvokeDeploymentOperation
+//   - deploymentID - ID of deployment
+//   - body - Deployment operation invocation
+//   - options - DeploymentManagementClientInvokeOperationOptions contains the optional parameters for the DeploymentManagementClient.InvokeOperation
 //     method.
-func (client *DeploymentManagementClient) InvokeDeploymentOperation(ctx context.Context, deploymentID int64, body InvokeDeploymentOperation, options *DeploymentManagementClientInvokeDeploymentOperationOptions) (DeploymentManagementClientInvokeDeploymentOperationResponse, error) {
-	req, err := client.invokeDeploymentOperationCreateRequest(ctx, deploymentID, body, options)
+func (client *DeploymentManagementClient) InvokeOperation(ctx context.Context, deploymentID int64, body InvokeDeploymentOperation, options *DeploymentManagementClientInvokeOperationOptions) (DeploymentManagementClientInvokeOperationResponse, error) {
+	req, err := client.invokeOperationCreateRequest(ctx, deploymentID, body, options)
 	if err != nil {
-		return DeploymentManagementClientInvokeDeploymentOperationResponse{}, err
+		return DeploymentManagementClientInvokeOperationResponse{}, err
 	}
 	resp, err := client.pl.Do(req)
 	if err != nil {
-		return DeploymentManagementClientInvokeDeploymentOperationResponse{}, err
+		return DeploymentManagementClientInvokeOperationResponse{}, err
 	}
 	if !runtime.HasStatusCode(resp, http.StatusOK) {
-		return DeploymentManagementClientInvokeDeploymentOperationResponse{}, runtime.NewResponseError(resp)
+		return DeploymentManagementClientInvokeOperationResponse{}, runtime.NewResponseError(resp)
 	}
-	return client.invokeDeploymentOperationHandleResponse(resp)
+	return client.invokeOperationHandleResponse(resp)
 }
 
-// invokeDeploymentOperationCreateRequest creates the InvokeDeploymentOperation request.
-func (client *DeploymentManagementClient) invokeDeploymentOperationCreateRequest(ctx context.Context, deploymentID int64, body InvokeDeploymentOperation, options *DeploymentManagementClientInvokeDeploymentOperationOptions) (*policy.Request, error) {
-	urlPath := "/deployments/{deploymentId}/operations"
+// invokeOperationCreateRequest creates the InvokeOperation request.
+func (client *DeploymentManagementClient) invokeOperationCreateRequest(ctx context.Context, deploymentID int64, body InvokeDeploymentOperation, options *DeploymentManagementClientInvokeOperationOptions) (*policy.Request, error) {
+	urlPath := "/deployment/{deploymentId}/operation"
 	urlPath = strings.ReplaceAll(urlPath, "{deploymentId}", url.PathEscape(strconv.FormatInt(deploymentID, 10)))
 	req, err := runtime.NewRequest(ctx, http.MethodPost, runtime.JoinPaths(client.endpoint, urlPath))
 	if err != nil {
@@ -231,11 +355,11 @@ func (client *DeploymentManagementClient) invokeDeploymentOperationCreateRequest
 	return req, runtime.MarshalAsJSON(req, body)
 }
 
-// invokeDeploymentOperationHandleResponse handles the InvokeDeploymentOperation response.
-func (client *DeploymentManagementClient) invokeDeploymentOperationHandleResponse(resp *http.Response) (DeploymentManagementClientInvokeDeploymentOperationResponse, error) {
-	result := DeploymentManagementClientInvokeDeploymentOperationResponse{}
-	if err := runtime.UnmarshalAsJSON(resp, &result.InvokeDeploymentOperationResult); err != nil {
-		return DeploymentManagementClientInvokeDeploymentOperationResponse{}, err
+// invokeOperationHandleResponse handles the InvokeOperation response.
+func (client *DeploymentManagementClient) invokeOperationHandleResponse(resp *http.Response) (DeploymentManagementClientInvokeOperationResponse, error) {
+	result := DeploymentManagementClientInvokeOperationResponse{}
+	if err := runtime.UnmarshalAsJSON(resp, &result.InvokedOperation); err != nil {
+		return DeploymentManagementClientInvokeOperationResponse{}, err
 	}
 	return result, nil
 }
@@ -288,6 +412,52 @@ func (client *DeploymentManagementClient) listDeploymentsHandleResponse(resp *ht
 	return result, nil
 }
 
+// ListEventSubscriptions - List all subscriptions for an event topic
+// If the operation fails it returns an *azcore.ResponseError type.
+//
+// Generated from API version 0.1.0
+//   - topic - event topic name
+//   - options - DeploymentManagementClientListEventSubscriptionsOptions contains the optional parameters for the DeploymentManagementClient.ListEventSubscriptions
+//     method.
+func (client *DeploymentManagementClient) ListEventSubscriptions(ctx context.Context, topic string, options *DeploymentManagementClientListEventSubscriptionsOptions) (DeploymentManagementClientListEventSubscriptionsResponse, error) {
+	req, err := client.listEventSubscriptionsCreateRequest(ctx, topic, options)
+	if err != nil {
+		return DeploymentManagementClientListEventSubscriptionsResponse{}, err
+	}
+	resp, err := client.pl.Do(req)
+	if err != nil {
+		return DeploymentManagementClientListEventSubscriptionsResponse{}, err
+	}
+	if !runtime.HasStatusCode(resp, http.StatusOK, http.StatusBadRequest, http.StatusNotFound) {
+		return DeploymentManagementClientListEventSubscriptionsResponse{}, runtime.NewResponseError(resp)
+	}
+	return client.listEventSubscriptionsHandleResponse(resp)
+}
+
+// listEventSubscriptionsCreateRequest creates the ListEventSubscriptions request.
+func (client *DeploymentManagementClient) listEventSubscriptionsCreateRequest(ctx context.Context, topic string, options *DeploymentManagementClientListEventSubscriptionsOptions) (*policy.Request, error) {
+	urlPath := "/events/{topic}/subscriptions"
+	if topic == "" {
+		return nil, errors.New("parameter topic cannot be empty")
+	}
+	urlPath = strings.ReplaceAll(urlPath, "{topic}", url.PathEscape(topic))
+	req, err := runtime.NewRequest(ctx, http.MethodGet, runtime.JoinPaths(client.endpoint, urlPath))
+	if err != nil {
+		return nil, err
+	}
+	req.Raw().Header["Accept"] = []string{"application/json"}
+	return req, nil
+}
+
+// listEventSubscriptionsHandleResponse handles the ListEventSubscriptions response.
+func (client *DeploymentManagementClient) listEventSubscriptionsHandleResponse(resp *http.Response) (DeploymentManagementClientListEventSubscriptionsResponse, error) {
+	result := DeploymentManagementClientListEventSubscriptionsResponse{}
+	if err := runtime.UnmarshalAsJSON(resp, &result.EventSubscriptionArray); err != nil {
+		return DeploymentManagementClientListEventSubscriptionsResponse{}, err
+	}
+	return result, nil
+}
+
 // ListOperations - Returns a list of available operations that can be performed on a deployment
 // If the operation fails it returns an *azcore.ResponseError type.
 //
@@ -323,42 +493,10 @@ func (client *DeploymentManagementClient) listOperationsCreateRequest(ctx contex
 // listOperationsHandleResponse handles the ListOperations response.
 func (client *DeploymentManagementClient) listOperationsHandleResponse(resp *http.Response) (DeploymentManagementClientListOperationsResponse, error) {
 	result := DeploymentManagementClientListOperationsResponse{}
-	if err := runtime.UnmarshalAsJSON(resp, &result.AvailableDeploymentOperationArray); err != nil {
+	if err := runtime.UnmarshalAsJSON(resp, &result.OperationArray); err != nil {
 		return DeploymentManagementClientListOperationsResponse{}, err
 	}
 	return result, nil
-}
-
-// RegisterEventSubscription - Registers a subscription for a particular topic
-// If the operation fails it returns an *azcore.ResponseError type.
-//
-// Generated from API version 0.1.0
-//   - body - Deployment object that needs to be added to the store
-//   - options - DeploymentManagementClientRegisterEventSubscriptionOptions contains the optional parameters for the DeploymentManagementClient.RegisterEventSubscription
-//     method.
-func (client *DeploymentManagementClient) RegisterEventSubscription(ctx context.Context, body EventSubscription, options *DeploymentManagementClientRegisterEventSubscriptionOptions) (DeploymentManagementClientRegisterEventSubscriptionResponse, error) {
-	req, err := client.registerEventSubscriptionCreateRequest(ctx, body, options)
-	if err != nil {
-		return DeploymentManagementClientRegisterEventSubscriptionResponse{}, err
-	}
-	resp, err := client.pl.Do(req)
-	if err != nil {
-		return DeploymentManagementClientRegisterEventSubscriptionResponse{}, err
-	}
-	if !runtime.HasStatusCode(resp, http.StatusMethodNotAllowed) {
-		return DeploymentManagementClientRegisterEventSubscriptionResponse{}, runtime.NewResponseError(resp)
-	}
-	return DeploymentManagementClientRegisterEventSubscriptionResponse{}, nil
-}
-
-// registerEventSubscriptionCreateRequest creates the RegisterEventSubscription request.
-func (client *DeploymentManagementClient) registerEventSubscriptionCreateRequest(ctx context.Context, body EventSubscription, options *DeploymentManagementClientRegisterEventSubscriptionOptions) (*policy.Request, error) {
-	urlPath := "/events/subscriptions"
-	req, err := runtime.NewRequest(ctx, http.MethodPost, runtime.JoinPaths(client.endpoint, urlPath))
-	if err != nil {
-		return nil, err
-	}
-	return req, runtime.MarshalAsJSON(req, body)
 }
 
 // UpdateDeployment - Update an existing deployment

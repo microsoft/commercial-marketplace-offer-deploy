@@ -9,19 +9,34 @@
 
 package generated
 
-// DeploymentManagementClientAddDeploymentResponse contains the response from method DeploymentManagementClient.AddDeployment.
-type DeploymentManagementClientAddDeploymentResponse struct {
+// DeploymentManagementClientCreatEventSubscriptionResponse contains the response from method DeploymentManagementClient.CreatEventSubscription.
+type DeploymentManagementClientCreatEventSubscriptionResponse struct {
+	EventSubscription
+}
+
+// DeploymentManagementClientCreateDeploymentResponse contains the response from method DeploymentManagementClient.CreateDeployment.
+type DeploymentManagementClientCreateDeploymentResponse struct {
+	// placeholder for future response values
+}
+
+// DeploymentManagementClientDeleteEventSubscriptionResponse contains the response from method DeploymentManagementClient.DeleteEventSubscription.
+type DeploymentManagementClientDeleteEventSubscriptionResponse struct {
 	// placeholder for future response values
 }
 
 // DeploymentManagementClientGetDeploymentOperationResponse contains the response from method DeploymentManagementClient.GetDeploymentOperation.
 type DeploymentManagementClientGetDeploymentOperationResponse struct {
-	DeploymentOperation
+	InvokedOperation
 }
 
 // DeploymentManagementClientGetDeploymentResponse contains the response from method DeploymentManagementClient.GetDeployment.
 type DeploymentManagementClientGetDeploymentResponse struct {
 	Deployment
+}
+
+// DeploymentManagementClientGetEventSubscriptionResponse contains the response from method DeploymentManagementClient.GetEventSubscription.
+type DeploymentManagementClientGetEventSubscriptionResponse struct {
+	EventSubscription
 }
 
 // DeploymentManagementClientGetEventsResponse contains the response from method DeploymentManagementClient.GetEvents.
@@ -30,9 +45,9 @@ type DeploymentManagementClientGetEventsResponse struct {
 	EventArray []*Event
 }
 
-// DeploymentManagementClientInvokeDeploymentOperationResponse contains the response from method DeploymentManagementClient.InvokeDeploymentOperation.
-type DeploymentManagementClientInvokeDeploymentOperationResponse struct {
-	InvokeDeploymentOperationResult
+// DeploymentManagementClientInvokeOperationResponse contains the response from method DeploymentManagementClient.InvokeOperation.
+type DeploymentManagementClientInvokeOperationResponse struct {
+	InvokedOperation
 }
 
 // DeploymentManagementClientListDeploymentsResponse contains the response from method DeploymentManagementClient.ListDeployments.
@@ -41,15 +56,16 @@ type DeploymentManagementClientListDeploymentsResponse struct {
 	DeploymentArray []*Deployment
 }
 
-// DeploymentManagementClientListOperationsResponse contains the response from method DeploymentManagementClient.ListOperations.
-type DeploymentManagementClientListOperationsResponse struct {
-	// Array of AvailableDeploymentOperation
-	AvailableDeploymentOperationArray []*AvailableDeploymentOperation
+// DeploymentManagementClientListEventSubscriptionsResponse contains the response from method DeploymentManagementClient.ListEventSubscriptions.
+type DeploymentManagementClientListEventSubscriptionsResponse struct {
+	// Array of EventSubscription
+	EventSubscriptionArray []*EventSubscription
 }
 
-// DeploymentManagementClientRegisterEventSubscriptionResponse contains the response from method DeploymentManagementClient.RegisterEventSubscription.
-type DeploymentManagementClientRegisterEventSubscriptionResponse struct {
-	// placeholder for future response values
+// DeploymentManagementClientListOperationsResponse contains the response from method DeploymentManagementClient.ListOperations.
+type DeploymentManagementClientListOperationsResponse struct {
+	// Array of Operation
+	OperationArray []*Operation
 }
 
 // DeploymentManagementClientUpdateDeploymentResponse contains the response from method DeploymentManagementClient.UpdateDeployment.

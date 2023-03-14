@@ -107,9 +107,9 @@
         "tags": [
           "Deployment"
         ],
-        "summary": "Add a new deployment to the deployment",
-        "description": "",
-        "operationId": "AddDeployment",
+        "summary": "Creates a new deployment",
+        "description": "Creates a new deployment instances",
+        "operationId": "CreateDeployment",
         "parameters": [
           {
             "in": "body",
@@ -117,7 +117,7 @@
             "description": "Deployment object that needs to be added to the store",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Deployment"
+              "$ref": "#/definitions/CreateDeployment"
             }
           }
         ],
@@ -192,19 +192,19 @@
         }
       }
     },
-    "/deployments/{deploymentId}/operations": {
+    "/deployment/{deploymentId}/operation": {
       "post": {
         "tags": [
           "Deployment"
         ],
-        "summary": "Invokes an operation for a deployment",
-        "description": "Invokes a command operation with parameters for a deployment",
-        "operationId": "InvokeDeploymentOperation",
+        "summary": "Invokes an operation for a target object",
+        "description": "Invokes a deployment operation with parameters",
+        "operationId": "InvokeOperation",
         "parameters": [
           {
             "name": "deploymentId",
             "in": "path",
-            "description": "ID of deployment to return",
+            "description": "ID of deployment",
             "required": true,
             "type": "integer",
             "format": "int64"
@@ -212,7 +212,7 @@
           {
             "in": "body",
             "name": "body",
-            "description": "Deployment operation trigger",
+            "description": "Deployment operation invocation",
             "required": true,
             "schema": {
               "$ref": "#/definitions/InvokeDeploymentOperation"
@@ -223,7 +223,7 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/InvokeDeploymentOperationResult"
+              "$ref": "#/definitions/InvokedOperation"
             }
           }
         }
@@ -234,8 +234,8 @@
         "tags": [
           "Operation"
         ],
-        "summary": "Gets the state of a triggered operation",
-        "description": "Gets the state of a command operation that's been triggered",
+        "summary": "Gets the state of an invoked operation",
+        "description": "Gets the state of a command operation that's been invoked",
         "operationId": "GetDeploymentOperation",
         "parameters": [
           {
@@ -251,7 +251,7 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/DeploymentOperation"
+              "$ref": "#/definitions/InvokedOperation"
             }
           }
         }
@@ -260,7 +260,7 @@
     "/operations": {
       "get": {
         "tags": [
-          "operations"
+          "Operation"
         ],
         "summary": "Returns the list of available operations",
         "description": "Returns a list of available operations that can be performed on a deployment",
@@ -272,7 +272,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/AvailableDeploymentOperation"
+                "$ref": "#/definitions/Operation"
               }
             }
           }
@@ -304,134 +304,149 @@
         }
       }
     },
-    "/events/subscriptions": {
+    "/events/{topic}/subscriptions": {
       "post": {
         "tags": [
-          "events"
+          "Event"
         ],
         "summary": "Register event subscription",
         "description": "Registers a subscription for a particular topic",
-        "operationId": "RegisterEventSubscription",
+        "operationId": "CreatEventSubscription",
         "parameters": [
+          {
+            "name": "topic",
+            "in": "path",
+            "description": "event topic name",
+            "required": true,
+            "type": "string"
+          },
           {
             "in": "body",
             "name": "body",
-            "description": "Deployment object that needs to be added to the store",
+            "description": "Create event subscription",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/EventSubscription"
+              "$ref": "#/definitions/CreateEventSubscription"
             }
           }
         ],
         "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/EventSubscription"
+            }
+          },
           "405": {
             "description": "Invalid input"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Event"
+        ],
+        "summary": "Lists all subscription for a topic",
+        "description": "List all subscriptions for an event topic",
+        "operationId": "ListEventSubscriptions",
+        "parameters": [
+          {
+            "name": "topic",
+            "in": "path",
+            "description": "event topic name",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/EventSubscription"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Subscription not found"
+          }
+        }
+      }
+    },
+    "/events/subscriptions/{subscriptionId}": {
+      "get": {
+        "tags": [
+          "Event"
+        ],
+        "summary": "Gets a subscription",
+        "description": "Gets a subscription to an even topic",
+        "operationId": "GetEventSubscription",
+        "parameters": [
+          {
+            "name": "subscriptionId",
+            "in": "path",
+            "description": "ID of subscription",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/EventSubscription"
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Subscription not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Event"
+        ],
+        "summary": "Delete a subscription",
+        "description": "Deletes a subscription to an even topic",
+        "operationId": "DeleteEventSubscription",
+        "parameters": [
+          {
+            "name": "subscriptionId",
+            "in": "path",
+            "description": "ID of subscription",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Subscription not found"
           }
         }
       }
     }
   },
   "definitions": {
-    "AvailableDeploymentOperation": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "parameters": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "InvokeDeploymentOperation": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "parameters": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/DeploymentOperationParameter"
-          }
-        }
-      }
-    },
-    "InvokeDeploymentOperationResult": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "name": {
-          "type": "string"
-        }
-      }
-    },
-    "DeploymentOperation": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "name": {
-          "type": "string"
-        },
-        "triggeredOn": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "parameters": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/DeploymentOperationParameter"
-          }
-        }
-      }
-    },
-    "DeploymentOperationParameter": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-        }
-      }
-    },
-    "Event": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        }
-      }
-    },
-    "EventSubscription": {
-      "type": "object",
-      "properties": {
-        "topic": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "callback": {
-          "type": "string",
-          "format": "uri"
-        }
-      }
-    },
-    "DeploymentRequest": {
+    "CreateDeployment": {
       "type": "object",
       "required": [
-        "name"
+        "name",
+        "template"
       ],
       "properties": {
         "name": {
@@ -456,26 +471,11 @@
         "name": {
           "type": "string"
         },
-        "template": {
-          "$ref": "#/definitions/DeploymentTemplate"
-        },
-        "stages": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/DeploymentStage"
-          }
-        }
-      }
-    },
-    "DeploymentTemplateParameter": {
-      "type": "object",
-      "properties": {
-        "name": {
+        "status": {
           "type": "string"
         },
-        "value": {
-          "type": "object",
-          "additionalProperties": true
+        "template": {
+          "$ref": "#/definitions/DeploymentTemplate"
         }
       }
     },
@@ -496,15 +496,173 @@
         }
       }
     },
-    "DeploymentStage": {
+    "DeploymentTemplateParameter": {
       "type": "object",
       "properties": {
         "name": {
           "type": "string"
         },
-        "attributes": {
+        "value": {
           "type": "object",
           "additionalProperties": true
+        }
+      }
+    },
+    "Operation": {
+      "type": "object",
+      "description": "Defines an available operation",
+      "properties": {
+        "target": {
+          "$ref": "#/definitions/OperationTargetType"
+        },
+        "name": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OperationParameterType"
+          }
+        }
+      }
+    },
+    "OperationTargetType": {
+      "type": "object",
+      "properties": {
+        "objectType": {
+          "type": "string"
+        },
+        "idType": {
+          "type": "string"
+        }
+      }
+    },
+    "OperationParameterType": {
+      "type": "object",
+      "description": "The parameter type information for a parameter of an operation",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "InvokeDeploymentOperation": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OperationParameter"
+          }
+        }
+      }
+    },
+    "InvokedOperation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/definitions/InvokedOperationTarget"
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OperationParameter"
+          }
+        },
+        "invokedOn": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "InvokedOperationTarget": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "id": {
+          "$ref": "#/definitions/InvokedOperationTargetId"
+        }
+      }
+    },
+    "InvokedOperationTargetId": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "OperationParameter": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "Event": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "EventSubscription": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "topic": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "CreateEventSubscription": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string",
+          "format": "uri"
         }
       }
     }

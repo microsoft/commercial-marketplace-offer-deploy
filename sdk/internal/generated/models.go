@@ -11,21 +11,42 @@ package generated
 
 import "time"
 
-type AvailableDeploymentOperation struct {
+type CreateDeployment struct {
+	// REQUIRED
 	Name *string `json:"name,omitempty"`
-	Parameters []*string `json:"parameters,omitempty"`
+
+	// REQUIRED
+	Template *DeploymentTemplate `json:"template,omitempty"`
+	MultiStage *bool `json:"multiStage,omitempty"`
+}
+
+type CreateEventSubscription struct {
+	Callback *string `json:"callback,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 type Deployment struct {
 	ID *int64 `json:"id,omitempty"`
 	Name *string `json:"name,omitempty"`
-	Stages []*DeploymentStage `json:"stages,omitempty"`
+	Status *string `json:"status,omitempty"`
 	Template *DeploymentTemplate `json:"template,omitempty"`
 }
 
-// DeploymentManagementClientAddDeploymentOptions contains the optional parameters for the DeploymentManagementClient.AddDeployment
+// DeploymentManagementClientCreatEventSubscriptionOptions contains the optional parameters for the DeploymentManagementClient.CreatEventSubscription
 // method.
-type DeploymentManagementClientAddDeploymentOptions struct {
+type DeploymentManagementClientCreatEventSubscriptionOptions struct {
+	// placeholder for future optional parameters
+}
+
+// DeploymentManagementClientCreateDeploymentOptions contains the optional parameters for the DeploymentManagementClient.CreateDeployment
+// method.
+type DeploymentManagementClientCreateDeploymentOptions struct {
+	// placeholder for future optional parameters
+}
+
+// DeploymentManagementClientDeleteEventSubscriptionOptions contains the optional parameters for the DeploymentManagementClient.DeleteEventSubscription
+// method.
+type DeploymentManagementClientDeleteEventSubscriptionOptions struct {
 	// placeholder for future optional parameters
 }
 
@@ -41,15 +62,21 @@ type DeploymentManagementClientGetDeploymentOptions struct {
 	// placeholder for future optional parameters
 }
 
+// DeploymentManagementClientGetEventSubscriptionOptions contains the optional parameters for the DeploymentManagementClient.GetEventSubscription
+// method.
+type DeploymentManagementClientGetEventSubscriptionOptions struct {
+	// placeholder for future optional parameters
+}
+
 // DeploymentManagementClientGetEventsOptions contains the optional parameters for the DeploymentManagementClient.GetEvents
 // method.
 type DeploymentManagementClientGetEventsOptions struct {
 	// placeholder for future optional parameters
 }
 
-// DeploymentManagementClientInvokeDeploymentOperationOptions contains the optional parameters for the DeploymentManagementClient.InvokeDeploymentOperation
+// DeploymentManagementClientInvokeOperationOptions contains the optional parameters for the DeploymentManagementClient.InvokeOperation
 // method.
-type DeploymentManagementClientInvokeDeploymentOperationOptions struct {
+type DeploymentManagementClientInvokeOperationOptions struct {
 	// placeholder for future optional parameters
 }
 
@@ -60,15 +87,15 @@ type DeploymentManagementClientListDeploymentsOptions struct {
 	Status []Status
 }
 
-// DeploymentManagementClientListOperationsOptions contains the optional parameters for the DeploymentManagementClient.ListOperations
+// DeploymentManagementClientListEventSubscriptionsOptions contains the optional parameters for the DeploymentManagementClient.ListEventSubscriptions
 // method.
-type DeploymentManagementClientListOperationsOptions struct {
+type DeploymentManagementClientListEventSubscriptionsOptions struct {
 	// placeholder for future optional parameters
 }
 
-// DeploymentManagementClientRegisterEventSubscriptionOptions contains the optional parameters for the DeploymentManagementClient.RegisterEventSubscription
+// DeploymentManagementClientListOperationsOptions contains the optional parameters for the DeploymentManagementClient.ListOperations
 // method.
-type DeploymentManagementClientRegisterEventSubscriptionOptions struct {
+type DeploymentManagementClientListOperationsOptions struct {
 	// placeholder for future optional parameters
 }
 
@@ -76,31 +103,6 @@ type DeploymentManagementClientRegisterEventSubscriptionOptions struct {
 // method.
 type DeploymentManagementClientUpdateDeploymentOptions struct {
 	// placeholder for future optional parameters
-}
-
-type DeploymentOperation struct {
-	ID *string `json:"id,omitempty"`
-	Name *string `json:"name,omitempty"`
-	Parameters []*DeploymentOperationParameter `json:"parameters,omitempty"`
-	TriggeredOn *time.Time `json:"triggeredOn,omitempty"`
-}
-
-type DeploymentOperationParameter struct {
-	Name *string `json:"name,omitempty"`
-	Value *string `json:"value,omitempty"`
-}
-
-type DeploymentRequest struct {
-	// REQUIRED
-	Name *string `json:"name,omitempty"`
-	MultiStage *bool `json:"multiStage,omitempty"`
-	Template *DeploymentTemplate `json:"template,omitempty"`
-}
-
-type DeploymentStage struct {
-	// Dictionary of
-	Attributes map[string]any `json:"attributes,omitempty"`
-	Name *string `json:"name,omitempty"`
 }
 
 type DeploymentTemplate struct {
@@ -122,17 +124,56 @@ type Event struct {
 
 type EventSubscription struct {
 	Callback *string `json:"callback,omitempty"`
+	ID *string `json:"id,omitempty"`
 	Name *string `json:"name,omitempty"`
 	Topic *string `json:"topic,omitempty"`
 }
 
 type InvokeDeploymentOperation struct {
 	Name *string `json:"name,omitempty"`
-	Parameters []*DeploymentOperationParameter `json:"parameters,omitempty"`
+	Parameters []*OperationParameter `json:"parameters,omitempty"`
 }
 
-type InvokeDeploymentOperationResult struct {
+type InvokedOperation struct {
 	ID *string `json:"id,omitempty"`
+	InvokedOn *time.Time `json:"invokedOn,omitempty"`
 	Name *string `json:"name,omitempty"`
+	Parameters []*OperationParameter `json:"parameters,omitempty"`
+	Status *string `json:"status,omitempty"`
+	Target *InvokedOperationTarget `json:"target,omitempty"`
+}
+
+type InvokedOperationTarget struct {
+	ID *InvokedOperationTargetID `json:"id,omitempty"`
+	Type *string `json:"type,omitempty"`
+}
+
+type InvokedOperationTargetID struct {
+	Type *string `json:"type,omitempty"`
+	Value *string `json:"value,omitempty"`
+}
+
+// Operation - Defines an available operation
+type Operation struct {
+	Name *string `json:"name,omitempty"`
+	Parameters []*OperationParameterType `json:"parameters,omitempty"`
+	Target *OperationTargetType `json:"target,omitempty"`
+}
+
+type OperationParameter struct {
+	Name *string `json:"name,omitempty"`
+	Type *string `json:"type,omitempty"`
+	Value *string `json:"value,omitempty"`
+}
+
+// OperationParameterType - The parameter type information for a parameter of an operation
+type OperationParameterType struct {
+	Name *string `json:"name,omitempty"`
+	Type *string `json:"type,omitempty"`
+}
+
+type OperationTargetType struct {
+	IDType *string `json:"idType,omitempty"`
+	ObjectType *string `json:"objectType,omitempty"`
 }
 
