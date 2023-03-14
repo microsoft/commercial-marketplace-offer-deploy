@@ -25,9 +25,10 @@ To see additional help and options, run:
 These are the global settings for the MarketplaceOfferDeploymentManager API.
 
 ``` yaml
-title: MarketplaceOfferDeploymentManagerClient
-description: MarketplaceOfferDeploymentManager Client
-openapi-type: default
+openapi-type: "data-plane"
+data-plane: true
+override-client-name: DeploymentManagementClient
+security: "AADToken"
 tag: preview-2023-03-01
 ```
 
@@ -37,21 +38,13 @@ These settings apply only when `--tag=preview-2023-03-01` is specified on the co
 
 ```yaml $(tag) == 'preview-2023-03-01'
 input-file:
-  - preview/2023-03-01/api.json
+  - 2023-03-01-preview/api.json
 ```
 ---
-
-## Python
-
-See configuration in [readme.python.md](./readme.python.md)
 
 ## Go
 
 See configuration in [readme.go.md](./readme.go.md)
-
-## Java
-
-See configuration in [readme.java.md](./readme.java.md)
 
 ## Suppression
 
