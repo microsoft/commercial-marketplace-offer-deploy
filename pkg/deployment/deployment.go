@@ -36,7 +36,6 @@ func mapResponse(whatIfResponse *armresources.DeploymentsClientWhatIfResponse) (
 	log.Printf("After creation of DryRunResult")
 	dryRunResponse := DryRunResponse{
 		DryRunResult: dryRunResult,
-		//Code: whatIfResponse.,
 	}
 
 	return &dryRunResponse, nil
