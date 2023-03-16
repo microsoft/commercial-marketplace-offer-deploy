@@ -5,10 +5,24 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
+)
+
+type ExecutionStatus string
+
+const (
+	Started           ExecutionStatus = "Started"
+	Failed            ExecutionStatus = "Failed"
+	PermanentlyFailed ExecutionStatus = "PermanentlyFailed"
+	Succeeded         ExecutionStatus = "Succeeded"
+	Restart           ExecutionStatus = "Restart"
+	Restarted         ExecutionStatus = "Restarted"
+	RestartTimedOut   ExecutionStatus = "RestartTimedOut"
+	Canceled          ExecutionStatus = "Canceled"
 )
 
 type AzureDeployment struct {
@@ -22,6 +36,16 @@ type AzureDeployment struct {
 	resumeToken string
 }
 
+type AzureDeploymentResult struct {
+	ID                string                 `json:"id"`
+	CorrelationID     string                 `json:"correlationId"`
+	Duration          string                 `json:"duration"`
+	Timestamp         time.Time              `json:"timestamp"`
+	ProvisioningState string                 `json:"provisioningState"`
+	Outputs           map[string]interface{} `json:"outputs"`
+	Status            ExecutionStatus
+}
+
 func (ad *AzureDeployment) GetDeploymentType() DeploymentType {
 	return ad.deploymentType
 }
@@ -32,10 +56,6 @@ func (ad *AzureDeployment) GetTemplate() map[string]interface{} {
 
 func (ad *AzureDeployment) GetTemplateParams() map[string]interface{} {
 	return ad.params
-}
-
-type AzureDeploymentResult struct {
-	code string
 }
 
 type Deployer interface {
@@ -76,6 +96,7 @@ func (armDeployer *ArmTemplateDeployer) Deploy(ad *AzureDeployment) (*AzureDeplo
 		return nil, fmt.Errorf("cannot create deployment: %v", err)
 	}
 
+	//todo: capture the state of the started deployment
 	resp, err := deploymentPollerResp.PollUntilDone(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get the create deployment future respone: %v", err)
@@ -90,10 +111,43 @@ func (armDeployer *ArmTemplateDeployer) Deploy(ad *AzureDeployment) (*AzureDeplo
 }
 
 func (armDeployer *ArmTemplateDeployer) mapDeploymentResult(resp armresources.DeploymentsClientCreateOrUpdateResponse)	(*AzureDeploymentResult, error) {
-	result := &AzureDeploymentResult{
-		code: "Success",
+	var status ExecutionStatus
+	deploymentExtended := resp.DeploymentExtended
+	provisioningState := *deploymentExtended.Properties.ProvisioningState
+	switch provisioningState {
+	case armresources.ProvisioningStateSucceeded:
+		status = Succeeded
+	case armresources.ProvisioningStateCanceled:
+		status = Canceled
+	default:
+		status = Failed
 	}
-	return result, nil
+	// make sure response outputs are always there, even if empty
+	var responseOutputs map[string]interface{}
+	if deploymentExtended.Properties.Outputs != nil {
+		responseOutputs = deploymentExtended.Properties.Outputs.(map[string]interface{})
+	} else {
+		responseOutputs = make(map[string]interface{})
+	}
+	res := AzureDeploymentResult{}
+	if &provisioningState != nil {
+		res.ProvisioningState = string(*deploymentExtended.Properties.ProvisioningState)
+	}
+	if deploymentExtended.ID != nil {
+		res.ID = *deploymentExtended.ID
+	}
+	if deploymentExtended.Properties.CorrelationID != nil {
+		res.CorrelationID = *deploymentExtended.Properties.CorrelationID
+	}
+	if deploymentExtended.Properties.Duration != nil {
+		res.Duration = *deploymentExtended.Properties.Duration
+	}
+	if deploymentExtended.Properties.Timestamp != nil {
+		res.Timestamp = *deploymentExtended.Properties.Timestamp
+	}
+	res.Status = status
+	res.Outputs = responseOutputs
+	return &res, nil
 }
 
 func CreateNewDeployer(deployment AzureDeployment) Deployer {
