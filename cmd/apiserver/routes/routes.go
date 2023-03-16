@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 
 	. "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/handlers"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/middleware"
 )
 
 type Route struct {
@@ -24,7 +25,7 @@ func NewRouter() *mux.Router {
 	for _, route := range routes {
 		var handler http.Handler
 		handler = route.HandlerFunc
-		handler = Logger(handler, route.Name)
+		handler = addMiddleware(handler, route.Name)
 
 		router.
 			Methods(route.Method).
@@ -38,6 +39,10 @@ func NewRouter() *mux.Router {
 
 func Index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello World!")
+
+	for key, value := range r.Header {
+		fmt.Fprintf(w, "\n"+key+" = "+strings.Join(value, ","))
+	}
 }
 
 var routes = Routes{
@@ -131,4 +136,12 @@ var routes = Routes{
 		"/operations",
 		ListOperations,
 	},
+}
+
+func addMiddleware(next http.Handler, routeName string) http.Handler {
+	handler := next
+	handler = middleware.AddJwtBearer(next)
+	handler = middleware.AddLogging(handler, routeName)
+
+	return handler
 }
