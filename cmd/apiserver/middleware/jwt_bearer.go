@@ -1,69 +1,47 @@
 package middleware
 
 import (
-	"context"
-	"crypto/rsa"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
 
-	"github.com/golang-jwt/jwt"
-	"github.com/lestrrat-go/jwx/jwa"
-	"github.com/lestrrat-go/jwx/jwk"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/config"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/security/authentication"
 )
 
 const AzureAdJwtKeysUrl = "https://login.microsoftonline.com/common/discovery/v2.0/keys"
 
 // Adds Jwt Bearer authentication to the request
-func AddJwtBearer(next http.Handler) http.HandlerFunc {
+func AddJwtBearer(next http.Handler, config *config.Configuration) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tokenString := extractToken(r)
-		token, err := verifyToken(r.Context(), &tokenString)
+		validationParameters := getJwtTokenValidationParameters(config)
+		isTokenValid := verifyToken(r, validationParameters)
 
-		if err != nil {
+		if !isTokenValid {
 			w.WriteHeader(http.StatusUnauthorized)
-			return
-		} else {
-			// TODO: convert to debug call
-			log.Printf("  JWT Bearer Token Valid for Issuer=%s", token.Claims.(jwt.MapClaims)["aud"])
 		}
 		next.ServeHTTP(w, r)
 	})
 }
 
-func verifyToken(ctx context.Context, tokenString *string) (*jwt.Token, error) {
-	keySet, err := jwk.Fetch(ctx, AzureAdJwtKeysUrl)
+func getJwtTokenValidationParameters(config *config.Configuration) *authentication.JwtTokenValidationParameters {
+	return &authentication.JwtTokenValidationParameters{
+		Audience: config.Azure.ClientId,
+		Issuer:   authentication.GetAzureAdIssuer(config.Azure.TenantId),
+	}
+}
 
-	token, err := jwt.Parse(*tokenString, func(token *jwt.Token) (interface{}, error) {
-		if token.Method.Alg() != jwa.RS256.String() {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
+func verifyToken(r *http.Request, parameters *authentication.JwtTokenValidationParameters) bool {
+	rawToken := extractToken(r)
 
-		kid, ok := token.Header["kid"].(string)
-		if !ok {
-			return nil, fmt.Errorf("kid header not found")
-		}
-
-		keys, ok := keySet.LookupKeyID(kid)
-		if !ok {
-			return nil, fmt.Errorf("key %v not found", kid)
-		}
-
-		publickey := &rsa.PublicKey{}
-		err = keys.Raw(publickey)
-		if err != nil {
-			return nil, fmt.Errorf("could not parse pubkey")
-		}
-
-		return publickey, nil
-	})
+	tokenVerifier := authentication.NewJwtTokenVerifier(&rawToken, parameters)
+	_, err := tokenVerifier.Verify(r.Context())
 
 	if err != nil {
-		return nil, err
+		log.Println(err)
+		return false
 	}
-
-	return token, nil
+	return true
 }
 
 func extractToken(r *http.Request) string {
