@@ -55,9 +55,15 @@ func readConfig(path string) (config *Configuration, err error) {
 
 	err = viper.ReadInConfig()
 	if err != nil {
-		return
+		log.Fatal(err)
 	}
 
 	err = viper.Unmarshal(&config)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = viper.UnmarshalKey("Azure", &config.Azure)
 	return
 }

@@ -83,7 +83,6 @@ func parseToken(ctx context.Context, j *jwtTokenVerifier) (*jwt.Token, error) {
 		if err != nil {
 			return nil, fmt.Errorf("could not parse pubkey")
 		}
-
 		return publickey, nil
 	})
 

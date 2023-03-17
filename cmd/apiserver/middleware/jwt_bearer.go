@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"strings"
@@ -19,15 +20,23 @@ func AddJwtBearer(next http.Handler, config *config.Configuration) http.HandlerF
 
 		if !isTokenValid {
 			w.WriteHeader(http.StatusUnauthorized)
+			return
 		}
 		next.ServeHTTP(w, r)
 	})
 }
 
 func getJwtTokenValidationParameters(config *config.Configuration) *authentication.JwtTokenValidationParameters {
+	keySet, err := authentication.FetchAzureADKeySet(context.Background())
+
+	if err != nil {
+		log.Fatal("failed to get Azure AD key set")
+	}
+
 	return &authentication.JwtTokenValidationParameters{
-		Audience: config.Azure.ClientId,
-		Issuer:   authentication.GetAzureAdIssuer(config.Azure.TenantId),
+		Audience:     config.Azure.ClientId,
+		Issuer:       authentication.GetAzureAdIssuer(config.Azure.TenantId),
+		IssuerKeySet: keySet,
 	}
 }
 
