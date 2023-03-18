@@ -3,7 +3,6 @@ package deployment
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 
@@ -12,8 +11,17 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 )
 
+type DeploymentType int64
+type Template map[string]interface{}
+type TemplateParams map[string]interface{}
+
+const (
+	AzureResourceManager DeploymentType = iota
+	Terraform
+)
+
+
 func mapResponse(whatIfResponse *armresources.DeploymentsClientWhatIfResponse) (*DryRunResponse, error) {
-	
 	dryRunErrorResponse, err := mapError(whatIfResponse.Error)
 	if err != nil {
 		return nil, err
@@ -28,7 +36,6 @@ func mapResponse(whatIfResponse *armresources.DeploymentsClientWhatIfResponse) (
 	log.Printf("After creation of DryRunResult")
 	dryRunResponse := DryRunResponse{
 		DryRunResult: dryRunResult,
-		//Code: whatIfResponse.,
 	}
 
 	return &dryRunResponse, nil
@@ -75,7 +82,7 @@ func mapError(armResourceResponse *armresources.ErrorResponse) (*DryRunErrorResp
 func DeleteResourceGroup(subscriptionId string, resourceGroupName string) error {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 	ctx := context.Background()
 	resourceGroupClient, err := armresources.NewResourceGroupsClient(subscriptionId, cred, nil)
@@ -98,7 +105,7 @@ func DeleteResourceGroup(subscriptionId string, resourceGroupName string) error 
 func createResourceGroup(subscriptionId string, resourceGroupName string, location string) (*armresources.ResourceGroup, error) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 	ctx := context.Background()
 
@@ -120,42 +127,9 @@ func createResourceGroup(subscriptionId string, resourceGroupName string, locati
 	return &resourceGroupResp.ResourceGroup, nil
 }
 
-func Create(deploymentName, subscriptionId, resourceGroupName string, template, params map[string]interface{}) (*armresources.DeploymentExtended, error) {
-	cred, err := azidentity.NewDefaultAzureCredential(nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx := context.Background()
-	deploymentsClient, err := armresources.NewDeploymentsClient(subscriptionId, cred, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	log.Printf("About to Create a deployment")
-
-	deploymentPollerResp, err := deploymentsClient.BeginCreateOrUpdate(
-		ctx,
-		resourceGroupName,
-		deploymentName,
-		armresources.Deployment{
-			Properties: &armresources.DeploymentProperties{
-				Template:   template,
-				Parameters: params,
-				Mode:       to.Ptr(armresources.DeploymentModeIncremental),
-			},
-		},
-		nil)
-
-	if err != nil {
-		return nil, fmt.Errorf("cannot create deployment: %v", err)
-	}
-
-	resp, err := deploymentPollerResp.PollUntilDone(ctx, nil)
-	if err != nil {
-		return nil, fmt.Errorf("cannot get the create deployment future respone: %v", err)
-	}
-
-	return &resp.DeploymentExtended, nil
+func Create(dep AzureDeployment) (*AzureDeploymentResult, error) {
+	deployer := CreateNewDeployer(dep)
+	return deployer.Deploy(&dep)
 }
 
 func readJson(path string) (map[string]interface{}, error) {

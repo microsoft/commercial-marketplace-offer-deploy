@@ -145,6 +145,38 @@ func deployPolicy() {
 	}
 }
 
+func TestCreateSuccess(t *testing.T) {
+	log.Printf("Inside TestCreateSuccess")
+
+	templatePath := "../../test/deployment/resourcename/success/mainTemplate.json" 
+	template, err := readJson(templatePath)
+	if err != nil {
+		t.Errorf("TestDryRunPolicySuccess() could not read templateFile")
+	} 
+
+	parametersPath :=  "../../test/deployment/resourcename/success/parameters.json"
+	parameters, err := readJson(parametersPath)
+	if err != nil {
+		t.Errorf("TestDryRunPolicySuccess() could not read parameters")
+	} 
+
+	deployment := AzureDeployment{
+		subscriptionId: subscriptionId,
+		location: location,
+		resourceGroupName: resourceGroupName,
+		deploymentName: "modmdeploy",
+		template: template,
+		params: parameters,
+	}
+	if got, err := Create(deployment); err != nil {
+		t.Errorf("TestCreateSuccess() returned with an error %s", err)
+	} else {
+		gotdata, _ := json.Marshal(got)
+		jsonData := string(gotdata)
+		log.Printf("TestDryRunPolicySuccess result - %s", jsonData)
+	}
+}
+
 func TestDryRunPolicySuccess(t *testing.T) {
 	log.Printf("Inside TestDryRunPolicySuccess")
 
