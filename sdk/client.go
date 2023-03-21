@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"context"
 	"reflect"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -14,7 +13,7 @@ import (
 
 // Client is the struct for interacting with an Azure App Configuration instance.
 type Client struct {
-	deploymentManagementClient *generated.DeploymentManagementClient
+	internalClient *generated.DeploymentManagementClient
 }
 
 // ClientOptions contains the optional parameters for the NewClient method.
@@ -47,11 +46,7 @@ func NewClient(endpoint string, credential azcore.TokenCredential, options *Clie
 		},
 	}, &options.ClientOptions)
 
-	return &Client{deploymentManagementClient: generated.NewDeploymentManagementClient(endpoint, pl)}, nil
-}
-
-func (client *Client) ListDeployments(ctx context.Context) (generated.DeploymentManagementClientListDeploymentsResponse, error) {
-	return client.deploymentManagementClient.ListDeployments(ctx, nil)
+	return &Client{internalClient: generated.NewDeploymentManagementClient(endpoint, pl)}, nil
 }
 
 func getDefaultScope(endpoint string) (string, error) {

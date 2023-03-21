@@ -16,7 +16,7 @@ type DeploymentManagementClientCreatEventSubscriptionResponse struct {
 
 // DeploymentManagementClientCreateDeploymentResponse contains the response from method DeploymentManagementClient.CreateDeployment.
 type DeploymentManagementClientCreateDeploymentResponse struct {
-	// placeholder for future response values
+	Deployment
 }
 
 // DeploymentManagementClientDeleteEventSubscriptionResponse contains the response from method DeploymentManagementClient.DeleteEventSubscription.
@@ -45,8 +45,8 @@ type DeploymentManagementClientGetEventsResponse struct {
 	EventArray []*Event
 }
 
-// DeploymentManagementClientInvokeOperationResponse contains the response from method DeploymentManagementClient.InvokeOperation.
-type DeploymentManagementClientInvokeOperationResponse struct {
+// DeploymentManagementClientInvokeDeploymentOperationResponse contains the response from method DeploymentManagementClient.InvokeDeploymentOperation.
+type DeploymentManagementClientInvokeDeploymentOperationResponse struct {
 	InvokedOperation
 }
 
