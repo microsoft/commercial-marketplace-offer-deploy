@@ -74,9 +74,9 @@ type DeploymentManagementClientGetEventsOptions struct {
 	// placeholder for future optional parameters
 }
 
-// DeploymentManagementClientInvokeOperationOptions contains the optional parameters for the DeploymentManagementClient.InvokeOperation
+// DeploymentManagementClientInvokeDeploymentOperationOptions contains the optional parameters for the DeploymentManagementClient.InvokeDeploymentOperation
 // method.
-type DeploymentManagementClientInvokeOperationOptions struct {
+type DeploymentManagementClientInvokeDeploymentOperationOptions struct {
 	// placeholder for future optional parameters
 }
 
@@ -132,6 +132,10 @@ type EventSubscription struct {
 type InvokeDeploymentOperation struct {
 	Name *string `json:"name,omitempty"`
 	Parameters []*OperationParameter `json:"parameters,omitempty"`
+
+	// whether the call wants to wait for the operation or if the result of the invocation will be received async from an event
+// susbscription
+	Wait *bool `json:"wait,omitempty"`
 }
 
 type InvokedOperation struct {
@@ -139,6 +143,9 @@ type InvokedOperation struct {
 	InvokedOn *time.Time `json:"invokedOn,omitempty"`
 	Name *string `json:"name,omitempty"`
 	Parameters []*OperationParameter `json:"parameters,omitempty"`
+
+	// Dictionary of
+	Result map[string]any `json:"result,omitempty"`
 	Status *string `json:"status,omitempty"`
 	Target *InvokedOperationTarget `json:"target,omitempty"`
 }

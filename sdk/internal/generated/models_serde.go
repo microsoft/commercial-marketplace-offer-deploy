@@ -258,6 +258,7 @@ func (i InvokeDeploymentOperation) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]any)
 	populate(objectMap, "name", i.Name)
 	populate(objectMap, "parameters", i.Parameters)
+	populate(objectMap, "wait", i.Wait)
 	return json.Marshal(objectMap)
 }
 
@@ -276,6 +277,9 @@ func (i *InvokeDeploymentOperation) UnmarshalJSON(data []byte) error {
 		case "parameters":
 				err = unpopulate(val, "Parameters", &i.Parameters)
 				delete(rawMsg, key)
+		case "wait":
+				err = unpopulate(val, "Wait", &i.Wait)
+				delete(rawMsg, key)
 		}
 		if err != nil {
 			return fmt.Errorf("unmarshalling type %T: %v", i, err)
@@ -291,6 +295,7 @@ func (i InvokedOperation) MarshalJSON() ([]byte, error) {
 	populateTimeRFC3339(objectMap, "invokedOn", i.InvokedOn)
 	populate(objectMap, "name", i.Name)
 	populate(objectMap, "parameters", i.Parameters)
+	populate(objectMap, "result", i.Result)
 	populate(objectMap, "status", i.Status)
 	populate(objectMap, "target", i.Target)
 	return json.Marshal(objectMap)
@@ -316,6 +321,9 @@ func (i *InvokedOperation) UnmarshalJSON(data []byte) error {
 				delete(rawMsg, key)
 		case "parameters":
 				err = unpopulate(val, "Parameters", &i.Parameters)
+				delete(rawMsg, key)
+		case "result":
+				err = unpopulate(val, "Result", &i.Result)
 				delete(rawMsg, key)
 		case "status":
 				err = unpopulate(val, "Status", &i.Status)
