@@ -161,12 +161,12 @@ func TestCreateSuccess(t *testing.T) {
 	} 
 
 	deployment := AzureDeployment{
-		subscriptionId: subscriptionId,
-		location: location,
-		resourceGroupName: resourceGroupName,
-		deploymentName: "modmdeploy",
-		template: template,
-		params: parameters,
+		SubscriptionId: subscriptionId,
+		Location: location,
+		ResourceGroupName: resourceGroupName,
+		DeploymentName: "modmdeploy",
+		Template: template,
+		Params: parameters,
 	}
 	if got, err := Create(deployment); err != nil {
 		t.Errorf("TestCreateSuccess() returned with an error %s", err)
@@ -193,12 +193,12 @@ func TestDryRunPolicySuccess(t *testing.T) {
 	} 
 
 	deployment := &AzureDeployment{
-		subscriptionId: subscriptionId,
-		location: location,
-		resourceGroupName: resourceGroupName,
-		deploymentName: "modmdeploy",
-		template: template,
-		params: parameters,
+		SubscriptionId: subscriptionId,
+		Location: location,
+		ResourceGroupName: resourceGroupName,
+		DeploymentName: "modmdeploy",
+		Template: template,
+		Params: parameters,
 	}
 	if got := DryRun(deployment); got == nil {
 		t.Errorf("TestDryRunPolicySuccess() return json with a lenth of 0")
@@ -225,12 +225,12 @@ func TestDryRunPolicyFailure(t *testing.T) {
 	} 
 
 	deployment := &AzureDeployment{
-		subscriptionId: subscriptionId,
-		location: location,
-		resourceGroupName: resourceGroupName,
-		deploymentName: "modmdeploy",
-		template: template,
-		params: parameters,
+		SubscriptionId: subscriptionId,
+		Location: location,
+		ResourceGroupName: resourceGroupName,
+		DeploymentName: "modmdeploy",
+		Template: template,
+		Params: parameters,
 	}
 	if got := DryRun(deployment); got == nil {
 		t.Errorf("TestDryRunPolicyFailure() return json with a lenth of 0")
@@ -257,12 +257,12 @@ func TestDryRunQuotsFailure(t *testing.T) {
 	} 
 
 	deployment := &AzureDeployment{
-		subscriptionId: subscriptionId,
-		location: location,
-		resourceGroupName: resourceGroupName,
-		deploymentName: "modmdeploy",
-		template: template,
-		params: parameters,
+		SubscriptionId: subscriptionId,
+		Location: location,
+		ResourceGroupName: resourceGroupName,
+		DeploymentName: "modmdeploy",
+		Template: template,
+		Params: parameters,
 	}
 	if got := DryRun(deployment); got == nil {
 		t.Errorf("DryRun() return json with a lenth of 0")

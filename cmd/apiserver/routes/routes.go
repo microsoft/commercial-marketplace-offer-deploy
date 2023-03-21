@@ -97,4 +97,11 @@ var routes = Routes{
 		"/operations",
 		ListOperations,
 	},
+
+	Route{
+		"CreateDryRun",
+		strings.ToUpper("Post"),
+		"/dryruns",
+		CreateDryRun,
+	},
 }
