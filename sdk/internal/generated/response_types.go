@@ -45,8 +45,8 @@ type DeploymentManagementClientGetEventsResponse struct {
 	EventArray []*Event
 }
 
-// DeploymentManagementClientInvokeOperationResponse contains the response from method DeploymentManagementClient.InvokeOperation.
-type DeploymentManagementClientInvokeOperationResponse struct {
+// DeploymentManagementClientInvokeDeploymentOperationResponse contains the response from method DeploymentManagementClient.InvokeDeploymentOperation.
+type DeploymentManagementClientInvokeDeploymentOperationResponse struct {
 	InvokedOperation
 }
 

@@ -203,9 +203,9 @@
         "tags": [
           "Deployment"
         ],
-        "summary": "Invokes an operation for a target object",
+        "summary": "Invokes an operation on the deployment",
         "description": "Invokes a deployment operation with parameters",
-        "operationId": "InvokeOperation",
+        "operationId": "InvokeDeploymentOperation",
         "parameters": [
           {
             "name": "deploymentId",
@@ -566,6 +566,10 @@
           "items": {
             "$ref": "#/definitions/OperationParameter"
           }
+        },
+        "wait": {
+          "type": "boolean",
+          "description": "whether the call wants to wait for the operation or if the result of the invocation will be received async from an event susbscription"
         }
       }
     },
@@ -594,6 +598,10 @@
         },
         "status": {
           "type": "string"
+        },
+        "result": {
+          "type": "object",
+          "additionalProperties": true
         }
       }
     },
