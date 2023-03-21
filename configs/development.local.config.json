@@ -2,5 +2,9 @@
     "Azure": {
         "ClientId": "da72dd07-7708-4ccf-a567-fabc36c0edbf",
         "TenantId": "16b3c013-d300-468d-ac64-7eda0820b6d3"
+    },
+    "Database": {
+        "Path": "/data/cmodm",
+        "UseInMemory": false
     }
 }

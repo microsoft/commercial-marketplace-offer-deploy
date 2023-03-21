@@ -209,6 +209,38 @@ func TestDryRunPolicySuccess(t *testing.T) {
 	}
 }
 
+func TestDryRunNestedPolicyFailure(t *testing.T) {
+	log.Printf("Inside TestDryRunNestedPolicyFailure")
+
+	templatePath := "../../test/deployment/resourcename/nested/mainTemplate.json" 
+	template, err := readJson(templatePath)
+	if err != nil {
+		t.Errorf("TestDryRunNestedPolicyFailure() could not read templateFile")
+	} 
+
+	parametersPath :=  "../../test/deployment/resourcename/nested/parameters.json"
+	parameters, err := readJson(parametersPath)
+	if err != nil {
+		t.Errorf("TestDryRunNestedPolicyFailure() could not read parameters")
+	} 
+
+	deployment := &AzureDeployment{
+		subscriptionId: subscriptionId,
+		location: location,
+		resourceGroupName: resourceGroupName,
+		deploymentName: "modmdeploy",
+		template: template,
+		params: parameters,
+	}
+	if got := DryRun(deployment); got == nil {
+		t.Errorf("TestDryRunNestedPolicyFailure() return json with a lenth of 0")
+	} else {
+		gotdata, _ := json.Marshal(got)
+		jsonData := string(gotdata)
+		log.Printf("TestDryRunNestedPolicyFailure result - %s", jsonData)
+	}
+}
+
 func TestDryRunPolicyFailure(t *testing.T) {
 	log.Printf("Inside TestDryRunPolicyFailure")
 

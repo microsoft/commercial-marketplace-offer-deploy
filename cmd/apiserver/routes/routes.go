@@ -18,7 +18,7 @@ var routes = Routes{
 		"CreateDeployment",
 		strings.ToUpper("Post"),
 		"/deployments",
-		CreateDeployment,
+		WithDatabase(CreateDeployment),
 	},
 
 	Route{
