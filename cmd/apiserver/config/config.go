@@ -11,10 +11,15 @@ import (
 var lock = &sync.Mutex{}
 
 type Configuration struct {
-	Azure AzureAdSettings `mapstructure:"Azure"`
+	Azure    AzureAdSettings  `mapstructure:"Azure"`
+	Database DatabaseSettings `mapstructure:"Database"`
 }
 
 var configuration *Configuration
+
+func GetConfiguration() *Configuration {
+	return getConfiguration(".")
+}
 
 // Configures a new app configuration instance with the ability to configure it
 // if default values are desired, pass nil as configure
@@ -65,5 +70,6 @@ func readConfig(path string) (config *Configuration, err error) {
 	}
 
 	err = viper.UnmarshalKey("Azure", &config.Azure)
+	err = viper.UnmarshalKey("Database", &config.Database)
 	return
 }
