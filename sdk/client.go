@@ -13,7 +13,7 @@ import (
 
 // Client is the struct for interacting with an Azure App Configuration instance.
 type Client struct {
-	deploymentManagementClient *generated.DeploymentManagementClient
+	internalClient *generated.DeploymentManagementClient
 }
 
 // ClientOptions contains the optional parameters for the NewClient method.
@@ -22,7 +22,7 @@ type ClientOptions struct {
 }
 
 // NewClient creates a new instance of Client with the specified values.
-//   - endpoint - registry login URL
+//   - endpoint - the endpoint of the Marketplace Offer Deployment Management service.
 //   - credential - used to authorize requests. Usually a credential from azidentity.
 //   - options - client options, pass nil to accept the default values.
 func NewClient(endpoint string, credential azcore.TokenCredential, options *ClientOptions) (*Client, error) {
@@ -34,11 +34,21 @@ func NewClient(endpoint string, credential azcore.TokenCredential, options *Clie
 		options.Cloud = cloud.AzurePublic
 	}
 
+	tokenScope, err := getDefaultScope(endpoint)
+
+	if err != nil {
+		return nil, err
+	}
+
 	pl := runtime.NewPipeline(moduleName, moduleVersion, runtime.PipelineOptions{
 		PerRetry: []policy.Policy{
-			runtime.NewBearerTokenPolicy(credential, []string{"service_scope"}, nil),
+			runtime.NewBearerTokenPolicy(credential, []string{tokenScope}, nil),
 		},
 	}, &options.ClientOptions)
 
-	return &Client{deploymentManagementClient: generated.NewDeploymentManagementClient(endpoint, pl)}, nil
+	return &Client{internalClient: generated.NewDeploymentManagementClient(endpoint, pl)}, nil
+}
+
+func getDefaultScope(endpoint string) (string, error) {
+	return "https://" + moduleName + ".azure.com/.default", nil
 }
