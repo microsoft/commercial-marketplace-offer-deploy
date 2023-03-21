@@ -225,12 +225,12 @@ func TestDryRunNestedPolicyFailure(t *testing.T) {
 	} 
 
 	deployment := &AzureDeployment{
-		subscriptionId: subscriptionId,
-		location: location,
-		resourceGroupName: resourceGroupName,
-		deploymentName: "modmdeploy",
-		template: template,
-		params: parameters,
+		SubscriptionId: subscriptionId,
+		Location: location,
+		ResourceGroupName: resourceGroupName,
+		DeploymentName: "modmdeploy",
+		Template: template,
+		Params: parameters,
 	}
 	if got := DryRun(deployment); got == nil {
 		t.Errorf("TestDryRunNestedPolicyFailure() return json with a lenth of 0")
