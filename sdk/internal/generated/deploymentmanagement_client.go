@@ -101,10 +101,10 @@ func (client *DeploymentManagementClient) CreateDeployment(ctx context.Context, 
 	if err != nil {
 		return DeploymentManagementClientCreateDeploymentResponse{}, err
 	}
-	if !runtime.HasStatusCode(resp, http.StatusMethodNotAllowed) {
+	if !runtime.HasStatusCode(resp, http.StatusOK, http.StatusMethodNotAllowed) {
 		return DeploymentManagementClientCreateDeploymentResponse{}, runtime.NewResponseError(resp)
 	}
-	return DeploymentManagementClientCreateDeploymentResponse{}, nil
+	return client.createDeploymentHandleResponse(resp)
 }
 
 // createDeploymentCreateRequest creates the CreateDeployment request.
@@ -114,7 +114,17 @@ func (client *DeploymentManagementClient) createDeploymentCreateRequest(ctx cont
 	if err != nil {
 		return nil, err
 	}
+	req.Raw().Header["Accept"] = []string{"application/json"}
 	return req, runtime.MarshalAsJSON(req, body)
+}
+
+// createDeploymentHandleResponse handles the CreateDeployment response.
+func (client *DeploymentManagementClient) createDeploymentHandleResponse(resp *http.Response) (DeploymentManagementClientCreateDeploymentResponse, error) {
+	result := DeploymentManagementClientCreateDeploymentResponse{}
+	if err := runtime.UnmarshalAsJSON(resp, &result.Deployment); err != nil {
+		return DeploymentManagementClientCreateDeploymentResponse{}, err
+	}
+	return result, nil
 }
 
 // DeleteEventSubscription - Deletes a subscription to an even topic

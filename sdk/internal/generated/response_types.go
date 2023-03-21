@@ -16,7 +16,7 @@ type DeploymentManagementClientCreatEventSubscriptionResponse struct {
 
 // DeploymentManagementClientCreateDeploymentResponse contains the response from method DeploymentManagementClient.CreateDeployment.
 type DeploymentManagementClientCreateDeploymentResponse struct {
-	// placeholder for future response values
+	Deployment
 }
 
 // DeploymentManagementClientDeleteEventSubscriptionResponse contains the response from method DeploymentManagementClient.DeleteEventSubscription.
