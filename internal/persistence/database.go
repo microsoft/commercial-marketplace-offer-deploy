@@ -3,11 +3,24 @@ package persistence
 import (
 	"fmt"
 	"log"
+	"path/filepath"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"sigs.k8s.io/kustomize/kyaml/pathutil"
 )
+
+type Database interface {
+	Instance() *gorm.DB
+}
+
+type DatabaseOptions struct {
+	UseInMemory bool
+	Dsn         string
+}
+
+type database struct {
+	db *gorm.DB
+}
 
 const (
 	DefaultDatabasePath = "/data/cmod/"
@@ -16,6 +29,27 @@ const (
 	InMemoryDsn         = "file::memory:?cache=shared"
 )
 
+// Db implements DbContext
+func (ctx *database) Instance() *gorm.DB {
+	return ctx.db
+}
+
+// Gets a new db using the provided Options. If options are nil, the default DSN is used
+func NewDatabase(options *DatabaseOptions) Database {
+	if options == nil {
+		options = &DatabaseOptions{Dsn: getDefaultDsn()}
+	}
+
+	var db *gorm.DB
+	if options.UseInMemory {
+		db = newInMemoryDatabase()
+	} else {
+		db = newDatabase(options.Dsn)
+	}
+
+	return &database{db}
+}
+
 func newInMemoryDatabase() *gorm.DB {
 	return newDatabase(InMemoryDsn)
 }
@@ -23,7 +57,7 @@ func newInMemoryDatabase() *gorm.DB {
 // creates a new database, establishing an open connection with a new session
 // path: the folder path to the database file
 func newDatabase(dsn string) *gorm.DB {
-	db, err := createConnection(dsn)
+	db, err := createInstance(dsn)
 
 	if err != nil {
 		log.Fatalf("Could not open database %s. Error: %v", dsn, err)
@@ -32,7 +66,7 @@ func newDatabase(dsn string) *gorm.DB {
 	return db
 }
 
-func createConnection(dsn string, models ...interface{}) (*gorm.DB, error) {
+func createInstance(dsn string, models ...interface{}) (*gorm.DB, error) {
 	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 
 	if err != nil {
@@ -50,5 +84,5 @@ func createConnection(dsn string, models ...interface{}) (*gorm.DB, error) {
 }
 
 func getDefaultDsn() string {
-	return pathutil.Join(DefaultDatabasePath, DatabaseFileName)
+	return filepath.Join(DefaultDatabasePath, DatabaseFileName)
 }
