@@ -3,8 +3,8 @@ package sdk
 import (
 	"context"
 
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/generated"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk/internal/generated"
 )
 
 // Performs a dry run of a deployment and returns the verification results

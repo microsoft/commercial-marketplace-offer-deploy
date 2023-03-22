@@ -8,7 +8,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 
-	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk/internal/generated"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/generated"
 )
 
 // Client is the struct for interacting with an Azure App Configuration instance.
