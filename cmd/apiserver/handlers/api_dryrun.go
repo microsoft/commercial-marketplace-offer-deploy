@@ -13,13 +13,11 @@ func CreateDryRun(operation internal.InvokeDeploymentOperation, d data.Database)
 	if d == nil {
 		return nil, errors.New("database is nil")
 	}
-	d.Instance().AutoMigrate(&model.Deployment{})
-	retrieved := &model.Deployment{}
+	d.Instance().AutoMigrate(&data.Deployment{})
+	retrieved := &data.Deployment{}
 	d.Instance().First(retrieved, "name = ?", )
-	template, err := utils.ReadJson(retrieved.Template.FilePath)
-	if err != nil {
-		return nil, err
-	} 
+	// not sure if this conversion will work
+	template := retrieved.Template.(map[string]interface{})
 	paramsMap := operation.Parameters.(map[string]interface{})
 	deploymentParams := paramsMap["deploymentParams"]
 	if deploymentParams == nil {
