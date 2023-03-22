@@ -19,7 +19,10 @@ import (
 // MarshalJSON implements the json.Marshaller interface for type CreateDeployment.
 func (c CreateDeployment) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]any)
+	populate(objectMap, "location", c.Location)
 	populate(objectMap, "name", c.Name)
+	populate(objectMap, "resourceGroup", c.ResourceGroup)
+	populate(objectMap, "subscriptionId", c.SubscriptionID)
 	populate(objectMap, "template", &c.Template)
 	return json.Marshal(objectMap)
 }
@@ -33,8 +36,17 @@ func (c *CreateDeployment) UnmarshalJSON(data []byte) error {
 	for key, val := range rawMsg {
 		var err error
 		switch key {
+		case "location":
+				err = unpopulate(val, "Location", &c.Location)
+				delete(rawMsg, key)
 		case "name":
 				err = unpopulate(val, "Name", &c.Name)
+				delete(rawMsg, key)
+		case "resourceGroup":
+				err = unpopulate(val, "ResourceGroup", &c.ResourceGroup)
+				delete(rawMsg, key)
+		case "subscriptionId":
+				err = unpopulate(val, "SubscriptionID", &c.SubscriptionID)
 				delete(rawMsg, key)
 		case "template":
 				err = unpopulate(val, "Template", &c.Template)
