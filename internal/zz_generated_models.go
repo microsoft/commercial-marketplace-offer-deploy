@@ -17,6 +17,9 @@ type CreateDeployment struct {
 
 	// REQUIRED; Anything
 	Template any `json:"template,omitempty"`
+	Location *string `json:"location,omitempty"`
+	ResourceGroup *string `json:"resourceGroup,omitempty"`
+	SubscriptionID *string `json:"subscriptionId,omitempty"`
 }
 
 type CreateEventSubscription struct {
@@ -119,8 +122,6 @@ type EventSubscription struct {
 
 type InvokeDeploymentOperation struct {
 	Name *string `json:"name,omitempty"`
-	
-	//Parameters map[string] interface{} `json:"parameters,omitempty"`
 
 	// Anything
 	Parameters any `json:"parameters,omitempty"`

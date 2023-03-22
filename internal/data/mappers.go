@@ -10,7 +10,7 @@ func FromCreateDeployment(from *internal.CreateDeployment) *Deployment {
 	deployment := &Deployment{
 		Name:     *from.Name,
 		Status:   "New",
-		Template: from.Template,
+		Template: from.Template.(map[string]interface{}),
 	}
 	return deployment
 }
