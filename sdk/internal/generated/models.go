@@ -17,7 +17,6 @@ type CreateDeployment struct {
 
 	// REQUIRED
 	Template *DeploymentTemplate `json:"template,omitempty"`
-	MultiStage *bool `json:"multiStage,omitempty"`
 }
 
 type CreateEventSubscription struct {
@@ -106,16 +105,9 @@ type DeploymentManagementClientUpdateDeploymentOptions struct {
 }
 
 type DeploymentTemplate struct {
+	// Anything
+	Content any `json:"content,omitempty"`
 	Name *string `json:"name,omitempty"`
-	Parameters []*DeploymentTemplateParameter `json:"parameters,omitempty"`
-	URI *string `json:"uri,omitempty"`
-}
-
-type DeploymentTemplateParameter struct {
-	Name *string `json:"name,omitempty"`
-
-	// Dictionary of
-	Value map[string]any `json:"value,omitempty"`
 }
 
 type Event struct {
@@ -131,7 +123,9 @@ type EventSubscription struct {
 
 type InvokeDeploymentOperation struct {
 	Name *string `json:"name,omitempty"`
-	Parameters []*OperationParameter `json:"parameters,omitempty"`
+
+	// Anything
+	Parameters any `json:"parameters,omitempty"`
 
 	// whether the call wants to wait for the operation or if the result of the invocation will be received async from an event
 // susbscription
@@ -142,10 +136,12 @@ type InvokedOperation struct {
 	ID *string `json:"id,omitempty"`
 	InvokedOn *time.Time `json:"invokedOn,omitempty"`
 	Name *string `json:"name,omitempty"`
-	Parameters []*OperationParameter `json:"parameters,omitempty"`
 
-	// Dictionary of
-	Result map[string]any `json:"result,omitempty"`
+	// Anything
+	Parameters any `json:"parameters,omitempty"`
+
+	// Anything
+	Result any `json:"result,omitempty"`
 	Status *string `json:"status,omitempty"`
 	Target *InvokedOperationTarget `json:"target,omitempty"`
 }
@@ -165,12 +161,6 @@ type Operation struct {
 	Name *string `json:"name,omitempty"`
 	Parameters []*OperationParameterType `json:"parameters,omitempty"`
 	Target *OperationTargetType `json:"target,omitempty"`
-}
-
-type OperationParameter struct {
-	Name *string `json:"name,omitempty"`
-	Type *string `json:"type,omitempty"`
-	Value *string `json:"value,omitempty"`
 }
 
 // OperationParameterType - The parameter type information for a parameter of an operation
