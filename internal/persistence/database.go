@@ -23,11 +23,14 @@ type database struct {
 }
 
 const (
-	DefaultDatabasePath = "/data/cmod/"
-	DatabaseName        = "commercial-marketplace-offer-deploy"
-	DatabaseFileName    = DatabaseName + ".db"
-	InMemoryDsn         = "file::memory:?cache=shared"
+	DataDatabasePath = "/data"
+	DatabaseName     = "commercial-marketplace-offer-deploy"
+	DatabaseFileName = DatabaseName + ".db"
+	InMemoryDsn      = "file::memory:?cache=shared"
 )
+
+// The default db path for the database if nothing is set. Default value is DataDatabasePath
+var DefaultDatabasePath string = DataDatabasePath
 
 // Db implements DbContext
 func (ctx *database) Instance() *gorm.DB {
@@ -73,10 +76,11 @@ func createInstance(dsn string, models ...interface{}) (*gorm.DB, error) {
 		return nil, fmt.Errorf("could not open and connect to database at %s: %w", dsn, err)
 	}
 
-	if err := db.AutoMigrate(models); err != nil {
-		return nil, fmt.Errorf("could not migrate models %T: %w", models, err)
+	if len(models) > 0 {
+		if err := db.AutoMigrate(models); err != nil {
+			return nil, fmt.Errorf("could not migrate models %T: %w", models, err)
+		}
 	}
-
 	if tx := db.Exec("PRAGMA foreign_keys = ON", nil); tx.Error != nil {
 		return nil, fmt.Errorf("unable to turn on foreign keys in sqlite db: %w", tx.Error)
 	}
