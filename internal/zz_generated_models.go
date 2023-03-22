@@ -7,7 +7,7 @@
 // Changes may cause incorrect behavior and will be lost if the code is regenerated.
 // DO NOT EDIT.
 
-package generated
+package internal
 
 import "time"
 
@@ -15,9 +15,8 @@ type CreateDeployment struct {
 	// REQUIRED
 	Name *string `json:"name,omitempty"`
 
-	// REQUIRED
-	Template *DeploymentTemplate `json:"template,omitempty"`
-	MultiStage *bool `json:"multiStage,omitempty"`
+	// REQUIRED; Anything
+	Template any `json:"template,omitempty"`
 }
 
 type CreateEventSubscription struct {
@@ -26,10 +25,12 @@ type CreateEventSubscription struct {
 }
 
 type Deployment struct {
-	ID *int64 `json:"id,omitempty"`
+	ID *int32 `json:"id,omitempty"`
 	Name *string `json:"name,omitempty"`
 	Status *string `json:"status,omitempty"`
-	Template *DeploymentTemplate `json:"template,omitempty"`
+
+	// Anything
+	Template any `json:"template,omitempty"`
 }
 
 // DeploymentManagementClientCreatEventSubscriptionOptions contains the optional parameters for the DeploymentManagementClient.CreatEventSubscription
@@ -105,19 +106,6 @@ type DeploymentManagementClientUpdateDeploymentOptions struct {
 	// placeholder for future optional parameters
 }
 
-type DeploymentTemplate struct {
-	Name *string `json:"name,omitempty"`
-	Parameters []*DeploymentTemplateParameter `json:"parameters,omitempty"`
-	URI *string `json:"uri,omitempty"`
-}
-
-type DeploymentTemplateParameter struct {
-	Name *string `json:"name,omitempty"`
-
-	// Dictionary of
-	Value map[string]any `json:"value,omitempty"`
-}
-
 type Event struct {
 	Name *string `json:"name,omitempty"`
 }
@@ -131,7 +119,9 @@ type EventSubscription struct {
 
 type InvokeDeploymentOperation struct {
 	Name *string `json:"name,omitempty"`
-	Parameters []*OperationParameter `json:"parameters,omitempty"`
+
+	// Anything
+	Parameters any `json:"parameters,omitempty"`
 
 	// whether the call wants to wait for the operation or if the result of the invocation will be received async from an event
 // susbscription
@@ -142,10 +132,12 @@ type InvokedOperation struct {
 	ID *string `json:"id,omitempty"`
 	InvokedOn *time.Time `json:"invokedOn,omitempty"`
 	Name *string `json:"name,omitempty"`
-	Parameters []*OperationParameter `json:"parameters,omitempty"`
 
-	// Dictionary of
-	Result map[string]any `json:"result,omitempty"`
+	// Anything
+	Parameters any `json:"parameters,omitempty"`
+
+	// Anything
+	Result any `json:"result,omitempty"`
 	Status *string `json:"status,omitempty"`
 	Target *InvokedOperationTarget `json:"target,omitempty"`
 }
@@ -165,12 +157,6 @@ type Operation struct {
 	Name *string `json:"name,omitempty"`
 	Parameters []*OperationParameterType `json:"parameters,omitempty"`
 	Target *OperationTargetType `json:"target,omitempty"`
-}
-
-type OperationParameter struct {
-	Name *string `json:"name,omitempty"`
-	Type *string `json:"type,omitempty"`
-	Value *string `json:"value,omitempty"`
 }
 
 // OperationParameterType - The parameter type information for a parameter of an operation

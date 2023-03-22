@@ -1,10 +1,11 @@
-package persistence
+package data
 
 import (
 	"fmt"
 	"log"
 	"path/filepath"
 
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -23,11 +24,14 @@ type database struct {
 }
 
 const (
-	DefaultDatabasePath = "/data/cmod/"
-	DatabaseName        = "commercial-marketplace-offer-deploy"
-	DatabaseFileName    = DatabaseName + ".db"
-	InMemoryDsn         = "file::memory:?cache=shared"
+	DataDatabasePath = "/data"
+	DatabaseName     = "commercial-marketplace-offer-deploy"
+	DatabaseFileName = DatabaseName + ".db"
+	InMemoryDsn      = "file::memory:?cache=shared"
 )
+
+// The default db path for the database if nothing is set. Default value is DataDatabasePath
+var DefaultDatabasePath string = DataDatabasePath
 
 // Db implements DbContext
 func (ctx *database) Instance() *gorm.DB {
@@ -73,7 +77,7 @@ func createInstance(dsn string, models ...interface{}) (*gorm.DB, error) {
 		return nil, fmt.Errorf("could not open and connect to database at %s: %w", dsn, err)
 	}
 
-	if err := db.AutoMigrate(models); err != nil {
+	if err := db.AutoMigrate(&internal.Deployment{}); err != nil {
 		return nil, fmt.Errorf("could not migrate models %T: %w", models, err)
 	}
 

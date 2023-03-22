@@ -5,24 +5,24 @@ import (
 	"path/filepath"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/config"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/persistence"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 )
 
-type HttpHandlerWithDatabase func(w http.ResponseWriter, r *http.Request, d *persistence.Database)
+type HttpHandlerWithDatabase func(w http.ResponseWriter, r *http.Request, d data.Database)
 
 // withDatabase wraps http handlers so a database is included as a func argument
 func WithDatabase(handler HttpHandlerWithDatabase) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		options := getDatabaseOptions()
-		d := persistence.NewDatabase(options)
-		handler(w, r, &d)
+		options := createOptionsFromConfiguration()
+		d := data.NewDatabase(options)
+		handler(w, r, d)
 	}
 }
 
-func getDatabaseOptions() *persistence.DatabaseOptions {
+func createOptionsFromConfiguration() *data.DatabaseOptions {
 	configuration := config.GetConfiguration()
-	dsn := filepath.Join(configuration.Database.Path, persistence.DatabaseFileName)
-	options := &persistence.DatabaseOptions{Dsn: dsn, UseInMemory: configuration.Database.UseInMemory}
+	dsn := filepath.Join(configuration.Database.Path, data.DatabaseFileName)
+	options := &data.DatabaseOptions{Dsn: dsn, UseInMemory: configuration.Database.UseInMemory}
 
 	return options
 }
