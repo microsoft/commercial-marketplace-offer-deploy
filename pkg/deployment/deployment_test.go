@@ -304,3 +304,27 @@ func TestDryRunQuotsFailure(t *testing.T) {
 		log.Printf("TestDryRunQuotsFailure result - %s", jsonData)
 	}
 }
+
+func TestConvertMapParams(t *testing.T) {
+	// var deploymentParamsObject interface{}
+	// deploymentParams := map[string]interface{} {
+	// 	"subscriptionId": "sub1",
+	// 	"location": "westus",
+	// }
+	// deploymentParamsObject = deploymentParams
+
+	var templateParamsObject interface{}
+	templateParams := map[string]interface{}{
+		"param1": "val1",
+		"param2": 5,
+	}
+	templateParamsObject = templateParams
+
+	var templateParamsConvert map[string]interface{}
+	templateParamsConvert = templateParamsObject.(map[string]interface{})
+	param1Interface := templateParamsConvert["param1"]
+	param1Str := fmt.Sprintf("%v", param1Interface)
+	if param1Str != "val1" {
+		t.Errorf("param1Str does not equal 'val1")
+	}
+}

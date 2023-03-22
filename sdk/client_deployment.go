@@ -9,15 +9,17 @@ import (
 
 // Performs a dry run of a deployment and returns the verification results
 // returns: verification results
-func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int64, parameters map[string]interface{}) error {
+func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int64, deploymentParams map[string]interface{}, templateParams map[string]interface{}) error {
 	wait := true
+	parameters := map[string]interface{}{
+		"deploymentParams": deploymentParams,
+		"templateParams": templateParams,
+	}
 	operation := generated.InvokeDeploymentOperation{
 		Name:       operations.DryRunDeployment.String(),
 		Parameters: parameters,
 		Wait:       &wait,
 	}
-
-	// TODO: implement
 
 	_, nil := client.internalClient.InvokeDeploymentOperation(ctx, deploymentId, operation, nil)
 
