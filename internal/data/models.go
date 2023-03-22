@@ -11,7 +11,11 @@ type Stage struct {
 
 type Deployment struct {
 	gorm.Model
-	Name     string `json:"name"`
-	Status   string `json:"status"`
-	Template any    `json:"template" gorm:"json"`
+	Name           string         `json:"name"`
+	SubscriptionId string         `json:"subscriptionId"`
+	ResourceGroup  string         `json:"resourceGroup"`
+	Location       string         `json:"location"`
+	Status         string         `json:"status"`
+	Template       map[string]any `json:"template" gorm:"json"`
+	Stages         []Stage        `json:"stages" gorm:"json"`
 }

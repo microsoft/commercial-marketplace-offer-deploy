@@ -3,14 +3,26 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+<<<<<<< HEAD
 	"strconv"
 	"github.com/gorilla/mux"
+=======
+>>>>>>> main
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal"
 )
 
+<<<<<<< HEAD
 type InvokeOperationDeploymentHandler func(deploymentId int, internal.InvokeDeploymentOperation, data.Database) (interface{}, error)
 
+=======
+type InvokeOperationDeploymentHandler func(internal.InvokeDeploymentOperation, data.Database) (interface{}, error)
+
+// func CreateDeployment(w http.ResponseWriter, r *http.Request, d data.Database) {
+// 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+// 	w.WriteHeader(http.StatusOK)
+// }
+>>>>>>> main
 
 func GetDeployment(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -19,6 +31,7 @@ func GetDeployment(w http.ResponseWriter, r *http.Request) {
 
 func InvokeOperation(w http.ResponseWriter, r *http.Request, d data.Database) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+<<<<<<< HEAD
 
 	vars := mux.Vars(r)
 	deploymentIdStr := vars["deploymentId"]
@@ -26,6 +39,10 @@ func InvokeOperation(w http.ResponseWriter, r *http.Request, d data.Database) {
 
 	var operation internal.InvokeDeploymentOperation
 	err = json.NewDecoder(r.Body).Decode(&operation)
+=======
+	var operation internal.InvokeDeploymentOperation
+	err := json.NewDecoder(r.Body).Decode(&operation)
+>>>>>>> main
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -35,7 +52,11 @@ func InvokeOperation(w http.ResponseWriter, r *http.Request, d data.Database) {
 	if operationHandler == nil {
 		http.Error(w, "There was op OperationHandler registered for the invoked operation", http.StatusBadRequest)
 	}
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> main
 	res, err := operationHandler(operation, d)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

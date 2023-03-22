@@ -17,6 +17,9 @@ type CreateDeployment struct {
 
 	// REQUIRED; Anything
 	Template any `json:"template,omitempty"`
+	Location *string `json:"location,omitempty"`
+	ResourceGroup *string `json:"resourceGroup,omitempty"`
+	SubscriptionID *string `json:"subscriptionId,omitempty"`
 }
 
 type CreateEventSubscription struct {
