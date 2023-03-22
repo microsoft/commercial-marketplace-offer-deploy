@@ -458,12 +458,8 @@
         "name": {
           "type": "string"
         },
-        "multiStage": {
-          "type": "boolean",
-          "default": false
-        },
         "template": {
-          "$ref": "#/definitions/DeploymentTemplate"
+          "type": "object"
         }
       }
     },
@@ -472,7 +468,7 @@
       "properties": {
         "id": {
           "type": "integer",
-          "format": "int64"
+          "format": "int32"
         },
         "name": {
           "type": "string"
@@ -481,36 +477,7 @@
           "type": "string"
         },
         "template": {
-          "$ref": "#/definitions/DeploymentTemplate"
-        }
-      }
-    },
-    "DeploymentTemplate": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "uri": {
-          "type": "string"
-        },
-        "parameters": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/DeploymentTemplateParameter"
-          }
-        }
-      }
-    },
-    "DeploymentTemplateParameter": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "value": {
-          "type": "object",
-          "additionalProperties": true
+          "type": "object"
         }
       }
     },
@@ -562,10 +529,7 @@
           "type": "string"
         },
         "parameters": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/OperationParameter"
-          }
+          "type": "object"
         },
         "wait": {
           "type": "boolean",
@@ -587,10 +551,7 @@
           "$ref": "#/definitions/InvokedOperationTarget"
         },
         "parameters": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/OperationParameter"
-          }
+          "type": "object"
         },
         "invokedOn": {
           "type": "string",
@@ -600,8 +561,7 @@
           "type": "string"
         },
         "result": {
-          "type": "object",
-          "additionalProperties": true
+          "type": "object"
         }
       }
     },
@@ -623,20 +583,6 @@
           "type": "string"
         },
         "value": {
-          "type": "string"
-        }
-      }
-    },
-    "OperationParameter": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-        },
-        "type": {
           "type": "string"
         }
       }

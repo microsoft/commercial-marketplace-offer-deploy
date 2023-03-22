@@ -3,15 +3,15 @@ package sdk
 import (
 	"context"
 
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk/internal/generated"
 )
 
 // Performs a dry run of a deployment and returns the verification results
 // returns: verification results
 func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int64) error {
 	wait := true
-	operation := generated.InvokeDeploymentOperation{
+	operation := internal.InvokeDeploymentOperation{
 		Name:       operations.DryRunDeployment.String(),
 		Parameters: nil,
 		Wait:       &wait,
@@ -26,7 +26,7 @@ func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int64) 
 
 func (client *Client) StartDeployment(ctx context.Context, deploymentId int64) (string, error) {
 	wait := false
-	operation := generated.InvokeDeploymentOperation{
+	operation := internal.InvokeDeploymentOperation{
 		Name:       operations.StartDeployment.String(),
 		Parameters: nil,
 		Wait:       &wait,
@@ -39,7 +39,7 @@ func (client *Client) StartDeployment(ctx context.Context, deploymentId int64) (
 	return "", nil
 }
 
-func (client *Client) CreateDeployment(ctx context.Context, request generated.CreateDeployment) (*generated.Deployment, error) {
+func (client *Client) CreateDeployment(ctx context.Context, request internal.CreateDeployment) (*internal.Deployment, error) {
 	response, err := client.internalClient.CreateDeployment(ctx, request, nil)
 
 	if err != nil {
@@ -48,6 +48,6 @@ func (client *Client) CreateDeployment(ctx context.Context, request generated.Cr
 	return &response.Deployment, nil
 }
 
-func (client *Client) ListDeployments(ctx context.Context) (generated.DeploymentManagementClientListDeploymentsResponse, error) {
+func (client *Client) ListDeployments(ctx context.Context) (internal.DeploymentManagementClientListDeploymentsResponse, error) {
 	return client.internalClient.ListDeployments(ctx, nil)
 }
