@@ -2,8 +2,7 @@ package routes
 
 import (
 	"strings"
-
-	. "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/handlers"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/handlers"
 )
 
 var routes = Routes{
@@ -18,83 +17,90 @@ var routes = Routes{
 		"CreateDeployment",
 		strings.ToUpper("Post"),
 		"/deployments",
-		WithDatabase(CreateDeployment),
+		handlers.WithDatabase(handlers.CreateDeployment),
 	},
 
 	Route{
 		"GetDeployment",
 		strings.ToUpper("Get"),
 		"/deployments/{deploymentId}",
-		GetDeployment,
+		handlers.GetDeployment,
 	},
 
 	Route{
 		"InvokeOperation",
 		strings.ToUpper("Post"),
 		"/deployment/{deploymentId}/operation",
-		InvokeOperation,
+		handlers.WithDatabase(handlers.InvokeOperation),
 	},
 
 	Route{
 		"ListDeployments",
 		strings.ToUpper("Get"),
 		"/deployments",
-		ListDeployments,
+		handlers.ListDeployments,
 	},
 
 	Route{
 		"UpdateDeployment",
 		strings.ToUpper("Put"),
 		"/deployments",
-		UpdateDeployment,
+		handlers.UpdateDeployment,
 	},
 
 	Route{
 		"CreatEventSubscription",
 		strings.ToUpper("Post"),
 		"/events/{topic}/subscriptions",
-		CreatEventSubscription,
+		handlers.CreatEventSubscription,
 	},
 
 	Route{
 		"DeleteEventSubscription",
 		strings.ToUpper("Delete"),
 		"/events/subscriptions/{subscriptionId}",
-		DeleteEventSubscription,
+		handlers.DeleteEventSubscription,
 	},
 
 	Route{
 		"GetEventSubscription",
 		strings.ToUpper("Get"),
 		"/events/subscriptions/{subscriptionId}",
-		GetEventSubscription,
+		handlers.GetEventSubscription,
 	},
 
 	Route{
 		"ListEventSubscriptions",
 		strings.ToUpper("Get"),
 		"/events/{topic}/subscriptions",
-		ListEventSubscriptions,
+		handlers.ListEventSubscriptions,
 	},
 
 	Route{
 		"GetEvents",
 		strings.ToUpper("Get"),
 		"/events",
-		GetEvents,
+		handlers.GetEvents,
 	},
 
 	Route{
 		"GetDeploymentOperation",
 		strings.ToUpper("Get"),
 		"/operations/{operationId}",
-		GetDeploymentOperation,
+		handlers.GetDeploymentOperation,
 	},
 
 	Route{
 		"ListOperations",
 		strings.ToUpper("Get"),
 		"/operations",
-		ListOperations,
+		handlers.ListOperations,
 	},
+
+	// Route{
+	// 	"CreateDryRun",
+	// 	strings.ToUpper("Post"),
+	// 	"/dryruns",
+	// 	handlers.CreateDryRun,
+	// },
 }

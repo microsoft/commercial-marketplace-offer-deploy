@@ -26,14 +26,14 @@ const (
 )
 
 type AzureDeployment struct {
-	subscriptionId string
-	location string
-	resourceGroupName string
-	deploymentName string
-	deploymentType DeploymentType
-	template Template
-	params TemplateParams
-	resumeToken string
+	SubscriptionId string 			`json:"subscriptionId"`
+	Location string					`json:"location"`
+	ResourceGroupName string		`json:"resourceGroupName"`
+	DeploymentName string			`json:"deploymentName"`
+	DeploymentType DeploymentType	`json:"deploymentType"`
+	Template Template				`json:"template"`
+	Params TemplateParams			`json:"templateParams"`
+	ResumeToken string				`json:"resumeToken"`
 }
 
 type AzureDeploymentResult struct {
@@ -47,15 +47,15 @@ type AzureDeploymentResult struct {
 }
 
 func (ad *AzureDeployment) GetDeploymentType() DeploymentType {
-	return ad.deploymentType
+	return ad.DeploymentType
 }
 
 func (ad *AzureDeployment) GetTemplate() map[string]interface{} {
-	return ad.template
+	return ad.Template
 }
 
 func (ad *AzureDeployment) GetTemplateParams() map[string]interface{} {
-	return ad.params
+	return ad.Params
 }
 
 type Deployer interface {
@@ -72,7 +72,7 @@ func (armDeployer *ArmTemplateDeployer) Deploy(ad *AzureDeployment) (*AzureDeplo
 		log.Print(err)
 	}
 	ctx := context.Background()
-	deploymentsClient, err := armresources.NewDeploymentsClient(ad.subscriptionId, cred, nil)
+	deploymentsClient, err := armresources.NewDeploymentsClient(ad.SubscriptionId, cred, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -81,12 +81,12 @@ func (armDeployer *ArmTemplateDeployer) Deploy(ad *AzureDeployment) (*AzureDeplo
 
 	deploymentPollerResp, err := deploymentsClient.BeginCreateOrUpdate(
 		ctx,
-		ad.resourceGroupName,
-		ad.deploymentName,
+		ad.ResourceGroupName,
+		ad.DeploymentName,
 		armresources.Deployment{
 			Properties: &armresources.DeploymentProperties{
-				Template:   ad.template,
-				Parameters: ad.params,
+				Template:   ad.Template,
+				Parameters: ad.Params,
 				Mode:       to.Ptr(armresources.DeploymentModeIncremental),
 			},
 		},
@@ -152,24 +152,24 @@ func (armDeployer *ArmTemplateDeployer) mapDeploymentResult(resp armresources.De
 
 func CreateNewDeployer(deployment AzureDeployment) Deployer {
 	return &ArmTemplateDeployer{
-		deployerType: deployment.deploymentType,
+		deployerType: deployment.DeploymentType,
 	}
 }
 
 func (azureDeployment *AzureDeployment) validate() (error) {
-	if len(azureDeployment.subscriptionId) == 0 {
+	if len(azureDeployment.SubscriptionId) == 0 {
 		return errors.New("subscriptionId is not set on azureDeployment input struct")
 	}
-	if len(azureDeployment.location) == 0 {
+	if len(azureDeployment.Location) == 0 {
 		return errors.New("location is not set on azureDeployment input struct")
 	}
-	if len(azureDeployment.resourceGroupName) == 0 {
+	if len(azureDeployment.ResourceGroupName) == 0 {
 		return errors.New("resourceGroupName is not set on azureDeployment input struct")
 	}
-	if len(azureDeployment.resourceGroupName) == 0 {
+	if len(azureDeployment.ResourceGroupName) == 0 {
 		return errors.New("resourceGroupName is not set on azureDeployment input struct")
 	}
-	if azureDeployment.template == nil {
+	if azureDeployment.Template == nil {
 		return errors.New("template is not set on deployment azureDeployment struct")
 	}
 	// allow params to be empty to support all default params
