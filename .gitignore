@@ -20,3 +20,6 @@
 # vendor/
 
 bin/
+
+# ignore all databases
+*.db
