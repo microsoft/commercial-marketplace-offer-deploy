@@ -5,7 +5,7 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/generated"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -61,7 +61,7 @@ func newInMemoryDatabase() *gorm.DB {
 // creates a new database, establishing an open connection with a new session
 // path: the folder path to the database file
 func newDatabase(dsn string) *gorm.DB {
-	db, err := createInstance(dsn, &generated.Deployment{})
+	db, err := createInstance(dsn)
 
 	if err != nil {
 		log.Fatalf("Could not open database %s. Error: %v", dsn, err)
@@ -77,7 +77,7 @@ func createInstance(dsn string, models ...interface{}) (*gorm.DB, error) {
 		return nil, fmt.Errorf("could not open and connect to database at %s: %w", dsn, err)
 	}
 
-	if err := db.AutoMigrate(&generated.Deployment{}); err != nil {
+	if err := db.AutoMigrate(&internal.Deployment{}); err != nil {
 		return nil, fmt.Errorf("could not migrate models %T: %w", models, err)
 	}
 

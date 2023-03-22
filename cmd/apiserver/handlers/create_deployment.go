@@ -6,8 +6,9 @@ import (
 	"net/http"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/utils"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal"
+	models "github.com/microsoft/commercial-marketplace-offer-deploy/internal"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	models "github.com/microsoft/commercial-marketplace-offer-deploy/internal/generated"
 	"gorm.io/gorm"
 )
 
@@ -32,7 +33,7 @@ func CreateDeployment(w http.ResponseWriter, r *http.Request, d data.Database) {
 	utils.WriteJson(w, deployment)
 }
 
-func saveDeployment(command models.CreateDeployment, db *gorm.DB) (*models.Deployment, error) {
+func saveDeployment(command internal.CreateDeployment, db *gorm.DB) (*models.Deployment, error) {
 	deployment := models.Deployment{
 		Name: command.Name,
 	}

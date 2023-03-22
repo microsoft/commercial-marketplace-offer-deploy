@@ -7,6 +7,9 @@ apiserver-local:
 apiserver:
 	go build -o ./bin/ ./cmd/apiserver
 
+sdk:
+	go build ./sdk
+
 .NOTPARALLEL:
 
-.PHONY: apiserver-local apiserver
+.PHONY: apiserver-local apiserver sdk

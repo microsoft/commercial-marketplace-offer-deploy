@@ -3,8 +3,8 @@ package handlers
 import (
 	"testing"
 
+	models "github.com/microsoft/commercial-marketplace-offer-deploy/internal"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/generated"
 	"github.com/stretchr/testify/require"
 )
 
@@ -13,7 +13,7 @@ func TestSaveDeployment(t *testing.T) {
 	db := data.NewDatabase(nil).Instance()
 
 	name := "test"
-	command := generated.CreateDeployment{
+	command := models.CreateDeployment{
 		Name:     &name,
 		Template: "",
 	}

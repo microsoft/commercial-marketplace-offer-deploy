@@ -8,12 +8,12 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/generated"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal"
 )
 
 // Client is the struct for interacting with an Azure App Configuration instance.
 type Client struct {
-	internalClient *generated.DeploymentManagementClient
+	internalClient *internal.DeploymentManagementClient
 }
 
 // ClientOptions contains the optional parameters for the NewClient method.
@@ -46,7 +46,7 @@ func NewClient(endpoint string, credential azcore.TokenCredential, options *Clie
 		},
 	}, &options.ClientOptions)
 
-	return &Client{internalClient: generated.NewDeploymentManagementClient(endpoint, pl)}, nil
+	return &Client{internalClient: internal.NewDeploymentManagementClient(endpoint, pl)}, nil
 }
 
 func getDefaultScope(endpoint string) (string, error) {
