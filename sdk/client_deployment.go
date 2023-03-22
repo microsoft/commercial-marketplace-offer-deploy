@@ -8,6 +8,14 @@ import (
 
 // Performs a dry run of a deployment and returns the verification results
 // returns: verification results
+<<<<<<< HEAD
+func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int64, templateParams map[string]interface{}) error {
+	wait := true
+
+	operation := internal.InvokeDeploymentOperation{
+		Name:       operations.DryRunDeployment.String(),
+		Parameters: templateParams,
+=======
 func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int64, deploymentParams map[string]interface{}, templateParams map[string]interface{}) error {
 	wait := true
 	parameters := map[string]interface{}{
@@ -17,6 +25,7 @@ func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int64, 
 	operation := internal.InvokeDeploymentOperation{
 		Name:       operations.DryRunDeployment.String(),
 		Parameters: parameters,
+>>>>>>> main
 		Wait:       &wait,
 	}
 
