@@ -458,6 +458,16 @@
         "name": {
           "type": "string"
         },
+        "subscriptionId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "resourceGroup": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
         "template": {
           "type": "object"
         }
