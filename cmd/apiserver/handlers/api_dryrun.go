@@ -1,21 +1,33 @@
 package handlers
 
 import (
-	"encoding/json"
-	"net/http"
-
+	"errors"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/models"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/persistence"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/persistence/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 )
 
-func CreateDryRun(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	var azureDeployment deployment.AzureDeployment
-	err := json.NewDecoder(r.Body).Decode(&azureDeployment)
+func CreateDryRun(operation models.InvokeDeploymentOperation, d persistence.Database) (interface{}, error) {
+	// call database to get the local template
+	if d == nil {
+		return nil, errors.New("Database is nil")
+	}
+	d.Instance().AutoMigrate(&model.Deployment{})
+	retrieved := &model.Deployment{}
+	d.Instance().First(retrieved, "name = ?", )
+	template, err := utils.ReadJson(retrieved.Template.FilePath)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		// write response in bondy indicating a failed marshall
-		return
+		return nil, err
+	} 
+	//var subscriptionId string
+	//var resourceGroupName string
+	//var location string
+	azureDeployment := deployment.AzureDeployment {
+		Template: template,
+		Params: operation.Parameters,
 	}
 	res := deployment.DryRun(&azureDeployment)
-	respondJSON(w, http.StatusOK, res)
+	return res, nil
 }

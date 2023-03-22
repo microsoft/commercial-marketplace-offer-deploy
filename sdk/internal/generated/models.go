@@ -132,7 +132,7 @@ type EventSubscription struct {
 type InvokeDeploymentOperation struct {
 	Name *string `json:"name,omitempty"`
 	//Parameters []*OperationParameter `json:"parameters,omitempty"`
-	Parameters map[string] interface{}
+	Parameters map[string] interface{} `json:"parameters,omitempty"`
 
 	// whether the call wants to wait for the operation or if the result of the invocation will be received async from an event
 // susbscription

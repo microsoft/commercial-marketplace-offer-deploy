@@ -8,14 +8,14 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/persistence"
 )
 
-type HttpHandlerWithDatabase func(w http.ResponseWriter, r *http.Request, d *persistence.Database)
+type HttpHandlerWithDatabase func(w http.ResponseWriter, r *http.Request, d persistence.Database)
 
 // withDatabase wraps http handlers so a database is included as a func argument
 func WithDatabase(handler HttpHandlerWithDatabase) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		options := getDatabaseOptions()
 		d := persistence.NewDatabase(options)
-		handler(w, r, &d)
+		handler(w, r, d)
 	}
 }
 

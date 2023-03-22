@@ -19,3 +19,5 @@ func NewAggregateError(messages *[]string) error {
 	}
 	return aggregate
 }
+
+
