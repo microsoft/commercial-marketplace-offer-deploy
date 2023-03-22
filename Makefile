@@ -4,6 +4,9 @@
 apiserver-local:
 	# build something locally
 
+apiserver:
+	go build -o ./bin/ ./cmd/apiserver
+
 .NOTPARALLEL:
 
-.PHONY: apiserver-local
+.PHONY: apiserver-local apiserver
