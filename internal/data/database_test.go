@@ -1,4 +1,4 @@
-package persistence
+package data
 
 import (
 	"testing"

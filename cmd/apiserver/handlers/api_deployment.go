@@ -3,10 +3,10 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/persistence"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 )
 
-func CreateDeployment(w http.ResponseWriter, r *http.Request, d *persistence.Database) {
+func CreateDeployment(w http.ResponseWriter, r *http.Request, d *data.Database) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 }
