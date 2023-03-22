@@ -22,11 +22,17 @@ func CreateDeployment(w http.ResponseWriter, r *http.Request, d data.Database) {
 
 	validateNameIsUnique(command, w, d.Instance())
 
-	deployment := saveDeployment(command, w, d.Instance())
+	deployment, err := saveDeployment(command, d.Instance())
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	utils.WriteJson(w, deployment)
 }
 
-func saveDeployment(command models.CreateDeployment, w http.ResponseWriter, db *gorm.DB) *models.Deployment {
+func saveDeployment(command models.CreateDeployment, db *gorm.DB) (*models.Deployment, error) {
 	deployment := models.Deployment{
 		Name: command.Name,
 	}
@@ -34,10 +40,9 @@ func saveDeployment(command models.CreateDeployment, w http.ResponseWriter, db *
 	tx := db.Create(&deployment)
 
 	if tx.Error != nil {
-		http.Error(w, tx.Error.Error(), http.StatusInternalServerError)
-		return nil
+		return nil, tx.Error
 	}
-	return &deployment
+	return &deployment, nil
 }
 
 func validateNameIsUnique(command models.CreateDeployment, w http.ResponseWriter, db *gorm.DB) {

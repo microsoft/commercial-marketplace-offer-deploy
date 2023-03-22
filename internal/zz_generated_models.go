@@ -7,7 +7,7 @@
 // Changes may cause incorrect behavior and will be lost if the code is regenerated.
 // DO NOT EDIT.
 
-package generated
+package internal
 
 import "time"
 
@@ -15,8 +15,8 @@ type CreateDeployment struct {
 	// REQUIRED
 	Name *string `json:"name,omitempty"`
 
-	// REQUIRED
-	Template *DeploymentTemplate `json:"template,omitempty"`
+	// REQUIRED; Anything
+	Template any `json:"template,omitempty"`
 }
 
 type CreateEventSubscription struct {
@@ -25,10 +25,12 @@ type CreateEventSubscription struct {
 }
 
 type Deployment struct {
-	ID *int64 `json:"id,omitempty"`
+	ID *int32 `json:"id,omitempty"`
 	Name *string `json:"name,omitempty"`
 	Status *string `json:"status,omitempty"`
-	Template *DeploymentTemplate `json:"template,omitempty"`
+
+	// Anything
+	Template any `json:"template,omitempty"`
 }
 
 // DeploymentManagementClientCreatEventSubscriptionOptions contains the optional parameters for the DeploymentManagementClient.CreatEventSubscription
@@ -102,12 +104,6 @@ type DeploymentManagementClientListOperationsOptions struct {
 // method.
 type DeploymentManagementClientUpdateDeploymentOptions struct {
 	// placeholder for future optional parameters
-}
-
-type DeploymentTemplate struct {
-	// Anything
-	Content any `json:"content,omitempty"`
-	Name *string `json:"name,omitempty"`
 }
 
 type Event struct {

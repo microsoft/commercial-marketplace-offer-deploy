@@ -459,7 +459,7 @@
           "type": "string"
         },
         "template": {
-          "$ref": "#/definitions/DeploymentTemplate"
+          "type": "object"
         }
       }
     },
@@ -468,7 +468,7 @@
       "properties": {
         "id": {
           "type": "integer",
-          "format": "int64"
+          "format": "int32"
         },
         "name": {
           "type": "string"
@@ -477,17 +477,6 @@
           "type": "string"
         },
         "template": {
-          "$ref": "#/definitions/DeploymentTemplate"
-        }
-      }
-    },
-    "DeploymentTemplate": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "content": {
           "type": "object"
         }
       }

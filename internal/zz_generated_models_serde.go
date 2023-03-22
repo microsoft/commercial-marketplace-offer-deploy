@@ -7,7 +7,7 @@
 // Changes may cause incorrect behavior and will be lost if the code is regenerated.
 // DO NOT EDIT.
 
-package generated
+package internal
 
 import (
 	"encoding/json"
@@ -20,7 +20,7 @@ import (
 func (c CreateDeployment) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]any)
 	populate(objectMap, "name", c.Name)
-	populate(objectMap, "template", c.Template)
+	populate(objectMap, "template", &c.Template)
 	return json.Marshal(objectMap)
 }
 
@@ -84,7 +84,7 @@ func (d Deployment) MarshalJSON() ([]byte, error) {
 	populate(objectMap, "id", d.ID)
 	populate(objectMap, "name", d.Name)
 	populate(objectMap, "status", d.Status)
-	populate(objectMap, "template", d.Template)
+	populate(objectMap, "template", &d.Template)
 	return json.Marshal(objectMap)
 }
 
@@ -108,37 +108,6 @@ func (d *Deployment) UnmarshalJSON(data []byte) error {
 				delete(rawMsg, key)
 		case "template":
 				err = unpopulate(val, "Template", &d.Template)
-				delete(rawMsg, key)
-		}
-		if err != nil {
-			return fmt.Errorf("unmarshalling type %T: %v", d, err)
-		}
-	}
-	return nil
-}
-
-// MarshalJSON implements the json.Marshaller interface for type DeploymentTemplate.
-func (d DeploymentTemplate) MarshalJSON() ([]byte, error) {
-	objectMap := make(map[string]any)
-	populate(objectMap, "content", &d.Content)
-	populate(objectMap, "name", d.Name)
-	return json.Marshal(objectMap)
-}
-
-// UnmarshalJSON implements the json.Unmarshaller interface for type DeploymentTemplate.
-func (d *DeploymentTemplate) UnmarshalJSON(data []byte) error {
-	var rawMsg map[string]json.RawMessage
-	if err := json.Unmarshal(data, &rawMsg); err != nil {
-		return fmt.Errorf("unmarshalling type %T: %v", d, err)
-	}
-	for key, val := range rawMsg {
-		var err error
-		switch key {
-		case "content":
-				err = unpopulate(val, "Content", &d.Content)
-				delete(rawMsg, key)
-		case "name":
-				err = unpopulate(val, "Name", &d.Name)
 				delete(rawMsg, key)
 		}
 		if err != nil {
