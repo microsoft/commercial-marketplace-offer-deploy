@@ -9,6 +9,7 @@ go:
   module-version: 0.1.0
   export-clients: true
   output-folder: $(go-sdk-folder) 
+  file-prefix: zz_generated_
 ```
 
 ### Tag: preview-2023-03-01 and go
