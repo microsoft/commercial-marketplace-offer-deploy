@@ -5,7 +5,6 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 )
 
 func CreateDryRun(operation internal.InvokeDeploymentOperation, d data.Database) (interface{}, error) {
@@ -16,6 +15,7 @@ func CreateDryRun(operation internal.InvokeDeploymentOperation, d data.Database)
 	d.Instance().AutoMigrate(&data.Deployment{})
 	retrieved := &data.Deployment{}
 	d.Instance().First(retrieved, "name = ?", )
+	
 	// not sure if this conversion will work
 	template := retrieved.Template.(map[string]interface{})
 	paramsMap := operation.Parameters.(map[string]interface{})
