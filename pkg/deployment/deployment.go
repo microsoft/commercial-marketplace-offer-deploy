@@ -2,13 +2,12 @@ package deployment
 
 import (
 	"context"
-	"encoding/json"
-	"io/ioutil"
 	"log"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
+
 )
 
 type DeploymentType int64
@@ -133,15 +132,5 @@ func Create(dep AzureDeployment) (*AzureDeploymentResult, error) {
 }
 
 func readJson(path string) (map[string]interface{}, error) {
-	templateFile, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
-	template := make(map[string]interface{})
-	if err := json.Unmarshal(templateFile, &template); err != nil {
-		return nil, err
-	}
-
-	return template, nil
+	return utils.ReadJson(path)
 }

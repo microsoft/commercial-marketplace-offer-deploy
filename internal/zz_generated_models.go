@@ -119,6 +119,8 @@ type EventSubscription struct {
 
 type InvokeDeploymentOperation struct {
 	Name *string `json:"name,omitempty"`
+	
+	//Parameters map[string] interface{} `json:"parameters,omitempty"`
 
 	// Anything
 	Parameters any `json:"parameters,omitempty"`
