@@ -6,7 +6,7 @@ type Deployment struct {
 	gorm.Model
 	Name     string `gorm:"unique"`
 	Status   string
-	Template *DeploymentTemplate
+	Template map[string]any
 	Stages   []Stage `gorm:"embedded"`
 }
 
