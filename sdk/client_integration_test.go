@@ -49,6 +49,22 @@ func TestDryRun(t *testing.T) {
 	testQuotaViolation(client)
 }
 
+func TestQuota(t *testing.T) {
+	setupForTestDryRun()
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		log.Fatalf("Authentication failure: %+v", err)
+	}
+
+	client, err := NewClient(endpoint, cred, nil)
+
+	if err != nil {
+		log.Print("Client construction failed.")
+	}
+	testQuotaViolation(client)
+}
+
 func testQuotaViolation(client *Client) {
 	ctx := context.TODO()
 
