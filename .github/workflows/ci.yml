@@ -23,12 +23,16 @@ jobs:
       id: create-json
       uses: jsdaniell/create-json@1.1.2
       with:
-        name: "./cmd/apiserver/config.json"
+        name: "./bin/config.json"
         json: ${{ secrets.config }}
 
     - name: Build apiserver
       run: make apiserver
 
+    - uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
     - name: Test apiserver
       run: make apiserver-test
 
