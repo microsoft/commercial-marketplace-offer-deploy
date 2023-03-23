@@ -15,7 +15,7 @@ var resourceGroupName string
 var location string
 var endpoint string = "http://localhost:8080"
 
-func SetupDryTest() {
+func setupForTestDryRun() {
 	subscriptionId = "31e9f9a0-9fd2-4294-a0a3-0101246d9700"
 	resourceGroupName = "aMODMTestb"
 	location = "eastus"
@@ -27,19 +27,10 @@ func SetupDryTest() {
 	utils.SetupResourceGroup(subscriptionId, resourceGroupName, location)
 	utils.DeployPolicyDefinition(subscriptionId)
 	utils.DeployPolicy(subscriptionId, resourceGroupName)
-
-	//exitVal := m.Run()
-	//log.Println("Cleaning up resources after the tests here")
-
-	//os.Exit(exitVal)
 }
 
 func TestDryRun(t *testing.T) {
-	//err := godotenv.Load(".env")
-	// if err != nil {
-	// 	log.Println("Cannot load environment variables from .env")
-	// }
-	SetupDryTest()
+	setupForTestDryRun()
 
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
@@ -61,7 +52,7 @@ func TestDryRun(t *testing.T) {
 
 // create the deployment with values
 func createDeployment(ctx context.Context, client *Client) *generated.Deployment {
-	name := "Test"
+	name := "DryRunDeploymentTest"
 	template := getTemplate()
 
 	log.Printf("creating deployment with template %v", template)
@@ -82,7 +73,7 @@ func createDeployment(ctx context.Context, client *Client) *generated.Deployment
 }
 
 func getParameters() map[string]interface{} {
-	paramsPath := "./test/data/namepolicy/success/parameters.json"
+	paramsPath := "./test/deployment/resourcename/failure/parameters.json"
 	parameters, err := utils.ReadJson(paramsPath)
 	if err != nil {
 		log.Printf("TestDryRun() could not read parameters")
@@ -91,7 +82,7 @@ func getParameters() map[string]interface{} {
 }
 
 func getTemplate() map[string]interface{} {
-	path := "../test/deployment/resourcename/failure/mainTemplate.json"
+	path := "./test/deployment/resourcename/failure/mainTemplate.json"
 	template, err := utils.ReadJson(path)
 	if err != nil {
 		log.Printf("couldn't read template")
