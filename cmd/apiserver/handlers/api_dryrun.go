@@ -3,7 +3,9 @@ package handlers
 import (
 	"errors"
 	"log"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/generated"
@@ -34,6 +36,16 @@ func CreateDryRun(deploymentId int, operation generated.InvokeDeploymentOperatio
 		Template:          retrieved.Template,
 		Params:            templateParams.(map[string]interface{}),
 	}
+
 	res := deployment.DryRun(&azureDeployment)
-	return res, nil
+	uuid := uuid.New().String()
+	timestamp := time.Now().UTC()
+	status := "OK"
+	returnedResult := generated.InvokedOperation{
+		ID: &uuid,
+		InvokedOn: &timestamp,
+		Result: *res,
+		Status: &status,
+	}
+	return returnedResult, nil
 }
