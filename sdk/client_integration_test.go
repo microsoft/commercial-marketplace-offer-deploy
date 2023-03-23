@@ -3,11 +3,9 @@ package sdk
 import (
 	"context"
 	"log"
-	"os"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/joho/godotenv"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 )
