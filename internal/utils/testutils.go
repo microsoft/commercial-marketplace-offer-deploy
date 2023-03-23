@@ -20,6 +20,26 @@ func SetupResourceGroup(subscriptionId string, resourceGroupName string, locatio
 	}
 }
 
+func DoesResourceGroupExist(subscriptionId string, resourceGroupName string, location string) (bool, error) {
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		log.Print(err)
+	}
+	ctx := context.Background()
+
+	resourceGroupClient, err := armresources.NewResourceGroupsClient(subscriptionId, cred, nil)
+	if err != nil {
+		return true, err
+	}
+
+	resp, err := resourceGroupClient.CheckExistence(ctx, resourceGroupName, nil)
+	if err != nil {
+		return true, err
+	}
+
+	return resp.Success, nil
+}
+
 func CreateResourceGroup(subscriptionId string, resourceGroupName string, location string) (*armresources.ResourceGroup, error) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
@@ -115,7 +135,7 @@ func DeployPolicy(subscriptionId string, resourceGroupName string) {
 
 	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", subscriptionId, resourceGroupName)
 	log.Printf("scope is %s", scope)
-	
+
 	policyDefinitionId := fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Authorization/policyDefinitions/ResourceNaming", subscriptionId)
 	log.Printf("policyDefinitionId is %s", policyDefinitionId)
 
@@ -126,7 +146,7 @@ func DeployPolicy(subscriptionId string, resourceGroupName string) {
 			Properties: &armpolicy.AssignmentProperties{
 				Description: to.Ptr("Enforce resource naming conventions"),
 				DisplayName: to.Ptr("Enforce Resource Names"),
-				Scope: &scope,
+				Scope:       &scope,
 				Metadata: map[string]interface{}{
 					"assignedBy": "John Doe",
 				},

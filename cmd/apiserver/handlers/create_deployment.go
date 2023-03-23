@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/utils"
@@ -18,6 +19,8 @@ func CreateDeployment(w http.ResponseWriter, r *http.Request, d data.Database) {
 		return
 	}
 	deployment := data.FromCreateDeployment(command)
+
+	log.Printf("deployment mapped %v", deployment)
 
 	tx := d.Instance().Create(&deployment)
 
