@@ -50,5 +50,5 @@ func NewClient(endpoint string, credential azcore.TokenCredential, options *Clie
 }
 
 func getDefaultScope(endpoint string) (string, error) {
-	return "https://" + moduleName + ".azure.com/.default", nil
+	return "api://modm/.default", nil
 }
