@@ -7,18 +7,15 @@ apiserver-local: apiserver
 apiserver:
 	go build -o ./bin/ ./cmd/apiserver
 
-apiserver-test: 
-	go test ./cmd/apiserver...
-
 operator:
 	go build -o ./bin/ ./cmd/operator
 
-operator-test:
-	go test ./cmd/operator...
+test-all:
+	go test ./...
 
 sdk:
 	go build ./sdk
 
 .NOTPARALLEL:
 
-.PHONY: apiserver-local apiserver sdk
+.PHONY: apiserver-local apiserver sdk operator test-all
