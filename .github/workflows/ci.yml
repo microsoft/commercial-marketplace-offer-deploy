@@ -36,5 +36,5 @@ jobs:
     - name: Build operator
       run: make operator
     
-    - name: Run tests
+    - name: Run all tests
       run: make test-all
