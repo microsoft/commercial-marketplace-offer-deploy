@@ -1,14 +1,14 @@
 package sdk
 
 import (
+	"context"
 	"log"
 	"os"
 	"testing"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/stretchr/testify/require"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
+	"github.com/joho/godotenv"
 )
 
 var subscriptionId string
@@ -17,11 +17,19 @@ var location string
 var endpoint string
 
 func TestMain(m *testing.M) {
+	log.Println("Test setup beginning")
+	err := godotenv.Load(".env") 
+	if err != nil {
+		log.Println("Cannot load environment variables from .env")
+	} 
 
 	subscriptionId = os.Getenv("AZURE_SUBSCRIPTION_ID")
 	resourceGroupName = "MODMTest"
 	location = "eastus"
-	endpoint = "http://localhost:8080"
+
+	utils.SetupResourceGroup(subscriptionId, resourceGroupName, location)
+	utils.DeployPolicyDefinition(subscriptionId)
+	utils.DeployPolicy(subscriptionId, resourceGroupName)
 
 	exitVal := m.Run()
 	log.Println("Cleaning up resources after the tests here")
@@ -40,5 +48,11 @@ func TestDryRun(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, client)
 
-	client.DryRunDeployment()
+	paramsPath := "./test/data/namepolicy/success/parameters.json"
+	parameters, err := utils.ReadJson(paramsPath)
+	if err != nil {
+		t.Errorf("TestDryRun() could not read parameters")
+	} 
+
+	client.DryRunDeployment(context.TODO(), 1, parameters)
 }
