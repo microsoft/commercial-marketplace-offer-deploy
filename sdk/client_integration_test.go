@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,8 +15,6 @@ var subscriptionId string
 var resourceGroupName string
 var location string
 var endpoint string
-
-var client *Client
 
 func TestMain(m *testing.M) {
 
@@ -31,10 +29,16 @@ func TestMain(m *testing.M) {
 	os.Exit(exitVal)
 }
 
-func InitializeClient() { 
-	cred, err := azidentity.NewDefaultAzureCredential(nil) 
-	if err != nil { 
-		log.Fatal("failed to create credential") 
-	} 
-	client, err := NewClient("test", cred, nil) //TODO: create deployment 
+func TestDryRun(t *testing.T) {
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+
+	if err != nil {
+		log.Fatalf("Authentication failure: %+v", err)
+	}
+
+	client, err := NewClient("http://localhost:8080", cred, nil)
+	require.NoError(t, err)
+	require.NotNil(t, client)
+
+	client.DryRunDeployment()
 }
