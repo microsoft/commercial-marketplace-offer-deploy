@@ -53,7 +53,9 @@ func getConfiguration(path string, name *string) *Configuration {
 func readConfig(path string, name *string) (config *Configuration, err error) {
 	viper.AddConfigPath(path)
 
-	if name != nil {
+	if name == nil {
+		viper.SetConfigFile(".env")
+	} else {
 		viper.SetConfigName(*name)
 	}
 	viper.SetConfigType("env")
