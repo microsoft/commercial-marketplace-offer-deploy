@@ -2,13 +2,14 @@ package sdk
 
 import (
 	"context"
+
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
 )
 
 // Performs a dry run of a deployment and returns the verification results
 // returns: verification results
-func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int64, templateParams map[string]interface{}) error {
+func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, templateParams map[string]interface{}) error {
 	wait := true
 
 	operation := internal.InvokeDeploymentOperation{
@@ -17,7 +18,7 @@ func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int64, 
 		Wait:       &wait,
 	}
 
-	_, nil := client.internalClient.InvokeDeploymentOperation(ctx, deploymentId, operation, nil)
+	_, nil := client.internalClient.InvokeDeploymentOperation(ctx, int64(deploymentId), operation, nil)
 
 	return nil
 }
