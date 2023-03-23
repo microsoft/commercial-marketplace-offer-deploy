@@ -21,7 +21,7 @@ jobs:
     
     - name: Populate devTest config file from secrets
       run: |
-        echo "testing" > ./cmd/apiserver/config.json
+        echo ${{ secrets.config }} > ./cmd/apiserver/config.json
 
     - name: Build apiserver
       run: make apiserver
@@ -34,6 +34,3 @@ jobs:
     
     - name: Test operator
       run: make operator-test
-
-    - name: Show json file
-      run: cat ./cmd/apiserver/config.json
