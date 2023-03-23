@@ -7,6 +7,15 @@ apiserver-local:
 apiserver:
 	go build -o ./bin/ ./cmd/apiserver
 
+apiserver-test: 
+	go test ./cmd/apiserver...
+
+operator:
+	go build -o ./bin/ ./cmd/operator
+
+operator-test:
+	go test ./cmd/operator...
+
 sdk:
 	go build ./sdk
 
