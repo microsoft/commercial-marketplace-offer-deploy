@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/generated"
 )
 
 var subscriptionId string
@@ -55,7 +55,7 @@ func TestDryRun(t *testing.T) {
 		log.Print("Client construction failed.")
 	}
 
-	deployment, err := client.CreateDeployment(ctx, internal.CreateDeployment{})
+	deployment, err := client.CreateDeployment(ctx, generated.CreateDeployment{})
 
 	if err != nil {
 		log.Fatal("Failed to create deployment.")

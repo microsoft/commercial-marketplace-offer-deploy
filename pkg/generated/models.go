@@ -7,7 +7,7 @@
 // Changes may cause incorrect behavior and will be lost if the code is regenerated.
 // DO NOT EDIT.
 
-package internal
+package generated
 
 import "time"
 
@@ -122,8 +122,6 @@ type EventSubscription struct {
 
 type InvokeDeploymentOperation struct {
 	Name *string `json:"name,omitempty"`
-	
-	//Parameters map[string] interface{} `json:"parameters,omitempty"`
 
 	// Anything
 	Parameters any `json:"parameters,omitempty"`
