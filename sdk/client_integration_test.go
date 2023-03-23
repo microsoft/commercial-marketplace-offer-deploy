@@ -46,12 +46,7 @@ func TestDryRun(t *testing.T) {
 	}
 
 	deployment := createDeployment(ctx, client)
-
-	parameters := getParameters()
-	deploymentId := *deployment.ID
-
-	log.Printf("Deployment id: %d", deploymentId)
-	client.DryRunDeployment(ctx, deploymentId, parameters)
+	client.DryRunDeployment(ctx, *deployment.ID, getParameters())
 }
 
 // create the deployment with values
@@ -65,8 +60,6 @@ func createDeployment(ctx context.Context, client *Client) *generated.Deployment
 		Location:       &location,
 		Template:       template,
 	})
-
-	log.Printf("Deployment: %d", *deployment.ID)
 
 	if err != nil {
 		log.Fatal("Failed to create deployment.")
