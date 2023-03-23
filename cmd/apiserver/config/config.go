@@ -11,20 +11,20 @@ import (
 var lock = &sync.Mutex{}
 
 type Configuration struct {
-	Azure    AzureAdSettings  `mapstructure:"Azure"`
-	Database DatabaseSettings `mapstructure:"Database"`
+	Azure    AzureAdSettings
+	Database DatabaseSettings
 }
 
 var configuration *Configuration
 
 func GetConfiguration() *Configuration {
-	return getConfiguration(".")
+	return getConfiguration(".", nil)
 }
 
 // Configures a new app configuration instance with the ability to configure it
 // if default values are desired, pass nil as configure
-func LoadConfiguration(path string) (*Configuration, error) {
-	config := getConfiguration(path)
+func LoadConfiguration(path string, name *string) (*Configuration, error) {
+	config := getConfiguration(path, name)
 
 	if config == nil {
 		return nil, errors.New("Configuration failed to load")
@@ -32,13 +32,14 @@ func LoadConfiguration(path string) (*Configuration, error) {
 	return config, nil
 }
 
-func getConfiguration(path string) *Configuration {
+// singelton implementation for configuration
+func getConfiguration(path string, name *string) *Configuration {
 	if configuration == nil {
 		lock.Lock()
 		defer lock.Unlock()
 		if configuration == nil {
 			var err error
-			configuration, err = readConfig(path)
+			configuration, err = readConfig(path, name)
 
 			if err != nil {
 				log.Printf("error reading in configuration from '%s'", path)
@@ -49,12 +50,15 @@ func getConfiguration(path string) *Configuration {
 }
 
 // LoadConfig reads configuration from file or environment variables.
-func readConfig(path string) (config *Configuration, err error) {
+func readConfig(path string, name *string) (config *Configuration, err error) {
 	viper.AddConfigPath(path)
 
-	// TODO: incorporate ability to load based on APP_ENV
-	viper.SetConfigName("config")
-	viper.SetConfigType("json")
+	if name == nil {
+		viper.SetConfigFile(".env")
+	} else {
+		viper.SetConfigName(*name)
+	}
+	viper.SetConfigType("env")
 
 	viper.AutomaticEnv()
 
@@ -63,13 +67,19 @@ func readConfig(path string) (config *Configuration, err error) {
 		log.Fatal(err)
 	}
 
-	err = viper.Unmarshal(&config)
+	c := &Configuration{}
+
+	err = viper.Unmarshal(&c.Azure)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = viper.UnmarshalKey("Azure", &config.Azure)
-	err = viper.UnmarshalKey("Database", &config.Database)
-	return
+	err = viper.Unmarshal(&c.Database)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return c, err
 }
