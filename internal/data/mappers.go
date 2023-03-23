@@ -6,6 +6,7 @@ import (
 
 func FromCreateDeployment(from *generated.CreateDeployment) *Deployment {
 	//TODO: parse out template into the stages
+	template := from.Template
 
 	deployment := &Deployment{
 		Name:           *from.Name,
@@ -13,7 +14,7 @@ func FromCreateDeployment(from *generated.CreateDeployment) *Deployment {
 		SubscriptionId: *from.SubscriptionID,
 		ResourceGroup:  *from.ResourceGroup,
 		Location:       *from.Location,
-		Template:       from.Template.(map[string]interface{}),
+		Template:       template.(map[string]interface{}),
 	}
 	return deployment
 }

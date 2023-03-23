@@ -16,15 +16,13 @@ var location string
 var endpoint string = "http://localhost:8080"
 
 func SetupDryTest() {
-	// log.Println("Test setup beginning")
-	// err := godotenv.Load(".env")
-	// if err != nil {
-	// 	log.Println("Cannot load environment variables from .env")
-	// }
-
 	subscriptionId = "31e9f9a0-9fd2-4294-a0a3-0101246d9700"
-	resourceGroupName = "MODMTest"
+	resourceGroupName = "aMODMTestb"
 	location = "eastus"
+
+	if exists, _ := utils.DoesResourceGroupExist(subscriptionId, resourceGroupName, location); exists {
+		return
+	}
 
 	utils.SetupResourceGroup(subscriptionId, resourceGroupName, location)
 	utils.DeployPolicyDefinition(subscriptionId)
@@ -55,14 +53,32 @@ func TestDryRun(t *testing.T) {
 		log.Print("Client construction failed.")
 	}
 
-	deployment, err := client.CreateDeployment(ctx, generated.CreateDeployment{})
+	deployment := createDeployment(ctx, client)
+
+	parameters := getParameters()
+	client.DryRunDeployment(ctx, *deployment.ID, parameters)
+}
+
+// create the deployment with values
+func createDeployment(ctx context.Context, client *Client) *generated.Deployment {
+	name := "Test"
+	template := getTemplate()
+
+	log.Printf("creating deployment with template %v", template)
+
+	deployment, err := client.CreateDeployment(ctx, generated.CreateDeployment{
+		Name:           &name,
+		SubscriptionID: &subscriptionId,
+		ResourceGroup:  &resourceGroupName,
+		Location:       &location,
+		Template:       template,
+	})
 
 	if err != nil {
 		log.Fatal("Failed to create deployment.")
 	}
 
-	parameters := getParameters()
-	client.DryRunDeployment(ctx, *deployment.ID, parameters)
+	return deployment
 }
 
 func getParameters() map[string]interface{} {
@@ -72,4 +88,13 @@ func getParameters() map[string]interface{} {
 		log.Printf("TestDryRun() could not read parameters")
 	}
 	return parameters
+}
+
+func getTemplate() map[string]interface{} {
+	path := "../test/deployment/resourcename/failure/mainTemplate.json"
+	template, err := utils.ReadJson(path)
+	if err != nil {
+		log.Printf("couldn't read template")
+	}
+	return template
 }
