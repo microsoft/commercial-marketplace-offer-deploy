@@ -13,9 +13,9 @@ func CreateDryRun(deploymentId int, operation internal.InvokeDeploymentOperation
 		return nil, errors.New("database is nil")
 	}
 
-	d.Instance().AutoMigrate(&data.Deployment{})
+	//d.Instance().AutoMigrate(&data.Deployment{})
 	retrieved := &data.Deployment{}
-	d.Instance().First(retrieved, "id = ?", deploymentId)
+	d.Instance().First(retrieved, deploymentId)
 	
 	templateParams := operation.Parameters
 	if templateParams == nil {
