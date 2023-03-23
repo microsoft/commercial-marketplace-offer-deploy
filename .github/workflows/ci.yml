@@ -5,9 +5,7 @@ name: Go
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ "feature/ci" ]
 
 jobs:
 
@@ -20,11 +18,22 @@ jobs:
       uses: actions/setup-go@v3
       with:
         go-version: 1.19
+    
+    - name: Populate devTest config file from secrets
+      run: |
+        echo "testing" > ./cmd/apiserver/config.json
 
-    - name: Build
-      working-directory: ./cmd/apiserver
-      run: go build -v ./...
+    - name: Build apiserver
+      run: make apiserver
 
-    - name: Test
-      working-directory: ./cmd/apiserver
-      run: go test -v ./...
+    - name: Test apiserver
+      run: make apiserver-test
+
+    - name: Build operator
+      run: make operator
+    
+    - name: Test operator
+      run: make operator-test
+
+    - name: Show json file
+      run: cat ./cmd/apiserver/config.json
