@@ -39,3 +39,6 @@ jobs:
     
     - name: Run tests
       run: make test-all
+      
+    - name: Show configs
+      run: cat ./bin/.env
