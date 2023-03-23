@@ -46,7 +46,13 @@ func TestDryRun(t *testing.T) {
 	}
 
 	deployment := createDeployment(ctx, client)
-	client.DryRunDeployment(ctx, *deployment.ID, getParameters())
+	response, err := client.DryRunDeployment(ctx, *deployment.ID, getParameters())
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Print(response.Result)
 }
 
 // create the deployment with values

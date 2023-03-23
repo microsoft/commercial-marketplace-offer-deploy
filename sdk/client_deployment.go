@@ -7,9 +7,15 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
 )
 
+type DryRunResult struct {
+	Id      string
+	Results map[string]any
+	Status  string
+}
+
 // Performs a dry run of a deployment and returns the verification results
 // returns: verification results
-func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, templateParams map[string]interface{}) (*generated.InvokedOperation, error) {
+func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, templateParams map[string]interface{}) (*DryRunResult, error) {
 	wait := true
 	operation := &generated.InvokeDeploymentOperation{
 		Name:       operations.DryRunDeployment.String(),
@@ -22,7 +28,14 @@ func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, 
 	if err != nil {
 		return nil, err
 	}
-	return &response.InvokedOperation, nil
+	invokedOperation := response.InvokedOperation
+
+	result := &DryRunResult{
+		Id:      *invokedOperation.ID,
+		Results: invokedOperation.Result.(map[string]any),
+		Status:  *invokedOperation.Status,
+	}
+	return result, nil
 }
 
 func (client *Client) StartDeployment(ctx context.Context, deploymentId int32) (string, error) {
