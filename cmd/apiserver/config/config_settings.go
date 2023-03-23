@@ -2,12 +2,13 @@ package config
 
 // The azure ad settings
 type AzureAdSettings struct {
-	ClientId string `mapstructure:"ClientId"`
-	TenantId string `mapstructure:"TenantId"`
+	ClientId       string `mapstructure:"AZURE_CLIENT_ID"`
+	TenantId       string `mapstructure:"AZURE_TENANT_ID"`
+	SubscriptionId string `mapstructure:"AZURE_SUBSCRIPTION_ID"`
 }
 
 // The database settings
 type DatabaseSettings struct {
-	Path        string `mapstructure:"Path"`
-	UseInMemory bool   `mapstructure:"UseInMemory"`
+	Path        string `mapstructure:"DB_PATH"`
+	UseInMemory bool   `mapstructure:"DB_USE_INMEMEORY"`
 }
