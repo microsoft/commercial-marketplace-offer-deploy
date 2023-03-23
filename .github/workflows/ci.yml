@@ -22,12 +22,13 @@ jobs:
     - name: Build apiserver
       run: make apiserver
       
-    - name: Save env secrets to config file
-      id: create-json
-      uses: jsdaniell/create-json@1.1.2
-      with:
-        name: "./bin/config.json"
-        json: ${{ secrets.config }}
+    - name: Echo secrets
+      run: |
+          echo $ENV_SECRET >> ./bin/.env
+          cat ./bin/.env
+      shell: bash
+      env:
+        ENV_SECRET : ${{secrets.ENV}}
 
     - uses: azure/login@v1
       with:
