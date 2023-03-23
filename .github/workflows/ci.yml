@@ -32,12 +32,9 @@ jobs:
     - uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-      
-    - name: Test apiserver
-      run: make apiserver-test
 
     - name: Build operator
       run: make operator
     
-    - name: Test operator
-      run: make operator-test
+    - name: Run tests
+      run: make test-all
