@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"errors"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"log"
+
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 )
 
@@ -12,10 +14,12 @@ func CreateDryRun(deploymentId int, operation internal.InvokeDeploymentOperation
 	if d == nil {
 		return nil, errors.New("database is nil")
 	}
+	log.Printf("Inisde CreateDryRun deploymentId: %d", deploymentId)
 
 	//d.Instance().AutoMigrate(&data.Deployment{})
 	retrieved := &data.Deployment{}
-	d.Instance().First(retrieved, deploymentId)
+	d.Instance().First(&retrieved, deploymentId)
+	log.Printf("Inisde CreateDryRun deploymentId: %v", retrieved)
 	
 	templateParams := operation.Parameters
 	if templateParams == nil {
