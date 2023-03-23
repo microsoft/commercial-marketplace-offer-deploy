@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"path/filepath"
 	"testing"
@@ -52,7 +53,13 @@ func TestDryRun(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	log.Print(result.Results)
+	log.Print("Validation Results:\n %s" + *prettify(result.Results))
+}
+
+func prettify(obj any) *string {
+	bytes, _ := json.MarshalIndent(obj, "", "  ")
+	result := string(bytes)
+	return &result
 }
 
 // create the deployment with values
