@@ -29,7 +29,10 @@ jobs:
       shell: bash
       env:
         ENV_SECRET : ${{secrets.ENV}}
-
+        
+    - name: Show configs
+      run: cat ./bin/.env
+      
     - uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
@@ -40,5 +43,4 @@ jobs:
     - name: Run tests
       run: make test-all
       
-    - name: Show configs
-      run: cat ./bin/.env
+
