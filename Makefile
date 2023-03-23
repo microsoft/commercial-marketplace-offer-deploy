@@ -10,7 +10,7 @@ apiserver:
 operator:
 	go build -o ./bin/ ./cmd/operator
 
-test:
+test-all:
 	go test ./...
 
 sdk:
