@@ -167,7 +167,7 @@ func (client *DeploymentManagementClient) deleteEventSubscriptionCreateRequest(c
 //   - deploymentID - ID of deployment to return
 //   - options - DeploymentManagementClientGetDeploymentOptions contains the optional parameters for the DeploymentManagementClient.GetDeployment
 //     method.
-func (client *DeploymentManagementClient) GetDeployment(ctx context.Context, deploymentID int64, options *DeploymentManagementClientGetDeploymentOptions) (DeploymentManagementClientGetDeploymentResponse, error) {
+func (client *DeploymentManagementClient) GetDeployment(ctx context.Context, deploymentID int32, options *DeploymentManagementClientGetDeploymentOptions) (DeploymentManagementClientGetDeploymentResponse, error) {
 	req, err := client.getDeploymentCreateRequest(ctx, deploymentID, options)
 	if err != nil {
 		return DeploymentManagementClientGetDeploymentResponse{}, err
@@ -183,9 +183,9 @@ func (client *DeploymentManagementClient) GetDeployment(ctx context.Context, dep
 }
 
 // getDeploymentCreateRequest creates the GetDeployment request.
-func (client *DeploymentManagementClient) getDeploymentCreateRequest(ctx context.Context, deploymentID int64, options *DeploymentManagementClientGetDeploymentOptions) (*policy.Request, error) {
+func (client *DeploymentManagementClient) getDeploymentCreateRequest(ctx context.Context, deploymentID int32, options *DeploymentManagementClientGetDeploymentOptions) (*policy.Request, error) {
 	urlPath := "/deployments/{deploymentId}"
-	urlPath = strings.ReplaceAll(urlPath, "{deploymentId}", url.PathEscape(strconv.FormatInt(deploymentID, 10)))
+	urlPath = strings.ReplaceAll(urlPath, "{deploymentId}", url.PathEscape(strconv.FormatInt(int64(deploymentID), 10)))
 	req, err := runtime.NewRequest(ctx, http.MethodGet, runtime.JoinPaths(client.endpoint, urlPath))
 	if err != nil {
 		return nil, err
@@ -338,7 +338,7 @@ func (client *DeploymentManagementClient) getEventsHandleResponse(resp *http.Res
 //   - body - Deployment operation invocation
 //   - options - DeploymentManagementClientInvokeDeploymentOperationOptions contains the optional parameters for the DeploymentManagementClient.InvokeDeploymentOperation
 //     method.
-func (client *DeploymentManagementClient) InvokeDeploymentOperation(ctx context.Context, deploymentID int64, body InvokeDeploymentOperation, options *DeploymentManagementClientInvokeDeploymentOperationOptions) (DeploymentManagementClientInvokeDeploymentOperationResponse, error) {
+func (client *DeploymentManagementClient) InvokeDeploymentOperation(ctx context.Context, deploymentID int32, body InvokeDeploymentOperation, options *DeploymentManagementClientInvokeDeploymentOperationOptions) (DeploymentManagementClientInvokeDeploymentOperationResponse, error) {
 	req, err := client.invokeDeploymentOperationCreateRequest(ctx, deploymentID, body, options)
 	if err != nil {
 		return DeploymentManagementClientInvokeDeploymentOperationResponse{}, err
@@ -354,9 +354,9 @@ func (client *DeploymentManagementClient) InvokeDeploymentOperation(ctx context.
 }
 
 // invokeDeploymentOperationCreateRequest creates the InvokeDeploymentOperation request.
-func (client *DeploymentManagementClient) invokeDeploymentOperationCreateRequest(ctx context.Context, deploymentID int64, body InvokeDeploymentOperation, options *DeploymentManagementClientInvokeDeploymentOperationOptions) (*policy.Request, error) {
+func (client *DeploymentManagementClient) invokeDeploymentOperationCreateRequest(ctx context.Context, deploymentID int32, body InvokeDeploymentOperation, options *DeploymentManagementClientInvokeDeploymentOperationOptions) (*policy.Request, error) {
 	urlPath := "/deployment/{deploymentId}/operation"
-	urlPath = strings.ReplaceAll(urlPath, "{deploymentId}", url.PathEscape(strconv.FormatInt(deploymentID, 10)))
+	urlPath = strings.ReplaceAll(urlPath, "{deploymentId}", url.PathEscape(strconv.FormatInt(int64(deploymentID), 10)))
 	req, err := runtime.NewRequest(ctx, http.MethodPost, runtime.JoinPaths(client.endpoint, urlPath))
 	if err != nil {
 		return nil, err
