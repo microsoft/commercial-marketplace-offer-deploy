@@ -1,0 +1,10 @@
+{
+    "Azure": {
+        "ClientId": "",
+        "TenantId": ""
+    },
+    "Database": {
+        "Path": "./",
+        "UseInMemory": false
+    }
+}
