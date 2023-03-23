@@ -18,13 +18,13 @@ var location string
 var endpoint string = "http://localhost:8080"
 
 func SetupDryTest() {
-	log.Println("Test setup beginning")
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Println("Cannot load environment variables from .env")
-	}
+	// log.Println("Test setup beginning")
+	// err := godotenv.Load(".env")
+	// if err != nil {
+	// 	log.Println("Cannot load environment variables from .env")
+	// }
 
-	subscriptionId = os.Getenv("AZURE_SUBSCRIPTION_ID")
+	subscriptionId = "31e9f9a0-9fd2-4294-a0a3-0101246d9700"
 	resourceGroupName = "MODMTest"
 	location = "eastus"
 
