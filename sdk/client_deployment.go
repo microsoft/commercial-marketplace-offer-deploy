@@ -9,18 +9,20 @@ import (
 
 // Performs a dry run of a deployment and returns the verification results
 // returns: verification results
-func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, templateParams map[string]interface{}) error {
+func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, templateParams map[string]interface{}) (*generated.InvokedOperation, error) {
 	wait := true
-
-	operation := generated.InvokeDeploymentOperation{
+	operation := &generated.InvokeDeploymentOperation{
 		Name:       operations.DryRunDeployment.String(),
 		Parameters: templateParams,
 		Wait:       &wait,
 	}
 
-	_, nil := client.internalClient.InvokeDeploymentOperation(ctx, deploymentId, operation, nil)
+	response, err := client.internalClient.InvokeDeploymentOperation(ctx, deploymentId, *operation, nil)
 
-	return nil
+	if err != nil {
+		return nil, err
+	}
+	return &response.InvokedOperation, nil
 }
 
 func (client *Client) StartDeployment(ctx context.Context, deploymentId int32) (string, error) {
@@ -44,7 +46,8 @@ func (client *Client) CreateDeployment(ctx context.Context, request generated.Cr
 	if err != nil {
 		return nil, err
 	}
-	return &response.Deployment, nil
+	deployment := response.Deployment
+	return &deployment, nil
 }
 
 func (client *Client) ListDeployments(ctx context.Context) (generated.DeploymentManagementClientListDeploymentsResponse, error) {

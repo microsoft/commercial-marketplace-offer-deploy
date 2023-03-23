@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -33,6 +34,8 @@ func InvokeOperation(w http.ResponseWriter, r *http.Request, d data.Database) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	log.Printf("Operation deserialized \n %v", operation)
 
 	operationHandler := CreateOperationHandler(operation)
 	if operationHandler == nil {
