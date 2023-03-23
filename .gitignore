@@ -23,3 +23,6 @@ bin/
 
 # ignore all databases
 *.db
+
+*.env
+.env

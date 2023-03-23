@@ -2,7 +2,7 @@
 
 # Call this while in the ./api directory
 cd ./api
-out_folder=../internal
+out_folder=../pkg/generated
 autorest --go --go-sdk-folder=$out_folder --tag=preview-2023-03-01
 
 # remove any module file

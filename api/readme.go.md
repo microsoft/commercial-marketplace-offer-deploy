@@ -5,11 +5,10 @@ These settings apply only when `--go` is specified on the command line.
 ``` yaml $(go)
 go:
   license-header: MICROSOFT_MIT_NO_VERSION
-  clear-output-folder: false
+  clear-output-folder: true
   module-version: 0.1.0
   export-clients: true
-  output-folder: $(go-sdk-folder) 
-  file-prefix: zz_generated_
+  output-folder: $(go-sdk-folder)
 ```
 
 ### Tag: preview-2023-03-01 and go

@@ -1,16 +1,20 @@
 package data
 
 import (
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/generated"
 )
 
-func FromCreateDeployment(from *internal.CreateDeployment) *Deployment {
+func FromCreateDeployment(from *generated.CreateDeployment) *Deployment {
 	//TODO: parse out template into the stages
+	template := from.Template
 
 	deployment := &Deployment{
-		Name:     *from.Name,
-		Status:   "New",
-		Template: from.Template.(map[string]interface{}),
+		Name:           *from.Name,
+		Status:         "New",
+		SubscriptionId: *from.SubscriptionID,
+		ResourceGroup:  *from.ResourceGroup,
+		Location:       *from.Location,
+		Template:       template.(map[string]interface{}),
 	}
 	return deployment
 }
