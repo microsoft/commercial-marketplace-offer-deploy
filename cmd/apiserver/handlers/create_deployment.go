@@ -1,36 +1,35 @@
 package handlers
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 
-	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/utils"
+	"github.com/labstack/echo"
 	data "github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/generated"
+	"gorm.io/gorm"
 )
 
-func CreateDeployment(w http.ResponseWriter, r *http.Request, d data.Database) {
+// HTTP handler for creating deployments
+func CreateDeploymentHandler(c echo.Context, db *gorm.DB) error {
 	var command *generated.CreateDeployment
-	err := json.NewDecoder(r.Body).Decode(&command)
+	err := c.Bind(&command)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return err
 	}
+
 	deployment := data.FromCreateDeployment(command)
-	tx := d.Instance().Create(&deployment)
+	tx := db.Create(&deployment)
 
 	log.Printf("Deployment [%d] created.", deployment.ID)
 
 	if tx.Error != nil {
-		http.Error(w, tx.Error.Error(), http.StatusInternalServerError)
-		return
+		return err
 	}
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return err
 	}
 
 	deploymentId := int32(deployment.ID)
@@ -40,5 +39,5 @@ func CreateDeployment(w http.ResponseWriter, r *http.Request, d data.Database) {
 		Status: &deployment.Status,
 	}
 
-	utils.WriteJson(w, result)
+	return c.JSON(http.StatusOK, result)
 }

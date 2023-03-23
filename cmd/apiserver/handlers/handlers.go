@@ -1,21 +1,21 @@
 package handlers
 
 import (
-	"net/http"
 	"path/filepath"
 
+	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"gorm.io/gorm"
 )
 
-type HttpHandlerWithDatabase func(w http.ResponseWriter, r *http.Request, d data.Database)
+type DataHandlerFunc func(c echo.Context, db *gorm.DB) error
 
-// withDatabase wraps http handlers so a database is included as a func argument
-func WithDatabase(handler HttpHandlerWithDatabase) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func ToHandlerFunc(h DataHandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
 		options := createOptionsFromConfiguration()
 		d := data.NewDatabase(options)
-		handler(w, r, d)
+		return h(c, d.Instance())
 	}
 }
 

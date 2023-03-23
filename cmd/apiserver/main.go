@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"strconv"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/config"
@@ -18,13 +17,15 @@ var (
 
 func main() {
 	formattedPort := ":" + strconv.Itoa(port)
-
 	log.Printf("Server started on %s", formattedPort)
 
 	loadConfiguration()
 
-	router := routes.NewRouter(configuration)
-	log.Fatal(http.ListenAndServe(formattedPort, router))
+	app := NewApp()
+
+	routes := routes.GetRoutes()
+	app.AddRoutes(&routes)
+	app.Start(port)
 }
 
 func loadConfiguration() {
