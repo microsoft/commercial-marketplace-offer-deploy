@@ -24,11 +24,7 @@ jobs:
       
     - name: Echo secrets
       run: |
-          echo $ENV_SECRET >> ./bin/.env
-          cat ./bin/.env
-      shell: bash
-      env:
-        ENV_SECRET : ${{secrets.ENV}}
+          echo ${{secrets.ENV}} >> ./bin/.env
         
     - name: Show configs
       run: cat ./bin/.env
