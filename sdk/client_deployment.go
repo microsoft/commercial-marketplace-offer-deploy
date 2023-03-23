@@ -3,7 +3,7 @@ package sdk
 import (
 	"context"
 
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/generated"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
 )
 
@@ -12,7 +12,7 @@ import (
 func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, templateParams map[string]interface{}) error {
 	wait := true
 
-	operation := internal.InvokeDeploymentOperation{
+	operation := generated.InvokeDeploymentOperation{
 		Name:       operations.DryRunDeployment.String(),
 		Parameters: templateParams,
 		Wait:       &wait,
@@ -25,7 +25,7 @@ func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, 
 
 func (client *Client) StartDeployment(ctx context.Context, deploymentId int64) (string, error) {
 	wait := false
-	operation := internal.InvokeDeploymentOperation{
+	operation := generated.InvokeDeploymentOperation{
 		Name:       operations.StartDeployment.String(),
 		Parameters: nil,
 		Wait:       &wait,
@@ -38,7 +38,7 @@ func (client *Client) StartDeployment(ctx context.Context, deploymentId int64) (
 	return "", nil
 }
 
-func (client *Client) CreateDeployment(ctx context.Context, request internal.CreateDeployment) (*internal.Deployment, error) {
+func (client *Client) CreateDeployment(ctx context.Context, request generated.CreateDeployment) (*generated.Deployment, error) {
 	response, err := client.internalClient.CreateDeployment(ctx, request, nil)
 
 	if err != nil {
@@ -47,6 +47,6 @@ func (client *Client) CreateDeployment(ctx context.Context, request internal.Cre
 	return &response.Deployment, nil
 }
 
-func (client *Client) ListDeployments(ctx context.Context) (internal.DeploymentManagementClientListDeploymentsResponse, error) {
+func (client *Client) ListDeployments(ctx context.Context) (generated.DeploymentManagementClientListDeploymentsResponse, error) {
 	return client.internalClient.ListDeployments(ctx, nil)
 }
