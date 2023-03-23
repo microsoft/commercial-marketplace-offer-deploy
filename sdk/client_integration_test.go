@@ -40,14 +40,33 @@ func TestDryRun(t *testing.T) {
 	}
 
 	client, err := NewClient(endpoint, cred, nil)
-	ctx := context.TODO()
 
 	if err != nil {
 		log.Print("Client construction failed.")
 	}
 
-	deployment := createDeployment(ctx, client)
-	result, err := client.DryRunDeployment(ctx, *deployment.ID, getParameters())
+	testNamePolicyFailure(client)
+	testQuotaViolation(client)
+}
+
+func testQuotaViolation(client *Client) {
+	ctx := context.TODO()
+
+	deployment := createDeployment(ctx, client, quotaViolationPath)
+	result, err := client.DryRunDeployment(ctx, *deployment.ID, getParameters(quotaViolationPath))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Print("Validation Results:\n %s" + *prettify(result.Results))
+}
+
+func testNamePolicyFailure(client *Client) {
+	ctx := context.TODO()
+
+	deployment := createDeployment(ctx, client, namePolicyViolationPath)
+	result, err := client.DryRunDeployment(ctx, *deployment.ID, getParameters(namePolicyViolationPath))
 
 	if err != nil {
 		log.Fatal(err)
@@ -63,9 +82,9 @@ func prettify(obj any) *string {
 }
 
 // create the deployment with values
-func createDeployment(ctx context.Context, client *Client) *generated.Deployment {
+func createDeployment(ctx context.Context, client *Client, templatePath string) *generated.Deployment {
 	name := "DryRunDeploymentTest"
-	template := getTemplate()
+	template := getTemplate(templatePath)
 	deployment, err := client.CreateDeployment(ctx, generated.CreateDeployment{
 		Name:           &name,
 		SubscriptionID: &subscriptionId,
@@ -81,10 +100,11 @@ func createDeployment(ctx context.Context, client *Client) *generated.Deployment
 	return deployment
 }
 
-var testDataPath string = "./test/data/namepolicy/failure/"
+const namePolicyViolationPath string = "./test/data/namepolicy/failure/"
+const quotaViolationPath string = "./test/data/quota/failure/"
 
-func getParameters() map[string]interface{} {
-	paramsPath := filepath.Join(testDataPath, "parameters.json")
+func getParameters(path string) map[string]interface{} {
+	paramsPath := filepath.Join(path, "parameters.json")
 	parameters, err := utils.ReadJson(paramsPath)
 	if err != nil {
 		log.Printf("TestDryRun() could not read parameters")
@@ -92,9 +112,9 @@ func getParameters() map[string]interface{} {
 	return parameters
 }
 
-func getTemplate() map[string]interface{} {
-	path := filepath.Join(testDataPath, "mainTemplate.json")
-	template, err := utils.ReadJson(path)
+func getTemplate(path string) map[string]interface{} {
+	fullPath := filepath.Join(path, "mainTemplate.json")
+	template, err := utils.ReadJson(fullPath)
 	if err != nil {
 		log.Printf("couldn't read template")
 	}
