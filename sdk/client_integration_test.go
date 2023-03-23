@@ -3,6 +3,7 @@ package sdk
 import (
 	"context"
 	"log"
+	"path/filepath"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
@@ -47,16 +48,16 @@ func TestDryRun(t *testing.T) {
 	deployment := createDeployment(ctx, client)
 
 	parameters := getParameters()
-	client.DryRunDeployment(ctx, *deployment.ID, parameters)
+	deploymentId := *deployment.ID
+
+	log.Printf("Deployment id: %d", deploymentId)
+	client.DryRunDeployment(ctx, deploymentId, parameters)
 }
 
 // create the deployment with values
 func createDeployment(ctx context.Context, client *Client) *generated.Deployment {
 	name := "DryRunDeploymentTest"
 	template := getTemplate()
-
-	log.Printf("creating deployment with template %v", template)
-
 	deployment, err := client.CreateDeployment(ctx, generated.CreateDeployment{
 		Name:           &name,
 		SubscriptionID: &subscriptionId,
@@ -65,6 +66,8 @@ func createDeployment(ctx context.Context, client *Client) *generated.Deployment
 		Template:       template,
 	})
 
+	log.Printf("Deployment: %d", *deployment.ID)
+
 	if err != nil {
 		log.Fatal("Failed to create deployment.")
 	}
@@ -72,8 +75,10 @@ func createDeployment(ctx context.Context, client *Client) *generated.Deployment
 	return deployment
 }
 
+var testDataPath string = "./test/data/namepolicy/failure/"
+
 func getParameters() map[string]interface{} {
-	paramsPath := "./test/deployment/resourcename/failure/parameters.json"
+	paramsPath := filepath.Join(testDataPath, "parameters.json")
 	parameters, err := utils.ReadJson(paramsPath)
 	if err != nil {
 		log.Printf("TestDryRun() could not read parameters")
@@ -82,7 +87,7 @@ func getParameters() map[string]interface{} {
 }
 
 func getTemplate() map[string]interface{} {
-	path := "./test/deployment/resourcename/failure/mainTemplate.json"
+	path := filepath.Join(testDataPath, "mainTemplate.json")
 	template, err := utils.ReadJson(path)
 	if err != nil {
 		log.Printf("couldn't read template")

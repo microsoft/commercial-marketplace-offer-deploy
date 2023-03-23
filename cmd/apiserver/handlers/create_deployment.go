@@ -33,5 +33,12 @@ func CreateDeployment(w http.ResponseWriter, r *http.Request, d data.Database) {
 		return
 	}
 
-	utils.WriteJson(w, deployment)
+	deploymentId := int32(deployment.ID)
+	result := generated.Deployment{
+		ID:     &deploymentId,
+		Name:   &deployment.Name,
+		Status: &deployment.Status,
+	}
+
+	utils.WriteJson(w, result)
 }
