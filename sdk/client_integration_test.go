@@ -45,8 +45,8 @@ func TestDryRun(t *testing.T) {
 		log.Print("Client construction failed.")
 	}
 
-	testNamePolicyFailure(client)
 	testQuotaViolation(client)
+	testNamePolicyFailure(client)
 }
 
 func TestQuota(t *testing.T) {
