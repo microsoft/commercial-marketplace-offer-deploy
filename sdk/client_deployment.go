@@ -18,12 +18,12 @@ func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, 
 		Wait:       &wait,
 	}
 
-	_, nil := client.internalClient.InvokeDeploymentOperation(ctx, int64(deploymentId), operation, nil)
+	_, nil := client.internalClient.InvokeDeploymentOperation(ctx, deploymentId, operation, nil)
 
 	return nil
 }
 
-func (client *Client) StartDeployment(ctx context.Context, deploymentId int64) (string, error) {
+func (client *Client) StartDeployment(ctx context.Context, deploymentId int32) (string, error) {
 	wait := false
 	operation := generated.InvokeDeploymentOperation{
 		Name:       operations.StartDeployment.String(),
