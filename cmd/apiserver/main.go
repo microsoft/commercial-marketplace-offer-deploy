@@ -26,7 +26,7 @@ func main() {
 
 func loadConfiguration() {
 	var err error
-	configuration, err = config.LoadConfiguration(configurationFilePath)
+	configuration, err = config.LoadConfiguration(configurationFilePath, nil)
 	if err != nil {
 		log.Fatal()
 	}
