@@ -96,11 +96,4 @@ var routes = Routes{
 		"/operations",
 		handlers.ListOperations,
 	},
-
-	// Route{
-	// 	"CreateDryRun",
-	// 	strings.ToUpper("Post"),
-	// 	"/dryruns",
-	// 	handlers.CreateDryRun,
-	// },
 }
