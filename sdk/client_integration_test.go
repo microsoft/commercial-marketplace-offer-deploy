@@ -16,7 +16,7 @@ var resourceGroupName string
 var location string
 var endpoint string
 
-func TestMain(m *testing.M) {
+func SetupDryTest() {
 	log.Println("Test setup beginning")
 	err := godotenv.Load(".env") 
 	if err != nil {
@@ -31,15 +31,20 @@ func TestMain(m *testing.M) {
 	utils.DeployPolicyDefinition(subscriptionId)
 	utils.DeployPolicy(subscriptionId, resourceGroupName)
 
-	exitVal := m.Run()
-	log.Println("Cleaning up resources after the tests here")
+	//exitVal := m.Run()
+	//log.Println("Cleaning up resources after the tests here")
 	
-	os.Exit(exitVal)
+	//os.Exit(exitVal)
 }
 
 func TestDryRun(t *testing.T) {
+	//err := godotenv.Load(".env") 
+	// if err != nil {
+	// 	log.Println("Cannot load environment variables from .env")
+	// } 
+	SetupDryTest()
+	
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
-
 	if err != nil {
 		log.Fatalf("Authentication failure: %+v", err)
 	}

@@ -49,7 +49,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 func addMiddleware(next http.Handler, routeName string, config *config.Configuration) http.Handler {
 	handler := next
-	handler = middleware.AddJwtBearer(next, config)
+	//handler = middleware.AddJwtBearer(next, config)
 	handler = middleware.AddLogging(handler, routeName)
 
 	return handler
