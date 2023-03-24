@@ -1,28 +1,27 @@
 package handlers
 
 import (
-	"net/http"
 	"path/filepath"
 
+	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"gorm.io/gorm"
 )
 
-type HttpHandlerWithDatabase func(w http.ResponseWriter, r *http.Request, d data.Database)
+type DataHandlerFunc func(c echo.Context, db *gorm.DB) error
 
-// withDatabase wraps http handlers so a database is included as a func argument
-func WithDatabase(handler HttpHandlerWithDatabase) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		options := createOptionsFromConfiguration()
+func ToHandlerFunc(h DataHandlerFunc, configuration *config.Configuration) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		options := createOptionsFromConfiguration(configuration)
 		d := data.NewDatabase(options)
-		handler(w, r, d)
+		return h(c, d.Instance())
 	}
 }
 
-func createOptionsFromConfiguration() *data.DatabaseOptions {
-	configuration := config.GetConfiguration()
-	dsn := filepath.Join(configuration.Database.Path, data.DatabaseFileName)
-	options := &data.DatabaseOptions{Dsn: dsn, UseInMemory: configuration.Database.UseInMemory}
+func createOptionsFromConfiguration(c *config.Configuration) *data.DatabaseOptions {
+	dsn := filepath.Join(c.Database.Path, data.DatabaseFileName)
+	options := &data.DatabaseOptions{Dsn: dsn, UseInMemory: c.Database.UseInMemory}
 
 	return options
 }
