@@ -9,18 +9,15 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/generated"
+	"gorm.io/gorm"
 )
 
-func CreateDryRun(deploymentId int, operation generated.InvokeDeploymentOperation, d data.Database) (interface{}, error) {
-	// call database to get the local template
-	if d == nil {
-		return nil, errors.New("database is nil")
-	}
+func CreateDryRun(deploymentId int, operation generated.InvokeDeploymentOperation, db *gorm.DB) (interface{}, error) {
 	log.Printf("Inisde CreateDryRun deploymentId: %d", deploymentId)
 
-	//d.Instance().AutoMigrate(&data.Deployment{})
 	retrieved := &data.Deployment{}
-	d.Instance().First(&retrieved, deploymentId)
+	db.First(&retrieved, deploymentId)
+
 	log.Printf("Inisde CreateDryRun deploymentId: %v", retrieved)
 
 	templateParams := operation.Parameters
@@ -42,10 +39,10 @@ func CreateDryRun(deploymentId int, operation generated.InvokeDeploymentOperatio
 	timestamp := time.Now().UTC()
 	status := "OK"
 	returnedResult := generated.InvokedOperation{
-		ID: &uuid,
+		ID:        &uuid,
 		InvokedOn: &timestamp,
-		Result: *res,
-		Status: &status,
+		Result:    *res,
+		Status:    &status,
 	}
 	return returnedResult, nil
 }
