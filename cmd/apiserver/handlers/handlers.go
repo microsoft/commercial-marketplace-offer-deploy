@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 
 	"github.com/labstack/echo"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/config"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/runtime"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"gorm.io/gorm"
 )
@@ -20,7 +20,7 @@ func ToHandlerFunc(h DataHandlerFunc) echo.HandlerFunc {
 }
 
 func createOptionsFromConfiguration() *data.DatabaseOptions {
-	configuration := config.GetConfiguration()
+	configuration := runtime.GetApp().GetConfiguration()
 	dsn := filepath.Join(configuration.Database.Path, data.DatabaseFileName)
 	options := &data.DatabaseOptions{Dsn: dsn, UseInMemory: configuration.Database.UseInMemory}
 

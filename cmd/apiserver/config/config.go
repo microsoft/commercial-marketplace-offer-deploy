@@ -11,42 +11,23 @@ import (
 var lock = &sync.Mutex{}
 
 type Configuration struct {
-	Azure    AzureAdSettings
+	Azure    AzureSettings
 	Database DatabaseSettings
-}
-
-var configuration *Configuration
-
-func GetConfiguration() *Configuration {
-	return getConfiguration(".", nil)
 }
 
 // Configures a new app configuration instance with the ability to configure it
 // if default values are desired, pass nil as configure
 func LoadConfiguration(path string, name *string) (*Configuration, error) {
-	config := getConfiguration(path, name)
+	config, err := readConfig(path, name)
+
+	if err != nil {
+		log.Printf("error reading in configuration from '%s'", path)
+	}
 
 	if config == nil {
 		return nil, errors.New("Configuration failed to load")
 	}
 	return config, nil
-}
-
-// singelton implementation for configuration
-func getConfiguration(path string, name *string) *Configuration {
-	if configuration == nil {
-		lock.Lock()
-		defer lock.Unlock()
-		if configuration == nil {
-			var err error
-			configuration, err = readConfig(path, name)
-
-			if err != nil {
-				log.Printf("error reading in configuration from '%s'", path)
-			}
-		}
-	}
-	return configuration
 }
 
 // LoadConfig reads configuration from file or environment variables.
