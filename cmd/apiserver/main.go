@@ -4,9 +4,9 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/app"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/routes"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/runtime"
 )
 
 const configurationFilePath string = "."
@@ -19,7 +19,7 @@ func main() {
 	formattedPort := ":" + strconv.Itoa(port)
 	log.Printf("Server started on %s", formattedPort)
 
-	builder := runtime.NewAppBuilder()
+	builder := app.NewAppBuilder()
 	builder.AddConfig(configureConfig)
 	builder.AddRoutes(routes.GetRoutes)
 
@@ -27,11 +27,12 @@ func main() {
 	log.Fatal(app.Start(port))
 }
 
+// lint:ignore this value of c is never used (SA4006)
 func configureConfig(c *config.Configuration) {
-	configuration, err := config.LoadConfiguration(configurationFilePath, nil)
+	var err error
+	c, err = config.LoadConfiguration(configurationFilePath, nil)
 
 	if err != nil {
 		log.Fatal()
 	}
-	c = configuration
 }

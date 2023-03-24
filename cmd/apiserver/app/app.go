@@ -1,4 +1,4 @@
-package runtime
+package app
 
 import (
 	"log"
@@ -50,7 +50,7 @@ func (b *AppBuilder) AddRoutes(configure ConfigureRoutesFunc) *AppBuilder {
 	routes := configure(b.app.config)
 
 	for _, route := range *routes {
-		log.Printf("registering route: %s", route)
+		log.Printf("registering route: { %s %s %s }", route.Name, route.Method, route.Path)
 		router := b.app.e.Router()
 		router.Add(route.Method, route.Path, route.HandlerFunc)
 	}
