@@ -1,52 +1,51 @@
 package handlers
 
 import (
-	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/generated"
+	"gorm.io/gorm"
 )
 
-type InvokeOperationDeploymentHandler func(int, generated.InvokeDeploymentOperation, data.Database) (interface{}, error)
+const DeploymenIdParameterName = "deploymentId"
 
-func GetDeployment(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+type InvokeOperationDeploymentHandler func(int, generated.InvokeDeploymentOperation, *gorm.DB) (interface{}, error)
+
+func GetDeployment(c echo.Context) error {
+	return c.JSON(http.StatusOK, "")
 }
 
-func InvokeOperation(w http.ResponseWriter, r *http.Request, d data.Database) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+func InvokeOperation(c echo.Context, db *gorm.DB) error {
+	deploymentId, err := strconv.Atoi(c.Param(DeploymenIdParameterName))
 
-	vars := mux.Vars(r)
-	deploymentIdStr := vars["deploymentId"]
-	deploymentId, err := strconv.Atoi(deploymentIdStr)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("%s in route was not an int", DeploymenIdParameterName))
 	}
 
 	var operation generated.InvokeDeploymentOperation
-	err = json.NewDecoder(r.Body).Decode(&operation)
+	err = c.Bind(&operation)
+
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	log.Printf("Operation deserialized \n %v", operation)
 
 	operationHandler := CreateOperationHandler(operation)
+
 	if operationHandler == nil {
-		http.Error(w, "There was op OperationHandler registered for the invoked operation", http.StatusBadRequest)
+		return echo.NewHTTPError(http.StatusBadRequest, "There was op OperationHandler registered for the invoked operation")
 	}
-	res, err := operationHandler(deploymentId, operation, d)
+	res, err := operationHandler(deploymentId, operation, db)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	respondJSON(w, http.StatusOK, res)
+	return c.JSON(http.StatusOK, res)
 }
 
 func CreateOperationHandler(operation generated.InvokeDeploymentOperation) InvokeOperationDeploymentHandler {
@@ -58,12 +57,10 @@ func CreateOperationHandler(operation generated.InvokeDeploymentOperation) Invok
 	}
 }
 
-func ListDeployments(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+func ListDeployments(c echo.Context) error {
+	return c.JSON(http.StatusOK, "")
 }
 
-func UpdateDeployment(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+func UpdateDeployment(c echo.Context) error {
+	return c.JSON(http.StatusOK, "")
 }

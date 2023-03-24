@@ -3,12 +3,16 @@ package routes
 import (
 	"net/http"
 
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/handlers"
 )
 
-func GetRoutes() Routes {
-	return routes
+func GetRoutes(c *config.Configuration) *Routes {
+	configuration = c
+	return &routes
 }
+
+var configuration *config.Configuration
 
 var routes = Routes{
 	Route{
@@ -22,7 +26,7 @@ var routes = Routes{
 		http.MethodPost,
 		"CreateDeployment",
 		"/deployments",
-		handlers.ToHandlerFunc(handlers.CreateDeploymentHandler),
+		handlers.ToHandlerFunc(handlers.CreateDeploymentHandler, configuration),
 	},
 
 	// Route{

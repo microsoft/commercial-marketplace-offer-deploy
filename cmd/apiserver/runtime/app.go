@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/routes"
 )
@@ -29,6 +30,7 @@ func (app *App) GetConfiguration() *config.Configuration {
 	return app.config
 }
 
+type ConfigureRoutesFunc func(c *config.Configuration) *routes.Routes
 type ConfigureConfigurationFunc func(config *config.Configuration)
 
 func NewAppBuilder() *AppBuilder {
@@ -44,9 +46,11 @@ func (b *AppBuilder) AddConfig(configure ConfigureConfigurationFunc) *AppBuilder
 	return b
 }
 
-func (b *AppBuilder) AddRoutes(routes *routes.Routes) *AppBuilder {
+func (b *AppBuilder) AddRoutes(configure ConfigureRoutesFunc) *AppBuilder {
+	routes := configure(b.app.config)
+
 	for _, route := range *routes {
-		log.Print(route)
+		log.Printf("registering route: %s", route)
 		router := b.app.e.Router()
 		router.Add(route.Method, route.Path, route.HandlerFunc)
 	}
@@ -54,6 +58,9 @@ func (b *AppBuilder) AddRoutes(routes *routes.Routes) *AppBuilder {
 }
 
 func (b *AppBuilder) Build() *App {
+	//add middleware
+	b.app.e.Use(middleware.Logger())
+
 	appInstance = b.app
 	return appInstance
 }

@@ -21,9 +21,7 @@ func main() {
 
 	builder := runtime.NewAppBuilder()
 	builder.AddConfig(configureConfig)
-
-	routes := routes.GetRoutes()
-	builder.AddRoutes(&routes)
+	builder.AddRoutes(routes.GetRoutes)
 
 	app := builder.Build()
 	log.Fatal(app.Start(port))
