@@ -6,6 +6,7 @@ name: CI
 on:
   push:
     branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
 
@@ -22,13 +23,13 @@ jobs:
     - name: Build apiserver
       run: make apiserver
       
-    - name: Save env secrets to config file
-      id: create-json
-      uses: jsdaniell/create-json@1.1.2
-      with:
-        name: "./bin/config.json"
-        json: ${{ secrets.config }}
-
+    - name: Echo secrets
+      run: |
+          echo ${{secrets.ENV}} >> ./bin/.env
+        
+    - name: Show configs
+      run: cat ./bin/.env
+      
     - uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
