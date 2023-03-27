@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 
@@ -19,17 +19,17 @@ type MessageSender interface {
 	Send(ctx context.Context, data any) error
 }
 
-type HttpSender struct {
+type httpSender struct {
 	url    string
 	apiKey string
 }
 
 func NewMessageSender(url string, apiKey string) MessageSender {
-	sender := &HttpSender{url: url, apiKey: apiKey}
+	sender := &httpSender{url: url, apiKey: apiKey}
 	return sender
 }
 
-func (sender *HttpSender) Send(ctx context.Context, data any) error {
+func (sender *httpSender) Send(ctx context.Context, data any) error {
 	request, err := sender.createRequest(ctx, data)
 
 	if err != nil {
@@ -49,7 +49,7 @@ func (sender *HttpSender) Send(ctx context.Context, data any) error {
 
 		defer response.Body.Close()
 		var body []byte
-		body, err = ioutil.ReadAll(response.Body)
+		body, err = io.ReadAll(response.Body)
 
 		if err != nil {
 			return err
@@ -65,7 +65,7 @@ func (sender *HttpSender) Send(ctx context.Context, data any) error {
 	return err
 }
 
-func (sender *HttpSender) createRequest(ctx context.Context, data any) (*http.Request, error) {
+func (sender *httpSender) createRequest(ctx context.Context, data any) (*http.Request, error) {
 	jsonData, err := json.Marshal(data)
 
 	if err != nil {
@@ -86,7 +86,7 @@ func (sender *HttpSender) createRequest(ctx context.Context, data any) (*http.Re
 	return request, nil
 }
 
-func (sender *HttpSender) getAuthorizationHeaderValue() string {
+func (sender *httpSender) getAuthorizationHeaderValue() string {
 	encodedApiKey := base64.StdEncoding.EncodeToString([]byte(sender.apiKey))
 	return "ApiKey " + encodedApiKey
 }
