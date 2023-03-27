@@ -44,6 +44,8 @@ github.com/Azure/azure-sdk-for-go/sdk/internal v1.1.2 h1:+5VZ72z0Qan5Bog5C+ZkgSq
 github.com/Azure/azure-sdk-for-go/sdk/internal v1.1.2/go.mod h1:eWRD7oawr1Mu1sLCawqVc0CUiF43ia3qQMxLscsKQ9w=
 github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus v1.2.1 h1:ryVRjO3SrGrSM8PNlLuMbMYFz9vexPzvenNUEBfsgCo=
 github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus v1.2.1/go.mod h1:R6+0udeRV8iYSTVuT5RT7If4sc46K5Bz3ZKrmvZQF7U=
+github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/eventgrid/armeventgrid/v2 v2.0.0 h1:PcP4TC+0dC85A3i1p7CbD0FyrjnTvzQ3ipgSkJTIb7Y=
+github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/eventgrid/armeventgrid/v2 v2.0.0/go.mod h1:rUn3oBeYkTxIsUzKxtXUPOt1ZO+bVHuZ3m5wauIfUHw=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/internal v1.0.0 h1:lMW1lD/17LUA5z1XTURo7LcVG2ICBPlyMHjIUrcFZNQ=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armpolicy v0.6.0 h1:YNsHXVXpZ9LE1/HYFEN9nd0fU0Ifl5gC47p/y1Gourc=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armpolicy v0.6.0/go.mod h1:4I3SgVMg1Zo5TpfQGtYgBs0srBEDznSa86uu3uMVTHI=

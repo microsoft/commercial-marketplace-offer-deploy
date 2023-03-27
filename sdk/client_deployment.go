@@ -15,42 +15,29 @@ type DryRunResult struct {
 
 // Performs a dry run of a deployment and returns the verification results
 // returns: verification results
-func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, templateParams map[string]interface{}) (*DryRunResult, error) {
-	wait := true
-	operation := &generated.InvokeDeploymentOperation{
-		Name:       operations.DryRunDeployment.String(),
-		Parameters: templateParams,
-		Wait:       &wait,
-	}
-
-	response, err := client.internalClient.InvokeDeploymentOperation(ctx, deploymentId, *operation, nil)
+func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, templateParameters map[string]interface{}) (*DryRunResult, error) {
+	invokedOperation, err := client.invokeDeploymentOperation(ctx, true, operations.DryRunDeploymentOperation, deploymentId, templateParameters)
 
 	if err != nil {
 		return nil, err
 	}
-	invokedOperation := response.InvokedOperation
 
-	result := &DryRunResult{
+	return &DryRunResult{
 		Id:      *invokedOperation.ID,
 		Results: invokedOperation.Result.(map[string]any),
 		Status:  *invokedOperation.Status,
-	}
-	return result, nil
+	}, nil
 }
 
-func (client *Client) StartDeployment(ctx context.Context, deploymentId int32) (string, error) {
-	wait := false
-	operation := generated.InvokeDeploymentOperation{
-		Name:       operations.StartDeployment.String(),
-		Parameters: nil,
-		Wait:       &wait,
+func (client *Client) StartDeployment(ctx context.Context, deploymentId int32, templateParameters map[string]interface{}) (*string, error) {
+	invokedOperation, err := client.invokeDeploymentOperation(ctx, false, operations.StartDeploymentOperation, deploymentId, templateParameters)
+
+	if err != nil {
+		return nil, err
 	}
 
-	// TODO: implement
-
-	_, nil := client.internalClient.InvokeDeploymentOperation(ctx, deploymentId, operation, nil)
-
-	return "", nil
+	// TODO: implement start deployment and return the invocation result
+	return invokedOperation.Name, nil
 }
 
 func (client *Client) CreateDeployment(ctx context.Context, request generated.CreateDeployment) (*generated.Deployment, error) {
@@ -65,4 +52,21 @@ func (client *Client) CreateDeployment(ctx context.Context, request generated.Cr
 
 func (client *Client) ListDeployments(ctx context.Context) (generated.DeploymentManagementClientListDeploymentsResponse, error) {
 	return client.internalClient.ListDeployments(ctx, nil)
+}
+
+// invoke a deployment operation with parameters
+func (client *Client) invokeDeploymentOperation(ctx context.Context, wait bool, operationType operations.OperationType, deploymentId int32, parameters map[string]interface{}) (*generated.InvokedOperation, error) {
+	operationTypeName := operations.DryRunDeploymentOperation.String()
+	command := &generated.InvokeDeploymentOperation{
+		Name:       &operationTypeName,
+		Parameters: parameters,
+		Wait:       &wait,
+	}
+
+	response, err := client.internalClient.InvokeDeploymentOperation(ctx, deploymentId, *command, nil)
+
+	if err != nil {
+		return nil, err
+	}
+	return &response.InvokedOperation, nil
 }
