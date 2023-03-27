@@ -2,9 +2,9 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"strconv"
 
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/app"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/routes"
 )
@@ -12,24 +12,26 @@ import (
 const configurationFilePath string = "."
 
 var (
-	port          int = 8080
-	configuration *config.Configuration
+	port int = 8080
 )
 
 func main() {
 	formattedPort := ":" + strconv.Itoa(port)
-
 	log.Printf("Server started on %s", formattedPort)
 
-	loadConfiguration()
+	builder := app.NewAppBuilder()
+	builder.AddConfig(configureConfig)
+	builder.AddRoutes(routes.GetRoutes)
 
-	router := routes.NewRouter(configuration)
-	log.Fatal(http.ListenAndServe(formattedPort, router))
+	app := builder.Build()
+	log.Fatal(app.Start(port))
 }
 
-func loadConfiguration() {
+// lint:ignore this value of c is never used (SA4006)
+func configureConfig(c *config.Configuration) {
 	var err error
-	configuration, err = config.LoadConfiguration(configurationFilePath, nil)
+	c, err = config.LoadConfiguration(configurationFilePath, nil)
+
 	if err != nil {
 		log.Fatal()
 	}

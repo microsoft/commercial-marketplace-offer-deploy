@@ -1,42 +1,62 @@
 package routes
 
 import (
+	"net/http"
 	"strings"
+
+	"github.com/labstack/echo"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/handlers"
 )
+
+type Route struct {
+	Name        string
+	Method      string
+	Path        string
+	HandlerFunc echo.HandlerFunc
+}
+
+type Routes []Route
+
+func GetRoutes(c *config.Configuration) *Routes {
+	configuration = c
+	return &routes
+}
+
+var configuration *config.Configuration
 
 var routes = Routes{
 	Route{
 		"Index",
-		"GET",
+		http.MethodGet,
 		"/",
-		Index,
+		handlers.Index,
 	},
 
 	Route{
 		"CreateDeployment",
-		strings.ToUpper("Post"),
+		http.MethodPost,
 		"/deployments",
-		handlers.WithDatabase(handlers.CreateDeployment),
+		handlers.ToHandlerFunc(handlers.CreateDeployment, configuration),
 	},
 
 	Route{
 		"GetDeployment",
-		strings.ToUpper("Get"),
-		"/deployments/{deploymentId}",
+		http.MethodGet,
+		"/deployments/:deploymentId",
 		handlers.GetDeployment,
 	},
 
 	Route{
 		"InvokeOperation",
-		strings.ToUpper("Post"),
-		"/deployment/{deploymentId}/operation",
-		handlers.WithDatabase(handlers.InvokeOperation),
+		http.MethodPost,
+		"/deployment/:deploymentId/operation",
+		handlers.ToHandlerFunc(handlers.InvokeOperation, configuration),
 	},
 
 	Route{
 		"ListDeployments",
-		strings.ToUpper("Get"),
+		http.MethodGet,
 		"/deployments",
 		handlers.ListDeployments,
 	},
@@ -50,49 +70,49 @@ var routes = Routes{
 
 	Route{
 		"CreatEventSubscription",
-		strings.ToUpper("Post"),
-		"/events/{topic}/subscriptions",
-		handlers.CreatEventSubscription,
+		http.MethodPost,
+		"/events/:eventType/subscriptions",
+		handlers.ToHandlerFunc(handlers.CreateEventSubscription, configuration),
 	},
 
 	Route{
 		"DeleteEventSubscription",
 		strings.ToUpper("Delete"),
-		"/events/subscriptions/{subscriptionId}",
+		"/events/subscriptions/:subscriptionId",
 		handlers.DeleteEventSubscription,
 	},
 
 	Route{
 		"GetEventSubscription",
-		strings.ToUpper("Get"),
-		"/events/subscriptions/{subscriptionId}",
+		http.MethodGet,
+		"/events/subscriptions/:subscriptionId",
 		handlers.GetEventSubscription,
 	},
 
 	Route{
 		"ListEventSubscriptions",
-		strings.ToUpper("Get"),
-		"/events/{topic}/subscriptions",
+		http.MethodGet,
+		"/events/:eventType/subscriptions",
 		handlers.ListEventSubscriptions,
 	},
 
 	Route{
 		"GetEvents",
-		strings.ToUpper("Get"),
+		http.MethodGet,
 		"/events",
 		handlers.GetEvents,
 	},
 
 	Route{
 		"GetDeploymentOperation",
-		strings.ToUpper("Get"),
-		"/operations/{operationId}",
+		http.MethodGet,
+		"/operations/:operationId",
 		handlers.GetDeploymentOperation,
 	},
 
 	Route{
 		"ListOperations",
-		strings.ToUpper("Get"),
+		http.MethodGet,
 		"/operations",
 		handlers.ListOperations,
 	},

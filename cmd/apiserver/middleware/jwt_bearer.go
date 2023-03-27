@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/security/authentication"
 )
@@ -13,17 +14,17 @@ import (
 const AzureAdJwtKeysUrl = "https://login.microsoftonline.com/common/discovery/v2.0/keys"
 
 // Adds Jwt Bearer authentication to the request
-func AddJwtBearer(next http.Handler, config *config.Configuration) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func AddJwtBearer(next echo.HandlerFunc, config *config.Configuration) echo.HandlerFunc {
+	return func(c echo.Context) error {
 		validationParameters := getJwtTokenValidationParameters(config)
-		isTokenValid := verifyToken(r, validationParameters)
+		isTokenValid := verifyToken(c, validationParameters)
 
 		if !isTokenValid {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
+			return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
 		}
-		next.ServeHTTP(w, r)
-	})
+
+		return next(c)
+	}
 }
 
 func getJwtTokenValidationParameters(config *config.Configuration) *authentication.JwtTokenValidationParameters {
@@ -40,11 +41,11 @@ func getJwtTokenValidationParameters(config *config.Configuration) *authenticati
 	}
 }
 
-func verifyToken(r *http.Request, parameters *authentication.JwtTokenValidationParameters) bool {
-	rawToken := extractToken(r)
+func verifyToken(c echo.Context, parameters *authentication.JwtTokenValidationParameters) bool {
+	rawToken := extractToken(c)
 
 	tokenVerifier := authentication.NewJwtTokenVerifier(&rawToken, parameters)
-	_, err := tokenVerifier.Verify(r.Context())
+	_, err := tokenVerifier.Verify(c.Request().Context())
 
 	if err != nil {
 		log.Println(err)
@@ -53,8 +54,8 @@ func verifyToken(r *http.Request, parameters *authentication.JwtTokenValidationP
 	return true
 }
 
-func extractToken(r *http.Request) string {
-	header := r.Header.Get("Authorization")
+func extractToken(c echo.Context) string {
+	header := c.Request().Header.Get("Authorization")
 	if header != "" {
 		parts := strings.Split(header, " ")
 

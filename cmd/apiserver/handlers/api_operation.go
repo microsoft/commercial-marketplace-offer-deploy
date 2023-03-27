@@ -2,14 +2,14 @@ package handlers
 
 import (
 	"net/http"
+
+	"github.com/labstack/echo"
 )
 
-func GetDeploymentOperation(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+func GetDeploymentOperation(c echo.Context) error {
+	return c.JSON(http.StatusOK, "")
 }
 
-func ListOperations(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+func ListOperations(c echo.Context) error {
+	return c.JSON(http.StatusOK, "")
 }
