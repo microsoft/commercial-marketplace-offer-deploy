@@ -1,6 +1,9 @@
 # generate runs `go generate` to build the dynamically generated
 # source files, except the protobuf stubs which are built instead with
 # "make protobuf".
+generate:
+	./scripts/generate-code.sh
+
 ENV_LOCAL_TEST=\
 	SUBSCRIPTION=31e9f9a0-9fd2-4294-a0a3-0101246d9700 \
 	RESOURCE_GROUP_NAME=aMODMTestb \
@@ -29,4 +32,4 @@ sdk:
 
 .NOTPARALLEL:
 
-.PHONY: apiserver-local apiserver sdk operator test-all
+.PHONY: apiserver-local apiserver sdk operator test-all generate
