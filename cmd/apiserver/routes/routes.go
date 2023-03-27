@@ -72,7 +72,7 @@ var routes = Routes{
 		"CreatEventSubscription",
 		http.MethodPost,
 		"/events/:eventType/subscriptions",
-		handlers.CreatEventSubscription,
+		handlers.ToHandlerFunc(handlers.CreateEventSubscription, configuration),
 	},
 
 	Route{

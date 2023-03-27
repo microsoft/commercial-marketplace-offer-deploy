@@ -6,10 +6,6 @@ import (
 	"github.com/labstack/echo"
 )
 
-func CreatEventSubscription(c echo.Context) error {
-	return c.JSON(http.StatusOK, "")
-}
-
 func DeleteEventSubscription(c echo.Context) error {
 	return c.JSON(http.StatusOK, "")
 }
