@@ -30,7 +30,11 @@ const (
 )
 
 // The default db path for the database if nothing is set. Default value is DataDatabasePath
-var DefaultDatabasePath string = DataDatabasePath
+var defaultDatabasePath string = DataDatabasePath
+
+func SetDefaultDatabasePath(path string) {
+	defaultDatabasePath = path
+}
 
 // Db implements DbContext
 func (ctx *database) Instance() *gorm.DB {
@@ -87,5 +91,5 @@ func createInstance(dsn string, models ...interface{}) (*gorm.DB, error) {
 }
 
 func getDefaultDsn() string {
-	return filepath.Join(DefaultDatabasePath, DatabaseFileName)
+	return filepath.Join(defaultDatabasePath, DatabaseFileName)
 }
