@@ -2,6 +2,7 @@ package events
 
 import (
 	"context"
+	"log"
 	"sync"
 )
 
@@ -38,7 +39,11 @@ func (p *webHookPublisher) Publish(eventType EventType, message *EventSubscripti
 		go func(i int) {
 			defer waitGroup.Done()
 			subscription := subscriptions[i]
-			p.sender.Send(ctx, &subscription)
+			err := p.sender.Send(ctx, &message)
+
+			if err != nil {
+				log.Printf("error sending message to subscription [%s]", subscription.Name)
+			}
 		}(i)
 	}
 	waitGroup.Wait()
