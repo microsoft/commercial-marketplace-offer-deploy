@@ -20,5 +20,11 @@ func NewGormSubscriptionsProvider(db *gorm.DB) SubscriptionsProvider {
 }
 
 func (p gormSubscriptionsProvider) GetSubscriptions(eventType EventType) ([]*data.EventSubscription, error) {
-	return nil, nil
+	data := []*data.EventSubscription{}
+	tx := p.db.Where("eventType = ?", eventType.String()).Find(&data)
+
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	return data, nil
 }
