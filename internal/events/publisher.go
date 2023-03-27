@@ -5,12 +5,12 @@ import (
 	"log"
 	"sync"
 
-	. "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
+	model "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 )
 
 type WebHookPublisher interface {
 	// publishes a message to all web hook subscriptions
-	Publish(message *EventSubscriptionMessage) error
+	Publish(message *model.EventSubscriptionMessage) error
 }
 
 type webHookPublisher struct {
@@ -24,7 +24,7 @@ func NewWebHookPublisher(sender MessageSender, subscriptionsProvider Subscriptio
 	return publisher
 }
 
-func (p *webHookPublisher) Publish(message *EventSubscriptionMessage) error {
+func (p *webHookPublisher) Publish(message *model.EventSubscriptionMessage) error {
 	subscriptions, err := p.subscriptionsProvider.GetSubscriptions(message.EventType)
 
 	if err != nil {
