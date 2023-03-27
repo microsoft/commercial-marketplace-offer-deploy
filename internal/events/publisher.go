@@ -6,8 +6,9 @@ import (
 	"sync"
 )
 
-type Publisher interface {
-	Publish(eventType EventType, message *EventSubscriptionMessage) error
+type WebHookPublisher interface {
+	// publishes a message to all web hook subscriptions
+	Publish(message *EventSubscriptionMessage) error
 }
 
 type webHookPublisher struct {
@@ -15,14 +16,14 @@ type webHookPublisher struct {
 	sender                MessageSender
 }
 
-func NewWebHookPublisher(sender MessageSender, subscriptionsProvider SubscriptionsProvider) Publisher {
+func NewWebHookPublisher(sender MessageSender, subscriptionsProvider SubscriptionsProvider) WebHookPublisher {
 	publisher := &webHookPublisher{sender: sender, subscriptionsProvider: subscriptionsProvider}
 
 	return publisher
 }
 
-func (p *webHookPublisher) Publish(eventType EventType, message *EventSubscriptionMessage) error {
-	subscriptions, err := p.subscriptionsProvider.GetSubscriptions(eventType)
+func (p *webHookPublisher) Publish(message *EventSubscriptionMessage) error {
+	subscriptions, err := p.subscriptionsProvider.GetSubscriptions(message.EventType)
 
 	if err != nil {
 		return err
