@@ -2,12 +2,13 @@ package events
 
 import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	model "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"gorm.io/gorm"
 )
 
 type SubscriptionsProvider interface {
 	// Gets the subscriptions for an event type
-	GetSubscriptions(eventType EventType) ([]*data.EventSubscription, error)
+	GetSubscriptions(eventType model.EventType) ([]*data.EventSubscription, error)
 }
 
 type gormSubscriptionsProvider struct {
@@ -19,7 +20,7 @@ func NewGormSubscriptionsProvider(db *gorm.DB) SubscriptionsProvider {
 	return provider
 }
 
-func (p gormSubscriptionsProvider) GetSubscriptions(eventType EventType) ([]*data.EventSubscription, error) {
+func (p gormSubscriptionsProvider) GetSubscriptions(eventType model.EventType) ([]*data.EventSubscription, error) {
 	data := []*data.EventSubscription{}
 	tx := p.db.Where("eventType = ?", eventType.String()).Find(&data)
 

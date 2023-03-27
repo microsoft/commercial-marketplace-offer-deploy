@@ -37,7 +37,8 @@ func (o EventType) String() string {
 // subscription model
 
 type EventSubscriptionMessage struct {
-	Id        uuid.UUID `json:"id,omitempty"`
-	EventType `json:"eventType,omitempty"`
-	Payload   map[string]any `json:"payload,omitempty"`
+	Id             uuid.UUID `json:"id,omitempty"`
+	SubscriptionId uuid.UUID `json:"subscriptionId,omitempty"`
+	EventType      `json:"eventType,omitempty"`
+	Payload        map[string]any `json:"payload,omitempty"`
 }

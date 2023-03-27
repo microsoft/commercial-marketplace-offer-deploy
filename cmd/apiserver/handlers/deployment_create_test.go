@@ -39,5 +39,6 @@ func TestCreateDeployment(t *testing.T) {
 		var result generated.Deployment
 		json.Unmarshal(rec.Body.Bytes(), &result)
 		assert.Equal(t, int32(1), *result.ID)
+		assert.Equal(t, "test-deployment", *result.Name)
 	}
 }

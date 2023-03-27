@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 	"sync"
+
+	. "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 )
 
 type WebHookPublisher interface {
@@ -40,6 +42,8 @@ func (p *webHookPublisher) Publish(message *EventSubscriptionMessage) error {
 		go func(i int) {
 			defer waitGroup.Done()
 			subscription := subscriptions[i]
+			message.SubscriptionId = subscription.ID
+
 			err := p.sender.Send(ctx, &message)
 
 			if err != nil {
