@@ -216,10 +216,7 @@ func (s *dryRunSuite) DeployPolicy() {
 	require.NoError(s.T(), err)
 
 	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", s.subscriptionId, s.resourceGroupName)
-	log.Printf("scope is %s", scope)
-
 	policyDefinitionId := fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Authorization/policyDefinitions/ResourceNaming", s.subscriptionId)
-	log.Printf("policyDefinitionId is %s", policyDefinitionId)
 
 	_, err = client.Create(ctx,
 		scope,
