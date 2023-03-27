@@ -23,7 +23,20 @@ type CreateDeployment struct {
 }
 
 type CreateEventSubscription struct {
+	// API key to be used in the Authorization header, e.g. 'ApiKey =234dfsdf324234', to call the webhook callback URL.
+	APIKey *string `json:"ApiKey,omitempty"`
 	Callback *string `json:"callback,omitempty"`
+
+	// the name of the subscription
+	Name *string `json:"name,omitempty"`
+}
+
+type CreateEventSubscriptionResponse struct {
+	// The event type
+	EventType *string `json:"eventType,omitempty"`
+	ID *string `json:"id,omitempty"`
+
+	// the name of the subscription
 	Name *string `json:"name,omitempty"`
 }
 
@@ -72,9 +85,9 @@ type DeploymentManagementClientGetEventSubscriptionOptions struct {
 	// placeholder for future optional parameters
 }
 
-// DeploymentManagementClientGetEventsOptions contains the optional parameters for the DeploymentManagementClient.GetEvents
+// DeploymentManagementClientGetEventTypesOptions contains the optional parameters for the DeploymentManagementClient.GetEventTypes
 // method.
-type DeploymentManagementClientGetEventsOptions struct {
+type DeploymentManagementClientGetEventTypesOptions struct {
 	// placeholder for future optional parameters
 }
 
@@ -109,15 +122,20 @@ type DeploymentManagementClientUpdateDeploymentOptions struct {
 	// placeholder for future optional parameters
 }
 
-type Event struct {
+type EventSubscription struct {
+	Callback *string `json:"callback,omitempty"`
+
+	// The event type
+	EventType *string `json:"eventType,omitempty"`
+	ID *string `json:"id,omitempty"`
+
+	// the name of the subscription
 	Name *string `json:"name,omitempty"`
 }
 
-type EventSubscription struct {
-	Callback *string `json:"callback,omitempty"`
-	ID *string `json:"id,omitempty"`
+type EventType struct {
+	// The type of event, e.g. the topic
 	Name *string `json:"name,omitempty"`
-	Topic *string `json:"topic,omitempty"`
 }
 
 type InvokeDeploymentOperation struct {

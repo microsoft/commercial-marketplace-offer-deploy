@@ -11,7 +11,7 @@ import (
 )
 
 // HTTP handler for creating deployments
-func CreateDeploymentHandler(c echo.Context, db *gorm.DB) error {
+func CreateDeployment(c echo.Context, db *gorm.DB) error {
 	var command *generated.CreateDeployment
 	err := c.Bind(&command)
 
