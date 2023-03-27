@@ -24,7 +24,7 @@ func FromCreateEventSubscription(eventType string, from *generated.CreateEventSu
 	model := &EventSubscription{
 		Name:      *from.Name,
 		EventType: eventType,
-		AuthKey:   *from.AuthKey,
+		ApiKey:    *from.APIKey,
 		Callback:  *from.Callback,
 	}
 	return model

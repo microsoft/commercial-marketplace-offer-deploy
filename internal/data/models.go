@@ -42,5 +42,5 @@ type EventSubscription struct {
 	Callback  string `json:"callback"`
 	Name      string `json:"name" gorm:"unique"`
 	EventType string `json:"eventType"`
-	AuthKey   string `json:"authKey"`
+	ApiKey    string `json:"authKey"`
 }

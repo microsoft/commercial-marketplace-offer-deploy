@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/events"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/generated"
 )
 

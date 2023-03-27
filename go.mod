@@ -20,6 +20,7 @@ require (
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/eventgrid/armeventgrid/v2 v2.0.0 // indirect
+	github.com/avast/retry-go v3.0.0+incompatible // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.0-20210816181553-5444fa50b93d // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect

@@ -62,7 +62,7 @@ func (c *CreateDeployment) UnmarshalJSON(data []byte) error {
 // MarshalJSON implements the json.Marshaller interface for type CreateEventSubscription.
 func (c CreateEventSubscription) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]any)
-	populate(objectMap, "authKey", c.AuthKey)
+	populate(objectMap, "ApiKey", c.APIKey)
 	populate(objectMap, "callback", c.Callback)
 	populate(objectMap, "name", c.Name)
 	return json.Marshal(objectMap)
@@ -77,8 +77,8 @@ func (c *CreateEventSubscription) UnmarshalJSON(data []byte) error {
 	for key, val := range rawMsg {
 		var err error
 		switch key {
-		case "authKey":
-				err = unpopulate(val, "AuthKey", &c.AuthKey)
+		case "ApiKey":
+				err = unpopulate(val, "APIKey", &c.APIKey)
 				delete(rawMsg, key)
 		case "callback":
 				err = unpopulate(val, "Callback", &c.Callback)
