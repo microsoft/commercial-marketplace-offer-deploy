@@ -11,7 +11,7 @@ package generated
 
 // DeploymentManagementClientCreatEventSubscriptionResponse contains the response from method DeploymentManagementClient.CreatEventSubscription.
 type DeploymentManagementClientCreatEventSubscriptionResponse struct {
-	EventSubscription
+	CreateEventSubscriptionResponse
 }
 
 // DeploymentManagementClientCreateDeploymentResponse contains the response from method DeploymentManagementClient.CreateDeployment.
@@ -39,10 +39,10 @@ type DeploymentManagementClientGetEventSubscriptionResponse struct {
 	EventSubscription
 }
 
-// DeploymentManagementClientGetEventsResponse contains the response from method DeploymentManagementClient.GetEvents.
-type DeploymentManagementClientGetEventsResponse struct {
-	// Array of Event
-	EventArray []*Event
+// DeploymentManagementClientGetEventTypesResponse contains the response from method DeploymentManagementClient.GetEventTypes.
+type DeploymentManagementClientGetEventTypesResponse struct {
+	// Array of EventType
+	EventTypeArray []*EventType
 }
 
 // DeploymentManagementClientInvokeDeploymentOperationResponse contains the response from method DeploymentManagementClient.InvokeDeploymentOperation.

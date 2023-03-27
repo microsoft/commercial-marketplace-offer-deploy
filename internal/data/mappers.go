@@ -18,3 +18,14 @@ func FromCreateDeployment(from *generated.CreateDeployment) *Deployment {
 	}
 	return deployment
 }
+
+// Maps a command to create an event subscription to the EventSubscription data model
+func FromCreateEventSubscription(eventType string, from *generated.CreateEventSubscription) *EventSubscription {
+	model := &EventSubscription{
+		Name:      *from.Name,
+		EventType: eventType,
+		AuthKey:   *from.AuthKey,
+		Callback:  *from.Callback,
+	}
+	return model
+}

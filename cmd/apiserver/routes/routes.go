@@ -37,7 +37,7 @@ var routes = Routes{
 		"CreateDeployment",
 		http.MethodPost,
 		"/deployments",
-		handlers.ToHandlerFunc(handlers.CreateDeploymentHandler, configuration),
+		handlers.ToHandlerFunc(handlers.CreateDeployment, configuration),
 	},
 
 	Route{
@@ -71,7 +71,7 @@ var routes = Routes{
 	Route{
 		"CreatEventSubscription",
 		http.MethodPost,
-		"/events/:topic/subscriptions",
+		"/events/:eventType/subscriptions",
 		handlers.CreatEventSubscription,
 	},
 
@@ -92,7 +92,7 @@ var routes = Routes{
 	Route{
 		"ListEventSubscriptions",
 		http.MethodGet,
-		"/events/:topic/subscriptions",
+		"/events/:eventType/subscriptions",
 		handlers.ListEventSubscriptions,
 	},
 

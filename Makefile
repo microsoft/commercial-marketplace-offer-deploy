@@ -1,6 +1,9 @@
 # generate runs `go generate` to build the dynamically generated
 # source files, except the protobuf stubs which are built instead with
 # "make protobuf".
+generate:
+	./scripts/generate-code.sh
+
 apiserver-local: apiserver
 	./scripts/apiserver-local.sh
 
@@ -18,4 +21,4 @@ sdk:
 
 .NOTPARALLEL:
 
-.PHONY: apiserver-local apiserver sdk operator test-all
+.PHONY: apiserver-local apiserver sdk operator test-all generate

@@ -288,9 +288,9 @@
         "tags": [
           "Event"
         ],
-        "summary": "Returns the list of available operations for a current deployment",
-        "description": "Returns a list of available operations that can be performed on a deployment",
-        "operationId": "GetEvents",
+        "summary": "Returns the list of event types",
+        "description": "Returns a list of all event types",
+        "operationId": "GetEventTypes",
         "produces": [
           "application/json"
         ],
@@ -301,26 +301,26 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/Event"
+                "$ref": "#/definitions/EventType"
               }
             }
           }
         }
       }
     },
-    "/events/{topic}/subscriptions": {
+    "/events/{eventType}/subscriptions": {
       "post": {
         "tags": [
           "Event"
         ],
-        "summary": "Register event subscription",
-        "description": "Registers a subscription for a particular topic",
+        "summary": "Create event subscription",
+        "description": "Create a subscription for a particular eventType",
         "operationId": "CreatEventSubscription",
         "parameters": [
           {
-            "name": "topic",
+            "name": "eventType",
             "in": "path",
-            "description": "event topic name",
+            "description": "event type name",
             "required": true,
             "type": "string"
           },
@@ -338,7 +338,7 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/EventSubscription"
+              "$ref": "#/definitions/CreateEventSubscriptionResponse"
             }
           },
           "405": {
@@ -350,12 +350,12 @@
         "tags": [
           "Event"
         ],
-        "summary": "Lists all subscription for a topic",
-        "description": "List all subscriptions for an event topic",
+        "summary": "Lists all subscription for an event type",
+        "description": "List all subscriptions for an event type",
         "operationId": "ListEventSubscriptions",
         "parameters": [
           {
-            "name": "topic",
+            "name": "eventType",
             "in": "path",
             "description": "event topic name",
             "required": true,
@@ -373,7 +373,7 @@
             }
           },
           "400": {
-            "description": "Invalid ID supplied"
+            "description": "Invalid event type supplied"
           },
           "404": {
             "description": "Subscription not found"
@@ -387,7 +387,7 @@
           "Event"
         ],
         "summary": "Gets a subscription",
-        "description": "Gets a subscription to an even topic",
+        "description": "Gets a subscription to an even type",
         "operationId": "GetEventSubscription",
         "parameters": [
           {
@@ -419,7 +419,7 @@
           "Event"
         ],
         "summary": "Delete a subscription",
-        "description": "Deletes a subscription to an even topic",
+        "description": "Deletes a subscription to an even type",
         "operationId": "DeleteEventSubscription",
         "parameters": [
           {
@@ -594,11 +594,12 @@
         }
       }
     },
-    "Event": {
+    "EventType": {
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "The type of event, e.g. the topic"
         }
       }
     },
@@ -609,11 +610,13 @@
           "type": "string",
           "format": "uuid"
         },
-        "topic": {
-          "type": "string"
+        "eventType": {
+          "type": "string",
+          "description": "The event type"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "the name of the subscription"
         },
         "callback": {
           "type": "string",
@@ -625,11 +628,33 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "the name of the subscription"
+        },
+        "authKey":{
+          "type": "string",
+          "description": "basic auth key"
         },
         "callback": {
           "type": "string",
           "format": "uri"
+        }
+      }
+    },
+    "CreateEventSubscriptionResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "eventType": {
+          "type": "string",
+          "description": "The event type"
+        },
+        "name": {
+          "type": "string",
+          "description": "the name of the subscription"
         }
       }
     }

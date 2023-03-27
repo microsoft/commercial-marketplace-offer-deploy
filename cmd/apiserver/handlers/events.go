@@ -18,10 +18,6 @@ func GetEventSubscription(c echo.Context) error {
 	return c.JSON(http.StatusOK, "")
 }
 
-func GetEvents(c echo.Context) error {
-	return c.JSON(http.StatusOK, "")
-}
-
 func ListEventSubscriptions(c echo.Context) error {
 	return c.JSON(http.StatusOK, "")
 }
