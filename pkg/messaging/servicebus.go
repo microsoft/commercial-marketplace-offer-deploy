@@ -3,12 +3,17 @@ package messaging
 import (
 	"context"
 	"encoding/json"
-	"os"
+	//"os"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
 )
+
+type ServiceBusConfig struct {
+	Namespace string
+	QueueName string
+}
 
 type ServiceBusPublisher func(message DeploymentMessage) error
 
@@ -16,8 +21,8 @@ func (f ServiceBusPublisher) Publish(message DeploymentMessage) error {
 	return f(message)
 }
 
-func NewServiceBusPublisher(queueName string) (ServiceBusPublisher, error) {
-	ns := os.Getenv("SERVICEBUS_ENDPOINT")
+func NewServiceBusPublisher(ns string, queueName string) (ServiceBusPublisher, error) {
+	// ns := os.Getenv("SERVICEBUS_ENDPOINT")
 	var credsToAdd []azcore.TokenCredential
 	cliCred, err := azidentity.NewAzureCLICredential(nil)
 	if err != nil {
