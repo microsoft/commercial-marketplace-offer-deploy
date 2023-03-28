@@ -28,7 +28,7 @@ func CreatePublisher(config PublisherConfig) (Publisher, error) {
 	switch config.Type {
 		case "servicebus": {
 			serviceBusConfig := config.TypeConfig.(ServiceBusConfig)
-			return NewServiceBusPublisher(serviceBusConfig.namespace, serviceBusConfig.queueName)
+			return NewServiceBusPublisher(serviceBusConfig.Namespace, serviceBusConfig.QueueName)
 		}
 		default: {
 			errorMsg := fmt.Sprintf("There was no publisher for the provided type %s", config.Type)

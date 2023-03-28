@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	//"os"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	//"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
 )
@@ -23,19 +23,24 @@ func (f ServiceBusPublisher) Publish(message DeploymentMessage) error {
 
 func NewServiceBusPublisher(ns string, queueName string) (ServiceBusPublisher, error) {
 	// ns := os.Getenv("SERVICEBUS_ENDPOINT")
-	var credsToAdd []azcore.TokenCredential
-	cliCred, err := azidentity.NewAzureCLICredential(nil)
-	if err != nil {
-		return nil, err
-	}
-	envCred, err := azidentity.NewEnvironmentCredential(nil)
-	if err != nil {
-		return nil, err
-	}
+	// var credsToAdd []azcore.TokenCredential
+	// cliCred, err := azidentity.NewAzureCLICredential(nil)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// envCred, err := azidentity.NewEnvironmentCredential(nil)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	//todo: adjust client credentials in accordance to api
-	credsToAdd = append(credsToAdd, cliCred, envCred)
-	cred, err := azidentity.NewChainedTokenCredential(credsToAdd, nil)
+	// //todo: adjust client credentials in accordance to api
+	// credsToAdd = append(credsToAdd, cliCred, envCred)
+	// cred, err := azidentity.NewChainedTokenCredential(credsToAdd, nil)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		return nil, err
 	}
