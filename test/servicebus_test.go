@@ -1,13 +1,13 @@
 package test_test
 
 import (
-	"context"
-	"log"
+	//"context"
+	//"log"
 	"testing"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
+	// "github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	// "github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
+	// "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	// "github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/messaging"
 	"github.com/stretchr/testify/suite"
 	"github.com/stretchr/testify/require"
@@ -24,7 +24,7 @@ func TestServiceBusSuite(t *testing.T) {
 }
 
 func (s *serviceBusSuite) SetupSuite() {
-	s.ns = "bobjacmodm"
+	s.ns = "bobjacmodm.servicebus.windows.net"
 	s.queueName = "deployeventqueue"
 }
 
