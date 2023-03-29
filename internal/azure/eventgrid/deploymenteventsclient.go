@@ -80,7 +80,7 @@ type eventGridManagerProperties struct {
 	SystemTopicName   string
 }
 
-func getProperties(ctx context.Context, cred azcore.TokenCredential, resourceGroupId string) (*systemTopicOptions, error) {
+func getProperties(ctx context.Context, cred azcore.TokenCredential, resourceGroupId string) (*eventGridManagerProperties, error) {
 	values := strings.Split(resourceGroupId, "/")
 	props := &eventGridManagerProperties{
 		SubscriptionId:    values[1],
