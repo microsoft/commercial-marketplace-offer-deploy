@@ -26,11 +26,8 @@ func TestCreateEventSubscription(t *testing.T) {
 
 	require.NoError(t, err)
 
-	result, err := client.CreateEventSubscription(context.TODO())
-	log.Printf("result:\n %v", result)
-
+	err = client.CreateEventSubscription(context.TODO())
 	require.NoError(t, err)
-	assert.NotNil(t, result)
 
 }
 
