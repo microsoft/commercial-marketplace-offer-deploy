@@ -2,6 +2,7 @@ package eventgrid
 
 import (
 	"context"
+	"log"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -49,12 +50,14 @@ func (c *deploymentEventsClient) CreateSystemTopic(ctx context.Context) (*armeve
 		return nil, err
 	}
 
+	log.Print(c.Properties.Location)
+
 	pollerResp, err := systemTopicsClient.BeginCreateOrUpdate(
 		ctx,
-		c.Properties.ResourceGroupId,
+		c.Properties.ResourceGroupName,
 		c.Properties.SystemTopicName,
 		armeventgrid.SystemTopic{
-			Location: c.Properties.Location,
+			Location: &c.Properties.Location,
 			Properties: &armeventgrid.SystemTopicProperties{
 				Source:    to.Ptr(c.Properties.ResourceGroupId),
 				TopicType: to.Ptr("Microsoft.Resources.ResourceGroups"),
@@ -74,7 +77,7 @@ func (c *deploymentEventsClient) CreateSystemTopic(ctx context.Context) (*armeve
 
 type eventGridManagerProperties struct {
 	SubscriptionId    string
-	Location          *string
+	Location          string
 	ResourceGroupName string
 	ResourceGroupId   string
 	SystemTopicName   string
@@ -83,7 +86,7 @@ type eventGridManagerProperties struct {
 func getProperties(ctx context.Context, cred azcore.TokenCredential, resourceGroupId string) (*eventGridManagerProperties, error) {
 	values := strings.Split(resourceGroupId, "/")
 	props := &eventGridManagerProperties{
-		SubscriptionId:    values[1],
+		SubscriptionId:    values[2],
 		ResourceGroupName: values[len(values)-1],
 		ResourceGroupId:   resourceGroupId,
 	}
@@ -100,8 +103,8 @@ func getProperties(ctx context.Context, cred azcore.TokenCredential, resourceGro
 		return nil, err
 	}
 
-	props.Location = resourceGroup.Location
-	props.SystemTopicName = props.ResourceGroupName + "Events"
+	props.Location = *resourceGroup.Location
+	props.SystemTopicName = props.ResourceGroupName + "-event-topic"
 
 	return props, nil
 }
