@@ -14,7 +14,7 @@ import (
 const AzureAdJwtKeysUrl = "https://login.microsoftonline.com/common/discovery/v2.0/keys"
 
 // Adds Jwt Bearer authentication to the request
-func AddJwtBearer(next echo.HandlerFunc, config *config.Configuration) echo.HandlerFunc {
+func AddJwtBearer(next echo.HandlerFunc, config *config.AppSettings) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		validationParameters := getJwtTokenValidationParameters(config)
 		isTokenValid := verifyToken(c, validationParameters)
@@ -27,7 +27,7 @@ func AddJwtBearer(next echo.HandlerFunc, config *config.Configuration) echo.Hand
 	}
 }
 
-func getJwtTokenValidationParameters(config *config.Configuration) *authentication.JwtTokenValidationParameters {
+func getJwtTokenValidationParameters(config *config.AppSettings) *authentication.JwtTokenValidationParameters {
 	keySet, err := authentication.FetchAzureADKeySet(context.Background())
 
 	if err != nil {
