@@ -70,7 +70,7 @@ func (v *webHookEndpointValidator) Handle(request *http.Request) *WebHookValidat
 	return result
 }
 
-func NewWebHookValidation(binderFunc RequestBodyBinderFunc) WebHookValidationEventHandler {
+func NewWebHookValidationEventHandler(binderFunc RequestBodyBinderFunc) WebHookValidationEventHandler {
 	return &webHookEndpointValidator{
 		BinderFunc: binderFunc,
 		Result:     &WebHookValidationEventResult{},
