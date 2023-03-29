@@ -1,3 +1,5 @@
+//go:build integration
+
 package eventgrid
 
 import (
@@ -10,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// integration test. Needs to run against a subscription
 func TestDeploymentEventsClient(t *testing.T) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 

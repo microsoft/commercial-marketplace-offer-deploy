@@ -2,14 +2,15 @@ package eventgrid
 
 import (
 	"context"
-	"log"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/eventgrid/armeventgrid"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 )
+
+// System topics MUST be set to global location
+const systemTopicLocation = "global"
 
 type DeploymentEventsClient interface {
 	CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTopic, error)
@@ -37,11 +38,40 @@ func NewDeploymentEventsClient(credential azcore.TokenCredential, resourceGroupI
 }
 
 func (c *deploymentEventsClient) CreateEventSubscription(ctx context.Context) error {
+	// TODO: change '_' to eventSubscriptionsClient
+	// next: using the event topic from Properties, create an event subscription (web hook) using the endpoint of the operator
+	// the endpoint of the operator should be a parameter on method CreateEventSubscription
+	// example of an event subscription for a system topic:
+	//		https://github.com/Azure/azure-sdk-for-go/blob/main/sdk/resourcemanager/eventgrid/armeventgrid/ze_generated_example_systemtopiceventsubscriptions_client_test.go
+
 	_, err := armeventgrid.NewEventSubscriptionsClient(c.Properties.SubscriptionId, c.Credential, nil)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (c *deploymentEventsClient) DeleteSystemTopic(ctx context.Context) (*armeventgrid.SystemTopicsClientDeleteResponse, error) {
+	systemTopicsClient, err := armeventgrid.NewSystemTopicsClient(c.Properties.SubscriptionId, c.Credential, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	pollerResp, err := systemTopicsClient.BeginDelete(
+		ctx,
+		c.Properties.ResourceGroupName,
+		c.Properties.SystemTopicName,
+		nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := pollerResp.PollUntilDone(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
 }
 
 func (c *deploymentEventsClient) CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTopic, error) {
@@ -50,14 +80,12 @@ func (c *deploymentEventsClient) CreateSystemTopic(ctx context.Context) (*armeve
 		return nil, err
 	}
 
-	log.Print(c.Properties.Location)
-
 	pollerResp, err := systemTopicsClient.BeginCreateOrUpdate(
 		ctx,
 		c.Properties.ResourceGroupName,
 		c.Properties.SystemTopicName,
 		armeventgrid.SystemTopic{
-			Location: &c.Properties.Location,
+			Location: to.Ptr(systemTopicLocation),
 			Properties: &armeventgrid.SystemTopicProperties{
 				Source:    to.Ptr(c.Properties.ResourceGroupId),
 				TopicType: to.Ptr("Microsoft.Resources.ResourceGroups"),
@@ -77,7 +105,6 @@ func (c *deploymentEventsClient) CreateSystemTopic(ctx context.Context) (*armeve
 
 type eventGridManagerProperties struct {
 	SubscriptionId    string
-	Location          string
 	ResourceGroupName string
 	ResourceGroupId   string
 	SystemTopicName   string
@@ -89,22 +116,8 @@ func getProperties(ctx context.Context, cred azcore.TokenCredential, resourceGro
 		SubscriptionId:    values[2],
 		ResourceGroupName: values[len(values)-1],
 		ResourceGroupId:   resourceGroupId,
+		SystemTopicName:   values[len(values)-1] + "-event-topic",
 	}
-
-	resourceGroupClient, err := armresources.NewResourceGroupsClient(props.SubscriptionId, cred, nil)
-
-	if err != nil {
-		return nil, err
-	}
-
-	resourceGroup, err := resourceGroupClient.Get(ctx, props.ResourceGroupName, nil)
-
-	if err != nil {
-		return nil, err
-	}
-
-	props.Location = *resourceGroup.Location
-	props.SystemTopicName = props.ResourceGroupName + "-event-topic"
 
 	return props, nil
 }
