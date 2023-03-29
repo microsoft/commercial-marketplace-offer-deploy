@@ -1,5 +1,9 @@
 package data
 
+import (
+	"gorm.io/gorm"
+)
+
 type UOW interface {
 	RegisterNew(entity any)
 	RegisterDirty(entity any)
@@ -9,6 +13,7 @@ type UOW interface {
 }
 
 type UnitOfWork struct {
+	database Database
 	newEntities	[]any
 	modifiedEntities	[]any
 	cleanEntities	[]any
@@ -36,5 +41,24 @@ func (uow *UnitOfWork) RegisterDeleted(entity any) {
 }	
 
 func (uow *UnitOfWork) Commit() error {
+	db := uow.database.Instance()
+	db.Transaction(func(tx *gorm.DB) error {
+		for _, entity := range uow.newEntities {
+			if err := tx.Create(entity).Error; err != nil {
+				return err
+			}
+		}
+		for _, entity := range uow.modifiedEntities{
+			if err := tx.Save(entity).Error; err != nil {
+				return err
+			}
+		}
+		for _, entity := range uow.deletedEntities{
+			if err := tx.Delete(entity).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 	return nil
 }
