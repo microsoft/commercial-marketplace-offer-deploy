@@ -40,7 +40,9 @@ func NewDeploymentEventsClient(credential azcore.TokenCredential, resourceGroupI
 func (c *deploymentEventsClient) CreateEventSubscription(ctx context.Context) error {
 	// TODO: change '_' to eventSubscriptionsClient
 	// next: using the event topic from Properties, create an event subscription (web hook) using the endpoint of the operator
-	// the endpoint of the operator should be a parameter on method CreateEventSubscription
+	// parameters required:
+	//	webhookUrl string: the endpoint of the operator should be a parameter on method CreateEventSubscription
+	//  subscriptionName string: this is going to be the name of the subscription
 	// example of an event subscription for a system topic:
 	//		https://github.com/Azure/azure-sdk-for-go/blob/main/sdk/resourcemanager/eventgrid/armeventgrid/ze_generated_example_systemtopiceventsubscriptions_client_test.go
 
