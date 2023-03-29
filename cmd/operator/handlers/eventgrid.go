@@ -22,4 +22,5 @@ func EventGridWebHook(c echo.Context, db *gorm.DB) error {
 	}
 
 	//TODO: handle all other event types
+	return nil
 }
