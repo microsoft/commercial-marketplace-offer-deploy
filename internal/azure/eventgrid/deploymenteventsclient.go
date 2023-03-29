@@ -41,11 +41,31 @@ func (c *deploymentEventsClient) CreateEventSubscription(ctx context.Context) er
 	// TODO: change '_' to eventSubscriptionsClient
 	// next: using the event topic from Properties, create an event subscription (web hook) using the endpoint of the operator
 	// parameters required:
-	//	webhookUrl string: the endpoint of the operator should be a parameter on method CreateEventSubscription
+	//	endpointUrl string: the endpoint of the operator should be a parameter on method CreateEventSubscription
 	//  subscriptionName string: this is going to be the name of the subscription
 	// example of an event subscription for a system topic:
 	//		https://github.com/Azure/azure-sdk-for-go/blob/main/sdk/resourcemanager/eventgrid/armeventgrid/ze_generated_example_systemtopiceventsubscriptions_client_test.go
 
+	// return: modify the return from error to a tuple (*armeventgrid.[whatever the response is from the Azure client], error)
+
+	// Step:2
+	// inside this file, create a global package variable called "includedEventTypes" that has all the event types that we're interested
+	// slice, populated with the below represented values:
+	/*
+	   "filter": {
+	       "includedEventTypes": [
+	           "Microsoft.Resources.ResourceWriteSuccess",
+	           "Microsoft.Resources.ResourceWriteFailure",
+	           "Microsoft.Resources.ResourceWriteCancel",
+	           "Microsoft.Resources.ResourceDeleteSuccess",
+	           "Microsoft.Resources.ResourceDeleteFailure",
+	           "Microsoft.Resources.ResourceDeleteCancel",
+	           "Microsoft.Resources.ResourceActionSuccess",
+	           "Microsoft.Resources.ResourceActionFailure",
+	           "Microsoft.Resources.ResourceActionCancel"
+	       ],
+	       "enableAdvancedFilteringOnArrays": true
+	*/
 	_, err := armeventgrid.NewEventSubscriptionsClient(c.Properties.SubscriptionId, c.Credential, nil)
 	if err != nil {
 		return err
