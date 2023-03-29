@@ -4,116 +4,103 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/labstack/echo"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/handlers"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 )
 
-type Route struct {
-	Name        string
-	Method      string
-	Path        string
-	HandlerFunc echo.HandlerFunc
-}
+func GetRoutes(databaseOptions *data.DatabaseOptions) hosting.Routes {
+	return hosting.Routes{
+		hosting.Route{
+			Name:        "Index",
+			Method:      http.MethodGet,
+			Path:        "/",
+			HandlerFunc: handlers.Index,
+		},
 
-type Routes []Route
+		hosting.Route{
+			Name:        "CreateDeployment",
+			Method:      http.MethodPost,
+			Path:        "/deployments",
+			HandlerFunc: hosting.ToHandlerFunc(handlers.CreateDeployment, databaseOptions),
+		},
 
-func GetRoutes(c *config.Configuration) *Routes {
-	configuration = c
-	return &routes
-}
+		hosting.Route{
+			Name:        "GetDeployment",
+			Method:      http.MethodGet,
+			Path:        "/deployments/:deploymentId",
+			HandlerFunc: handlers.GetDeployment,
+		},
 
-var configuration *config.Configuration
+		hosting.Route{
+			Name:        "InvokeOperation",
+			Method:      http.MethodPost,
+			Path:        "/deployment/:deploymentId/operation",
+			HandlerFunc: hosting.ToHandlerFunc(handlers.InvokeOperation, databaseOptions),
+		},
 
-var routes = Routes{
-	Route{
-		"Index",
-		http.MethodGet,
-		"/",
-		handlers.Index,
-	},
+		hosting.Route{
+			Name:        "ListDeployments",
+			Method:      http.MethodGet,
+			Path:        "/deployments",
+			HandlerFunc: handlers.ListDeployments,
+		},
 
-	Route{
-		"CreateDeployment",
-		http.MethodPost,
-		"/deployments",
-		handlers.ToHandlerFunc(handlers.CreateDeployment, configuration),
-	},
+		hosting.Route{
+			Name:        "UpdateDeployment",
+			Method:      strings.ToUpper("Put"),
+			Path:        "/deployments",
+			HandlerFunc: handlers.UpdateDeployment,
+		},
 
-	Route{
-		"GetDeployment",
-		http.MethodGet,
-		"/deployments/:deploymentId",
-		handlers.GetDeployment,
-	},
+		hosting.Route{
+			Name:        "CreatEventSubscription",
+			Method:      http.MethodPost,
+			Path:        "/events/:eventType/subscriptions",
+			HandlerFunc: hosting.ToHandlerFunc(handlers.CreateEventSubscription, databaseOptions),
+		},
 
-	Route{
-		"InvokeOperation",
-		http.MethodPost,
-		"/deployment/:deploymentId/operation",
-		handlers.ToHandlerFunc(handlers.InvokeOperation, configuration),
-	},
+		hosting.Route{
+			Name:        "DeleteEventSubscription",
+			Method:      strings.ToUpper("Delete"),
+			Path:        "/events/subscriptions/:subscriptionId",
+			HandlerFunc: handlers.DeleteEventSubscription,
+		},
 
-	Route{
-		"ListDeployments",
-		http.MethodGet,
-		"/deployments",
-		handlers.ListDeployments,
-	},
+		hosting.Route{
+			Name:        "GetEventSubscription",
+			Method:      http.MethodGet,
+			Path:        "/events/subscriptions/:subscriptionId",
+			HandlerFunc: handlers.GetEventSubscription,
+		},
 
-	Route{
-		"UpdateDeployment",
-		strings.ToUpper("Put"),
-		"/deployments",
-		handlers.UpdateDeployment,
-	},
+		hosting.Route{
+			Name:        "ListEventSubscriptions",
+			Method:      http.MethodGet,
+			Path:        "/events/:eventType/subscriptions",
+			HandlerFunc: handlers.ListEventSubscriptions,
+		},
 
-	Route{
-		"CreatEventSubscription",
-		http.MethodPost,
-		"/events/:eventType/subscriptions",
-		handlers.ToHandlerFunc(handlers.CreateEventSubscription, configuration),
-	},
+		hosting.Route{
+			Name:        "GetEvents",
+			Method:      http.MethodGet,
+			Path:        "/events",
+			HandlerFunc: handlers.GetEvents,
+		},
 
-	Route{
-		"DeleteEventSubscription",
-		strings.ToUpper("Delete"),
-		"/events/subscriptions/:subscriptionId",
-		handlers.DeleteEventSubscription,
-	},
+		hosting.Route{
+			Name:        "GetDeploymentOperation",
+			Method:      http.MethodGet,
+			Path:        "/operations/:operationId",
+			HandlerFunc: handlers.GetDeploymentOperation,
+		},
 
-	Route{
-		"GetEventSubscription",
-		http.MethodGet,
-		"/events/subscriptions/:subscriptionId",
-		handlers.GetEventSubscription,
-	},
+		hosting.Route{
+			Name:        "ListOperations",
+			Method:      http.MethodGet,
+			Path:        "/operations",
+			HandlerFunc: handlers.ListOperations,
+		},
+	}
 
-	Route{
-		"ListEventSubscriptions",
-		http.MethodGet,
-		"/events/:eventType/subscriptions",
-		handlers.ListEventSubscriptions,
-	},
-
-	Route{
-		"GetEvents",
-		http.MethodGet,
-		"/events",
-		handlers.GetEvents,
-	},
-
-	Route{
-		"GetDeploymentOperation",
-		http.MethodGet,
-		"/operations/:operationId",
-		handlers.GetDeploymentOperation,
-	},
-
-	Route{
-		"ListOperations",
-		http.MethodGet,
-		"/operations",
-		handlers.ListOperations,
-	},
 }
