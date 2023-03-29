@@ -13,6 +13,12 @@ type DryRunResult struct {
 	Status  string
 }
 
+type StartDeploymentResult struct {
+	Id      string
+	Results map[string]any
+	Status  string
+}
+
 // Performs a dry run of a deployment and returns the verification results
 // returns: verification results
 func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, templateParameters map[string]interface{}) (*DryRunResult, error) {
@@ -29,15 +35,20 @@ func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, 
 	}, nil
 }
 
-func (client *Client) StartDeployment(ctx context.Context, deploymentId int32, templateParameters map[string]interface{}) (*string, error) {
+func (client *Client) StartDeployment(ctx context.Context, deploymentId int32, templateParameters map[string]interface{}) (*StartDeploymentResult, error) {
 	invokedOperation, err := client.invokeDeploymentOperation(ctx, false, operations.StartDeploymentOperation, deploymentId, templateParameters)
 
 	if err != nil {
 		return nil, err
 	}
 
+	return &StartDeploymentResult{
+		Id:      *invokedOperation.ID,
+		Results: invokedOperation.Result.(map[string]any),
+		Status:  *invokedOperation.Status,
+	}, nil
 	// TODO: implement start deployment and return the invocation result
-	return invokedOperation.Name, nil
+	//return invokedOperation.Name, nil
 }
 
 func (client *Client) CreateDeployment(ctx context.Context, request generated.CreateDeployment) (*generated.Deployment, error) {
