@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"time"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
@@ -45,6 +44,7 @@ type AzureDeploymentResult struct {
 	Outputs           map[string]interface{} `json:"outputs"`
 	Status            ExecutionStatus
 }
+
 
 func (ad *AzureDeployment) GetDeploymentType() DeploymentType {
 	return ad.DeploymentType
@@ -174,6 +174,20 @@ func (azureDeployment *AzureDeployment) validate() (error) {
 	}
 	// allow params to be empty to support all default params
 	return nil
+}
+
+func FindResourcesByType(template Template, resourceType string) []string {
+	deploymentResources := []string{}
+	if template != nil && template["resources"] != nil {
+		resources := template["resources"].([]interface{})
+		for _, resource := range resources {
+			resourceMap := resource.(map[string]interface{})
+			if resourceMap["type"] != nil && resourceMap["type"].(string) == resourceType {
+				deploymentResources = append(deploymentResources, resourceMap["name"].(string))
+			}
+		}
+	}
+	return deploymentResources
 }
 
 // ErrorAdditionalInfo - The resource management error additional info.
