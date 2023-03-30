@@ -20,8 +20,10 @@ type UnitOfWork struct {
 	deletedEntities	[]any
 }
 
-func NewUnitOfWork() *UnitOfWork {
-	return &UnitOfWork{}
+func NewUnitOfWork(database Database) UOW {
+	return &UnitOfWork{
+		database: database,
+	}
 }
 
 func (uow *UnitOfWork) RegisterNew(entity any) {
@@ -60,5 +62,9 @@ func (uow *UnitOfWork) Commit() error {
 		}
 		return nil
 	})
+	uow.newEntities = nil
+	uow.modifiedEntities = nil
+	uow.cleanEntities = nil
+	uow.deletedEntities = nil
 	return nil
 }
