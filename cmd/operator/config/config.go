@@ -1,5 +1,11 @@
 package config
 
+import (
+	"path/filepath"
+
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+)
+
 // The azure settings
 type AzureSettings struct {
 	ClientId       string `mapstructure:"AZURE_CLIENT_ID"`
@@ -13,4 +19,15 @@ type AzureSettings struct {
 type DatabaseSettings struct {
 	Path        string `mapstructure:"DB_PATH"`
 	UseInMemory bool   `mapstructure:"DB_USE_INMEMEORY"`
+}
+
+type AppSettings struct {
+	Azure    AzureSettings
+	Database DatabaseSettings
+}
+
+func (appSettings *AppSettings) GetDatabaseOptions() *data.DatabaseOptions {
+	dsn := filepath.Join(appSettings.Database.Path, data.DatabaseFileName)
+	options := &data.DatabaseOptions{Dsn: dsn, UseInMemory: appSettings.Database.UseInMemory}
+	return options
 }

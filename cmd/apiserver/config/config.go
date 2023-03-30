@@ -1,66 +1,33 @@
 package config
 
 import (
-	"errors"
-	"log"
-	"sync"
+	"path/filepath"
 
-	"github.com/spf13/viper"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 )
 
-var lock = &sync.Mutex{}
+// The azure settings
+type AzureSettings struct {
+	ClientId       string `mapstructure:"AZURE_CLIENT_ID"`
+	TenantId       string `mapstructure:"AZURE_TENANT_ID"`
+	SubscriptionId string `mapstructure:"AZURE_SUBSCRIPTION_ID"`
+	ResourceGroup  string `mapstructure:"AZURE_RESOURCE_GROUP"`
+	Location       string `mapstructure:"AZURE_LOCATION"`
+}
 
-type Configuration struct {
+// The database settings
+type DatabaseSettings struct {
+	Path        string `mapstructure:"DB_PATH"`
+	UseInMemory bool   `mapstructure:"DB_USE_INMEMEORY"`
+}
+
+type AppSettings struct {
 	Azure    AzureSettings
 	Database DatabaseSettings
 }
 
-// Configures a new app configuration instance with the ability to configure it
-// if default values are desired, pass nil as configure
-func LoadConfiguration(path string, name *string) (*Configuration, error) {
-	config, err := readConfig(path, name)
-
-	if err != nil {
-		log.Printf("error reading in configuration from '%s'", path)
-	}
-
-	if config == nil {
-		return nil, errors.New("Configuration failed to load")
-	}
-	return config, nil
-}
-
-// LoadConfig reads configuration from file or environment variables.
-func readConfig(path string, name *string) (config *Configuration, err error) {
-	viper.AddConfigPath(path)
-
-	if name == nil {
-		viper.SetConfigFile(".env")
-	} else {
-		viper.SetConfigName(*name)
-	}
-	viper.SetConfigType("env")
-
-	viper.AutomaticEnv()
-
-	err = viper.ReadInConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	c := &Configuration{}
-
-	err = viper.Unmarshal(&c.Azure)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = viper.Unmarshal(&c.Database)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return c, err
+func (appSettings *AppSettings) GetDatabaseOptions() *data.DatabaseOptions {
+	dsn := filepath.Join(appSettings.Database.Path, data.DatabaseFileName)
+	options := &data.DatabaseOptions{Dsn: dsn, UseInMemory: appSettings.Database.UseInMemory}
+	return options
 }

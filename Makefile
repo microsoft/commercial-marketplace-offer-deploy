@@ -20,6 +20,9 @@ apiserver:
 operator:
 	go build -o ./bin/ ./cmd/operator
 
+operator-local: apiserver
+	./scripts/operator-local.sh
+
 test-all:
 	go test ./...
 

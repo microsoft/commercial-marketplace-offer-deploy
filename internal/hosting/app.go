@@ -1,4 +1,4 @@
-package app
+package hosting
 
 import (
 	"log"
@@ -6,17 +6,20 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/config"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/routes"
 )
 
 type App struct {
-	config *config.Configuration
+	config any
 	e      *echo.Echo
 }
 
 type AppBuilder struct {
 	app *App
+}
+
+type RouteOptions struct {
+	AppConfig any
+	Routes    *Routes
 }
 
 var appInstance *App
@@ -26,32 +29,33 @@ func GetApp() *App {
 	return appInstance
 }
 
-func (app *App) GetConfiguration() *config.Configuration {
+func (app *App) GetConfig() any {
 	return app.config
 }
 
-type ConfigureRoutesFunc func(c *config.Configuration) *routes.Routes
-type ConfigureConfigurationFunc func(config *config.Configuration)
+type ConfigureRoutesFunc func(options *RouteOptions)
+type ConfigureAppConfigFunc func(config *any)
 
 func NewAppBuilder() *AppBuilder {
 	builder := &AppBuilder{app: &App{e: echo.New()}}
 	return builder
 }
 
-func (b *AppBuilder) AddConfig(configure ConfigureConfigurationFunc) *AppBuilder {
-	b.app.config = &config.Configuration{}
+func (b *AppBuilder) AddConfig(configure ConfigureAppConfigFunc) *AppBuilder {
+	b.app.config = new(any)
 	if configure != nil {
-		configure(b.app.config)
+		configure(&b.app.config)
 	}
 	return b
 }
 
 func (b *AppBuilder) AddRoutes(configure ConfigureRoutesFunc) *AppBuilder {
-	routes := configure(b.app.config)
+	router := b.app.e.Router()
+	options := RouteOptions{Routes: &Routes{}, AppConfig: b.app.config}
+	configure(&options)
 
-	for _, route := range *routes {
+	for _, route := range *options.Routes {
 		log.Printf("registering route: { %s %s %s }", route.Name, route.Method, route.Path)
-		router := b.app.e.Router()
 		router.Add(route.Method, route.Path, route.HandlerFunc)
 	}
 	return b
@@ -60,6 +64,9 @@ func (b *AppBuilder) AddRoutes(configure ConfigureRoutesFunc) *AppBuilder {
 func (b *AppBuilder) Build() *App {
 	//add middleware
 	b.app.e.Use(middleware.Logger())
+	b.app.e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
+		log.Printf("Request:\n %v", string(reqBody))
+	}))
 
 	appInstance = b.app
 	return appInstance
