@@ -2,6 +2,7 @@ package eventgrid
 
 import (
 	"context"
+	"log"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -37,7 +38,7 @@ func NewDeploymentEventsClient(credential azcore.TokenCredential, resourceGroupI
 	return client, nil
 }
 
-func (c *deploymentEventsClient) CreateEventSubscription(ctx context.Context) error {
+func (c *deploymentEventsClient) CreateEventSubscription(ctx context.Context) (*armeventgrid.SystemTopicEventSubscriptionsClientGetResponse, error) {
 	// TODO: change '_' to eventSubscriptionsClient
 	// next: using the event topic from Properties, create an event subscription (web hook) using the endpoint of the operator
 	// parameters required:
@@ -66,11 +67,38 @@ func (c *deploymentEventsClient) CreateEventSubscription(ctx context.Context) er
 	       ],
 	       "enableAdvancedFilteringOnArrays": true
 	*/
-	_, err := armeventgrid.NewEventSubscriptionsClient(c.Properties.SubscriptionId, c.Credential, nil)
+	ctx = context.Background()
+	eventSubscriptionsClient, err := armeventgrid.NewEventSubscriptionsClient(c.Properties.SubscriptionId, c.Credential, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	pollerResp, err := eventSubscriptionsClient.BeginCreateOrUpdate(ctx, c.Properties.SubscriptionId, "ashwinse-test", armeventgrid.EventSubscription{
+		Properties: &armeventgrid.EventSubscriptionProperties{
+			Destination: &armeventgrid.WebHookEventSubscriptionDestination{
+				EndpointType: to.Ptr(armeventgrid.EndpointTypeWebHook),
+				Properties: &armeventgrid.WebHookEventSubscriptionDestinationProperties{
+					EndpointURL: to.Ptr(" https://7f53-2601-600-8d81-1470-b9a0-ca77-9e5c-b6b5.ngrok.io/eventgrid"),
+				},
+			},
+		},
+	}, nil)
+
+	if err != nil {
+		log.Fatalf("failed to finish request: %v", err)
+	}
+
+	_, err = pollerResp.PollUntilDone(ctx, nil)
+	if err != nil {
+		log.Fatalf("failed to pull the result: %v", err)
+	}
+
+	return &armeventgrid.SystemTopicEventSubscriptionsClientGetResponse{}, nil
+	// _, err := armeventgrid.NewEventSubscriptionsClient(c.Properties.SubscriptionId, c.Credential, nil)
+	// if err != nil {
+	// 	return err
+	// }
+	// return nil
 }
 
 func (c *deploymentEventsClient) DeleteSystemTopic(ctx context.Context) (*armeventgrid.SystemTopicsClientDeleteResponse, error) {
