@@ -1,5 +1,3 @@
-//go:build integration
-
 package eventgrid
 
 import (
@@ -12,8 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// integration test. Needs to run against a subscription
-// example call: go test -timeout 30s -run ^TestDeploymentEventsClient$ -tags=integration
 func TestCreateEventSubscription(t *testing.T) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 
@@ -26,9 +22,16 @@ func TestCreateEventSubscription(t *testing.T) {
 
 	require.NoError(t, err)
 
-	err = client.CreateEventSubscription(context.TODO())
+	ctx := context.TODO()
+	subscriptionName := "test-subscription"
+	endpointUrl := "https://2e75-172-73-181-161.ngrok.io/eventgrid"
+
+	result, err := client.CreateEventSubscription(ctx, subscriptionName, endpointUrl)
+
+	assert.NotNil(t, result)
 	require.NoError(t, err)
 
+	assert.Equal(t, subscriptionName, *result.Name)
 }
 
 // integration test. Needs to run against a subscription

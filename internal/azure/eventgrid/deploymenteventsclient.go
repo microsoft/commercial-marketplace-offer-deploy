@@ -2,7 +2,6 @@ package eventgrid
 
 import (
 	"context"
-	"log"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -15,7 +14,7 @@ const systemTopicLocation = "global"
 
 type DeploymentEventsClient interface {
 	CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTopic, error)
-	CreateEventSubscription(ctx context.Context) error
+	CreateEventSubscription(ctx context.Context, subscriptionName string, endpointUrl string) (*armeventgrid.EventSubscriptionsClientCreateOrUpdateResponse, error)
 }
 
 type deploymentEventsClient struct {
@@ -38,67 +37,41 @@ func NewDeploymentEventsClient(credential azcore.TokenCredential, resourceGroupI
 	return client, nil
 }
 
-func (c *deploymentEventsClient) CreateEventSubscription(ctx context.Context) (*armeventgrid.SystemTopicEventSubscriptionsClientGetResponse, error) {
-	// TODO: change '_' to eventSubscriptionsClient
-	// next: using the event topic from Properties, create an event subscription (web hook) using the endpoint of the operator
-	// parameters required:
-	//	endpointUrl string: the endpoint of the operator should be a parameter on method CreateEventSubscription
-	//  subscriptionName string: this is going to be the name of the subscription
-	// example of an event subscription for a system topic:
-	//		https://github.com/Azure/azure-sdk-for-go/blob/main/sdk/resourcemanager/eventgrid/armeventgrid/ze_generated_example_systemtopiceventsubscriptions_client_test.go
-
-	// return: modify the return from error to a tuple (*armeventgrid.[whatever the response is from the Azure client], error)
-
-	// Step:2
-	// inside this file, create a global package variable called "includedEventTypes" that has all the event types that we're interested
-	// slice, populated with the below represented values:
-	/*
-	   "filter": {
-	       "includedEventTypes": [
-	           "Microsoft.Resources.ResourceWriteSuccess",
-	           "Microsoft.Resources.ResourceWriteFailure",
-	           "Microsoft.Resources.ResourceWriteCancel",
-	           "Microsoft.Resources.ResourceDeleteSuccess",
-	           "Microsoft.Resources.ResourceDeleteFailure",
-	           "Microsoft.Resources.ResourceDeleteCancel",
-	           "Microsoft.Resources.ResourceActionSuccess",
-	           "Microsoft.Resources.ResourceActionFailure",
-	           "Microsoft.Resources.ResourceActionCancel"
-	       ],
-	       "enableAdvancedFilteringOnArrays": true
-	*/
-	ctx = context.Background()
+func (c *deploymentEventsClient) CreateEventSubscription(ctx context.Context, subscriptionName string, endpointUrl string) (*armeventgrid.EventSubscriptionsClientCreateOrUpdateResponse, error) {
 	eventSubscriptionsClient, err := armeventgrid.NewEventSubscriptionsClient(c.Properties.SubscriptionId, c.Credential, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	pollerResp, err := eventSubscriptionsClient.BeginCreateOrUpdate(ctx, c.Properties.SubscriptionId, "ashwinse-test", armeventgrid.EventSubscription{
-		Properties: &armeventgrid.EventSubscriptionProperties{
-			Destination: &armeventgrid.WebHookEventSubscriptionDestination{
-				EndpointType: to.Ptr(armeventgrid.EndpointTypeWebHook),
-				Properties: &armeventgrid.WebHookEventSubscriptionDestinationProperties{
-					EndpointURL: to.Ptr(" https://7f53-2601-600-8d81-1470-b9a0-ca77-9e5c-b6b5.ngrok.io/eventgrid"),
-				},
+	subscriptionScope := c.Properties.ResourceGroupId
+	filter := getDeploymentResourceSubscriptionFilter()
+
+	properties := &armeventgrid.EventSubscriptionProperties{
+		Destination: &armeventgrid.WebHookEventSubscriptionDestination{
+			EndpointType: to.Ptr(armeventgrid.EndpointTypeWebHook),
+			Properties: &armeventgrid.WebHookEventSubscriptionDestinationProperties{
+				EndpointURL: to.Ptr(endpointUrl),
 			},
 		},
-	}, nil)
-
-	if err != nil {
-		log.Fatalf("failed to finish request: %v", err)
+		Filter: filter,
 	}
 
-	_, err = pollerResp.PollUntilDone(ctx, nil)
+	pollerResp, err := eventSubscriptionsClient.BeginCreateOrUpdate(ctx,
+		subscriptionScope,
+		subscriptionName,
+		armeventgrid.EventSubscription{Properties: properties}, nil)
+
 	if err != nil {
-		log.Fatalf("failed to pull the result: %v", err)
+		return nil, err
 	}
 
-	return &armeventgrid.SystemTopicEventSubscriptionsClientGetResponse{}, nil
-	// _, err := armeventgrid.NewEventSubscriptionsClient(c.Properties.SubscriptionId, c.Credential, nil)
-	// if err != nil {
-	// 	return err
-	// }
-	// return nil
+	response, err := pollerResp.PollUntilDone(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+
 }
 
 func (c *deploymentEventsClient) DeleteSystemTopic(ctx context.Context) (*armeventgrid.SystemTopicsClientDeleteResponse, error) {
@@ -158,6 +131,36 @@ type eventGridManagerProperties struct {
 	ResourceGroupName string
 	ResourceGroupId   string
 	SystemTopicName   string
+}
+
+func getDeploymentResourceSubscriptionFilter() *armeventgrid.EventSubscriptionFilter {
+	return &armeventgrid.EventSubscriptionFilter{
+		EnableAdvancedFilteringOnArrays: to.Ptr(true),
+		IncludedEventTypes:              getIncludedEventTypesForFilter(),
+		AdvancedFilters: []armeventgrid.AdvancedFilterClassification{
+			&armeventgrid.StringContainsAdvancedFilter{
+				Values: []*string{
+					to.Ptr("/providers/Microsoft.Resources/deployments/"),
+				},
+				OperatorType: to.Ptr(armeventgrid.AdvancedFilterOperatorTypeStringContains),
+				Key:          to.Ptr("subject"),
+			},
+		},
+	}
+}
+
+func getIncludedEventTypesForFilter() []*string {
+	return []*string{
+		to.Ptr("Microsoft.Resources.ResourceWriteSuccess"),
+		to.Ptr("Microsoft.Resources.ResourceWriteFailure"),
+		to.Ptr("Microsoft.Resources.ResourceWriteCancel"),
+		to.Ptr("Microsoft.Resources.ResourceDeleteSuccess"),
+		to.Ptr("Microsoft.Resources.ResourceDeleteFailure"),
+		to.Ptr("Microsoft.Resources.ResourceDeleteCancel"),
+		to.Ptr("Microsoft.Resources.ResourceActionSuccess"),
+		to.Ptr("Microsoft.Resources.ResourceActionFailure"),
+		to.Ptr("Microsoft.Resources.ResourceActionCancel"),
+	}
 }
 
 func getProperties(ctx context.Context, cred azcore.TokenCredential, resourceGroupId string) (*eventGridManagerProperties, error) {
