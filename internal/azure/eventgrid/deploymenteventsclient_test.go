@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO: convert these test to integration tests that use https://github.com/ngrok/ngrok-go to tunnel to localhost
 func TestCreateEventSubscription(t *testing.T) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 
