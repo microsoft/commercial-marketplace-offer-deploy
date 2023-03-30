@@ -52,8 +52,26 @@ func (s *uowSuite) TestNewEntity(){
 	require.Equal(s.T(), s.createEntity.Name, result.Name)
 }
 
-func (s *uowSuite) TestUodateEntity(){
+func (s *uowSuite) TestUpdateEntity(){
+	s.uow.RegisterNew(s.updateEntity)
+	err := s.uow.Commit()
+	require.NoError(s.T(), err)
 
+	var insertResult *Deployment
+	s.database.Instance().Where("name = ?", s.updateEntity.Name).First(&insertResult)
+	require.NotNil(s.T(), insertResult)
+	require.Equal(s.T(), s.updateEntity.Name, insertResult.Name)
+
+	s.updateEntity.Name = "UpdatedEntity2"
+	s.uow.RegisterDeleted(s.updateEntity)
+	err = s.uow.Commit()
+	require.NoError(s.T(), err)
+
+	var updateResult *Deployment
+	s.database.Instance().Where("name = ?", s.updateEntity.Name).First(&updateResult)
+	require.NotNil(s.T(), insertResult)
+
+	require.Equal(s.T(), uint(0), updateResult.ID)
 }
 
 func (s *uowSuite) TestDeleteEntity(){
