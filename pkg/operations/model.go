@@ -16,3 +16,15 @@ func (o OperationType) String() string {
 	stringValue := string(o)
 	return stringValue
 }
+
+func GetOperationFromString(o string) OperationType {
+	// TODO: return tuple with error
+	switch o {
+	case DryRunDeploymentOperation.String():
+		return DryRunDeploymentOperation
+	case StartDeploymentOperation.String():
+		return StartDeploymentOperation
+	default:
+		return DryRunDeploymentOperation
+	}
+}
