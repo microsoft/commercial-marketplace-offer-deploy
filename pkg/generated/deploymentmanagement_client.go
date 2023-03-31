@@ -11,7 +11,7 @@ package generated
 
 import (
 	"context"
-	"errors"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"net/http"
@@ -21,37 +21,25 @@ import (
 )
 
 // DeploymentManagementClient contains the methods for the DeploymentManagementClient group.
-// Don't use this type directly, use NewDeploymentManagementClient() instead.
+// Don't use this type directly, use a constructor function instead.
 type DeploymentManagementClient struct {
+	internal *azcore.Client
 	endpoint string
-	pl runtime.Pipeline
 }
 
-// NewDeploymentManagementClient creates a new instance of DeploymentManagementClient with the specified values.
-//   - endpoint - The management endpoint of the Deployement Management service
-//   - pl - the pipeline used for sending requests and handling responses.
-func NewDeploymentManagementClient(endpoint string, pl runtime.Pipeline) *DeploymentManagementClient {
-	client := &DeploymentManagementClient{
-		endpoint: endpoint,
-		pl: pl,
-	}
-	return client
-}
-
-// CreatEventSubscription - Create a subscription for a particular eventType
+// CreatEventSubscription - Create a subscription
 // If the operation fails it returns an *azcore.ResponseError type.
 //
 // Generated from API version 0.1.0
-//   - eventType - event type name
 //   - body - Create event subscription
 //   - options - DeploymentManagementClientCreatEventSubscriptionOptions contains the optional parameters for the DeploymentManagementClient.CreatEventSubscription
 //     method.
-func (client *DeploymentManagementClient) CreatEventSubscription(ctx context.Context, eventType string, body CreateEventSubscription, options *DeploymentManagementClientCreatEventSubscriptionOptions) (DeploymentManagementClientCreatEventSubscriptionResponse, error) {
-	req, err := client.creatEventSubscriptionCreateRequest(ctx, eventType, body, options)
+func (client *DeploymentManagementClient) CreatEventSubscription(ctx context.Context, body CreateEventSubscription, options *DeploymentManagementClientCreatEventSubscriptionOptions) (DeploymentManagementClientCreatEventSubscriptionResponse, error) {
+	req, err := client.creatEventSubscriptionCreateRequest(ctx, body, options)
 	if err != nil {
 		return DeploymentManagementClientCreatEventSubscriptionResponse{}, err
 	}
-	resp, err := client.pl.Do(req)
+	resp, err := client.internal.Pipeline().Do(req)
 	if err != nil {
 		return DeploymentManagementClientCreatEventSubscriptionResponse{}, err
 	}
@@ -62,12 +50,8 @@ func (client *DeploymentManagementClient) CreatEventSubscription(ctx context.Con
 }
 
 // creatEventSubscriptionCreateRequest creates the CreatEventSubscription request.
-func (client *DeploymentManagementClient) creatEventSubscriptionCreateRequest(ctx context.Context, eventType string, body CreateEventSubscription, options *DeploymentManagementClientCreatEventSubscriptionOptions) (*policy.Request, error) {
-	urlPath := "/events/{eventType}/subscriptions"
-	if eventType == "" {
-		return nil, errors.New("parameter eventType cannot be empty")
-	}
-	urlPath = strings.ReplaceAll(urlPath, "{eventType}", url.PathEscape(eventType))
+func (client *DeploymentManagementClient) creatEventSubscriptionCreateRequest(ctx context.Context, body CreateEventSubscription, options *DeploymentManagementClientCreatEventSubscriptionOptions) (*policy.Request, error) {
+	urlPath := "/events/subscriptions"
 	req, err := runtime.NewRequest(ctx, http.MethodPost, runtime.JoinPaths(client.endpoint, urlPath))
 	if err != nil {
 		return nil, err
@@ -97,7 +81,7 @@ func (client *DeploymentManagementClient) CreateDeployment(ctx context.Context, 
 	if err != nil {
 		return DeploymentManagementClientCreateDeploymentResponse{}, err
 	}
-	resp, err := client.pl.Do(req)
+	resp, err := client.internal.Pipeline().Do(req)
 	if err != nil {
 		return DeploymentManagementClientCreateDeploymentResponse{}, err
 	}
@@ -139,7 +123,7 @@ func (client *DeploymentManagementClient) DeleteEventSubscription(ctx context.Co
 	if err != nil {
 		return DeploymentManagementClientDeleteEventSubscriptionResponse{}, err
 	}
-	resp, err := client.pl.Do(req)
+	resp, err := client.internal.Pipeline().Do(req)
 	if err != nil {
 		return DeploymentManagementClientDeleteEventSubscriptionResponse{}, err
 	}
@@ -172,7 +156,7 @@ func (client *DeploymentManagementClient) GetDeployment(ctx context.Context, dep
 	if err != nil {
 		return DeploymentManagementClientGetDeploymentResponse{}, err
 	}
-	resp, err := client.pl.Do(req)
+	resp, err := client.internal.Pipeline().Do(req)
 	if err != nil {
 		return DeploymentManagementClientGetDeploymentResponse{}, err
 	}
@@ -215,7 +199,7 @@ func (client *DeploymentManagementClient) GetDeploymentOperation(ctx context.Con
 	if err != nil {
 		return DeploymentManagementClientGetDeploymentOperationResponse{}, err
 	}
-	resp, err := client.pl.Do(req)
+	resp, err := client.internal.Pipeline().Do(req)
 	if err != nil {
 		return DeploymentManagementClientGetDeploymentOperationResponse{}, err
 	}
@@ -258,7 +242,7 @@ func (client *DeploymentManagementClient) GetEventSubscription(ctx context.Conte
 	if err != nil {
 		return DeploymentManagementClientGetEventSubscriptionResponse{}, err
 	}
-	resp, err := client.pl.Do(req)
+	resp, err := client.internal.Pipeline().Do(req)
 	if err != nil {
 		return DeploymentManagementClientGetEventSubscriptionResponse{}, err
 	}
@@ -300,7 +284,7 @@ func (client *DeploymentManagementClient) GetEventTypes(ctx context.Context, opt
 	if err != nil {
 		return DeploymentManagementClientGetEventTypesResponse{}, err
 	}
-	resp, err := client.pl.Do(req)
+	resp, err := client.internal.Pipeline().Do(req)
 	if err != nil {
 		return DeploymentManagementClientGetEventTypesResponse{}, err
 	}
@@ -343,7 +327,7 @@ func (client *DeploymentManagementClient) InvokeDeploymentOperation(ctx context.
 	if err != nil {
 		return DeploymentManagementClientInvokeDeploymentOperationResponse{}, err
 	}
-	resp, err := client.pl.Do(req)
+	resp, err := client.internal.Pipeline().Do(req)
 	if err != nil {
 		return DeploymentManagementClientInvokeDeploymentOperationResponse{}, err
 	}
@@ -385,7 +369,7 @@ func (client *DeploymentManagementClient) ListDeployments(ctx context.Context, o
 	if err != nil {
 		return DeploymentManagementClientListDeploymentsResponse{}, err
 	}
-	resp, err := client.pl.Do(req)
+	resp, err := client.internal.Pipeline().Do(req)
 	if err != nil {
 		return DeploymentManagementClientListDeploymentsResponse{}, err
 	}
@@ -422,19 +406,18 @@ func (client *DeploymentManagementClient) listDeploymentsHandleResponse(resp *ht
 	return result, nil
 }
 
-// ListEventSubscriptions - List all subscriptions for an event type
+// ListEventSubscriptions - List all subscriptions
 // If the operation fails it returns an *azcore.ResponseError type.
 //
 // Generated from API version 0.1.0
-//   - eventType - event topic name
 //   - options - DeploymentManagementClientListEventSubscriptionsOptions contains the optional parameters for the DeploymentManagementClient.ListEventSubscriptions
 //     method.
-func (client *DeploymentManagementClient) ListEventSubscriptions(ctx context.Context, eventType string, options *DeploymentManagementClientListEventSubscriptionsOptions) (DeploymentManagementClientListEventSubscriptionsResponse, error) {
-	req, err := client.listEventSubscriptionsCreateRequest(ctx, eventType, options)
+func (client *DeploymentManagementClient) ListEventSubscriptions(ctx context.Context, options *DeploymentManagementClientListEventSubscriptionsOptions) (DeploymentManagementClientListEventSubscriptionsResponse, error) {
+	req, err := client.listEventSubscriptionsCreateRequest(ctx, options)
 	if err != nil {
 		return DeploymentManagementClientListEventSubscriptionsResponse{}, err
 	}
-	resp, err := client.pl.Do(req)
+	resp, err := client.internal.Pipeline().Do(req)
 	if err != nil {
 		return DeploymentManagementClientListEventSubscriptionsResponse{}, err
 	}
@@ -445,12 +428,8 @@ func (client *DeploymentManagementClient) ListEventSubscriptions(ctx context.Con
 }
 
 // listEventSubscriptionsCreateRequest creates the ListEventSubscriptions request.
-func (client *DeploymentManagementClient) listEventSubscriptionsCreateRequest(ctx context.Context, eventType string, options *DeploymentManagementClientListEventSubscriptionsOptions) (*policy.Request, error) {
-	urlPath := "/events/{eventType}/subscriptions"
-	if eventType == "" {
-		return nil, errors.New("parameter eventType cannot be empty")
-	}
-	urlPath = strings.ReplaceAll(urlPath, "{eventType}", url.PathEscape(eventType))
+func (client *DeploymentManagementClient) listEventSubscriptionsCreateRequest(ctx context.Context, options *DeploymentManagementClientListEventSubscriptionsOptions) (*policy.Request, error) {
+	urlPath := "/events/subscriptions"
 	req, err := runtime.NewRequest(ctx, http.MethodGet, runtime.JoinPaths(client.endpoint, urlPath))
 	if err != nil {
 		return nil, err
@@ -479,7 +458,7 @@ func (client *DeploymentManagementClient) ListOperations(ctx context.Context, op
 	if err != nil {
 		return DeploymentManagementClientListOperationsResponse{}, err
 	}
-	resp, err := client.pl.Do(req)
+	resp, err := client.internal.Pipeline().Do(req)
 	if err != nil {
 		return DeploymentManagementClientListOperationsResponse{}, err
 	}
@@ -521,7 +500,7 @@ func (client *DeploymentManagementClient) UpdateDeployment(ctx context.Context, 
 	if err != nil {
 		return DeploymentManagementClientUpdateDeploymentResponse{}, err
 	}
-	resp, err := client.pl.Do(req)
+	resp, err := client.internal.Pipeline().Do(req)
 	if err != nil {
 		return DeploymentManagementClientUpdateDeploymentResponse{}, err
 	}

@@ -97,7 +97,6 @@ func (c *CreateEventSubscription) UnmarshalJSON(data []byte) error {
 // MarshalJSON implements the json.Marshaller interface for type CreateEventSubscriptionResponse.
 func (c CreateEventSubscriptionResponse) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]any)
-	populate(objectMap, "eventType", c.EventType)
 	populate(objectMap, "id", c.ID)
 	populate(objectMap, "name", c.Name)
 	return json.Marshal(objectMap)
@@ -112,9 +111,6 @@ func (c *CreateEventSubscriptionResponse) UnmarshalJSON(data []byte) error {
 	for key, val := range rawMsg {
 		var err error
 		switch key {
-		case "eventType":
-				err = unpopulate(val, "EventType", &c.EventType)
-				delete(rawMsg, key)
 		case "id":
 				err = unpopulate(val, "ID", &c.ID)
 				delete(rawMsg, key)
@@ -172,7 +168,6 @@ func (d *Deployment) UnmarshalJSON(data []byte) error {
 func (e EventSubscription) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]any)
 	populate(objectMap, "callback", e.Callback)
-	populate(objectMap, "eventType", e.EventType)
 	populate(objectMap, "id", e.ID)
 	populate(objectMap, "name", e.Name)
 	return json.Marshal(objectMap)
@@ -189,9 +184,6 @@ func (e *EventSubscription) UnmarshalJSON(data []byte) error {
 		switch key {
 		case "callback":
 				err = unpopulate(val, "Callback", &e.Callback)
-				delete(rawMsg, key)
-		case "eventType":
-				err = unpopulate(val, "EventType", &e.EventType)
 				delete(rawMsg, key)
 		case "id":
 				err = unpopulate(val, "ID", &e.ID)
