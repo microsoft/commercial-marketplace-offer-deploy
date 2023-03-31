@@ -8,6 +8,7 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/generated"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
 	"gorm.io/gorm"
 )
 
@@ -49,9 +50,13 @@ func InvokeOperation(c echo.Context, db *gorm.DB) error {
 }
 
 func CreateOperationHandler(operation generated.InvokeDeploymentOperation) InvokeOperationDeploymentHandler {
-	switch operation.Name {
-	case operation.Name:
+	operationType := operations.GetOperationFromString(*operation.Name)
+
+	switch operationType {
+	case operations.DryRunDeploymentOperation:
 		return CreateDryRun
+	case operations.StartDeploymentOperation:
+		return StartDeployment
 	default:
 		return nil
 	}
