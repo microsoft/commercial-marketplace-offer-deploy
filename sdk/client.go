@@ -46,7 +46,18 @@ func NewClient(endpoint string, credential azcore.TokenCredential, options *Clie
 		},
 	}, &options.ClientOptions)
 
-	return &Client{internalClient: generated.NewDeploymentManagementClient(endpoint, pl)}, nil
+	internalClient, err := azcore.NewClient(moduleName, moduleVersion, runtime.PipelineOptions{
+		PerRetry: []policy.Policy{
+			runtime.NewBearerTokenPolicy(credential, []string{tokenScope}, nil),
+		},
+	}, &options.ClientOptions)
+
+	deploymentClient := &generated.DeploymentManagementClient{
+		internal: internalClient,
+		endpoint: endpoint,
+	}
+
+	return &Client{internalClient: deploymentClient}, nil
 }
 
 func getDefaultScope(endpoint string) (string, error) {
