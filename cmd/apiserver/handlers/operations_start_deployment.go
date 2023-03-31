@@ -4,11 +4,11 @@ import (
 	"log"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/generated"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"gorm.io/gorm"
 )
 
-func StartDeployment(deploymentId int, operation generated.InvokeDeploymentOperation, db *gorm.DB) (interface{}, error) {
+func StartDeployment(deploymentId int, operation api.InvokeDeploymentOperation, db *gorm.DB) (interface{}, error) {
 	log.Printf("Inisde CreateDryRun deploymentId: %d", deploymentId)
 
 	retrieved := &data.Deployment{}
@@ -34,7 +34,7 @@ func StartDeployment(deploymentId int, operation generated.InvokeDeploymentOpera
 	// uuid := uuid.New().String()
 	// timestamp := time.Now().UTC()
 	// status := "OK"
-	returnedResult := generated.InvokedOperation{
+	returnedResult := api.InvokedOperation{
 		ID:        nil,
 		InvokedOn: nil,
 		Result:    nil,

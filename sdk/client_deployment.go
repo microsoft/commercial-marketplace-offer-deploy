@@ -3,7 +3,7 @@ package sdk
 import (
 	"context"
 
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/generated"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
 )
 
@@ -51,7 +51,7 @@ func (client *Client) StartDeployment(ctx context.Context, deploymentId int32, t
 	//return invokedOperation.Name, nil
 }
 
-func (client *Client) CreateDeployment(ctx context.Context, request generated.CreateDeployment) (*generated.Deployment, error) {
+func (client *Client) CreateDeployment(ctx context.Context, request api.CreateDeployment) (*api.Deployment, error) {
 	response, err := client.internalClient.CreateDeployment(ctx, request, nil)
 
 	if err != nil {
@@ -61,14 +61,14 @@ func (client *Client) CreateDeployment(ctx context.Context, request generated.Cr
 	return &deployment, nil
 }
 
-func (client *Client) ListDeployments(ctx context.Context) (generated.DeploymentManagementClientListDeploymentsResponse, error) {
+func (client *Client) ListDeployments(ctx context.Context) (api.DeploymentManagementClientListDeploymentsResponse, error) {
 	return client.internalClient.ListDeployments(ctx, nil)
 }
 
 // invoke a deployment operation with parameters
-func (client *Client) invokeDeploymentOperation(ctx context.Context, wait bool, operationType operations.OperationType, deploymentId int32, parameters map[string]interface{}) (*generated.InvokedOperation, error) {
+func (client *Client) invokeDeploymentOperation(ctx context.Context, wait bool, operationType operations.OperationType, deploymentId int32, parameters map[string]interface{}) (*api.InvokedOperation, error) {
 	operationTypeName := operations.DryRunDeploymentOperation.String()
-	command := &generated.InvokeDeploymentOperation{
+	command := &api.InvokeDeploymentOperation{
 		Name:       &operationTypeName,
 		Parameters: parameters,
 		Wait:       &wait,

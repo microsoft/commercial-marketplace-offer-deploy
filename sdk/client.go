@@ -2,18 +2,14 @@ package sdk
 
 import (
 	"reflect"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
-
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/generated"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 )
 
 // Client is the struct for interacting with an Azure App Configuration instance.
 type Client struct {
-	internalClient *generated.DeploymentManagementClient
+	internalClient *api.DeploymentManagementClient
 }
 
 // ClientOptions contains the optional parameters for the NewClient method.
@@ -34,30 +30,12 @@ func NewClient(endpoint string, credential azcore.TokenCredential, options *Clie
 		options.Cloud = cloud.AzurePublic
 	}
 
-	tokenScope, err := getDefaultScope(endpoint)
-
+	internalClient, err := api.NewDeploymentManagementClient(endpoint, credential, &options.ClientOptions)
 	if err != nil {
 		return nil, err
 	}
-
-	pl := runtime.NewPipeline(moduleName, moduleVersion, runtime.PipelineOptions{
-		PerRetry: []policy.Policy{
-			runtime.NewBearerTokenPolicy(credential, []string{tokenScope}, nil),
-		},
-	}, &options.ClientOptions)
-
-	internalClient, err := azcore.NewClient(moduleName, moduleVersion, runtime.PipelineOptions{
-		PerRetry: []policy.Policy{
-			runtime.NewBearerTokenPolicy(credential, []string{tokenScope}, nil),
-		},
-	}, &options.ClientOptions)
-
-	deploymentClient := &generated.DeploymentManagementClient{
-		internal: internalClient,
-		endpoint: endpoint,
-	}
-
-	return &Client{internalClient: deploymentClient}, nil
+	
+	return &Client{internalClient: internalClient}, nil
 }
 
 func getDefaultScope(endpoint string) (string, error) {
