@@ -35,6 +35,7 @@ func (app *App) GetConfig() any {
 
 type ConfigureRoutesFunc func(options *RouteOptions)
 type ConfigureAppConfigFunc func(config *any)
+type ConfigureEchoFunc func(e *echo.Echo)
 
 func NewAppBuilder() *AppBuilder {
 	builder := &AppBuilder{app: &App{e: echo.New()}}
@@ -72,9 +73,15 @@ func (b *AppBuilder) Build() *App {
 	return appInstance
 }
 
-func (app *App) Start(port int) error {
+// Start starts the server
+// port: the port to listen on
+// configure: (optional) a function to configure the echo server
+func (app *App) Start(port int, configure ConfigureEchoFunc) error {
 	address := ":" + strconv.Itoa(port)
 	log.Printf("Server starting on %s", address)
 
+	if configure != nil {
+		configure(app.e)
+	}
 	return app.e.Start(address)
 }

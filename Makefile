@@ -33,6 +33,9 @@ test-integration:
 sdk:
 	go build ./sdk
 
+tools:
+	./scripts/build-tools.sh
+
 .NOTPARALLEL:
 
-.PHONY: apiserver-local apiserver sdk operator test-all generate
+.PHONY: apiserver-local apiserver sdk operator test-all generate tools
