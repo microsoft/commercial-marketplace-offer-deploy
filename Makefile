@@ -20,7 +20,7 @@ apiserver:
 operator:
 	go build -o ./bin/ ./cmd/operator
 
-operator-local: apiserver
+operator-local:
 	./scripts/operator-local.sh
 
 test-all:
@@ -33,6 +33,9 @@ test-integration:
 sdk:
 	go build ./sdk
 
+tools:
+	./scripts/build-tools.sh
+
 .NOTPARALLEL:
 
-.PHONY: apiserver-local apiserver sdk operator test-all generate
+.PHONY: apiserver-local apiserver sdk operator test-all generate tools

@@ -11,9 +11,9 @@ import (
 func GetRoutes(databaseOptions *data.DatabaseOptions) hosting.Routes {
 	return hosting.Routes{
 		hosting.Route{
-			Name:        "CreateDeployment",
+			Name:        "EventGridWebHook",
 			Method:      http.MethodPost,
-			Path:        "/deployments",
+			Path:        "/eventgrid",
 			HandlerFunc: hosting.ToHandlerFunc(handlers.EventGridWebHook, databaseOptions),
 		},
 	}
