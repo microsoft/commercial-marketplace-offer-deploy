@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"errors"
 	"log"
+	"time"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/generated"
@@ -9,38 +11,30 @@ import (
 )
 
 func StartDeployment(deploymentId int, operation generated.InvokeDeploymentOperation, db *gorm.DB) (interface{}, error) {
-	log.Printf("Inisde CreateDryRun deploymentId: %d", deploymentId)
+	log.Printf("Inside StartDeployment")
 
+	//gather data: deploymentId
 	retrieved := &data.Deployment{}
 	db.First(&retrieved, deploymentId)
 
-	log.Printf("Inisde CreateDryRun deploymentId: %v", retrieved)
+	templateParams := operation.Parameters
+	if templateParams == nil {
+		return nil, errors.New("templateParams were not provided")
+	}
 
-	// templateParams := operation.Parameters
-	// if templateParams == nil {
-	// 	return nil, errors.New("templateParams were not provided")
-	// }
+	//do the work to update the database and post a message to the service bus
+	//// deployment.Pending
 
-	// azureDeployment := deployment.AzureDeployment{
-	// 	SubscriptionId:    retrieved.SubscriptionId,
-	// 	Location:          retrieved.Location,
-	// 	ResourceGroupName: retrieved.ResourceGroup,
-	// 	DeploymentName:    retrieved.Name,
-	// 	Template:          retrieved.Template,
-	// 	Params:            templateParams.(map[string]interface{}),
-	// }
+	// formulate the response
+	timestamp := time.Now().UTC()
+	status := "OK"
 
-	// res := deployment.DryRun(&azureDeployment)
-	// uuid := uuid.New().String()
-	// timestamp := time.Now().UTC()
-	// status := "OK"
 	returnedResult := generated.InvokedOperation{
-		ID:        nil,
-		InvokedOn: nil,
-		Result:    nil,
-		Status:    nil,
+		ID:         operation.Name,
+		Parameters: operation.Parameters.(map[string]interface{}),
+		InvokedOn:  &timestamp,
+		Result:     nil,
+		Status:     &status,
 	}
 	return returnedResult, nil
-
-	//need to return the operation id
 }
