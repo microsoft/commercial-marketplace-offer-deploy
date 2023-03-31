@@ -59,16 +59,20 @@ func (b *AppBuilder) AddRoutes(configure ConfigureRoutesFunc) *AppBuilder {
 		log.Printf("registering route: { %s %s %s }", route.Name, route.Method, route.Path)
 		router.Add(route.Method, route.Path, route.HandlerFunc)
 	}
+
 	return b
 }
 
-func (b *AppBuilder) Build() *App {
+func (b *AppBuilder) Build(configure ConfigureEchoFunc) *App {
 	//add middleware
 	b.app.e.Use(middleware.Logger())
 	b.app.e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
 		log.Printf("Request:\n %v", string(reqBody))
 	}))
 
+	if configure != nil {
+		configure(b.app.e)
+	}
 	appInstance = b.app
 	return appInstance
 }
