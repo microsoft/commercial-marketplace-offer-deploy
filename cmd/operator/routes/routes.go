@@ -9,14 +9,12 @@ import (
 )
 
 func GetRoutes(databaseOptions *data.DatabaseOptions) hosting.Routes {
-	eventGridWebHook := handlers.NewEventGridWebHook(databaseOptions)
-
 	return hosting.Routes{
 		hosting.Route{
 			Name:        "EventGridWebHook",
 			Method:      http.MethodPost,
 			Path:        "/eventgrid",
-			HandlerFunc: eventGridWebHook.Handler,
+			HandlerFunc: hosting.ToHandlerFunc(handlers.EventGridWebHook, databaseOptions),
 		},
 	}
 }

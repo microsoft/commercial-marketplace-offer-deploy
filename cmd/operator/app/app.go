@@ -26,7 +26,7 @@ func GetApp(configurationFilePath string) *hosting.App {
 	})
 
 	app := builder.Build(func(e *echo.Echo) {
-		e.Group("/eventgrid", middleware.EventGridSubscriptionValidation())
+		e.Group("/eventgrid", middleware.EventGridWebHookSubscriptionValidation())
 	})
 	return app
 }

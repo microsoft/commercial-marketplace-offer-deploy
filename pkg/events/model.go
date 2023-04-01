@@ -34,11 +34,10 @@ func (o EventType) String() string {
 	return stringValue
 }
 
-// subscription model
-
-type EventSubscriptionMessage struct {
-	Id             uuid.UUID `json:"id,omitempty"`
-	SubscriptionId uuid.UUID `json:"subscriptionId,omitempty"`
-	EventType      `json:"eventType,omitempty"`
+// subscription model for MODM webhook events
+type WebhookEventMessage struct {
+	Id             uuid.UUID      `json:"id,omitempty"`
+	SubscriptionId uuid.UUID      `json:"subscriptionId,omitempty"`
+	EventType      string         `json:"eventType,omitempty"`
 	Payload        map[string]any `json:"payload,omitempty"`
 }
