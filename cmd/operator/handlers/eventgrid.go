@@ -8,11 +8,9 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
-	"github.com/google/uuid"
 	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid/eventsfiltering"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"gorm.io/gorm"
 )
 
@@ -39,28 +37,15 @@ func EventGridWebHook(c echo.Context, db *gorm.DB) error {
 		return c.String(http.StatusOK, "No resources to process")
 	}
 
-	sendToWebHookPublisher(credential, filteredEvents, ctx)
+	enqueueForPublishing(credential, filteredEvents, ctx)
 	return c.String(http.StatusOK, "OK")
 }
 
-// send these events as our webhook events to the events publisher (that sends to the consumers our events to their webhook endpoint)
-func sendToWebHookPublisher(credential *azidentity.DefaultAzureCredential, filteredEvents []*eventgrid.Event, ctx context.Context) {
+// send these event grid events through our message bus to be processed and published
+// to the web hook endpoints that are subscribed to our MODM events
+func enqueueForPublishing(credential *azidentity.DefaultAzureCredential, events []*eventgrid.Event, ctx context.Context) {
 	sender := getMessageSender(credential)
-
-	messages := []*events.WebhookEventMessage{}
-
-	for _, event := range filteredEvents {
-		message := &events.WebhookEventMessage{
-			Id:        uuid.New(),
-			EventType: *event.EventType,
-
-			Payload: map[string]any{
-				"ResourceId": *event.Subject,
-			},
-		}
-		messages = append(messages, message)
-	}
-	sender.Send(ctx, messages)
+	sender.Send(ctx, events)
 }
 
 func getMessageSender(credential azcore.TokenCredential) messaging.MessageSender {
