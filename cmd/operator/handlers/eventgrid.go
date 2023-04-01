@@ -45,7 +45,7 @@ func EventGridWebHook(c echo.Context, db *gorm.DB) error {
 // to the web hook endpoints that are subscribed to our MODM events
 func enqueueForPublishing(credential *azidentity.DefaultAzureCredential, events []*eventgrid.Event, ctx context.Context) {
 	sender := getMessageSender(credential)
-	sender.Send(ctx, events)
+	sender.Send(ctx, messaging.EventsQueue, events)
 }
 
 func getMessageSender(credential azcore.TokenCredential) messaging.MessageSender {

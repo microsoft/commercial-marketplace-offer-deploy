@@ -7,7 +7,7 @@ import (
 )
 
 type MessageSender interface {
-	Send(ctx context.Context, message ...any) error
+	Send(ctx context.Context, queueName string, message ...any) error
 }
 
 // TODO: need to get the message bus from configuration
