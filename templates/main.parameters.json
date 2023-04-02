@@ -4,12 +4,6 @@
   "parameters": {
     "serviceBusNamespaceName": {
       "value": "modm-servicebus-namespace"
-    },
-    "serviceBusEventsQueueName": {
-      "value": "modm-event-queue"
-    },
-    "serviceBusOperationsQueueName": {
-      "value": "modm-operations-queue"
     }
   }
 }
