@@ -16,7 +16,7 @@ import (
 )
 
 func TestPublisherPublish(t *testing.T) {
-	message := &EventSubscriptionMessage{
+	message := &WebhookEventMessage{
 		Id:        uuid.New(),
 		EventType: "test.event",
 		Payload:   make(map[string]any),
@@ -24,7 +24,7 @@ func TestPublisherPublish(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, _ := io.ReadAll(r.Body)
-		var received = &EventSubscriptionMessage{}
+		var received = &WebhookEventMessage{}
 		json.Unmarshal(body, &received)
 
 		// assert that the message that was published was received by the server that was registered to the publisher
@@ -70,6 +70,6 @@ func newFakeSubscriptionProvider(url string) SubscriptionsProvider {
 	return provider
 }
 
-func (p *fakeSubscriptionsProvider) GetSubscriptions(eventType EventType) ([]*data.EventSubscription, error) {
+func (p *fakeSubscriptionsProvider) GetSubscriptions(eventType string) ([]*data.EventSubscription, error) {
 	return p.subscriptions, nil
 }
