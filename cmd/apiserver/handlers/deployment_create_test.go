@@ -9,7 +9,7 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/generated"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,7 +36,7 @@ func TestCreateDeployment(t *testing.T) {
 	if assert.NoError(t, CreateDeployment(c, db)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 
-		var result generated.Deployment
+		var result api.Deployment
 		json.Unmarshal(rec.Body.Bytes(), &result)
 		assert.Equal(t, int32(1), *result.ID)
 		assert.Equal(t, "test-deployment", *result.Name)
