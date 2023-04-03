@@ -47,8 +47,6 @@ func (client *Client) StartDeployment(ctx context.Context, deploymentId int32, t
 		Results: invokedOperation.Result.(map[string]any),
 		Status:  *invokedOperation.Status,
 	}, nil
-	// TODO: implement start deployment and return the invocation result
-	//return invokedOperation.Name, nil
 }
 
 func (client *Client) CreateDeployment(ctx context.Context, request api.CreateDeployment) (*api.Deployment, error) {
