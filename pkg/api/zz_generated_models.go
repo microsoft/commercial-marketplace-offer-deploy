@@ -7,7 +7,7 @@
 // Changes may cause incorrect behavior and will be lost if the code is regenerated.
 // DO NOT EDIT.
 
-package generated
+package api
 
 import "time"
 
@@ -32,8 +32,6 @@ type CreateEventSubscription struct {
 }
 
 type CreateEventSubscriptionResponse struct {
-	// The event type
-	EventType *string `json:"eventType,omitempty"`
 	ID *string `json:"id,omitempty"`
 
 	// the name of the subscription
@@ -124,9 +122,6 @@ type DeploymentManagementClientUpdateDeploymentOptions struct {
 
 type EventSubscription struct {
 	Callback *string `json:"callback,omitempty"`
-
-	// The event type
-	EventType *string `json:"eventType,omitempty"`
 	ID *string `json:"id,omitempty"`
 
 	// the name of the subscription

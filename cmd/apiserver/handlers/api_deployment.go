@@ -7,14 +7,14 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/generated"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
 	"gorm.io/gorm"
 )
 
 const DeploymenIdParameterName = "deploymentId"
 
-type InvokeOperationDeploymentHandler func(int, generated.InvokeDeploymentOperation, *gorm.DB) (interface{}, error)
+type InvokeOperationDeploymentHandler func(int, api.InvokeDeploymentOperation, *gorm.DB) (interface{}, error)
 
 func GetDeployment(c echo.Context) error {
 	return c.JSON(http.StatusOK, "")
@@ -27,7 +27,7 @@ func InvokeOperation(c echo.Context, db *gorm.DB) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("%s in route was not an int", DeploymenIdParameterName))
 	}
 
-	var operation generated.InvokeDeploymentOperation
+	var operation api.InvokeDeploymentOperation
 	err = c.Bind(&operation)
 
 	if err != nil {
@@ -49,7 +49,7 @@ func InvokeOperation(c echo.Context, db *gorm.DB) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-func CreateOperationHandler(operation generated.InvokeDeploymentOperation) InvokeOperationDeploymentHandler {
+func CreateOperationHandler(operation api.InvokeDeploymentOperation) InvokeOperationDeploymentHandler {
 	operationType := operations.GetOperationFromString(*operation.Name)
 
 	switch operationType {
