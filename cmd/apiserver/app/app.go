@@ -23,6 +23,6 @@ func GetApp(configurationFilePath string) *hosting.App {
 		*options.Routes = routes
 	})
 
-	app := builder.Build()
+	app := builder.Build(nil)
 	return app
 }
