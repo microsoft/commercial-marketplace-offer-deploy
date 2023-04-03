@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package test_test
@@ -6,26 +7,26 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
-	"path/filepath"
-	"testing"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armpolicy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/generated"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
-	"github.com/stretchr/testify/suite"
 	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+	"log"
+	"path/filepath"
+	"testing"
 )
 
 type dryRunSuite struct {
 	suite.Suite
-	subscriptionId string
+	subscriptionId    string
 	resourceGroupName string
-	location string
-	endpoint string
+	location          string
+	endpoint          string
 }
 
 func TestDryRunSuite(t *testing.T) {
@@ -94,11 +95,11 @@ func (s *dryRunSuite) getParameters(path string) map[string]interface{} {
 	return parameters
 }
 
-func (s *dryRunSuite) createDeployment(ctx context.Context, client *sdk.Client, templatePath string) *generated.Deployment {
+func (s *dryRunSuite) createDeployment(ctx context.Context, client *sdk.Client, templatePath string) *api.Deployment {
 	name := "DryRunDeploymentTest"
 	template := s.getTemplate(templatePath)
 
-	deployment, err := client.CreateDeployment(ctx, generated.CreateDeployment{
+	deployment, err := client.CreateDeployment(ctx, api.CreateDeployment{
 		Name:           &name,
 		SubscriptionID: &s.subscriptionId,
 		ResourceGroup:  &s.resourceGroupName,

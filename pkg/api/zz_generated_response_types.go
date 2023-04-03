@@ -7,7 +7,7 @@
 // Changes may cause incorrect behavior and will be lost if the code is regenerated.
 // DO NOT EDIT.
 
-package generated
+package api
 
 // DeploymentManagementClientCreatEventSubscriptionResponse contains the response from method DeploymentManagementClient.CreatEventSubscription.
 type DeploymentManagementClientCreatEventSubscriptionResponse struct {

@@ -10,6 +10,13 @@ type Publisher interface {
 	Publish(message DeploymentMessage) error
 }
 
+type BackgroundReceiver interface {
+	Start()
+	Stop()
+}
+
+type ReceiveHandler func(message DeploymentMessage) error
+
 type DeploymentMessage struct {
 	Header DeploymentMessageHeader  `json:"header"`
 	Body any `json:"body"`
