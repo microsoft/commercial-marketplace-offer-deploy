@@ -144,6 +144,7 @@ func getDeploymentResourceSubscriptionFilter() *armeventgrid.EventSubscriptionFi
 func getIncludedEventTypesForFilter() []*string {
 	return []*string{
 		// filter on what we care about (what a consumer can take action on)
+		// we don't need to worry about message ordering if we only listen for success and failure
 		to.Ptr("Microsoft.Resources.ResourceWriteSuccess"),
 		to.Ptr("Microsoft.Resources.ResourceWriteFailure"),
 		to.Ptr("Microsoft.Resources.ResourceDeleteSuccess"),
