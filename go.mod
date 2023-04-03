@@ -23,6 +23,7 @@ require (
 
 require (
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/servicebus/armservicebus/v2 v2.0.0-beta.3 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest v0.11.28 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.9.18 // indirect

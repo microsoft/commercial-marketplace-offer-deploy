@@ -3,6 +3,7 @@ package hosting
 import (
 	"log"
 	"strconv"
+	"sync"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -10,7 +11,7 @@ import (
 
 type App struct {
 	config any
-	e      *echo.Echo
+	server *echo.Echo
 }
 
 type AppBuilder struct {
@@ -22,6 +23,7 @@ type RouteOptions struct {
 	Routes    *Routes
 }
 
+var mutex sync.Mutex
 var appInstance *App
 
 // Gets the App instance running
@@ -29,16 +31,44 @@ func GetApp() *App {
 	return appInstance
 }
 
+// Gets strongly typed the App configuration
+func GetAppConfig[T any]() T {
+	return GetApp().GetConfig().(T)
+}
+
+// GetConfig gets the app configuration
 func (app *App) GetConfig() any {
 	return app.config
 }
+
+// Start starts the server
+// port: the port to listen on
+// configure: (optional) a function to configure the echo server
+func (app *App) Start(port int, configure ConfigureEchoFunc) error {
+	address := ":" + strconv.Itoa(port)
+	log.Printf("Server starting on %s", address)
+
+	if configure != nil {
+		configure(app.server)
+	}
+	return app.server.Start(address)
+}
+
+// App Builder
 
 type ConfigureRoutesFunc func(options *RouteOptions)
 type ConfigureAppConfigFunc func(config *any)
 type ConfigureEchoFunc func(e *echo.Echo)
 
 func NewAppBuilder() *AppBuilder {
-	builder := &AppBuilder{app: &App{e: echo.New()}}
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	if appInstance == nil {
+		appInstance = &App{server: echo.New()}
+	}
+
+	builder := &AppBuilder{app: appInstance}
 	return builder
 }
 
@@ -51,7 +81,7 @@ func (b *AppBuilder) AddConfig(configure ConfigureAppConfigFunc) *AppBuilder {
 }
 
 func (b *AppBuilder) AddRoutes(configure ConfigureRoutesFunc) *AppBuilder {
-	router := b.app.e.Router()
+	router := b.app.server.Router()
 	options := RouteOptions{Routes: &Routes{}, AppConfig: b.app.config}
 	configure(&options)
 
@@ -65,27 +95,14 @@ func (b *AppBuilder) AddRoutes(configure ConfigureRoutesFunc) *AppBuilder {
 
 func (b *AppBuilder) Build(configure ConfigureEchoFunc) *App {
 	//add middleware
-	b.app.e.Use(middleware.Logger())
-	b.app.e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
+	b.app.server.Use(middleware.Logger())
+	b.app.server.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
 		log.Printf("Request:\n %v", string(reqBody))
 	}))
 
 	if configure != nil {
-		configure(b.app.e)
+		configure(b.app.server)
 	}
 	appInstance = b.app
 	return appInstance
-}
-
-// Start starts the server
-// port: the port to listen on
-// configure: (optional) a function to configure the echo server
-func (app *App) Start(port int, configure ConfigureEchoFunc) error {
-	address := ":" + strconv.Itoa(port)
-	log.Printf("Server starting on %s", address)
-
-	if configure != nil {
-		configure(app.e)
-	}
-	return app.e.Start(address)
 }
