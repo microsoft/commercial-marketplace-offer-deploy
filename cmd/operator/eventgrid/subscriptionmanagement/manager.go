@@ -1,4 +1,4 @@
-package eventgrid
+package subscriptionmanagement
 
 import (
 	"context"
@@ -12,32 +12,33 @@ import (
 // System topics MUST be set to global location
 const systemTopicLocation = "global"
 
-type DeploymentEventsClient interface {
+type EventGridManager interface {
 	CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTopic, error)
 	CreateEventSubscription(ctx context.Context, subscriptionName string, endpointUrl string) (*armeventgrid.EventSubscriptionsClientCreateOrUpdateResponse, error)
 }
 
-type deploymentEventsClient struct {
+// internal implementation of event grid manager
+type manager struct {
 	Credential azcore.TokenCredential
 	Properties *eventGridManagerProperties
 }
 
 // Creates an event grid manager to create system topic and event subscription for the purpose of receiving deployment events
 // It will use the resource group id to create the system topic in the resource group's location and subscription
-func NewDeploymentEventsClient(credential azcore.TokenCredential, resourceGroupId string) (DeploymentEventsClient, error) {
+func NewEventGridManager(credential azcore.TokenCredential, resourceGroupId string) (EventGridManager, error) {
 	properties, err := getProperties(context.TODO(), credential, resourceGroupId)
 
 	if err != nil {
 		return nil, err
 	}
-	client := &deploymentEventsClient{
+	client := &manager{
 		Credential: credential,
 		Properties: properties,
 	}
 	return client, nil
 }
 
-func (c *deploymentEventsClient) CreateEventSubscription(ctx context.Context, subscriptionName string, endpointUrl string) (*armeventgrid.EventSubscriptionsClientCreateOrUpdateResponse, error) {
+func (c *manager) CreateEventSubscription(ctx context.Context, subscriptionName string, endpointUrl string) (*armeventgrid.EventSubscriptionsClientCreateOrUpdateResponse, error) {
 	eventSubscriptionsClient, err := armeventgrid.NewEventSubscriptionsClient(c.Properties.SubscriptionId, c.Credential, nil)
 	if err != nil {
 		return nil, err
@@ -74,7 +75,7 @@ func (c *deploymentEventsClient) CreateEventSubscription(ctx context.Context, su
 
 }
 
-func (c *deploymentEventsClient) DeleteSystemTopic(ctx context.Context) (*armeventgrid.SystemTopicsClientDeleteResponse, error) {
+func (c *manager) DeleteSystemTopic(ctx context.Context) (*armeventgrid.SystemTopicsClientDeleteResponse, error) {
 	systemTopicsClient, err := armeventgrid.NewSystemTopicsClient(c.Properties.SubscriptionId, c.Credential, nil)
 	if err != nil {
 		return nil, err
@@ -97,7 +98,7 @@ func (c *deploymentEventsClient) DeleteSystemTopic(ctx context.Context) (*armeve
 	return &resp, nil
 }
 
-func (c *deploymentEventsClient) CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTopic, error) {
+func (c *manager) CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTopic, error) {
 	systemTopicsClient, err := armeventgrid.NewSystemTopicsClient(c.Properties.SubscriptionId, c.Credential, nil)
 	if err != nil {
 		return nil, err

@@ -1,7 +1,9 @@
 package config
 
 import (
+	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/config"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/middleware"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/routes"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 )
@@ -23,6 +25,8 @@ func GetApp(configurationFilePath string) *hosting.App {
 		*options.Routes = routes
 	})
 
-	app := builder.Build()
+	app := builder.Build(func(e *echo.Echo) {
+		e.Group("/eventgrid", middleware.EventGridWebHookSubscriptionValidation())
+	})
 	return app
 }
