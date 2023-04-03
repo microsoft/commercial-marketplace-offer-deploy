@@ -1,10 +1,8 @@
 package data
 
-import (
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/generated"
-)
+import "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 
-func FromCreateDeployment(from *generated.CreateDeployment) *Deployment {
+func FromCreateDeployment(from *api.CreateDeployment) *Deployment {
 	//TODO: parse out template into the stages
 	template := from.Template
 
@@ -20,7 +18,7 @@ func FromCreateDeployment(from *generated.CreateDeployment) *Deployment {
 }
 
 // Maps a command to create an event subscription to the EventSubscription data model
-func FromCreateEventSubscription(eventType string, from *generated.CreateEventSubscription) *EventSubscription {
+func FromCreateEventSubscription(eventType string, from *api.CreateEventSubscription) *EventSubscription {
 	model := &EventSubscription{
 		Name:      *from.Name,
 		EventType: eventType,

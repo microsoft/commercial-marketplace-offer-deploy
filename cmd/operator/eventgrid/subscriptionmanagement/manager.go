@@ -1,4 +1,4 @@
-package eventgrid
+package subscriptionmanagement
 
 import (
 	"context"
@@ -12,32 +12,33 @@ import (
 // System topics MUST be set to global location
 const systemTopicLocation = "global"
 
-type DeploymentEventsClient interface {
+type EventGridManager interface {
 	CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTopic, error)
 	CreateEventSubscription(ctx context.Context, subscriptionName string, endpointUrl string) (*armeventgrid.EventSubscriptionsClientCreateOrUpdateResponse, error)
 }
 
-type deploymentEventsClient struct {
+// internal implementation of event grid manager
+type manager struct {
 	Credential azcore.TokenCredential
 	Properties *eventGridManagerProperties
 }
 
 // Creates an event grid manager to create system topic and event subscription for the purpose of receiving deployment events
 // It will use the resource group id to create the system topic in the resource group's location and subscription
-func NewDeploymentEventsClient(credential azcore.TokenCredential, resourceGroupId string) (DeploymentEventsClient, error) {
+func NewEventGridManager(credential azcore.TokenCredential, resourceGroupId string) (EventGridManager, error) {
 	properties, err := getProperties(context.TODO(), credential, resourceGroupId)
 
 	if err != nil {
 		return nil, err
 	}
-	client := &deploymentEventsClient{
+	client := &manager{
 		Credential: credential,
 		Properties: properties,
 	}
 	return client, nil
 }
 
-func (c *deploymentEventsClient) CreateEventSubscription(ctx context.Context, subscriptionName string, endpointUrl string) (*armeventgrid.EventSubscriptionsClientCreateOrUpdateResponse, error) {
+func (c *manager) CreateEventSubscription(ctx context.Context, subscriptionName string, endpointUrl string) (*armeventgrid.EventSubscriptionsClientCreateOrUpdateResponse, error) {
 	eventSubscriptionsClient, err := armeventgrid.NewEventSubscriptionsClient(c.Properties.SubscriptionId, c.Credential, nil)
 	if err != nil {
 		return nil, err
@@ -74,7 +75,7 @@ func (c *deploymentEventsClient) CreateEventSubscription(ctx context.Context, su
 
 }
 
-func (c *deploymentEventsClient) DeleteSystemTopic(ctx context.Context) (*armeventgrid.SystemTopicsClientDeleteResponse, error) {
+func (c *manager) DeleteSystemTopic(ctx context.Context) (*armeventgrid.SystemTopicsClientDeleteResponse, error) {
 	systemTopicsClient, err := armeventgrid.NewSystemTopicsClient(c.Properties.SubscriptionId, c.Credential, nil)
 	if err != nil {
 		return nil, err
@@ -97,7 +98,7 @@ func (c *deploymentEventsClient) DeleteSystemTopic(ctx context.Context) (*armeve
 	return &resp, nil
 }
 
-func (c *deploymentEventsClient) CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTopic, error) {
+func (c *manager) CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTopic, error) {
 	systemTopicsClient, err := armeventgrid.NewSystemTopicsClient(c.Properties.SubscriptionId, c.Credential, nil)
 	if err != nil {
 		return nil, err
@@ -137,29 +138,19 @@ func getDeploymentResourceSubscriptionFilter() *armeventgrid.EventSubscriptionFi
 	return &armeventgrid.EventSubscriptionFilter{
 		EnableAdvancedFilteringOnArrays: to.Ptr(true),
 		IncludedEventTypes:              getIncludedEventTypesForFilter(),
-		AdvancedFilters: []armeventgrid.AdvancedFilterClassification{
-			&armeventgrid.StringContainsAdvancedFilter{
-				Values: []*string{
-					to.Ptr("/providers/Microsoft.Resources/deployments/"),
-				},
-				OperatorType: to.Ptr(armeventgrid.AdvancedFilterOperatorTypeStringContains),
-				Key:          to.Ptr("subject"),
-			},
-		},
 	}
 }
 
 func getIncludedEventTypesForFilter() []*string {
 	return []*string{
+		// filter on what we care about (what a consumer can take action on)
+		// we don't need to worry about message ordering if we only listen for success and failure
+
+		// if this gets modified for more than success and failure, message ordering will need to be considered
 		to.Ptr("Microsoft.Resources.ResourceWriteSuccess"),
 		to.Ptr("Microsoft.Resources.ResourceWriteFailure"),
-		to.Ptr("Microsoft.Resources.ResourceWriteCancel"),
 		to.Ptr("Microsoft.Resources.ResourceDeleteSuccess"),
 		to.Ptr("Microsoft.Resources.ResourceDeleteFailure"),
-		to.Ptr("Microsoft.Resources.ResourceDeleteCancel"),
-		to.Ptr("Microsoft.Resources.ResourceActionSuccess"),
-		to.Ptr("Microsoft.Resources.ResourceActionFailure"),
-		to.Ptr("Microsoft.Resources.ResourceActionCancel"),
 	}
 }
 
