@@ -138,29 +138,16 @@ func getDeploymentResourceSubscriptionFilter() *armeventgrid.EventSubscriptionFi
 	return &armeventgrid.EventSubscriptionFilter{
 		EnableAdvancedFilteringOnArrays: to.Ptr(true),
 		IncludedEventTypes:              getIncludedEventTypesForFilter(),
-		AdvancedFilters: []armeventgrid.AdvancedFilterClassification{
-			&armeventgrid.StringContainsAdvancedFilter{
-				Values: []*string{
-					to.Ptr("/providers/Microsoft.Resources/deployments/"),
-				},
-				OperatorType: to.Ptr(armeventgrid.AdvancedFilterOperatorTypeStringContains),
-				Key:          to.Ptr("subject"),
-			},
-		},
 	}
 }
 
 func getIncludedEventTypesForFilter() []*string {
 	return []*string{
+		// filter on what we care about (what a consumer can take action on)
 		to.Ptr("Microsoft.Resources.ResourceWriteSuccess"),
 		to.Ptr("Microsoft.Resources.ResourceWriteFailure"),
-		to.Ptr("Microsoft.Resources.ResourceWriteCancel"),
 		to.Ptr("Microsoft.Resources.ResourceDeleteSuccess"),
 		to.Ptr("Microsoft.Resources.ResourceDeleteFailure"),
-		to.Ptr("Microsoft.Resources.ResourceDeleteCancel"),
-		to.Ptr("Microsoft.Resources.ResourceActionSuccess"),
-		to.Ptr("Microsoft.Resources.ResourceActionFailure"),
-		to.Ptr("Microsoft.Resources.ResourceActionCancel"),
 	}
 }
 
