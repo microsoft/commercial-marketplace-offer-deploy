@@ -17,7 +17,7 @@ import (
 )
 
 // global app settings
-var appSettings config.AppSettings = config.GetAppSettings()
+var appSettings config.AppSettings
 
 // HTTP handler is the webook endpoint that receives event grid events
 // the validation middleware will handle validation requests first before this is reached

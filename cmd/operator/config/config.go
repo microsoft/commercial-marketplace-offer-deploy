@@ -2,6 +2,7 @@ package config
 
 import (
 	"path/filepath"
+	"sync"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
@@ -29,11 +30,18 @@ type AppSettings struct {
 	Database DatabaseSettings
 }
 
-func GetAppSettings() AppSettings {
-	settings := hosting.GetAppConfig[AppSettings]()
-	viper.Unmarshal(&settings.Azure)
-	viper.Unmarshal(&settings.Database)
-	return settings
+// global app settings
+var mutex sync.Mutex
+var appSettings AppSettings
+
+func GetAppSettings() *AppSettings {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	appSettings = hosting.GetAppConfig[AppSettings]()
+	viper.Unmarshal(&appSettings.Azure)
+	viper.Unmarshal(&appSettings.Database)
+	return &appSettings
 }
 
 func (appSettings *AppSettings) GetDatabaseOptions() *data.DatabaseOptions {
