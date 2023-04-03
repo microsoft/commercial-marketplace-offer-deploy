@@ -6,7 +6,7 @@ import (
 
 	"github.com/labstack/echo"
 	data "github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/generated"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"gorm.io/gorm"
 )
 
@@ -14,7 +14,7 @@ import (
 func CreateEventSubscription(c echo.Context, db *gorm.DB) error {
 	eventType := c.Param("eventType")
 
-	var command *generated.CreateEventSubscription
+	var command *api.CreateEventSubscription
 	err := c.Bind(&command)
 
 	if err != nil {
@@ -31,11 +31,10 @@ func CreateEventSubscription(c echo.Context, db *gorm.DB) error {
 	}
 
 	id := model.ID.String()
-	result := generated.EventSubscription{
+	result := api.EventSubscription{
 		ID:        &id,
 		Name:      &model.Name,
 		Callback:  &model.Callback,
-		EventType: &model.EventType,
 	}
 
 	return c.JSON(http.StatusOK, result)
