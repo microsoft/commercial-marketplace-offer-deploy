@@ -25,39 +25,35 @@ type Message struct {
 	OperationId  string
 }
 
-// global app settings
-
 func StartDeployment(deploymentId int, operation api.InvokeDeploymentOperation, db *gorm.DB) (interface{}, error) {
 	log.Printf("Inside StartDeployment deploymentId: %d", deploymentId)
 
-	//gather data: deploymentId
-	retrieved := &data.Deployment{}
-	db.First(&retrieved, deploymentId)
+	toUpdate := &data.Deployment{}
+	db.First(&toUpdate, deploymentId)
+	db.Model(&toUpdate).Update("status", "Pending") // TODO: update with deployment.Pending
 
 	templateParams := operation.Parameters
 	if templateParams == nil {
 		return nil, errors.New("templateParams were not provided")
 	}
 
-	ctx := context.TODO()
+	// ctx := context.TODO()
 
-	credential, err := azidentity.NewDefaultAzureCredential(nil)
-	if err != nil {
-		return nil, err
-	}
+	// credential, err := azidentity.NewDefaultAzureCredential(nil)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	// Post message to service bus operator queue
-	message := Message{
-		DeploymentId: deploymentId,
-		OperationId:  *operation.Name,
-	}
+	// // Post message to service bus operator queue
+	// message := Message{
+	// 	DeploymentId: deploymentId,
+	// 	OperationId:  *operation.Name,
+	// }
 
-	err = enqueueForPublishing(credential, message, ctx)
-	if err != nil {
-		return nil, err
-	}
-	// Update DB and find the deployment matching deploymentId
-	// update the record with deployment.Pending
+	// err = enqueueForPublishing(credential, message, ctx)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	// formulate the response
 
