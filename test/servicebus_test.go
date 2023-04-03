@@ -74,10 +74,10 @@ func (s *serviceBusSuite) TestMessageReceiveSuccess() {
 	receiver, err := messaging.NewServiceBusReceiver(sbConfig)
 	require.NoError(s.T(), err)
 	require.NotNil(s.T(), receiver)
-	//receiver.Start(stop)
+	fmt.Println("calling start")
 	receiver.Start()
 	// sleep for 5 seconds to allow the receiver to start
-	fmt.Println("Starting sleep 1")
+	fmt.Println("starting sleep 1")
 	time.Sleep(5 * time.Second)
 	//stop <- true
 	receiver.Stop()
