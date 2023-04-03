@@ -131,7 +131,9 @@ func (s *serviceBusMessageSender) createOrUpdateQueue(ctx context.Context, queue
 		queueName,
 		armservicebus.SBQueue{
 			Properties: &armservicebus.SBQueueProperties{
-				EnablePartitioning: to.Ptr(false),
+				EnablePartitioning:                  to.Ptr(false),
+				RequiresDuplicateDetection:          to.Ptr(true),
+				DuplicateDetectionHistoryTimeWindow: to.Ptr("PT10M"),
 			},
 		},
 		nil,
