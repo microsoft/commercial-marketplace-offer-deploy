@@ -308,22 +308,15 @@
         }
       }
     },
-    "/events/{eventType}/subscriptions": {
+    "/events/subscriptions": {
       "post": {
         "tags": [
           "Event"
         ],
         "summary": "Create event subscription",
-        "description": "Create a subscription for a particular eventType",
+        "description": "Create a subscription",
         "operationId": "CreatEventSubscription",
         "parameters": [
-          {
-            "name": "eventType",
-            "in": "path",
-            "description": "event type name",
-            "required": true,
-            "type": "string"
-          },
           {
             "in": "body",
             "name": "body",
@@ -350,17 +343,10 @@
         "tags": [
           "Event"
         ],
-        "summary": "Lists all subscription for an event type",
-        "description": "List all subscriptions for an event type",
+        "summary": "Lists all subscription",
+        "description": "List all subscriptions",
         "operationId": "ListEventSubscriptions",
         "parameters": [
-          {
-            "name": "eventType",
-            "in": "path",
-            "description": "event topic name",
-            "required": true,
-            "type": "string"
-          }
         ],
         "responses": {
           "200": {
@@ -610,10 +596,6 @@
           "type": "string",
           "format": "uuid"
         },
-        "eventType": {
-          "type": "string",
-          "description": "The event type"
-        },
         "name": {
           "type": "string",
           "description": "the name of the subscription"
@@ -647,10 +629,6 @@
         "id": {
           "type": "string",
           "format": "uuid"
-        },
-        "eventType": {
-          "type": "string",
-          "description": "The event type"
         },
         "name": {
           "type": "string",

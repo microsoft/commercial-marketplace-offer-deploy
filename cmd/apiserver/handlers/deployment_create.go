@@ -6,13 +6,13 @@ import (
 
 	"github.com/labstack/echo"
 	data "github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/generated"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"gorm.io/gorm"
 )
 
 // HTTP handler for creating deployments
 func CreateDeployment(c echo.Context, db *gorm.DB) error {
-	var command *generated.CreateDeployment
+	var command *api.CreateDeployment
 	err := c.Bind(&command)
 
 	if err != nil {
@@ -33,7 +33,7 @@ func CreateDeployment(c echo.Context, db *gorm.DB) error {
 	}
 
 	deploymentId := int32(deployment.ID)
-	result := generated.Deployment{
+	result := api.Deployment{
 		ID:     &deploymentId,
 		Name:   &deployment.Name,
 		Status: &deployment.Status,

@@ -1,6 +1,4 @@
-//go:build integration
-
-package eventgrid
+package subscriptionmanagement
 
 import (
 	"context"
@@ -21,7 +19,7 @@ func TestCreateEventSubscription(t *testing.T) {
 	}
 
 	resourceGroupId := "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/sandbox1"
-	client, err := NewDeploymentEventsClient(cred, resourceGroupId)
+	client, err := NewEventGridManager(cred, resourceGroupId)
 
 	require.NoError(t, err)
 
@@ -46,7 +44,7 @@ func TestDeploymentEventsClient(t *testing.T) {
 	}
 
 	resourceGroupId := "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/sandbox1"
-	client, err := NewDeploymentEventsClient(cred, resourceGroupId)
+	client, err := NewEventGridManager(cred, resourceGroupId)
 
 	require.NoError(t, err)
 
