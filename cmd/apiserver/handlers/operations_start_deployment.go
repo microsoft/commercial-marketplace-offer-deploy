@@ -3,25 +3,15 @@ package handlers
 import (
 	"errors"
 	"log"
-	"time"
-
+	//"time"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-<<<<<<< HEAD
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/messaging"
 	"gorm.io/gorm"
 )
 
 func StartDeployment(deploymentId int, operation api.InvokeDeploymentOperation, db *gorm.DB) (interface{}, error) {
 	log.Printf("Inisde CreateDryRun deploymentId: %d", deploymentId)
-=======
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/generated"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/messaging"
-	"gorm.io/gorm"
-)
-
-func StartDeployment(deploymentId int, operation generated.InvokeDeploymentOperation, db *gorm.DB) (interface{}, error) {
-	log.Printf("Inside StartDeployment")
->>>>>>> main
 
 	//gather data: deploymentId
 	retrieved := &data.Deployment{}
@@ -58,10 +48,9 @@ func StartDeployment(deploymentId int, operation generated.InvokeDeploymentOpera
 	}
 
 	// formulate the response
-	timestamp := time.Now().UTC()
-	status := "OK"
+	//timestamp := time.Now().UTC()
+	//status := "OK"
 
-<<<<<<< HEAD
 	// res := deployment.DryRun(&azureDeployment)
 	// uuid := uuid.New().String()
 	// timestamp := time.Now().UTC()
@@ -71,14 +60,6 @@ func StartDeployment(deploymentId int, operation generated.InvokeDeploymentOpera
 		InvokedOn: nil,
 		Result:    nil,
 		Status:    nil,
-=======
-	returnedResult := generated.InvokedOperation{
-		ID:         operation.Name,
-		Parameters: operation.Parameters.(map[string]interface{}),
-		InvokedOn:  &timestamp,
-		Result:     nil,
-		Status:     &status,
->>>>>>> main
 	}
 	return returnedResult, nil
 }
