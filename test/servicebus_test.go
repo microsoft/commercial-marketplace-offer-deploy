@@ -69,18 +69,16 @@ func (s *serviceBusSuite) TestMessageReceiveSuccess() {
 		Namespace: s.ns,
 		QueueName: s.queueName,
 	}
-	//stop := make(chan bool)
-	//receiver, err := messaging.NewServiceBusBackgroundReceiver(sbConfig.Namespace, sbConfig.QueueName, stop)
+
 	receiver, err := messaging.NewServiceBusReceiver(sbConfig)
 	require.NoError(s.T(), err)
 	require.NotNil(s.T(), receiver)
 	fmt.Println("calling start")
-	receiver.Start()
+	go receiver.Start()
 	// sleep for 5 seconds to allow the receiver to start
 	fmt.Println("starting sleep 1")
 	time.Sleep(5 * time.Second)
-	//stop <- true
-	receiver.Stop()
+	go receiver.Stop()
 	fmt.Println("After the stop in TestMessageReceiveSuccess")
 	fmt.Println("Starting sleep 2")
 	time.Sleep(5 * time.Second)
