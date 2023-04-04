@@ -53,19 +53,20 @@ func (f *tagsFilter) Filter(ctx context.Context, matchAny FilterTags, events []*
 	}
 }
 
-func (f *tagsFilter) match(matchAny FilterTags, resourceTags map[string]*string) (map[string]string, bool) {
-	matches := map[string]string{}
+func (f *tagsFilter) match(matchAny FilterTags, resourceTags map[string]*string) (map[FilterTagKey]string, bool) {
+	matches := map[FilterTagKey]string{}
 	match := false
 
 	// populate all tags that match searchFor
 	for _, key := range f.includeKeys {
 		if resourceTags[key] != nil {
-			matches[key] = *resourceTags[key]
+			matches[FilterTagKey(key)] = *resourceTags[key]
 		}
 	}
 
 	for key, _ := range matchAny {
-		if resourceTags[key] != nil && strings.EqualFold(*matchAny[key], *resourceTags[key]) {
+		strKey := string(key)
+		if resourceTags[strKey] != nil && strings.EqualFold(*matchAny[key], *resourceTags[strKey]) {
 			match = true
 			break
 		}
