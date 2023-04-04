@@ -1,4 +1,4 @@
-package config
+package app
 
 import (
 	"github.com/labstack/echo"
@@ -7,10 +7,6 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 )
-
-func GetApp() *hosting.App {
-	return hosting.GetApp()
-}
 
 func BuildApp(configurationFilePath string) *hosting.App {
 	builder := hosting.NewAppBuilder()
