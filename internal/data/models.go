@@ -44,3 +44,7 @@ type EventSubscription struct {
 	EventType string `json:"eventType"`
 	ApiKey    string `json:"authKey"`
 }
+
+type InvokedOperation struct {
+	//TODO: stub out for fetching in the operator
+}
