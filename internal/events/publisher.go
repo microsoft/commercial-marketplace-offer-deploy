@@ -10,7 +10,7 @@ import (
 
 type WebHookPublisher interface {
 	// publishes a message to all web hook subscriptions
-	Publish(message *model.WebhookEventMessage) error
+	Publish(message *model.WebHookEventMessage) error
 }
 
 type webHookPublisher struct {
@@ -24,7 +24,7 @@ func NewWebHookPublisher(sender MessageSender, subscriptionsProvider Subscriptio
 	return publisher
 }
 
-func (p *webHookPublisher) Publish(message *model.WebhookEventMessage) error {
+func (p *webHookPublisher) Publish(message *model.WebHookEventMessage) error {
 	subscriptions, err := p.subscriptionsProvider.GetSubscriptions(message.EventType)
 
 	if err != nil {

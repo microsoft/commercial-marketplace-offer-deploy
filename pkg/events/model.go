@@ -35,9 +35,30 @@ func (o EventType) String() string {
 }
 
 // subscription model for MODM webhook events
-type WebhookEventMessage struct {
-	Id             uuid.UUID      `json:"id,omitempty"`
-	SubscriptionId uuid.UUID      `json:"subscriptionId,omitempty"`
-	EventType      string         `json:"eventType,omitempty"`
-	Payload        map[string]any `json:"payload,omitempty"`
+type WebHookEventMessage struct {
+	Id             uuid.UUID `json:"id,omitempty"`
+	SubscriptionId uuid.UUID `json:"subscriptionId,omitempty"`
+	DeploymentId   int32     `json:"deploymentId,omitempty"`
+	StageId        uuid.UUID `json:"stageId,omitempty"`
+	EventType      string    `json:"eventType,omitempty"`
+	Body           any       `json:"body,omitempty"`
+}
+
+// Dry run
+type WebHookDryRunCompletedBody struct {
+	Messages []WebHookDryRunMessage `json:"messages,omitempty"`
+}
+
+type WebHookDryRunMessage struct {
+	Type    string `json:"type,omitempty"`
+	Status  string `json:"status,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
+// all other deployment events
+
+type WebHookDeploymentEventMessageBody struct {
+	ResourceId string `json:"ResourceId,omitempty"`
+	Status     int32  `json:"status,omitempty"`
+	Message    string `json:"message,omitempty"`
 }

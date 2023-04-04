@@ -9,7 +9,10 @@ type FilterTagKey string
 
 const (
 	// filter tag key for events
-	FilterTagKeyEvents FilterTagKey = "modm.events"
+	FilterTagKeyId      FilterTagKey = "modm.id"
+	FilterTagKeyEvents  FilterTagKey = "modm.events"
+	FilterTagKeyName    FilterTagKey = "modm.title"
+	FilterTagKeyStageId FilterTagKey = "modm.stage.id"
 )
 
 type FilterTags map[string]*string
