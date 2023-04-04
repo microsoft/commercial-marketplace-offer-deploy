@@ -1,7 +1,6 @@
 package data
 
 import (
-	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -36,12 +35,6 @@ type Deployment struct {
 	Status         string         `json:"status"`
 	Template       map[string]any `json:"template" gorm:"json"`
 	Stages         []Stage        `json:"stages" gorm:"json"`
-}
-
-// Gets the azure deployment name suitable for azure deployment
-// format - modm.<deploymentId>-<deploymentName>
-func (d *Deployment) GetAzureDeploymentName() string {
-	return "modm." + strconv.FormatUint(uint64(d.ID), 10) + "-" + d.Name
 }
 
 type EventSubscription struct {
