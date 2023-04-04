@@ -11,6 +11,7 @@ type EventType string
 const (
 	DeploymentDryRunCompletedEventType EventType = "deployment.dryruncompleted"
 	DeploymentCreatedEventType         EventType = "deployment.created"
+	DeploymentPendingEventType         EventType = "deployment.pending"
 	DeploymentStartedEventType         EventType = "deployment.started"
 	DeploymentCompletedEventType       EventType = "deployment.completed"
 	DeploymentErrorEventType           EventType = "deployment.error"
