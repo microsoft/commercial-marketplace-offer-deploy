@@ -3,12 +3,17 @@ package handlers
 import (
 	"errors"
 	"log"
+	"strings"
 	"time"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	//"time"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 
 	"gorm.io/gorm"
 )
@@ -24,7 +29,10 @@ func StartDeployment(deploymentId int, operation api.InvokeDeploymentOperation, 
 
 	toUpdate := &data.Deployment{}
 	db.First(&toUpdate, deploymentId)
-	db.Model(&toUpdate).Update("status", "Pending") // TODO: update with deployment.Pending
+	pendingStatus := strings.Replace(events.DeploymentPendingEventType.String(), "deployment.", "", 1)
+	caser := cases.Title(language.English)
+	toUpdate.Status = caser.String(pendingStatus)
+	db.Save(toUpdate)
 
 	templateParams := operation.Parameters
 	if templateParams == nil {
