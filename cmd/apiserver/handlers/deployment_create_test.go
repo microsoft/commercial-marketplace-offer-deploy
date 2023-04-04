@@ -26,6 +26,7 @@ var (
 
 func TestCreateDeployment(t *testing.T) {
 	// Setup
+	db = data.NewDatabase(&data.DatabaseOptions{Dsn: "./testdata/test.db"}).Instance()
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(deploymentJson))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)

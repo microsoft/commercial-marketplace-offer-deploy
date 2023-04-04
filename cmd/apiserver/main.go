@@ -16,6 +16,6 @@ func main() {
 	formattedPort := ":" + strconv.Itoa(port)
 	log.Printf("Server starting on %s", formattedPort)
 
-	app := apiserver.GetApp(configurationFilePath)
+	app := apiserver.BuildApp(configurationFilePath)
 	log.Fatal(app.Start(port, nil))
 }

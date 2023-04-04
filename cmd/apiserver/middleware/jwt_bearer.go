@@ -7,14 +7,14 @@ import (
 	"strings"
 
 	"github.com/labstack/echo"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/security/authentication"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 )
 
 const AzureAdJwtKeysUrl = "https://login.microsoftonline.com/common/discovery/v2.0/keys"
 
 // Adds Jwt Bearer authentication to the request
-func AddJwtBearer(next echo.HandlerFunc, config *config.AppSettings) echo.HandlerFunc {
+func AddJwtBearer(next echo.HandlerFunc, config *config.AppConfig) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		validationParameters := getJwtTokenValidationParameters(config)
 		isTokenValid := verifyToken(c, validationParameters)
@@ -27,7 +27,7 @@ func AddJwtBearer(next echo.HandlerFunc, config *config.AppSettings) echo.Handle
 	}
 }
 
-func getJwtTokenValidationParameters(config *config.AppSettings) *authentication.JwtTokenValidationParameters {
+func getJwtTokenValidationParameters(config *config.AppConfig) *authentication.JwtTokenValidationParameters {
 	keySet, err := authentication.FetchAzureADKeySet(context.Background())
 
 	if err != nil {
