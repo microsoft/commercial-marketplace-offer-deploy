@@ -16,6 +16,5 @@ func ReadJson(path string) (map[string]interface{}, error) {
 	if err := json.Unmarshal(templateFile, &template); err != nil {
 		return nil, err
 	}
-
 	return template, nil
 }
