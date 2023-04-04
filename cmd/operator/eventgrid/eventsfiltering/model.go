@@ -32,10 +32,10 @@ type FilterResultItem struct {
 	Resource       armresources.GenericResource
 
 	// tags that matched the filter
-	MatchedTags map[string]string
+	MatchedTags map[FilterTagKey]string
 }
 
-type FilterTags map[string]*string
+type FilterTags map[FilterTagKey]*string
 
 // private types
 
