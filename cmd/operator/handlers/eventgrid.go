@@ -9,15 +9,12 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
 	"github.com/labstack/echo"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid/eventsfiltering"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"gorm.io/gorm"
 )
-
-// global app settings
-var appSettings config.AppSettings = config.GetAppSettings()
 
 // HTTP handler is the webook endpoint that receives event grid events
 // the validation middleware will handle validation requests first before this is reached
@@ -71,11 +68,13 @@ func enqueueForPublishing(credential *azidentity.DefaultAzureCredential, events 
 }
 
 func getMessageSender(credential azcore.TokenCredential) (messaging.MessageSender, error) {
+	appConfig := config.GetAppConfig()
+
 	sender, err := messaging.NewServiceBusMessageSender(messaging.MessageSenderOptions{
-		SubscriptionId:      appSettings.Azure.SubscriptionId,
-		Location:            appSettings.Azure.Location,
-		ResourceGroupName:   appSettings.Azure.ResourceGroupName,
-		ServiceBusNamespace: appSettings.Azure.ServiceBusNamespace,
+		SubscriptionId:      appConfig.Azure.SubscriptionId,
+		Location:            appConfig.Azure.Location,
+		ResourceGroupName:   appConfig.Azure.ResourceGroupName,
+		ServiceBusNamespace: appConfig.Azure.ServiceBusNamespace,
 	}, credential)
 	if err != nil {
 		return nil, err
