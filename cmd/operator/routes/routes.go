@@ -14,7 +14,7 @@ func GetRoutes(databaseOptions *data.DatabaseOptions) hosting.Routes {
 			Name:        "EventGridWebHook",
 			Method:      http.MethodPost,
 			Path:        "/eventgrid",
-			HandlerFunc: hosting.ToHandlerFunc(handlers.EventGridWebHook, databaseOptions),
+			HandlerFunc: handlers.NewEventGridWebHookHandler(),
 		},
 	}
 }
