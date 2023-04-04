@@ -46,5 +46,8 @@ type EventSubscription struct {
 }
 
 type InvokedOperation struct {
-	//TODO: stub out for fetching in the operator
+	gorm.Model
+	DeploymentId uint		`json:"deploymentId"`
+	DeploymentName string	`json:"deploymentName"`
+	Params map[string]interface{} `json:"params" gorm:"json"`
 }
