@@ -32,16 +32,19 @@ type AppSettings struct {
 
 // global app settings
 var mutex sync.Mutex
-var appSettings AppSettings
+var appSettings *AppSettings
 
+// Gets the single instance of app settings
 func GetAppSettings() *AppSettings {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	appSettings = hosting.GetAppConfig[AppSettings]()
-	viper.Unmarshal(&appSettings.Azure)
-	viper.Unmarshal(&appSettings.Database)
-	return &appSettings
+	if appSettings == nil {
+		*appSettings = hosting.GetAppConfig[AppSettings]()
+		viper.Unmarshal(&appSettings.Azure)
+		viper.Unmarshal(&appSettings.Database)
+	}
+	return appSettings
 }
 
 func (appSettings *AppSettings) GetDatabaseOptions() *data.DatabaseOptions {
