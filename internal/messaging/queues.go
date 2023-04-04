@@ -1,5 +1,6 @@
 package messaging
 
 const (
-	EventsQueue string = "events"
+	EventsQueue   string = "events"
+	OperatorQueue string = "operator"
 )
