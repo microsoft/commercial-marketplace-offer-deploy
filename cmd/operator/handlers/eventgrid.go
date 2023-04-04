@@ -4,21 +4,17 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
 	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid/eventsfiltering"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
-	"gorm.io/gorm"
 )
 
 // HTTP handler is the webook endpoint that receives event grid events
 // the validation middleware will handle validation requests first before this is reached
-func EventGridWebHook(c echo.Context, db *gorm.DB) error {
+func EventGridWebHook(c echo.Context, filter eventsfiltering.EventGridEventFilter, sender messaging.MessageSender) error {
 	ctx := c.Request().Context()
 
 	messages := []*eventgrid.Event{}
@@ -28,19 +24,17 @@ func EventGridWebHook(c echo.Context, db *gorm.DB) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	credential, err := azidentity.NewDefaultAzureCredential(nil)
-	if err != nil {
-		return nil
+	matchAny := eventsfiltering.FilterTags{
+		string(eventsfiltering.FilterTagKeyEvents): to.Ptr("true"),
 	}
 
-	filter := getEventsFilter(credential)
-	filteredEvents := filter.Filter(ctx, messages)
+	result := filter.Filter(ctx, matchAny, messages)
 
-	if len(filteredEvents) == 0 {
+	if len(result.Items) == 0 {
 		return c.String(http.StatusOK, "No resources to process")
 	}
 
-	err = enqueueForPublishing(credential, filteredEvents, ctx)
+	err = enqueueForPublishing(ctx, sender, &result)
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -51,12 +45,8 @@ func EventGridWebHook(c echo.Context, db *gorm.DB) error {
 
 // send these event grid events through our message bus to be processed and published
 // to the web hook endpoints that are subscribed to our MODM events
-func enqueueForPublishing(credential *azidentity.DefaultAzureCredential, events []*eventgrid.Event, ctx context.Context) error {
-	sender, err := getMessageSender(credential)
-	if err != nil {
-		return err
-	}
-	results, err := sender.Send(ctx, messaging.EventsQueue, events)
+func enqueueForPublishing(ctx context.Context, sender messaging.MessageSender, result *eventsfiltering.FilterResult) error {
+	results, err := sender.Send(ctx, messaging.EventsQueue, result.Items)
 	if err != nil {
 		return err
 	}
@@ -65,32 +55,6 @@ func enqueueForPublishing(credential *azidentity.DefaultAzureCredential, events 
 		return utils.NewAggregateError(getErrorMessages(results))
 	}
 	return nil
-}
-
-func getMessageSender(credential azcore.TokenCredential) (messaging.MessageSender, error) {
-	appConfig := config.GetAppConfig()
-
-	sender, err := messaging.NewServiceBusMessageSender(messaging.MessageSenderOptions{
-		SubscriptionId:      appConfig.Azure.SubscriptionId,
-		Location:            appConfig.Azure.Location,
-		ResourceGroupName:   appConfig.Azure.ResourceGroupName,
-		ServiceBusNamespace: appConfig.Azure.ServiceBusNamespace,
-	}, credential)
-	if err != nil {
-		return nil, err
-	}
-
-	return sender, nil
-}
-
-func getEventsFilter(credential azcore.TokenCredential) eventsfiltering.EventGridEventFilter {
-	// TODO: this should probably come from the db
-	filterTags := eventsfiltering.FilterTags{
-		string(eventsfiltering.FilterTagKeyEvents): to.Ptr("true"),
-	}
-	filter := eventsfiltering.NewTagsFilter(filterTags, credential)
-
-	return filter
 }
 
 func getErrorMessages(sendResults []messaging.SendMessageResult) *[]string {
