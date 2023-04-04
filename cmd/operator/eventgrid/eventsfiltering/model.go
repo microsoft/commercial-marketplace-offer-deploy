@@ -9,13 +9,33 @@ type FilterTagKey string
 
 const (
 	// filter tag key for events
-	FilterTagKeyId      FilterTagKey = "modm.id"
-	FilterTagKeyEvents  FilterTagKey = "modm.events"
-	FilterTagKeyName    FilterTagKey = "modm.title"
+
+	// The unique id for modm to identify something
+	FilterTagKeyId FilterTagKey = "modm.id"
+
+	// whether or not to send events, if this is not set to true, then the event will not be sent
+	FilterTagKeyEvents FilterTagKey = "modm.events"
+
+	// the friendly name of the resource used for logging
+	FilterTagKeyName FilterTagKey = "modm.name"
+
+	// the stage id reference. Use is on a resource that's a child of a 1-level parent deployment
 	FilterTagKeyStageId FilterTagKey = "modm.stage.id"
 )
 
-type FilterTags map[string]*string
+type FilterResult struct {
+	Items []FilterResultItem
+}
+
+type FilterResultItem struct {
+	EventGridEvent eventgrid.Event
+	Resource       armresources.GenericResource
+
+	// tags that matched the filter
+	MatchedTags map[FilterTagKey]string
+}
+
+type FilterTags map[FilterTagKey]*string
 
 // private types
 

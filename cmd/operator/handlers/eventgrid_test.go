@@ -24,7 +24,7 @@ func TestEventGridWebHook(t *testing.T) {
 	c := e.NewContext(request, rec)
 
 	// act
-	err = EventGridWebHook(c, nil)
+	err = EventGridWebHook(c, nil, nil)
 
 	// Assertions
 	if assert.NoError(t, err) {
