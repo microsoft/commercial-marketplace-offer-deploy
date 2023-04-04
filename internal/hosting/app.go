@@ -57,7 +57,7 @@ func (app *App) Start(port int, configure ConfigureEchoFunc) error {
 // App Builder
 
 type ConfigureRoutesFunc func(options *RouteOptions)
-type ConfigureAppConfigFunc func(config *any)
+type ConfigureAppConfigFunc func(config any)
 type ConfigureEchoFunc func(e *echo.Echo)
 
 func NewAppBuilder() *AppBuilder {
@@ -72,11 +72,8 @@ func NewAppBuilder() *AppBuilder {
 	return builder
 }
 
-func (b *AppBuilder) AddConfig(configure ConfigureAppConfigFunc) *AppBuilder {
-	b.app.config = new(any)
-	if configure != nil {
-		configure(&b.app.config)
-	}
+func (b *AppBuilder) AddConfig(config any) *AppBuilder {
+	b.app.config = config
 	return b
 }
 

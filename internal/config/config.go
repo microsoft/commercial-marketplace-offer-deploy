@@ -2,11 +2,9 @@ package config
 
 import (
 	"path/filepath"
-	"sync"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
-	"github.com/spf13/viper"
 )
 
 // The azure settings
@@ -25,29 +23,17 @@ type DatabaseSettings struct {
 	UseInMemory bool   `mapstructure:"DB_USE_INMEMEORY"`
 }
 
-type AppSettings struct {
+type AppConfig struct {
 	Azure    AzureSettings
 	Database DatabaseSettings
 }
 
-// global app settings
-var mutex sync.Mutex
-var appSettings *AppSettings
-
-// Gets the single instance of app settings
-func GetAppSettings() *AppSettings {
-	mutex.Lock()
-	defer mutex.Unlock()
-
-	if appSettings == nil {
-		*appSettings = hosting.GetAppConfig[AppSettings]()
-		viper.Unmarshal(&appSettings.Azure)
-		viper.Unmarshal(&appSettings.Database)
-	}
-	return appSettings
+func GetAppConfig() *AppConfig {
+	appConfig := hosting.GetAppConfig[AppConfig]()
+	return &appConfig
 }
 
-func (appSettings *AppSettings) GetDatabaseOptions() *data.DatabaseOptions {
+func (appSettings *AppConfig) GetDatabaseOptions() *data.DatabaseOptions {
 	dsn := filepath.Join(appSettings.Database.Path, data.DatabaseFileName)
 	options := &data.DatabaseOptions{Dsn: dsn, UseInMemory: appSettings.Database.UseInMemory}
 	return options

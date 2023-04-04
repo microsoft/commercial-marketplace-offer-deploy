@@ -60,7 +60,7 @@ func unmarshal(builder *viper.Viper, root any) error {
 		// if the field is a struct, we'll unmarshal it
 		if field.Type.Kind() == reflect.Struct {
 			fieldValue := configValue.FieldByName(field.Name)
-			err := builder.Unmarshal(fieldValue.Addr().Interface())
+			err := builder.Unmarshal(fieldValue.Interface())
 
 			if err != nil {
 				errors = append(errors, err.Error())

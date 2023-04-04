@@ -49,9 +49,9 @@ func getApp(appName string) *hosting.App {
 
 	switch appName {
 	case "operator":
-		return operator.GetApp(configPath)
+		return operator.BuildApp(configPath)
 	case "apiserver":
-		return apiserver.GetApp(configPath)
+		return apiserver.BuildApp(configPath)
 	default:
 		log.Fatal("invalid app name")
 	}
