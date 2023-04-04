@@ -3,7 +3,9 @@ package test_test
 import (
 	//"context"
 	//"log"
+	"context"
 	"fmt"
+	"log"
 	"testing"
 	"time"
 
@@ -11,6 +13,7 @@ import (
 	// "github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	// "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	// "github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
+	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/messaging"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -18,7 +21,7 @@ import (
 
 type serviceBusSuite struct {
 	suite.Suite
-	ns string
+	ns        string
 	queueName string
 }
 
@@ -40,15 +43,15 @@ func (s *serviceBusSuite) publishTestMessage(topicHeader string, body string) {
 		Namespace: s.ns,
 		QueueName: s.queueName,
 	}
-	config := messaging.PublisherConfig {
-		Type: "servicebus",
+	config := messaging.PublisherConfig{
+		Type:       "servicebus",
 		TypeConfig: sbConfig,
 	}
 	publisher, err := messaging.CreatePublisher(config)
 	require.NoError(s.T(), err)
 	require.NotNil(s.T(), publisher)
-	message := messaging.DeploymentMessage {
-		Header: messaging.DeploymentMessageHeader {
+	message := messaging.DeploymentMessage{
+		Header: messaging.DeploymentMessageHeader{
 			Topic: topicHeader,
 		},
 		Body: body,
@@ -70,7 +73,9 @@ func (s *serviceBusSuite) TestMessageReceiveSuccess() {
 		QueueName: s.queueName,
 	}
 
-	receiver, err := messaging.NewServiceBusReceiver(sbConfig)
+	handler := &fakeHandler{}
+
+	receiver, err := messaging.NewServiceBusReceiver(sbConfig, handler)
 	require.NoError(s.T(), err)
 	require.NotNil(s.T(), receiver)
 	fmt.Println("calling start")
@@ -83,4 +88,12 @@ func (s *serviceBusSuite) TestMessageReceiveSuccess() {
 	fmt.Println("Starting sleep 2")
 	time.Sleep(5 * time.Second)
 	fmt.Println("After the second sleep")
+}
+
+type fakeHandler struct {
+}
+
+func (h *fakeHandler) Handle(ctx context.Context, message *azservicebus.ReceivedMessage) error {
+	log.Println("Handling message")
+	return nil
 }

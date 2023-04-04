@@ -8,7 +8,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
-//	"github.com/sqs/goreturns/returns"
+	// "github.com/sqs/goreturns/returns"
 )
 
 type ServiceBusConfig struct {
@@ -17,12 +17,12 @@ type ServiceBusConfig struct {
 }
 
 type ServiceBusReceiver struct {
-	stopped bool
-	stop chan bool
-	ctx context.Context
-	queueName string 
+	stopped   bool
+	stop      chan bool
+	ctx       context.Context
+	queueName string
 	namespace string
-	handler func(message *azservicebus.ReceivedMessage) (any, error)
+	handler   MessageHandler
 }
 
 func MapDeploymentMessage(message *azservicebus.ReceivedMessage) (any, error) {
@@ -34,7 +34,7 @@ func MapDeploymentMessage(message *azservicebus.ReceivedMessage) (any, error) {
 	return deploymentMessage, err
 }
 
-func (r *ServiceBusReceiver) Start()  {
+func (r *ServiceBusReceiver) Start() {
 	r.stopped = false
 	log.Println("Starting the receiver")
 
@@ -64,7 +64,7 @@ func (r *ServiceBusReceiver) Start()  {
 		default:
 			for {
 				if r.stopped {
-					break 
+					break
 				}
 				log.Println("inside of default")
 				var messages []*azservicebus.ReceivedMessage = []*azservicebus.ReceivedMessage{}
@@ -76,13 +76,15 @@ func (r *ServiceBusReceiver) Start()  {
 				log.Println("after receive messages")
 				log.Printf("%d messages received\n", len(messages))
 				for _, message := range messages {
-					deploymentMessage, err := r.handler(message)
+					log.Printf("Received message: %s\n", message.MessageID)
+
+					err := r.handler.Handle(r.ctx, message)
+
 					//var deploymentMessage DeploymentMessage
 					//err := json.Unmarshal(message.Body, &deploymentMessage)
 					if err != nil {
 						log.Println("Failure")
 					}
-					log.Printf("Received message: %s\n", deploymentMessage)
 					err = receiver.CompleteMessage(context.TODO(), message, nil)
 					if err != nil {
 						var sbErr *azservicebus.Error
@@ -95,11 +97,11 @@ func (r *ServiceBusReceiver) Start()  {
 							continue
 						}
 					}
-					log.Printf("Completed message: %s\n", deploymentMessage)
+					log.Printf("Completed message: %s\n", message.MessageID)
 				}
 			}
 		}
-	}	
+	}
 }
 
 func (r *ServiceBusReceiver) Stop() {
@@ -112,15 +114,14 @@ func (r *ServiceBusReceiver) Stop() {
 	close(r.stop)
 }
 
-
-func NewServiceBusReceiver(config ServiceBusConfig) (*ServiceBusReceiver, error) {
+func NewServiceBusReceiver(config ServiceBusConfig, handler MessageHandler) (*ServiceBusReceiver, error) {
 	receiver := ServiceBusReceiver{
-		stop: make(chan bool),
-		stopped: true,
+		stop:      make(chan bool),
+		stopped:   true,
 		queueName: config.QueueName,
 		namespace: config.Namespace,
-		ctx: context.TODO(),
-		handler: MapDeploymentMessage,
+		ctx:       context.TODO(),
+		handler:   handler,
 	}
 	return &receiver, nil
 }
@@ -155,11 +156,10 @@ func NewServiceBusPublisher(ns string, queueName string) (ServiceBusPublisher, e
 			return err
 		}
 
-		sbMessage := &azservicebus.Message {
+		sbMessage := &azservicebus.Message{
 			Body: []byte(jsonContent),
 		}
 
 		return sender.SendMessage(context.TODO(), sbMessage, nil)
 	}, nil
 }
-
