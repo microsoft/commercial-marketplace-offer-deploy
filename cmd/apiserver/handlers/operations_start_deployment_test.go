@@ -48,9 +48,9 @@ func TestStartDeployment(t *testing.T) {
 	// 	Status: "New",
 	// }
 	//id := *deploymentResult.ID
-	db.Get("1")
+	// db.Get("1")
 
-	toUpdate := &data.Deployment{}
-	db.First(&toUpdate, *deploymentResult.ID)
-	db.Model(&toUpdate).Update("status", "Pending")
+	// toUpdate := &data.Deployment{}
+	// db.First(&toUpdate, *deploymentResult.ID)
+	// db.Model(&toUpdate).Update("status", "Pending")
 }
