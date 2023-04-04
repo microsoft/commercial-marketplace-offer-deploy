@@ -16,15 +16,15 @@ import (
 )
 
 func TestPublisherPublish(t *testing.T) {
-	message := &WebhookEventMessage{
+	message := &WebHookEventMessage{
 		Id:        uuid.New(),
 		EventType: "test.event",
-		Payload:   make(map[string]any),
+		Body:      make(map[string]any),
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, _ := io.ReadAll(r.Body)
-		var received = &WebhookEventMessage{}
+		var received = &WebHookEventMessage{}
 		json.Unmarshal(body, &received)
 
 		// assert that the message that was published was received by the server that was registered to the publisher
