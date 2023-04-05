@@ -30,8 +30,8 @@ type AppConfig struct {
 }
 
 func GetAppConfig() *AppConfig {
-	appConfig := hosting.GetAppConfig[AppConfig]()
-	return &appConfig
+	appConfig := hosting.GetAppConfig[*AppConfig]()
+	return appConfig
 }
 
 func (appSettings *AppConfig) GetDatabaseOptions() *data.DatabaseOptions {
