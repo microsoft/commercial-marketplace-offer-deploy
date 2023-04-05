@@ -5,13 +5,16 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestStartDeployment(t *testing.T) {
@@ -30,7 +33,13 @@ func TestStartDeployment(t *testing.T) {
 	var deploymentResult api.Deployment
 	json.Unmarshal(rec.Body.Bytes(), &deploymentResult) // parse the response from the apiserver and map to an object: deploymentResult
 
-	invokeDeployOperation := api.InvokeDeploymentOperation{}
+	templateParameters := getParameters(t, "../../../test/testdata/nameviolation/success/")
+	deploymentName := "StartDeploymentTest"
+
+	invokeDeployOperation := api.InvokeDeploymentOperation{
+		Parameters: templateParameters,
+		Name:       &deploymentName,
+	}
 	StartDeployment(int(*deploymentResult.ID), invokeDeployOperation, db) // start the deployment / http POST to the server
 
 	var startDeploymentResult api.InvokedOperation
@@ -41,4 +50,10 @@ func TestStartDeployment(t *testing.T) {
 
 	log.Printf("value back from DB: %v", retrieved.ID)
 	assert.Equal(t, *deploymentResult.ID, int32(retrieved.ID)) // validate the database saved the state
+}
+func getParameters(t *testing.T, path string) map[string]interface{} {
+	paramsPath := filepath.Join(path, "parameters.json")
+	parameters, err := utils.ReadJson(paramsPath)
+	require.NoError(t, err)
+	return parameters
 }
