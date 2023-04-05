@@ -7,19 +7,22 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
 	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid/eventsfiltering"
 	w "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid/webhookevent"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"gorm.io/gorm"
 )
+
+//region handler
 
 // filter event grid event messages by tags that have events=true
 var matchAny deployment.LookupTags = deployment.LookupTags{
@@ -83,25 +86,25 @@ func getErrorMessages(sendResults []messaging.SendMessageResult) *[]string {
 	return &errors
 }
 
+//endregion handler
+
 //region factory
 
 func NewEventGridWebHookHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		credential, err := azidentity.NewDefaultAzureCredential(nil)
-		if err != nil {
-			return nil
-		}
+		appConfig := config.GetAppConfig()
+		credential := hosting.GetAzureCredential()
+		db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
 
 		sender, err := newMessageSender(credential)
-
 		if err != nil {
 			return nil
 		}
 
-		databaseOptions := config.GetAppConfig().GetDatabaseOptions()
-		db := data.NewDatabase(databaseOptions).Instance()
-
-		messageFactory := newWebHookEventMessageFactory(db, credential)
+		messageFactory, err := newWebHookEventMessageFactory(appConfig.Azure.SubscriptionId, db, credential)
+		if err != nil {
+			return nil
+		}
 
 		handler := eventGridWebHook{
 			db:             db,
@@ -113,9 +116,14 @@ func NewEventGridWebHookHandler() echo.HandlerFunc {
 	}
 }
 
-func newWebHookEventMessageFactory(db *gorm.DB, credential azcore.TokenCredential) *w.WebHookEventMessageFactory {
+func newWebHookEventMessageFactory(subscriptionId string, db *gorm.DB, credential azcore.TokenCredential) (*w.WebHookEventMessageFactory, error) {
 	filter := newEventsFilter(credential)
-	return w.NewWebHookEventMessageFactory(filter, db)
+	client, err := armresources.NewDeploymentsClient(subscriptionId, credential, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return w.NewWebHookEventMessageFactory(filter, client, db), nil
 }
 
 func newMessageSender(credential azcore.TokenCredential) (messaging.MessageSender, error) {

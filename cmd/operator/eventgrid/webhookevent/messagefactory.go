@@ -2,7 +2,12 @@ package webhookevent
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
 	"github.com/google/uuid"
 	eg "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid"
@@ -16,12 +21,14 @@ import (
 // this factory is intented to create a list of WebHookEventMessages from a list of EventGridEventResources
 // so the messages can be relayed via queue to be published to MODM consumer webhook subscription
 type WebHookEventMessageFactory struct {
+	client *armresources.DeploymentsClient
 	filter filtering.EventGridEventFilter
 	db     *gorm.DB
 }
 
-func NewWebHookEventMessageFactory(filter filtering.EventGridEventFilter, db *gorm.DB) *WebHookEventMessageFactory {
+func NewWebHookEventMessageFactory(filter filtering.EventGridEventFilter, client *armresources.DeploymentsClient, db *gorm.DB) *WebHookEventMessageFactory {
 	return &WebHookEventMessageFactory{
+		client: client,
 		filter: filter,
 		db:     db,
 	}
@@ -45,7 +52,10 @@ func (f *WebHookEventMessageFactory) Create(ctx context.Context, matchAny deploy
 }
 
 func (f *WebHookEventMessageFactory) convert(item *eg.EventGridEventResource) (*events.WebHookEventMessage, error) {
-	deployment := f.getRelatedDeployment(item)
+	deployment, err := f.getRelatedDeployment(item)
+	if err != nil {
+		return nil, err
+	}
 
 	messageId, _ := uuid.Parse(*item.Message.ID)
 	eventData := item.Message.Data.(eg.ResourceEventData)
@@ -70,6 +80,49 @@ func (f *WebHookEventMessageFactory) convert(item *eg.EventGridEventResource) (*
 	return message, nil
 }
 
-func (f *WebHookEventMessageFactory) getRelatedDeployment(item *eg.EventGridEventResource) *data.Deployment {
-	panic("unimplemented")
+func (f *WebHookEventMessageFactory) getRelatedDeployment(item *eg.EventGridEventResource) (*data.Deployment, error) {
+	correlationId := item.Message.Data.(eg.ResourceEventData).CorrelationID
+	resourceId, err := arm.ParseResourceID(*item.Resource.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	pager := f.client.NewListByResourceGroupPager(resourceId.ResourceGroupName, nil)
+	deploymentId, err := f.lookupDeploymentId(context.Background(), correlationId, pager)
+	if err != nil {
+		return nil, err
+	}
+
+	deployment := &data.Deployment{}
+	tx := f.db.First(deployment, deploymentId)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return deployment, nil
+}
+
+func (f *WebHookEventMessageFactory) lookupDeploymentId(ctx context.Context, correlationId string, pager *runtime.Pager[armresources.DeploymentsClientListByResourceGroupResponse]) (*int, error) {
+	deployment := &data.Deployment{}
+
+	for pager.More() {
+		nextResult, err := pager.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+		if nextResult.DeploymentListResult.Value != nil {
+			for _, item := range nextResult.DeploymentListResult.Value {
+				correlationIdMatches := strings.EqualFold(*item.Properties.CorrelationID, correlationId)
+				if correlationIdMatches {
+					id, err := deployment.ParseAzureDeploymentName(deployment.Name)
+					if err != nil {
+						continue
+					} else {
+						return id, nil
+					}
+				}
+			}
+		}
+	}
+	return nil, fmt.Errorf("deployment not found for correlationId: %s", correlationId)
 }
