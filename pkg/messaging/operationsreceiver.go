@@ -62,12 +62,15 @@ func (h *OperationsHandler) Handle(ctx context.Context, message *azservicebus.Re
 	azureDeployment := h.mapAzureDeployment(deployment, &operation)
 	log.Println("Mapped deployment: ", azureDeployment)
 	log.Println("Calling deployment.Create")
-	_, err = h.Deploy(ctx, azureDeployment)
 
-	if err != nil {
-		log.Println("Error calling deployment.Create: ", err)
-		return err
-	}
+	go func() {
+		_, err = h.Deploy(ctx, azureDeployment)
+
+		if err != nil {
+			log.Println("Error calling deployment.Create: ", err)
+		}
+	}()
+	
 
 	return nil
 }

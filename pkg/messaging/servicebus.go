@@ -66,22 +66,23 @@ func (r *ServiceBusReceiver) Start() {
 				if r.stopped {
 					break
 				}
+				
 				log.Println("inside of default")
 				var messages []*azservicebus.ReceivedMessage = []*azservicebus.ReceivedMessage{}
 				messages, err = receiver.ReceiveMessages(r.ctx, 1, nil)
 				if err != nil {
 					log.Printf("Error receiving messages: %s\n", err)
 				}
+
 				log.Println("received messages completed in anonymous function")
 				log.Println("after receive messages")
 				log.Printf("%d messages received\n", len(messages))
+
 				for _, message := range messages {
 					log.Printf("Received message: %s\n", message.MessageID)
 
 					err := r.handler.Handle(r.ctx, message)
 
-					//var deploymentMessage DeploymentMessage
-					//err := json.Unmarshal(message.Body, &deploymentMessage)
 					if err != nil {
 						log.Println(err)
 					}
