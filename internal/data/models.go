@@ -46,8 +46,8 @@ type EventSubscription struct {
 }
 
 type InvokedOperation struct {
-	gorm.Model
-	DeploymentId uint		`json:"deploymentId"`
-	DeploymentName string	`json:"deploymentName"`
-	Params map[string]interface{} `json:"params" gorm:"json"`
+	BaseWithGuidPrimaryKey
+	Name         string                 `json:"name"`
+	DeploymentId uint                   `json:"deploymentId"`
+	Params       map[string]interface{} `json:"params" gorm:"json"`
 }
