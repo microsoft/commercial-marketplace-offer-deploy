@@ -1,32 +1,28 @@
 package test_test
 
 import (
-	//"context"
-	//"log"
 	"context"
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"path/filepath"
 	"testing"
 	"time"
-
-	// "github.com/Azure/azure-sdk-for-go/sdk/azcore"
-	// "github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
-	// "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	// "github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/messaging"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
 type serviceBusSuite struct {
 	suite.Suite
-	ns                  string
-	queueName           string
+	testDirectory string
+	ns        string
+	queueName string
 	operationsQueueName string
 	subscriptionId      string
 	resourceGroupName   string
@@ -42,6 +38,10 @@ func TestServiceBusSuite(t *testing.T) {
 }
 
 func (s *serviceBusSuite) SetupSuite() {
+	s.testDirectory = "./testdata"
+	s.setupTestDirectory()
+	data.SetDefaultDatabasePath(s.testDirectory)
+
 	s.ns = "bobjacmodm.servicebus.windows.net"
 	s.queueName = "deployeventqueue"
 	s.operationsQueueName = "deployoperationsqueue"
@@ -49,11 +49,25 @@ func (s *serviceBusSuite) SetupSuite() {
 	s.resourceGroupName = "demo2"
 	s.location = "eastus"
 	s.deploymentName = "test-deployment"
+	s.testDirectory = "./testdata"
 	s.db = data.NewDatabase(nil)
 }
 
 func (s *serviceBusSuite) SetupTest() {
+
 	s.createDeploymentForTests()
+}
+
+func (s *serviceBusSuite) setupTestDirectory() {
+	if _, err := os.Stat(s.testDirectory); err != nil {
+		err := os.Mkdir(s.testDirectory, 0755)
+		require.NoError(s.T(), err)
+	}
+}
+
+func (s *serviceBusSuite) cleanTestDirectory() {
+	//clean up
+	os.RemoveAll(s.testDirectory)
 }
 
 func (s *serviceBusSuite) createDeploymentForTests() {
@@ -62,7 +76,7 @@ func (s *serviceBusSuite) createDeploymentForTests() {
 	template, err := utils.ReadJson(fullPath)
 	require.NoError(s.T(), err)
 
-	paramsPath := filepath.Join(testDeploymentPath, "parameters.json")
+	paramsPath := filepath.Join(testDeploymentPath, "parametersBicep.json")
 	parameters, err := utils.ReadJson(paramsPath)
 	require.NoError(s.T(), err)
 
@@ -89,10 +103,6 @@ func (s *serviceBusSuite) createDeploymentForTests() {
 }
 
 func (s *serviceBusSuite) publishTestMessage(sbConfig messaging.ServiceBusConfig, topicHeader string, body string) {
-	// sbConfig := messaging.ServiceBusConfig{
-	// 	Namespace: s.ns,
-	// 	QueueName: s.queueName,
-	// }
 	config := messaging.PublisherConfig{
 		Type:       "servicebus",
 		TypeConfig: sbConfig,
@@ -122,29 +132,11 @@ func (s *serviceBusSuite) TestMessageSendSuccess() {
 }
 
 func (s *serviceBusSuite) TestOperationsSendSuccess() {
-	// testDeploymentPath := "testdata/taggeddeployment"
-	// fullPath := filepath.Join(testDeploymentPath, "mainTemplateBicep.json")
-	// template, err := utils.ReadJson(fullPath)
-	// require.NoError(s.T(), err)
-
-	// paramsPath := filepath.Join(testDeploymentPath, "parameters.json")
-	// parameters, err := utils.ReadJson(paramsPath)
-	// require.NoError(s.T(), err)
-
 	var dataDeployment data.Deployment
 	s.db.Instance().First(&dataDeployment, s.deploymentId)
 
 	var invokedOperation data.InvokedOperation
 	s.db.Instance().First(&invokedOperation, s.invokedOperationId)
-
-	// azureDeployment := deployment.AzureDeployment{
-	// 	SubscriptionId:    s.subscriptionId,
-	// 	Location:          s.location,
-	// 	ResourceGroupName: s.resourceGroupName,
-	// 	DeploymentName:    "operationsTest",
-	// 	Template:          dataDeployment.Template,
-	// 	Params:            invokedOperation.Params,
-	// }
 
 	bodyByte, err := json.Marshal(invokedOperation)
 	require.NoError(s.T(), err)
@@ -181,19 +173,32 @@ func (s *serviceBusSuite) TestMessageReceiveSuccess() {
 	fmt.Println("After the second sleep")
 }
 
+func (s *serviceBusSuite) TestUnmarshalMessageJson(){
+	messageString := "{\"header\":{\"topic\":\"testtopic\"},\"body\":\"{\\\"ID\\\":13,\\\"CreatedAt\\\":\\\"2023-04-05T10:11:10.346118-04:00\\\",\\\"UpdatedAt\\\":\\\"2023-04-05T10:11:10.346118-04:00\\\",\\\"DeletedAt\\\":null,\\\"deploymentId\\\":22,\\\"deploymentName\\\":\\\"test-deployment\\\",\\\"params\\\":{\\\"$schema\\\":\\\"https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#\\\",\\\"contentVersion\\\":\\\"1.0.0.0\\\",\\\"parameters\\\":{\\\"testName\\\":{\\\"value\\\":\\\"bobjacbicep1\\\"}}}}\"}"
+	var publishedMessage messaging.DeploymentMessage
+	var operation data.InvokedOperation
+	err := json.Unmarshal([]byte(messageString), &publishedMessage)
+	assert.NoError(s.T(), err)
+	publishedBodyString := publishedMessage.Body.(string)
+	err = json.Unmarshal([]byte(publishedBodyString), &operation)
+	assert.NoError(s.T(), err)
+	assert.NotEqual(s.T(), operation.ID, uint(0))
+}
+
 func (s *serviceBusSuite) TestOperationDeploymentSuccess() {
 	sbConfig := messaging.ServiceBusConfig{
 		Namespace: s.ns,
-		QueueName: s.queueName,
+		QueueName: s.operationsQueueName,
 	}
 
-	handler := messaging.NewOperationsHandler()
+	handler := messaging.NewOperationsHandler(s.db)
 	receiver, err := messaging.NewServiceBusReceiver(sbConfig, handler)
 	require.NoError(s.T(), err)
 	require.NotNil(s.T(), receiver)
 	fmt.Println("calling start")
 	go receiver.Start()
-	time.Sleep(5 * time.Second)
+	time.Sleep(60 * time.Minute)
+	go receiver.Stop()
 }
 
 type fakeHandler struct {
