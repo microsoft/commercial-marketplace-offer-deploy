@@ -83,7 +83,7 @@ func getErrorMessages(sendResults []messaging.SendMessageResult) *[]string {
 	return &errors
 }
 
-//#region factory
+//region factory
 
 func NewEventGridWebHookHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -147,4 +147,4 @@ func newEventsFilter(credential azcore.TokenCredential) eventsfiltering.EventGri
 	return filter
 }
 
-// #endregion factoryå
+//endregion factory
