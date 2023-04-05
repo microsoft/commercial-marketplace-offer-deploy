@@ -67,9 +67,12 @@ type WebHookDeploymentEventMessageBody struct {
 	Message    string `json:"message,omitempty"`
 }
 
-func (m *WebHookEventMessage) SetSubject(deploymentId int, stageId *uuid.UUID) {
+func (m *WebHookEventMessage) SetSubject(deploymentId int, stageId *uuid.UUID, resourceName *string) {
 	m.Subject = "/deployments/" + strconv.Itoa(deploymentId)
 	if stageId != nil {
 		m.Subject += "/stages/" + stageId.String()
+	}
+	if resourceName != nil {
+		m.Subject += "/resources/" + *resourceName
 	}
 }

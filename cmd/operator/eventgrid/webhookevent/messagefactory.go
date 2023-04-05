@@ -13,7 +13,7 @@ import (
 	eg "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid"
 	filtering "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid/eventsfiltering"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
+	d "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"gorm.io/gorm"
 )
@@ -35,7 +35,7 @@ func NewWebHookEventMessageFactory(filter filtering.EventGridEventFilter, client
 }
 
 // Creates a list of WebHookEventMessage from a list of EventGridEventResource
-func (f *WebHookEventMessageFactory) Create(ctx context.Context, matchAny deployment.LookupTags, eventGridEvents []*eventgrid.Event) []*events.WebHookEventMessage {
+func (f *WebHookEventMessageFactory) Create(ctx context.Context, matchAny d.LookupTags, eventGridEvents []*eventgrid.Event) []*events.WebHookEventMessage {
 	result := f.filter.Filter(ctx, matchAny, eventGridEvents)
 	messages := []*events.WebHookEventMessage{}
 
@@ -50,6 +50,8 @@ func (f *WebHookEventMessageFactory) Create(ctx context.Context, matchAny deploy
 
 	return messages
 }
+
+//region private methods
 
 func (f *WebHookEventMessageFactory) convert(item *eg.EventGridEventResource) (*events.WebHookEventMessage, error) {
 	deployment, err := f.getRelatedDeployment(item)
@@ -72,10 +74,11 @@ func (f *WebHookEventMessageFactory) convert(item *eg.EventGridEventResource) (*
 	}
 
 	var stageId uuid.UUID
-	// if stage != nil {
-	// 	stageId = stage.ID
-	// }
-	message.SetSubject(int(deployment.ID), &stageId)
+	if item.Tags[d.LookupTagKeyStageId] != nil {
+		value := *item.Tags[d.LookupTagKeyStageId]
+		stageId, _ = uuid.Parse(value)
+	}
+	message.SetSubject(int(deployment.ID), &stageId, item.Resource.Name)
 
 	return message, nil
 }
@@ -110,12 +113,15 @@ func (f *WebHookEventMessageFactory) lookupDeploymentId(ctx context.Context, cor
 		if err != nil {
 			return nil, err
 		}
+
 		if nextResult.DeploymentListResult.Value != nil {
 			for _, item := range nextResult.DeploymentListResult.Value {
 				correlationIdMatches := strings.EqualFold(*item.Properties.CorrelationID, correlationId)
 				if correlationIdMatches {
 					id, err := deployment.ParseAzureDeploymentName(deployment.Name)
 					if err != nil {
+						// the name didn't match our pattern so we're not interested in this azure deployment, keep searching for a match
+						// until we find 1=1 for our deployment (the top level "main deployment")
 						continue
 					} else {
 						return id, nil
@@ -126,3 +132,15 @@ func (f *WebHookEventMessageFactory) lookupDeploymentId(ctx context.Context, cor
 	}
 	return nil, fmt.Errorf("deployment not found for correlationId: %s", correlationId)
 }
+
+func (f *WebHookEventMessageFactory) findStage(deployment *data.Deployment, resourceId *arm.ResourceID) *data.Stage {
+	for _, stage := range deployment.Stages {
+		if strings.EqualFold(stage.ResourceGroup, resourceId.ResourceGroupName) {
+			return &stage
+		}
+	}
+
+	return nil
+}
+
+//endregion private methods
