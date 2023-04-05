@@ -4,7 +4,6 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
 	eg "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid"
 	d "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
@@ -20,11 +19,10 @@ type EventGridEventFilter interface {
 // creates a new tag filter
 //
 //	tags: the tags that will be used to return results (not filter on)
-func NewTagsFilter(includeKeys []string, credential azcore.TokenCredential) EventGridEventFilter {
-	mapper := newEventGridEventMapper(credential)
+func NewTagsFilter(includeKeys []string, provider EventGridEventResourceProvider) EventGridEventFilter {
 	return &tagsFilter{
 		includeKeys: includeKeys,
-		mapper:      mapper,
+		provider:    provider,
 	}
 }
 
@@ -32,12 +30,12 @@ func NewTagsFilter(includeKeys []string, credential azcore.TokenCredential) Even
 type tagsFilter struct {
 	//search for keys that will cause the filter results to include these tags by key
 	includeKeys []string
-	mapper      eventGridEventMapper
+	provider    EventGridEventResourceProvider
 }
 
 // Filter implements ResourceFilter
 func (f *tagsFilter) Filter(ctx context.Context, matchAny d.LookupTags, events []*eventgrid.Event) eg.EventGridEventResources {
-	mappedItems := f.mapper.Map(ctx, events)
+	mappedItems := f.provider.Get(ctx, events)
 	items := []*eg.EventGridEventResource{}
 
 	for _, item := range mappedItems {

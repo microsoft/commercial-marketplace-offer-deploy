@@ -125,7 +125,11 @@ func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.T
 }
 
 func newWebHookEventMessageFactory(subscriptionId string, db *gorm.DB, credential azcore.TokenCredential) (*w.WebHookEventMessageFactory, error) {
-	filter := newEventsFilter(credential)
+	filter, err := newEventsFilter(subscriptionId, credential)
+	if err != nil {
+		return nil, err
+	}
+
 	client, err := armresources.NewDeploymentsClient(subscriptionId, credential, nil)
 	if err != nil {
 		return nil, err
@@ -149,7 +153,7 @@ func newMessageSender(appConfig *config.AppConfig, credential azcore.TokenCreden
 	return sender, nil
 }
 
-func newEventsFilter(credential azcore.TokenCredential) eventsfiltering.EventGridEventFilter {
+func newEventsFilter(subscriptionId string, credential azcore.TokenCredential) (eventsfiltering.EventGridEventFilter, error) {
 	// TODO: probably should come from db as configurable at runtime
 	includeKeys := []string{
 		string(deployment.LookupTagKeyEvents),
@@ -157,8 +161,14 @@ func newEventsFilter(credential azcore.TokenCredential) eventsfiltering.EventGri
 		string(deployment.LookupTagKeyName),
 		string(deployment.LookupTagKeyStageId),
 	}
-	filter := eventsfiltering.NewTagsFilter(includeKeys, credential)
-	return filter
+	resourceClient, err := eventsfiltering.NewAzureResourceClient(subscriptionId, credential)
+	if err != nil {
+		return nil, err
+	}
+
+	provider := eventsfiltering.NewEventGridEventResourceProvider(resourceClient)
+	filter := eventsfiltering.NewTagsFilter(includeKeys, provider)
+	return filter, nil
 }
 
 //endregion factory
