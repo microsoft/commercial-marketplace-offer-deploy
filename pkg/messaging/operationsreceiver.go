@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
-	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus/internal"
-	internalmessage "github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus/internal/messaging"
+//	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus/internal"
+	internalmessage "github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
@@ -29,6 +29,8 @@ func NewOperationsHandler(db data.Database) *OperationsHandler {
 }
 
 func (h *OperationsHandler) Handle(ctx context.Context, message *azservicebus.ReceivedMessage) (error) {
+	db := h.database.Instance()
+
 	messageString := string(message.Body)
 	log.Printf("Inside OperationsHandler.Handle with message: %s", messageString)
 	
@@ -39,19 +41,12 @@ func (h *OperationsHandler) Handle(ctx context.Context, message *azservicebus.Re
 		log.Println("Error unmarshalling message: ", err)
 		return err
 	}
+	db.First(&operation, publishedMessage.OperationId)
 
-	publishedBodyString := publishedMessage.Body.(string)
-	err = json.Unmarshal([]byte(publishedBodyString), &operation)
-	if err != nil {
-		log.Println("Error unmarshalling message: ", err)
-		return err
-	}
 	log.Println("Unmarshalled message: ", operation)
 	pulledOperationId := operation.ID
 	log.Println("Pulled operationId: ", pulledOperationId)
 	log.Println("Pulled params: ", operation.Params)
-
-	db := h.database.Instance()
 
 	deployment := &data.Deployment{}
 	db.First(&deployment, operation.DeploymentId)
@@ -81,7 +76,7 @@ func (h *OperationsHandler) mapAzureDeployment(d *data.Deployment, io *data.Invo
 	return &deployment.AzureDeployment{
 		SubscriptionId: d.SubscriptionId,
 		ResourceGroupName: d.ResourceGroup,
-		DeploymentName: io.DeploymentName,
+		DeploymentName: d.GetAzureDeploymentName(),
 		Template: d.Template,
 		Params: io.Params,
 	}

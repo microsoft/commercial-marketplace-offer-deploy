@@ -13,9 +13,11 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/messaging"
+	internalmessage "github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"github.com/google/uuid"
 )
 
 type serviceBusSuite struct {
@@ -29,7 +31,7 @@ type serviceBusSuite struct {
 	location            string
 	deploymentName      string
 	deploymentId        uint
-	invokedOperationId  uint
+	invokedOperationId  uuid.UUID
 	db                  data.Database
 }
 
@@ -89,12 +91,17 @@ func (s *serviceBusSuite) createDeploymentForTests() {
 		Template:       template,
 	}
 
+
+	// s.invokedOperationId = operationId
+	// invokedOperationMessage := internalmessage.InvokedOperationMessage{
+	// 	OperationId: operationId,
+	// }
+
 	s.db.Instance().Create(deployment)
 	s.deploymentId = deployment.ID
-
+	//var publishedMessage internalmessage.InvokedOperationMessage
 	invokedOperation := &data.InvokedOperation{
 		DeploymentId:   deployment.ID,
-		DeploymentName: s.deploymentName,
 		Params:         parameters,
 	}
 
@@ -138,7 +145,11 @@ func (s *serviceBusSuite) TestOperationsSendSuccess() {
 	var invokedOperation data.InvokedOperation
 	s.db.Instance().First(&invokedOperation, s.invokedOperationId)
 
-	bodyByte, err := json.Marshal(invokedOperation)
+	internalOperation := internalmessage.InvokedOperationMessage {
+		OperationId: invokedOperation.ID.String(),
+	}
+
+	bodyByte, err := json.Marshal(internalOperation)
 	require.NoError(s.T(), err)
 
 	bodyString := string(bodyByte)
