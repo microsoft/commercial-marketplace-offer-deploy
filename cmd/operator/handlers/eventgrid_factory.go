@@ -5,9 +5,12 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid/eventsfiltering"
+	w "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid/webhookevent"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
+	"gorm.io/gorm"
 )
 
 func NewEventGridWebHookHandler() echo.HandlerFunc {
@@ -17,7 +20,6 @@ func NewEventGridWebHookHandler() echo.HandlerFunc {
 			return nil
 		}
 
-		filter := newEventsFilter(credential)
 		sender, err := newMessageSender(credential)
 
 		if err != nil {
@@ -27,8 +29,21 @@ func NewEventGridWebHookHandler() echo.HandlerFunc {
 		databaseOptions := config.GetAppConfig().GetDatabaseOptions()
 		db := data.NewDatabase(databaseOptions).Instance()
 
-		return EventGridWebHook(c, db, filter, sender)
+		messageFactory := newWebHookEventMessageFactory(db, credential)
+
+		handler := eventGridWebHook{
+			db:             db,
+			messageFactory: messageFactory,
+			sender:         sender,
+		}
+
+		return handler.Handle(c)
 	}
+}
+
+func newWebHookEventMessageFactory(db *gorm.DB, credential azcore.TokenCredential) *w.WebHookEventMessageFactory {
+	filter := newEventsFilter(credential)
+	return w.NewWebHookEventMessageFactory(filter, db)
 }
 
 func newMessageSender(credential azcore.TokenCredential) (messaging.MessageSender, error) {
@@ -51,10 +66,10 @@ func newMessageSender(credential azcore.TokenCredential) (messaging.MessageSende
 func newEventsFilter(credential azcore.TokenCredential) eventsfiltering.EventGridEventFilter {
 	// TODO: probably should come from db as configurable at runtime
 	includeKeys := []string{
-		string(eventsfiltering.FilterTagKeyEvents),
-		string(eventsfiltering.FilterTagKeyId),
-		string(eventsfiltering.FilterTagKeyName),
-		string(eventsfiltering.FilterTagKeyStageId),
+		string(deployment.LookupTagKeyEvents),
+		string(deployment.LookupTagKeyId),
+		string(deployment.LookupTagKeyName),
+		string(deployment.LookupTagKeyStageId),
 	}
 	filter := eventsfiltering.NewTagsFilter(includeKeys, credential)
 	return filter

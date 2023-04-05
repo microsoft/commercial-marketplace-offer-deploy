@@ -16,9 +16,8 @@ import (
 	// "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	// "github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/messaging"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -26,16 +25,16 @@ import (
 
 type serviceBusSuite struct {
 	suite.Suite
-	ns        string
-	queueName string
+	ns                  string
+	queueName           string
 	operationsQueueName string
-	subscriptionId    string
-	resourceGroupName string
-	location          string
-	deploymentName string
-	deploymentId uint
-	invokedOperationId uint
-	db data.Database
+	subscriptionId      string
+	resourceGroupName   string
+	location            string
+	deploymentName      string
+	deploymentId        uint
+	invokedOperationId  uint
+	db                  data.Database
 }
 
 func TestServiceBusSuite(t *testing.T) {
@@ -80,9 +79,9 @@ func (s *serviceBusSuite) createDeploymentForTests() {
 	s.deploymentId = deployment.ID
 
 	invokedOperation := &data.InvokedOperation{
-		DeploymentId: deployment.ID,
-		DeploymentName:  s.deploymentName,
-		Params: 		parameters,
+		DeploymentId:   deployment.ID,
+		DeploymentName: s.deploymentName,
+		Params:         parameters,
 	}
 
 	s.db.Instance().Create(invokedOperation)
@@ -118,7 +117,7 @@ func (s *serviceBusSuite) TestMessageSendSuccess() {
 	}
 	for i := 0; i < 15; i++ {
 		body := fmt.Sprintf("testbody%d", i)
-		s.publishTestMessage(sbConfig,"testtopic", body)
+		s.publishTestMessage(sbConfig, "testtopic", body)
 	}
 }
 
@@ -149,7 +148,7 @@ func (s *serviceBusSuite) TestOperationsSendSuccess() {
 
 	bodyByte, err := json.Marshal(invokedOperation)
 	require.NoError(s.T(), err)
-	
+
 	bodyString := string(bodyByte)
 	sbConfig := messaging.ServiceBusConfig{
 		Namespace: s.ns,
