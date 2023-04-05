@@ -2,7 +2,9 @@ package eventsfiltering
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
@@ -70,10 +72,45 @@ func (m *mapper) getResource(ctx context.Context, resourceId *arm.ResourceID) (*
 		return nil, err
 	}
 
-	response, err := client.GetByID(ctx, resourceId.String(), "2023-03-01-preview", nil)
+	apiVersion, err := m.resolveApiVersion(ctx, resourceId)
+	if err != nil {
+		log.Printf("err: %v", err)
+		return nil, err
+	}
+
+	response, err := client.GetByID(ctx, resourceId.String(), apiVersion, nil)
 	if err != nil {
 		log.Printf("failed to get associated resource: %s, err: %v", resourceId.String(), err)
 		return nil, err
 	}
+
 	return &response.GenericResource, nil
+}
+
+// port from Python code from Azure CLI
+// reference: https://github.com/Azure/azure-cli/blob/dev/src/azure-cli/azure/cli/command_modules/resource/custom.py
+
+func (m *mapper) resolveApiVersion(ctx context.Context, resourceId *arm.ResourceID) (string, error) {
+	defaultApiVersion := "2021-04-01"
+
+	providerClient, err := armresources.NewProvidersClient(resourceId.SubscriptionID, m.credential, nil)
+	if err != nil {
+		return defaultApiVersion, err
+	}
+
+	response, err := providerClient.Get(ctx, resourceId.ResourceType.Namespace, nil)
+	if err != nil {
+		return defaultApiVersion, err
+	}
+	for _, resourceType := range response.ResourceTypes {
+		isResourceTypeMatch := strings.EqualFold(*resourceType.ResourceType, resourceId.ResourceType.Type)
+		if isResourceTypeMatch {
+			if len(resourceType.APIVersions) > 0 {
+				apiVersion := *resourceType.APIVersions[0]
+				log.Printf("resolved api version: %s for resource: %s", apiVersion, resourceId.String())
+				return apiVersion, nil
+			}
+		}
+	}
+	return defaultApiVersion, fmt.Errorf("failed to resolve api version for resource: %s", resourceId.String())
 }
