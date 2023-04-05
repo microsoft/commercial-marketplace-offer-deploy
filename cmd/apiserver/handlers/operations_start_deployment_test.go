@@ -41,16 +41,4 @@ func TestStartDeployment(t *testing.T) {
 
 	log.Printf("value back from DB: %v", retrieved.ID)
 	assert.Equal(t, *deploymentResult.ID, int32(retrieved.ID)) // validate the database saved the state
-
-	//gather data: deploymentId
-	// save := &data.Deployment{
-	// 	Name:   "test-deployment",
-	// 	Status: "New",
-	// }
-	//id := *deploymentResult.ID
-	// db.Get("1")
-
-	// toUpdate := &data.Deployment{}
-	// db.First(&toUpdate, *deploymentResult.ID)
-	// db.Model(&toUpdate).Update("status", "Pending")
 }
