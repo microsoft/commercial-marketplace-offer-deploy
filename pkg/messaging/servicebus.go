@@ -83,7 +83,7 @@ func (r *ServiceBusReceiver) Start() {
 					//var deploymentMessage DeploymentMessage
 					//err := json.Unmarshal(message.Body, &deploymentMessage)
 					if err != nil {
-						log.Println("Failure")
+						log.Println(err)
 					}
 					err = receiver.CompleteMessage(context.TODO(), message, nil)
 					if err != nil {
