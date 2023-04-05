@@ -91,15 +91,9 @@ func (s *serviceBusSuite) createDeploymentForTests() {
 		Template:       template,
 	}
 
-
-	// s.invokedOperationId = operationId
-	// invokedOperationMessage := internalmessage.InvokedOperationMessage{
-	// 	OperationId: operationId,
-	// }
-
 	s.db.Instance().Create(deployment)
 	s.deploymentId = deployment.ID
-	//var publishedMessage internalmessage.InvokedOperationMessage
+
 	invokedOperation := &data.InvokedOperation{
 		DeploymentId:   deployment.ID,
 		Params:         parameters,
