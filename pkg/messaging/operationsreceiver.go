@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
+	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus/internal"
+	internalmessage "github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
@@ -30,7 +32,7 @@ func (h *OperationsHandler) Handle(ctx context.Context, message *azservicebus.Re
 	messageString := string(message.Body)
 	log.Printf("Inside OperationsHandler.Handle with message: %s", messageString)
 	
-	var publishedMessage DeploymentMessage
+	var publishedMessage internalmessage.InvokedOperationMessage
 	var operation data.InvokedOperation
 	err := json.Unmarshal([]byte(messageString), &publishedMessage)
 	if err != nil {
