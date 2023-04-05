@@ -11,13 +11,13 @@ import (
 // this is the .Data field of the event grid event when the event type is Microsoft.Resources.ResourceWriteSuccess,
 // for example.
 type ResourceEventData struct {
-	CorrelationID    string `json:"correlationId"`
-	ResourceProvider string `json:"resourceProvider"`
-	ResourceURI      string `json:"resourceUri"`
-	OperationName    string `json:"operationName"`
-	Status           string `json:"status"`
-	SubscriptionID   string `json:"subscriptionId"`
-	TenantID         string `json:"tenantId"`
+	CorrelationID    string `mapstructure:"correlationId"`
+	ResourceProvider string `mapstructure:"resourceProvider"`
+	ResourceURI      string `mapstructure:"resourceUri"`
+	OperationName    string `mapstructure:"operationName"`
+	Status           string `mapstructure:"status"`
+	SubscriptionID   string `mapstructure:"subscriptionId"`
+	TenantID         string `mapstructure:"tenantId"`
 }
 
 // list of event grid event resources

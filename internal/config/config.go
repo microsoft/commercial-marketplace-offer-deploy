@@ -24,8 +24,9 @@ type DatabaseSettings struct {
 }
 
 type AppConfig struct {
-	Azure    AzureSettings
-	Database DatabaseSettings
+	Azure               AzureSettings
+	Database            DatabaseSettings
+	ServiceBusNamespace string `mapstructure:"AZURE_SERVICEBUS_NAMESPACE"`
 }
 
 func GetAppConfig() *AppConfig {

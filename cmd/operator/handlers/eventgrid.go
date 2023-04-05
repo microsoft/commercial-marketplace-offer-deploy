@@ -14,7 +14,6 @@ import (
 	w "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid/webhookevent"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
@@ -38,6 +37,8 @@ type eventGridWebHook struct {
 // HTTP handler is the webook endpoint that receives event grid events
 // the validation middleware will handle validation requests first before this is reached
 func (h *eventGridWebHook) Handle(c echo.Context) error {
+	log.Print("Received event grid webhook request")
+
 	ctx := c.Request().Context()
 
 	events := []*eventgrid.Event{}
@@ -75,7 +76,7 @@ func (h *eventGridWebHook) enqueueResultForProcessing(ctx context.Context, messa
 	return utils.NewAggregateError(errors)
 }
 
-func getErrorMessages(sendResults []messaging.SendMessageResult) *[]string {
+func getErrorMessages(sendResults []messaging.SendMessageResult) []string {
 	errors := []string{}
 	for _, result := range sendResults {
 		if result.Error != nil {
@@ -83,20 +84,17 @@ func getErrorMessages(sendResults []messaging.SendMessageResult) *[]string {
 		}
 	}
 
-	return &errors
+	return errors
 }
 
 //endregion handler
 
 //region factory
 
-func NewEventGridWebHookHandler() echo.HandlerFunc {
+func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.TokenCredential) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		appConfig := config.GetAppConfig()
-		credential := hosting.GetAzureCredential()
 		db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
-
-		sender, err := newMessageSender(credential)
+		sender, err := newMessageSender(appConfig, credential)
 		if err != nil {
 			return nil
 		}
@@ -126,9 +124,7 @@ func newWebHookEventMessageFactory(subscriptionId string, db *gorm.DB, credentia
 	return w.NewWebHookEventMessageFactory(filter, client, db), nil
 }
 
-func newMessageSender(credential azcore.TokenCredential) (messaging.MessageSender, error) {
-	appConfig := config.GetAppConfig()
-
+func newMessageSender(appConfig *config.AppConfig, credential azcore.TokenCredential) (messaging.MessageSender, error) {
 	sender, err := messaging.NewServiceBusMessageSender(messaging.MessageSenderOptions{
 		SubscriptionId:      appConfig.Azure.SubscriptionId,
 		Location:            appConfig.Azure.Location,

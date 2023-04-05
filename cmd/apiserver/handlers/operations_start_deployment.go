@@ -103,7 +103,7 @@ func getMessageSender(credential azcore.TokenCredential) (messaging.MessageSende
 
 	return sender, nil
 }
-func getErrorMessages(sendResults []messaging.SendMessageResult) *[]string {
+func getErrorMessages(sendResults []messaging.SendMessageResult) []string {
 	errors := []string{}
 	for _, result := range sendResults {
 		if result.Error != nil {
@@ -111,5 +111,5 @@ func getErrorMessages(sendResults []messaging.SendMessageResult) *[]string {
 		}
 	}
 
-	return &errors
+	return errors
 }

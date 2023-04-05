@@ -3,6 +3,7 @@ package webhookevent
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
@@ -15,6 +16,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	d "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
+	"github.com/mitchellh/mapstructure"
 	"gorm.io/gorm"
 )
 
@@ -39,6 +41,8 @@ func (f *WebHookEventMessageFactory) Create(ctx context.Context, matchAny d.Look
 	result := f.filter.Filter(ctx, matchAny, eventGridEvents)
 	messages := []*events.WebHookEventMessage{}
 
+	log.Printf("factory received %d EventGridEvents but filtered to %d messages", len(eventGridEvents), len(result))
+
 	for _, item := range result {
 		message, err := f.convert(item)
 		if err != nil {
@@ -60,7 +64,9 @@ func (f *WebHookEventMessageFactory) convert(item *eg.EventGridEventResource) (*
 	}
 
 	messageId, _ := uuid.Parse(*item.Message.ID)
-	eventData := item.Message.Data.(eg.ResourceEventData)
+
+	eventData := eg.ResourceEventData{}
+	mapstructure.Decode(item.Message.Data, &eventData)
 
 	message := &events.WebHookEventMessage{
 		Id:             messageId,
@@ -84,7 +90,10 @@ func (f *WebHookEventMessageFactory) convert(item *eg.EventGridEventResource) (*
 }
 
 func (f *WebHookEventMessageFactory) getRelatedDeployment(item *eg.EventGridEventResource) (*data.Deployment, error) {
-	correlationId := item.Message.Data.(eg.ResourceEventData).CorrelationID
+	eventData := eg.ResourceEventData{}
+	mapstructure.Decode(item.Message.Data, &eventData)
+
+	correlationId := eventData.CorrelationID
 	resourceId, err := arm.ParseResourceID(*item.Resource.ID)
 	if err != nil {
 		return nil, err

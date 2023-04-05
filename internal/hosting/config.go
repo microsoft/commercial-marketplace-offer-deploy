@@ -35,10 +35,17 @@ func LoadConfiguration(path string, name *string, root any) error {
 
 	automaticEnvs(builder)
 	err = unmarshal(builder, root)
+
 	if err != nil {
+		log.Print(err)
 		errors = append(errors, err.Error())
 	}
-	return utils.NewAggregateError(&errors)
+
+	if len(errors) > 0 {
+		return utils.NewAggregateError(errors)
+	}
+
+	return nil
 }
 
 func unmarshal(builder *viper.Viper, root any) error {
@@ -60,14 +67,16 @@ func unmarshal(builder *viper.Viper, root any) error {
 		// if the field is a struct, we'll unmarshal it
 		if field.Type.Kind() == reflect.Struct {
 			fieldValue := configValue.FieldByName(field.Name)
-			err := builder.Unmarshal(fieldValue.Interface())
+			section := reflect.New(field.Type)
+			err := builder.Unmarshal(section.Interface())
+			fieldValue.Set(reflect.Indirect(section))
 
 			if err != nil {
 				errors = append(errors, err.Error())
 			}
 		}
 	}
-	return utils.NewAggregateError(&errors)
+	return utils.NewAggregateError(errors)
 }
 
 // viper doesn't actually load environment variables into the config if they aren't present in the config file

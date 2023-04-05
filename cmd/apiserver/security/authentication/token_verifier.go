@@ -57,7 +57,7 @@ func verifyClaims(token *jwt.Token, parameters *JwtTokenValidationParameters) er
 	if len(errorMessages) == 0 {
 		return nil
 	}
-	return utils.NewAggregateError(&errorMessages)
+	return utils.NewAggregateError(errorMessages)
 }
 
 // Parses the token and verify the signature of the token using the keySet
