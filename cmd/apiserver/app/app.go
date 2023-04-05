@@ -9,7 +9,7 @@ import (
 func BuildApp(configurationFilePath string) *hosting.App {
 	builder := hosting.NewAppBuilder()
 
-	appConfig := config.AppConfig{}
+	appConfig := &config.AppConfig{}
 	hosting.LoadConfiguration(configurationFilePath, nil, appConfig)
 	builder.AddConfig(appConfig)
 
