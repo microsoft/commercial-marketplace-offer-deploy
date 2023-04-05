@@ -20,7 +20,7 @@ var appConfig = getAppConfig()
 
 func TestEventGridWebHook(t *testing.T) {
 	//Setup
-	json, err := testutils.ReaderFromJsonFile("testdata/eventgridevent.queue.json")
+	json, err := testutils.ReaderFromJsonFile("testdata/eventgridevent.sb.json")
 	if err != nil {
 		t.Fatal(err)
 	}
