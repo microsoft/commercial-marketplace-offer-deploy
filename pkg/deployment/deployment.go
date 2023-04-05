@@ -127,6 +127,7 @@ func createResourceGroup(subscriptionId string, resourceGroupName string, locati
 }
 
 func Create(dep AzureDeployment) (*AzureDeploymentResult, error) {
+	log.Println("Inside Create")
 	deployer := CreateNewDeployer(dep)
 	return deployer.Deploy(&dep)
 }

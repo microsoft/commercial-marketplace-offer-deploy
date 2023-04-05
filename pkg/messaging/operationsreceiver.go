@@ -3,6 +3,7 @@ package messaging
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"strings"
 
 	//"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
@@ -21,35 +22,56 @@ type OperationsHandler struct {
 	database data.Database
 }
 
-func NewOperationsHandler() *OperationsHandler {
+func NewOperationsHandler(db data.Database) *OperationsHandler {
 	return &OperationsHandler{
 		running: false,
+		database: db,
 	}
 }
 
 func (h *OperationsHandler) Handle(ctx context.Context, message *azservicebus.ReceivedMessage) (error) {
+	messageString := string(message.Body)
+	log.Printf("Inside OperationsHandler.Handle with message: %s", messageString)
+	
+	var publishedMessage DeploymentMessage
 	var operation data.InvokedOperation
-	err := json.Unmarshal(message.Body, &operation)
-
+	err := json.Unmarshal([]byte(messageString), &publishedMessage)
 	if err != nil {
+		log.Println("Error unmarshalling message: ", err)
 		return err
 	}
+
+	publishedBodyString := publishedMessage.Body.(string)
+	err = json.Unmarshal([]byte(publishedBodyString), &operation)
+	if err != nil {
+		log.Println("Error unmarshalling message: ", err)
+		return err
+	}
+	log.Println("Unmarshalled message: ", operation)
+	pulledOperationId := operation.ID
+	log.Println("Pulled operationId: ", pulledOperationId)
+	log.Println("Pulled params: ", operation.Params)
 
 	db := h.database.Instance()
 
 	deployment := &data.Deployment{}
 	db.First(&deployment, operation.DeploymentId)
+	log.Println("Found deployment: ", deployment)
 
 	startedStatus := strings.Replace(string(events.DeploymentStartedEventType), "deployment.", "", 1)
 	caser := cases.Title(language.English)
 	deployment.Status = caser.String(startedStatus)
 	
 	db.Save(deployment)
+	log.Println("Updated deployment: ", deployment)
 
 	azureDeployment := h.mapAzureDeployment(deployment, &operation)
+	log.Println("Mapped deployment: ", azureDeployment)
+	log.Println("Calling deployment.Create")
 	_, err = h.Deploy(ctx, azureDeployment)
-
+	
 	if err != nil {
+		log.Println("Error calling deployment.Create: ", err)
 		return err
 	}
 
@@ -67,6 +89,7 @@ func (h *OperationsHandler) mapAzureDeployment(d *data.Deployment, io *data.Invo
 }
 
 func (h *OperationsHandler) Deploy(ctx context.Context, azureDeployment *deployment.AzureDeployment) (*deployment.AzureDeploymentResult, error)  {
+	
 	return deployment.Create(*azureDeployment)
 	// h.running = true
 	// cred, err := azidentity.NewDefaultAzureCredential(nil)
