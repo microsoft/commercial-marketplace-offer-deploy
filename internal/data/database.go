@@ -23,7 +23,7 @@ type database struct {
 }
 
 const (
-	DataDatabasePath = "/data"
+	DataDatabasePath = "./"
 	DatabaseName     = "commercial-marketplace-offer-deploy"
 	DatabaseFileName = DatabaseName + ".db"
 	InMemoryDsn      = "file::memory:?cache=shared"
