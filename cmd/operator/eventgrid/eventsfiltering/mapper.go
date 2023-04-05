@@ -2,12 +2,14 @@ package eventsfiltering
 
 import (
 	"context"
+	"log"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
 	. "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid"
+	"github.com/mitchellh/mapstructure"
 )
 
 // maps event grid events to resources for the filter to filter out events
@@ -29,7 +31,6 @@ func newEventGridEventMapper(credential azcore.TokenCredential) eventGridEventMa
 // Map implements EventGridEventMapper
 func (m *mapper) Map(ctx context.Context, events []*eventgrid.Event) EventGridEventResources {
 	result := EventGridEventResources{}
-
 	for _, event := range events {
 		resourceId, err := m.getResourceId(event)
 
@@ -50,10 +51,13 @@ func (m *mapper) Map(ctx context.Context, events []*eventgrid.Event) EventGridEv
 }
 
 func (m *mapper) getResourceId(event *eventgrid.Event) (*arm.ResourceID, error) {
-	data := event.Data.(ResourceEventData)
+	data := ResourceEventData{}
+	mapstructure.Decode(event.Data, &data)
+
 	resourceId, err := arm.ParseResourceID(data.ResourceURI)
 
 	if err != nil {
+		log.Printf("failed to parse ResourceURI: [%s], err: %v", data.ResourceURI, err)
 		return nil, err
 	}
 
@@ -66,10 +70,12 @@ func (m *mapper) getResource(ctx context.Context, resourceId *arm.ResourceID) (*
 		return nil, err
 	}
 
-	response, err := client.GetByID(ctx, resourceId.String(), "2021-04-01", nil)
+	response, err := client.GetByID(ctx, resourceId.String(), "2021-11-01", nil)
 	if err != nil {
+		log.Printf("failed to get resource: %s, err: %v", resourceId.String(), err)
 		return nil, err
 	}
 
+	log.Printf("resource mapped: %v", response.GenericResource)
 	return &response.GenericResource, nil
 }
