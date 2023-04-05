@@ -70,12 +70,10 @@ func (m *mapper) getResource(ctx context.Context, resourceId *arm.ResourceID) (*
 		return nil, err
 	}
 
-	response, err := client.GetByID(ctx, resourceId.String(), "2021-11-01", nil)
+	response, err := client.GetByID(ctx, resourceId.String(), "2023-03-01-preview", nil)
 	if err != nil {
-		log.Printf("failed to get resource: %s, err: %v", resourceId.String(), err)
+		log.Printf("failed to get associated resource: %s, err: %v", resourceId.String(), err)
 		return nil, err
 	}
-
-	log.Printf("resource mapped: %v", response.GenericResource)
 	return &response.GenericResource, nil
 }

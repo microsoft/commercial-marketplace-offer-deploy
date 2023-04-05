@@ -92,22 +92,32 @@ func getErrorMessages(sendResults []messaging.SendMessageResult) []string {
 //region factory
 
 func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.TokenCredential) echo.HandlerFunc {
+	log.Printf("Creating event grid webhook handler")
+
 	return func(c echo.Context) error {
+		errors := []string{}
+
 		db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
 		sender, err := newMessageSender(appConfig, credential)
 		if err != nil {
-			return nil
+			errors = append(errors, err.Error())
 		}
 
 		messageFactory, err := newWebHookEventMessageFactory(appConfig.Azure.SubscriptionId, db, credential)
 		if err != nil {
-			return nil
+			errors = append(errors, err.Error())
 		}
 
 		handler := eventGridWebHook{
 			db:             db,
 			messageFactory: messageFactory,
 			sender:         sender,
+		}
+
+		if len(errors) > 0 {
+			err = utils.NewAggregateError(errors)
+			log.Printf("Failed to create event grid webhook handler: %s", err.Error())
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 		}
 
 		return handler.Handle(c)

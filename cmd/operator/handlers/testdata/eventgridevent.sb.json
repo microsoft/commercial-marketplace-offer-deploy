@@ -1,0 +1,20 @@
+[
+    {
+        "subject": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourcegroups/kehilli01/providers/Microsoft.ServiceBus/namespaces/kehilli01sbns",
+        "eventType": "Microsoft.Resources.ResourceDeleteSuccess",
+        "id": "18a53ed5-5bba-4940-b6eb-0c9607da0d47",
+        "data": {
+            "correlationId": "132f42e2-f925-49d9-b214-7df6dfca5bf5",
+            "resourceProvider": "Microsoft.ServiceBus",
+            "resourceUri": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourcegroups/kehilli01/providers/Microsoft.ServiceBus/namespaces/kehilli01sbns",
+            "operationName": "Microsoft.ServiceBus/namespaces/delete",
+            "status": "Succeeded",
+            "subscriptionId": "31e9f9a0-9fd2-4294-a0a3-0101246d9700",
+            "tenantId": "5e3992bd-1b0a-43cf-b87a-a1aaacbf0be2"
+        },
+        "dataVersion": "2",
+        "metadataVersion": "1",
+        "eventTime": "2023-04-05T16:36:19.6390608Z",
+        "topic": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourcegroups/kehilli01"
+    }
+]
