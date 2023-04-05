@@ -17,6 +17,7 @@ import (
 	// "github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/messaging"
 	"github.com/stretchr/testify/require"
@@ -31,7 +32,10 @@ type serviceBusSuite struct {
 	subscriptionId    string
 	resourceGroupName string
 	location          string
-	//endpoint          string
+	deploymentName string
+	deploymentId uint
+	invokedOperationId uint
+	db data.Database
 }
 
 func TestServiceBusSuite(t *testing.T) {
@@ -45,11 +49,44 @@ func (s *serviceBusSuite) SetupSuite() {
 	s.subscriptionId = "31e9f9a0-9fd2-4294-a0a3-0101246d9700"
 	s.resourceGroupName = "demo2"
 	s.location = "eastus"
-	//s.endpoint = "http://localhost:8080"
+	s.deploymentName = "test-deployment"
+	s.db = data.NewDatabase(nil)
 }
 
 func (s *serviceBusSuite) SetupTest() {
-	// create the service bus namespace with the ns and queuename
+	s.createDeploymentForTests()
+}
+
+func (s *serviceBusSuite) createDeploymentForTests() {
+	testDeploymentPath := "testdata/taggeddeployment"
+	fullPath := filepath.Join(testDeploymentPath, "mainTemplateBicep.json")
+	template, err := utils.ReadJson(fullPath)
+	require.NoError(s.T(), err)
+
+	paramsPath := filepath.Join(testDeploymentPath, "parameters.json")
+	parameters, err := utils.ReadJson(paramsPath)
+	require.NoError(s.T(), err)
+
+	deployment := &data.Deployment{
+		Name:           s.deploymentName,
+		Status:         "New",
+		SubscriptionId: s.subscriptionId,
+		ResourceGroup:  s.resourceGroupName,
+		Location:       s.location,
+		Template:       template,
+	}
+
+	s.db.Instance().Create(deployment)
+	s.deploymentId = deployment.ID
+
+	invokedOperation := &data.InvokedOperation{
+		DeploymentId: deployment.ID,
+		DeploymentName:  s.deploymentName,
+		Params: 		parameters,
+	}
+
+	s.db.Instance().Create(invokedOperation)
+	s.invokedOperationId = invokedOperation.ID
 }
 
 func (s *serviceBusSuite) publishTestMessage(sbConfig messaging.ServiceBusConfig, topicHeader string, body string) {
@@ -86,25 +123,31 @@ func (s *serviceBusSuite) TestMessageSendSuccess() {
 }
 
 func (s *serviceBusSuite) TestOperationsSendSuccess() {
-	testDeploymentPath := "testdata/taggeddeployment"
-	fullPath := filepath.Join(testDeploymentPath, "mainTemplateBicep.json")
-	template, err := utils.ReadJson(fullPath)
-	require.NoError(s.T(), err)
+	// testDeploymentPath := "testdata/taggeddeployment"
+	// fullPath := filepath.Join(testDeploymentPath, "mainTemplateBicep.json")
+	// template, err := utils.ReadJson(fullPath)
+	// require.NoError(s.T(), err)
 
-	paramsPath := filepath.Join(testDeploymentPath, "parameters.json")
-	parameters, err := utils.ReadJson(paramsPath)
-	require.NoError(s.T(), err)
-	
-	azureDeployment := deployment.AzureDeployment{
-		SubscriptionId:    s.subscriptionId,
-		Location:          s.location,
-		ResourceGroupName: s.resourceGroupName,
-		DeploymentName:    "operationsTest",
-		Template:          template,
-		Params:            parameters,
-	}
+	// paramsPath := filepath.Join(testDeploymentPath, "parameters.json")
+	// parameters, err := utils.ReadJson(paramsPath)
+	// require.NoError(s.T(), err)
 
-	bodyByte, err := json.Marshal(azureDeployment)
+	var dataDeployment data.Deployment
+	s.db.Instance().First(&dataDeployment, s.deploymentId)
+
+	var invokedOperation data.InvokedOperation
+	s.db.Instance().First(&invokedOperation, s.invokedOperationId)
+
+	// azureDeployment := deployment.AzureDeployment{
+	// 	SubscriptionId:    s.subscriptionId,
+	// 	Location:          s.location,
+	// 	ResourceGroupName: s.resourceGroupName,
+	// 	DeploymentName:    "operationsTest",
+	// 	Template:          dataDeployment.Template,
+	// 	Params:            invokedOperation.Params,
+	// }
+
+	bodyByte, err := json.Marshal(invokedOperation)
 	require.NoError(s.T(), err)
 	
 	bodyString := string(bodyByte)
