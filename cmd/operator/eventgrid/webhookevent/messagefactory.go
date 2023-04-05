@@ -133,14 +133,4 @@ func (f *WebHookEventMessageFactory) lookupDeploymentId(ctx context.Context, cor
 	return nil, fmt.Errorf("deployment not found for correlationId: %s", correlationId)
 }
 
-func (f *WebHookEventMessageFactory) findStage(deployment *data.Deployment, resourceId *arm.ResourceID) *data.Stage {
-	for _, stage := range deployment.Stages {
-		if strings.EqualFold(stage.ResourceGroup, resourceId.ResourceGroupName) {
-			return &stage
-		}
-	}
-
-	return nil
-}
-
 //endregion private methods
