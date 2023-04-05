@@ -1,8 +1,6 @@
 package test_test
 
 import (
-	//"context"
-	//"log"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -11,16 +9,9 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
-
-	// "github.com/Azure/azure-sdk-for-go/sdk/azcore"
-	// "github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
-	// "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	// "github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
-
-	//"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/messaging"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -146,15 +137,6 @@ func (s *serviceBusSuite) TestOperationsSendSuccess() {
 
 	var invokedOperation data.InvokedOperation
 	s.db.Instance().First(&invokedOperation, s.invokedOperationId)
-
-	// azureDeployment := deployment.AzureDeployment{
-	// 	SubscriptionId:    s.subscriptionId,
-	// 	Location:          s.location,
-	// 	ResourceGroupName: s.resourceGroupName,
-	// 	DeploymentName:    "operationsTest",
-	// 	Template:          dataDeployment.Template,
-	// 	Params:            invokedOperation.Params,
-	// }
 
 	bodyByte, err := json.Marshal(invokedOperation)
 	require.NoError(s.T(), err)
