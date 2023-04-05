@@ -27,12 +27,14 @@ func NewOperationsHandler() *OperationsHandler {
 	}
 }
 
-func (h *OperationsHandler) Handle(ctx context.Context, message *azservicebus.ReceivedMessage) (*deployment.AzureDeploymentResult, error) {
+func (h *OperationsHandler) Handle(ctx context.Context, message *azservicebus.ReceivedMessage) (error) {
 	var operation data.InvokedOperation
 	err := json.Unmarshal(message.Body, &operation)
+
 	if err != nil {
-		return nil, err
+		return err
 	}
+
 	db := h.database.Instance()
 
 	deployment := &data.Deployment{}
@@ -41,14 +43,17 @@ func (h *OperationsHandler) Handle(ctx context.Context, message *azservicebus.Re
 	startedStatus := strings.Replace(string(events.DeploymentStartedEventType), "deployment.", "", 1)
 	caser := cases.Title(language.English)
 	deployment.Status = caser.String(startedStatus)
+	
 	db.Save(deployment)
 
 	azureDeployment := h.mapAzureDeployment(deployment, &operation)
-	res, err := h.Deploy(ctx, azureDeployment)
+	_, err = h.Deploy(ctx, azureDeployment)
+
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return res, nil
+
+	return nil
 }
 
 func (h *OperationsHandler) mapAzureDeployment(d *data.Deployment, io *data.InvokedOperation) *deployment.AzureDeployment {
@@ -62,8 +67,6 @@ func (h *OperationsHandler) mapAzureDeployment(d *data.Deployment, io *data.Invo
 }
 
 func (h *OperationsHandler) Deploy(ctx context.Context, azureDeployment *deployment.AzureDeployment) (*deployment.AzureDeploymentResult, error)  {
-	
-	
 	return deployment.Create(*azureDeployment)
 	// h.running = true
 	// cred, err := azidentity.NewDefaultAzureCredential(nil)

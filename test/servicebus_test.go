@@ -41,9 +41,9 @@ func TestServiceBusSuite(t *testing.T) {
 func (s *serviceBusSuite) SetupSuite() {
 	s.ns = "bobjacmodm.servicebus.windows.net"
 	s.queueName = "deployeventqueue"
-	s.operationsQueueName = "operationsqueue"
+	s.operationsQueueName = "deployoperationsqueue"
 	s.subscriptionId = "31e9f9a0-9fd2-4294-a0a3-0101246d9700"
-	s.resourceGroupName = "aMODMTestb"
+	s.resourceGroupName = "demo2"
 	s.location = "eastus"
 	//s.endpoint = "http://localhost:8080"
 }
@@ -90,9 +90,11 @@ func (s *serviceBusSuite) TestOperationsSendSuccess() {
 	fullPath := filepath.Join(testDeploymentPath, "mainTemplateBicep.json")
 	template, err := utils.ReadJson(fullPath)
 	require.NoError(s.T(), err)
+
 	paramsPath := filepath.Join(testDeploymentPath, "parameters.json")
 	parameters, err := utils.ReadJson(paramsPath)
 	require.NoError(s.T(), err)
+	
 	azureDeployment := deployment.AzureDeployment{
 		SubscriptionId:    s.subscriptionId,
 		Location:          s.location,
@@ -101,13 +103,16 @@ func (s *serviceBusSuite) TestOperationsSendSuccess() {
 		Template:          template,
 		Params:            parameters,
 	}
+
 	bodyByte, err := json.Marshal(azureDeployment)
 	require.NoError(s.T(), err)
+	
 	bodyString := string(bodyByte)
 	sbConfig := messaging.ServiceBusConfig{
 		Namespace: s.ns,
 		QueueName: s.operationsQueueName,
 	}
+
 	s.publishTestMessage(sbConfig, "testtopic", bodyString)
 }
 
