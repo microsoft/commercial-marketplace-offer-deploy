@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid/eventsfiltering"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 )
 
@@ -22,7 +23,11 @@ func NewEventGridWebHookHandler() echo.HandlerFunc {
 		if err != nil {
 			return nil
 		}
-		return EventGridWebHook(c, filter, sender)
+
+		databaseOptions := config.GetAppConfig().GetDatabaseOptions()
+		db := data.NewDatabase(databaseOptions).Instance()
+
+		return EventGridWebHook(c, db, filter, sender)
 	}
 }
 

@@ -22,7 +22,7 @@ func (base *BaseWithGuidPrimaryKey) BeforeCreate(tx *gorm.DB) error {
 }
 
 type Stage struct {
-	gorm.Model
+	BaseWithGuidPrimaryKey
 	Name string `json:"name"`
 }
 
