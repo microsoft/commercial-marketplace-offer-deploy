@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -46,6 +47,7 @@ func run(ctx context.Context) error {
 
 func getApp(appName string) *hosting.App {
 	configPath := getExecutionDirectory()
+	fmt.Println("app name: ", appName)
 
 	switch appName {
 	case "operator":

@@ -6,10 +6,7 @@ import (
 	"log"
 	"strings"
 
-	//"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
-	//"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
-	//"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
@@ -69,7 +66,7 @@ func (h *OperationsHandler) Handle(ctx context.Context, message *azservicebus.Re
 	log.Println("Mapped deployment: ", azureDeployment)
 	log.Println("Calling deployment.Create")
 	_, err = h.Deploy(ctx, azureDeployment)
-	
+
 	if err != nil {
 		log.Println("Error calling deployment.Create: ", err)
 		return err
@@ -89,31 +86,7 @@ func (h *OperationsHandler) mapAzureDeployment(d *data.Deployment, io *data.Invo
 }
 
 func (h *OperationsHandler) Deploy(ctx context.Context, azureDeployment *deployment.AzureDeployment) (*deployment.AzureDeploymentResult, error)  {
-	
 	return deployment.Create(*azureDeployment)
-	// h.running = true
-	// cred, err := azidentity.NewDefaultAzureCredential(nil)
-	// if err != nil {
-	// 	return nil
-	// }
-	// deploymentsClient, err := armresources.NewDeploymentsClient(azureDeployment.SubscriptionId, cred, nil)
-	// if err != nil {
-	// 	return nil
-	// }
-	// deploymentsClient.BeginCreateOrUpdate(
-	// 	ctx, 
-	// 	azureDeployment.ResourceGroupName, 
-	// 	azureDeployment.DeploymentName, 
-	// 	armresources.Deployment{
-	// 		Properties: &armresources.DeploymentProperties{
-	// 			Template: azureDeployment.Template,
-	// 			Parameters: azureDeployment.Params,
-	// 			Mode: to.Ptr(armresources.DeploymentModeIncremental),
-	// 		},
-	// 	},
-	// 	nil,
-	// )
-	// return nil
 }
 
 
