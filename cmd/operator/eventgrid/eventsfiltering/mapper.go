@@ -7,6 +7,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
+	internal "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid"
 )
 
 // maps event grid events to resources for the filter to filter out events
@@ -49,7 +50,7 @@ func (m *mapper) Map(ctx context.Context, events []*eventgrid.Event) eventGridEv
 }
 
 func (m *mapper) getResourceId(event *eventgrid.Event) (*arm.ResourceID, error) {
-	data := event.Data.(resourceEventData)
+	data := event.Data.(internal.ResourceEventData)
 	resourceId, err := arm.ParseResourceID(data.ResourceURI)
 
 	if err != nil {
