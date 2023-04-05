@@ -17,18 +17,11 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 
 	"gorm.io/gorm"
 )
-
-// test struct
-type Message struct {
-	DeploymentId int
-	OperationId  string
-}
 
 func StartDeployment(deploymentId int, operation api.InvokeDeploymentOperation, db *gorm.DB) (interface{}, error) {
 	log.Printf("Inside StartDeployment deploymentId: %d", deploymentId)
@@ -52,12 +45,11 @@ func StartDeployment(deploymentId int, operation api.InvokeDeploymentOperation, 
 		return nil, err
 	}
 
-	uuid := uuid.New().String()
-
 	// Post message to service bus operator queue
-	message := Message{
-		DeploymentId: deploymentId,
-		OperationId:  uuid,
+	message := data.InvokedOperation{
+		DeploymentId:   uint(deploymentId),
+		DeploymentName: *operation.Name,
+		Params:         templateParams.(map[string]interface{}),
 	}
 
 	err = enqueueForPublishing(credential, message, ctx)
@@ -65,6 +57,7 @@ func StartDeployment(deploymentId int, operation api.InvokeDeploymentOperation, 
 		return nil, err
 	}
 
+	uuid := uuid.New().String()
 	status := "OK"
 	returnedResult := api.InvokedOperation{
 		ID:     &uuid,
@@ -74,19 +67,19 @@ func StartDeployment(deploymentId int, operation api.InvokeDeploymentOperation, 
 	return returnedResult, nil
 }
 
-func enqueueForPublishing(credential *azidentity.DefaultAzureCredential, message Message, ctx context.Context) error {
-	sender, err := getMessageSender(credential)
-	if err != nil {
-		return err
-	}
-	results, err := sender.Send(ctx, messaging.OperatorQueue, message)
-	if err != nil {
-		return err
-	}
+func enqueueForPublishing(credential *azidentity.DefaultAzureCredential, message data.InvokedOperation, ctx context.Context) error {
+	// sender, err := getMessageSender(credential)
+	// if err != nil {
+	// 	return err
+	// }
+	// results, err := sender.Send(ctx, messaging.OperatorQueue, message)
+	// if err != nil {
+	// 	return err
+	// }
 
-	if len(results) > 0 {
-		return utils.NewAggregateError(getErrorMessages(results))
-	}
+	// if len(results) > 0 {
+	// 	return utils.NewAggregateError(getErrorMessages(results))
+	// }
 	return nil
 }
 func getMessageSender(credential azcore.TokenCredential) (messaging.MessageSender, error) {
