@@ -33,13 +33,13 @@ type serviceBusSuite struct {
 	ns        string
 	queueName string
 	operationsQueueName string
-	subscriptionId    string
-	resourceGroupName string
-	location          string
-	deploymentName string
-	deploymentId uint
-	invokedOperationId uint
-	db data.Database
+	subscriptionId      string
+	resourceGroupName   string
+	location            string
+	deploymentName      string
+	deploymentId        uint
+	invokedOperationId  uint
+	db                  data.Database
 }
 
 func TestServiceBusSuite(t *testing.T) {
@@ -102,9 +102,9 @@ func (s *serviceBusSuite) createDeploymentForTests() {
 	s.deploymentId = deployment.ID
 
 	invokedOperation := &data.InvokedOperation{
-		DeploymentId: deployment.ID,
-		DeploymentName:  s.deploymentName,
-		Params: 		parameters,
+		DeploymentId:   deployment.ID,
+		DeploymentName: s.deploymentName,
+		Params:         parameters,
 	}
 
 	s.db.Instance().Create(invokedOperation)
@@ -136,7 +136,7 @@ func (s *serviceBusSuite) TestMessageSendSuccess() {
 	}
 	for i := 0; i < 15; i++ {
 		body := fmt.Sprintf("testbody%d", i)
-		s.publishTestMessage(sbConfig,"testtopic", body)
+		s.publishTestMessage(sbConfig, "testtopic", body)
 	}
 }
 
@@ -158,7 +158,7 @@ func (s *serviceBusSuite) TestOperationsSendSuccess() {
 
 	bodyByte, err := json.Marshal(invokedOperation)
 	require.NoError(s.T(), err)
-	
+
 	bodyString := string(bodyByte)
 	sbConfig := messaging.ServiceBusConfig{
 		Namespace: s.ns,
