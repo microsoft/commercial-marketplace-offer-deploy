@@ -8,7 +8,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
-	. "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid"
+	eg "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -17,7 +17,7 @@ import (
 //	returns: map[resourceId]resource
 type eventGridEventMapper interface {
 	// Map maps event grid events to resources
-	Map(ctx context.Context, events []*eventgrid.Event) EventGridEventResources
+	Map(ctx context.Context, events []*eventgrid.Event) eg.EventGridEventResources
 }
 
 type mapper struct {
@@ -29,8 +29,8 @@ func newEventGridEventMapper(credential azcore.TokenCredential) eventGridEventMa
 }
 
 // Map implements EventGridEventMapper
-func (m *mapper) Map(ctx context.Context, events []*eventgrid.Event) EventGridEventResources {
-	result := EventGridEventResources{}
+func (m *mapper) Map(ctx context.Context, events []*eventgrid.Event) eg.EventGridEventResources {
+	result := eg.EventGridEventResources{}
 	for _, event := range events {
 		resourceId, err := m.getResourceId(event)
 
@@ -42,7 +42,7 @@ func (m *mapper) Map(ctx context.Context, events []*eventgrid.Event) EventGridEv
 		if err != nil {
 			continue
 		}
-		result = append(result, &EventGridEventResource{
+		result = append(result, &eg.EventGridEventResource{
 			Message:  event,
 			Resource: resource,
 		})
@@ -51,7 +51,7 @@ func (m *mapper) Map(ctx context.Context, events []*eventgrid.Event) EventGridEv
 }
 
 func (m *mapper) getResourceId(event *eventgrid.Event) (*arm.ResourceID, error) {
-	data := ResourceEventData{}
+	data := eg.ResourceEventData{}
 	mapstructure.Decode(event.Data, &data)
 
 	resourceId, err := arm.ParseResourceID(data.ResourceURI)
