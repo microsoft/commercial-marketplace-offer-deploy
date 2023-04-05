@@ -13,6 +13,8 @@ import (
 	"gorm.io/gorm"
 )
 
+// this factory is intented to create a list of WebHookEventMessages from a list of EventGridEventResources
+// so the messages can be relayed via queue to be published to MODM consumer webhook subscription
 type WebHookEventMessageFactory struct {
 	filter filtering.EventGridEventFilter
 	db     *gorm.DB
