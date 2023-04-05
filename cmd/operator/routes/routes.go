@@ -9,14 +9,13 @@ import (
 )
 
 func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
-	eventGridWebHookHandler := handlers.NewEventGridWebHookHandler(appConfig, hosting.GetAzureCredential())
 
 	return hosting.Routes{
 		hosting.Route{
 			Name:        "EventGridWebHook",
 			Method:      http.MethodPost,
 			Path:        "/eventgrid",
-			HandlerFunc: eventGridWebHookHandler,
+			HandlerFunc: handlers.NewEventGridWebHookHandler(appConfig, hosting.GetAzureCredential()),
 		},
 	}
 }
