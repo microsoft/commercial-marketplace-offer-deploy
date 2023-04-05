@@ -92,16 +92,20 @@ func getErrorMessages(sendResults []messaging.SendMessageResult) []string {
 //region factory
 
 func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.TokenCredential) echo.HandlerFunc {
+	log.Printf("Creating event grid webhook handler")
+
 	return func(c echo.Context) error {
+		errors := []string{}
+
 		db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
 		sender, err := newMessageSender(appConfig, credential)
 		if err != nil {
-			return nil
+			errors = append(errors, err.Error())
 		}
 
 		messageFactory, err := newWebHookEventMessageFactory(appConfig.Azure.SubscriptionId, db, credential)
 		if err != nil {
-			return nil
+			errors = append(errors, err.Error())
 		}
 
 		handler := eventGridWebHook{
@@ -110,12 +114,22 @@ func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.T
 			sender:         sender,
 		}
 
+		if len(errors) > 0 {
+			err = utils.NewAggregateError(errors)
+			log.Printf("Failed to create event grid webhook handler: %s", err.Error())
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
 		return handler.Handle(c)
 	}
 }
 
 func newWebHookEventMessageFactory(subscriptionId string, db *gorm.DB, credential azcore.TokenCredential) (*w.WebHookEventMessageFactory, error) {
-	filter := newEventsFilter(credential)
+	filter, err := newEventsFilter(subscriptionId, credential)
+	if err != nil {
+		return nil, err
+	}
+
 	client, err := armresources.NewDeploymentsClient(subscriptionId, credential, nil)
 	if err != nil {
 		return nil, err
@@ -139,7 +153,7 @@ func newMessageSender(appConfig *config.AppConfig, credential azcore.TokenCreden
 	return sender, nil
 }
 
-func newEventsFilter(credential azcore.TokenCredential) eventsfiltering.EventGridEventFilter {
+func newEventsFilter(subscriptionId string, credential azcore.TokenCredential) (eventsfiltering.EventGridEventFilter, error) {
 	// TODO: probably should come from db as configurable at runtime
 	includeKeys := []string{
 		string(deployment.LookupTagKeyEvents),
@@ -147,8 +161,14 @@ func newEventsFilter(credential azcore.TokenCredential) eventsfiltering.EventGri
 		string(deployment.LookupTagKeyName),
 		string(deployment.LookupTagKeyStageId),
 	}
-	filter := eventsfiltering.NewTagsFilter(includeKeys, credential)
-	return filter
+	resourceClient, err := eventsfiltering.NewAzureResourceClient(subscriptionId, credential)
+	if err != nil {
+		return nil, err
+	}
+
+	provider := eventsfiltering.NewEventGridEventResourceProvider(resourceClient)
+	filter := eventsfiltering.NewTagsFilter(includeKeys, provider)
+	return filter, nil
 }
 
 //endregion factory

@@ -94,7 +94,7 @@ func (b *AppBuilder) Build(configure ConfigureEchoFunc) *App {
 	//add middleware
 	b.app.server.Use(middleware.Logger())
 	b.app.server.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
-		log.Printf("Request:\n %v", string(reqBody))
+		log.Printf("Body:\n %v\n", string(reqBody))
 	}))
 
 	if configure != nil {
