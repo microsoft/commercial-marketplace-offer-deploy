@@ -8,16 +8,17 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
+// TODO: this needs to go and pull from .env
 var (
-	location = "eastus"
+	location      = "eastus"
 	resourceGroup = "demo2"
-	subscription = "31e9f9a0-9fd2-4294-a0a3-0101246d9700"
+	subscription  = "31e9f9a0-9fd2-4294-a0a3-0101246d9700"
 )
 
 func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
@@ -44,7 +45,6 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 	}
 }
 
-
 func getJsonAsMap(path string) map[string]interface{} {
 	jsonMap, err := utils.ReadJson(path)
 	if err != nil {
@@ -52,7 +52,6 @@ func getJsonAsMap(path string) map[string]interface{} {
 	}
 	return jsonMap
 }
-
 
 func ReceiveEventNotification(c echo.Context) error {
 	return c.JSON(http.StatusOK, "Registered endpoint hit")
@@ -62,12 +61,12 @@ func CreateDeployment(c echo.Context) error {
 	url := "http://localhost:8080/deployments"
 	templatePath := "./taggeddeployment/mainTemplateBicep.json"
 	templateMap := getJsonAsMap(templatePath)
-	
+
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		log.Println(err)
 	}
-	
+
 	client, err := sdk.NewClient(url, cred, nil)
 	if err != nil {
 		log.Panicln(err)
@@ -76,10 +75,10 @@ func CreateDeployment(c echo.Context) error {
 
 	deploymentName := "TaggedDeployment"
 	request := api.CreateDeployment{
-		Name: &deploymentName,
-		Template: templateMap,
-		Location: &location,
-		ResourceGroup: &resourceGroup,
+		Name:           &deploymentName,
+		Template:       templateMap,
+		Location:       &location,
+		ResourceGroup:  &resourceGroup,
 		SubscriptionID: &subscription,
 	}
 
@@ -87,9 +86,9 @@ func CreateDeployment(c echo.Context) error {
 	if err != nil {
 		log.Panicln(err)
 	}
-	
+
 	return c.JSON(http.StatusOK, res)
-} 
+}
 
 func StartDeployment(c echo.Context) error {
 	url := "http://localhost:8080/deployments"
@@ -123,7 +122,7 @@ func BuildApp(configurationFilePath string) *hosting.App {
 	builder := hosting.NewAppBuilder()
 
 	appConfig := &config.AppConfig{}
-	hosting.LoadConfiguration(configurationFilePath, nil, appConfig)
+	config.LoadConfiguration(configurationFilePath, nil, appConfig)
 	builder.AddConfig(appConfig)
 
 	builder.AddRoutes(func(options *hosting.RouteOptions) {
