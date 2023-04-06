@@ -11,7 +11,9 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
+	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	internalmessage "github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/messaging"
 	"github.com/stretchr/testify/assert"
@@ -30,7 +32,7 @@ type serviceBusSuite struct {
 	location            string
 	deploymentName      string
 	deploymentId        uint
-	invokedOperationId  uint
+	invokedOperationId  uuid.UUID
 	db                  data.Database
 }
 
@@ -94,9 +96,8 @@ func (s *serviceBusSuite) createDeploymentForTests() {
 	s.deploymentId = deployment.ID
 
 	invokedOperation := &data.InvokedOperation{
-		DeploymentId:   deployment.ID,
-		DeploymentName: s.deploymentName,
-		Parameters:     parameters,
+		DeploymentId: deployment.ID,
+		Parameters:   parameters,
 	}
 
 	s.db.Instance().Create(invokedOperation)
@@ -139,7 +140,11 @@ func (s *serviceBusSuite) TestOperationsSendSuccess() {
 	var invokedOperation data.InvokedOperation
 	s.db.Instance().First(&invokedOperation, s.invokedOperationId)
 
-	bodyByte, err := json.Marshal(invokedOperation)
+	internalOperation := internalmessage.InvokedOperationMessage{
+		OperationId: invokedOperation.ID.String(),
+	}
+
+	bodyByte, err := json.Marshal(internalOperation)
 	require.NoError(s.T(), err)
 
 	bodyString := string(bodyByte)

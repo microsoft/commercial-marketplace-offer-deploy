@@ -36,25 +36,23 @@ func MapDeploymentMessage(message *azservicebus.ReceivedMessage) (any, error) {
 
 func (r *ServiceBusReceiver) Start() {
 	r.stopped = false
-	log.Println("Starting the receiver")
-
+	log.Println("starting the receiver")
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		log.Println("Failure")
+		log.Println("error getting default credential: ", err)
 	}
 
 	client, err := azservicebus.NewClient(r.namespace, cred, nil)
 
 	if err != nil {
-		log.Println("Failure")
+		log.Println("failure creating client")
 	}
-	log.Println("Created the client")
-	log.Println("Starting the receiver loop")
+
 	receiver, err := client.NewReceiverForQueue(r.queueName, nil)
 	if err != nil {
-		log.Println("Failure")
+		log.Println("failure creating receiver")
 	}
-	log.Println("Created the receiver from client")
+
 	defer receiver.Close(r.ctx)
 
 	for {
@@ -66,22 +64,19 @@ func (r *ServiceBusReceiver) Start() {
 				if r.stopped {
 					break
 				}
+				
 				log.Println("inside of default")
 				var messages []*azservicebus.ReceivedMessage = []*azservicebus.ReceivedMessage{}
 				messages, err = receiver.ReceiveMessages(r.ctx, 1, nil)
 				if err != nil {
 					log.Printf("Error receiving messages: %s\n", err)
 				}
-				log.Println("received messages completed in anonymous function")
-				log.Println("after receive messages")
-				log.Printf("%d messages received\n", len(messages))
+
 				for _, message := range messages {
 					log.Printf("Received message: %s\n", message.MessageID)
 
 					err := r.handler.Handle(r.ctx, message)
 
-					//var deploymentMessage DeploymentMessage
-					//err := json.Unmarshal(message.Body, &deploymentMessage)
 					if err != nil {
 						log.Println(err)
 					}
@@ -105,10 +100,7 @@ func (r *ServiceBusReceiver) Start() {
 }
 
 func (r *ServiceBusReceiver) Stop() {
-	log.Println("Stopping the receiver")
-	//r.stopped = true
 	r.ctx.Done()
-	log.Println("Done with the context")
 	r.stop <- true
 	<-r.stop
 	close(r.stop)

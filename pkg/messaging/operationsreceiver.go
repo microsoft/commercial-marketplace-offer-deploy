@@ -6,11 +6,10 @@ import (
 	"log"
 	"strings"
 
-	//"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
-	//"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
-	//"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
+	//	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus/internal"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	internalmessage "github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"golang.org/x/text/cases"
@@ -30,29 +29,24 @@ func NewOperationsHandler(db data.Database) *OperationsHandler {
 }
 
 func (h *OperationsHandler) Handle(ctx context.Context, message *azservicebus.ReceivedMessage) error {
+	db := h.database.Instance()
+
 	messageString := string(message.Body)
 	log.Printf("Inside OperationsHandler.Handle with message: %s", messageString)
 
-	var publishedMessage DeploymentMessage
+	var publishedMessage internalmessage.InvokedOperationMessage
 	var operation data.InvokedOperation
 	err := json.Unmarshal([]byte(messageString), &publishedMessage)
 	if err != nil {
 		log.Println("Error unmarshalling message: ", err)
 		return err
 	}
+	db.First(&operation, publishedMessage.OperationId)
 
-	publishedBodyString := publishedMessage.Body.(string)
-	err = json.Unmarshal([]byte(publishedBodyString), &operation)
-	if err != nil {
-		log.Println("Error unmarshalling message: ", err)
-		return err
-	}
 	log.Println("Unmarshalled message: ", operation)
 	pulledOperationId := operation.ID
 	log.Println("Pulled operationId: ", pulledOperationId)
 	log.Println("Pulled params: ", operation.Parameters)
-
-	db := h.database.Instance()
 
 	deployment := &data.Deployment{}
 	db.First(&deployment, operation.DeploymentId)
@@ -68,12 +62,14 @@ func (h *OperationsHandler) Handle(ctx context.Context, message *azservicebus.Re
 	azureDeployment := h.mapAzureDeployment(deployment, &operation)
 	log.Println("Mapped deployment: ", azureDeployment)
 	log.Println("Calling deployment.Create")
-	_, err = h.Deploy(ctx, azureDeployment)
 
-	if err != nil {
-		log.Println("Error calling deployment.Create: ", err)
-		return err
-	}
+	go func() {
+		_, err = h.Deploy(ctx, azureDeployment)
+
+		if err != nil {
+			log.Println("Error calling deployment.Create: ", err)
+		}
+	}()
 
 	return nil
 }
@@ -82,36 +78,12 @@ func (h *OperationsHandler) mapAzureDeployment(d *data.Deployment, io *data.Invo
 	return &deployment.AzureDeployment{
 		SubscriptionId:    d.SubscriptionId,
 		ResourceGroupName: d.ResourceGroup,
-		DeploymentName:    io.DeploymentName,
+		DeploymentName:    d.GetAzureDeploymentName(),
 		Template:          d.Template,
-		Params:            io.Parameters,
+		Params:            io.Params,
 	}
 }
 
 func (h *OperationsHandler) Deploy(ctx context.Context, azureDeployment *deployment.AzureDeployment) (*deployment.AzureDeploymentResult, error) {
-
 	return deployment.Create(*azureDeployment)
-	// h.running = true
-	// cred, err := azidentity.NewDefaultAzureCredential(nil)
-	// if err != nil {
-	// 	return nil
-	// }
-	// deploymentsClient, err := armresources.NewDeploymentsClient(azureDeployment.SubscriptionId, cred, nil)
-	// if err != nil {
-	// 	return nil
-	// }
-	// deploymentsClient.BeginCreateOrUpdate(
-	// 	ctx,
-	// 	azureDeployment.ResourceGroupName,
-	// 	azureDeployment.DeploymentName,
-	// 	armresources.Deployment{
-	// 		Properties: &armresources.DeploymentProperties{
-	// 			Template: azureDeployment.Template,
-	// 			Parameters: azureDeployment.Params,
-	// 			Mode: to.Ptr(armresources.DeploymentModeIncremental),
-	// 		},
-	// 	},
-	// 	nil,
-	// )
-	// return nil
 }
