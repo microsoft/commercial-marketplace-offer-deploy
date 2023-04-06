@@ -3,6 +3,7 @@ package receivers
 import (
 	"log"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	ops "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/operations"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
@@ -35,7 +36,7 @@ func (h *operationMessageHandler) Handle(message *messaging.InvokedOperationMess
 
 //region factory
 
-func NewOperationsMessageReceiver(appConfig *config.AppConfig) messaging.MessageReceiver {
+func NewOperationsMessageReceiver(appConfig *config.AppConfig, credential azcore.TokenCredential) messaging.MessageReceiver {
 	db := data.NewDatabase(appConfig.GetDatabaseOptions())
 
 	handler := &operationMessageHandler{
@@ -47,7 +48,7 @@ func NewOperationsMessageReceiver(appConfig *config.AppConfig) messaging.Message
 		MessageReceiverOptions:  messaging.MessageReceiverOptions{QueueName: string(messaging.QueueNameOperations)},
 		FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
 	}
-	receiver, err := messaging.NewServiceBusReceiver(handler, options)
+	receiver, err := messaging.NewServiceBusReceiver(handler, credential, options)
 	if err != nil {
 		log.Fatal(err)
 	}

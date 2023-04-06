@@ -2,12 +2,18 @@ package messaging
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"log"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"errors"
+
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 )
+
+const banner = `
+🄶🄾🄻🄳🄴🄽 🅁🄴🄲🄴🄸🅅🄴🅁`
 
 type MessageReceiver interface {
 	Start()
@@ -26,39 +32,35 @@ type ServiceBusMessageReceiverOptions struct {
 //region servicebus receiver
 
 type serviceBusReceiver struct {
-	stopped   bool
-	stop      chan bool
-	ctx       context.Context
-	queueName string
-	namespace string
-	handler   ServiceBusMessageHandler
+	stopped    bool
+	stop       chan bool
+	ctx        context.Context
+	queueName  string
+	namespace  string
+	handler    ServiceBusMessageHandler
+	credential azcore.TokenCredential
 }
 
 func (r *serviceBusReceiver) Start() {
+	fmt.Println(banner)
+	log.Println("starting message receiver")
+
 	r.stopped = false
-	log.Println("starting the receiver")
-	cred, err := azidentity.NewDefaultAzureCredential(nil)
-	if err != nil {
-		log.Println("error getting default credential: ", err)
+	receiver, err := r.getQueueReceiver()
+	if receiver != nil {
+		defer receiver.Close(r.ctx)
 	}
 
-	client, err := azservicebus.NewClient(r.namespace, cred, nil)
-
+	// if the receiver was created, then don't bother continuing
 	if err != nil {
-		log.Println("failure creating client")
+		r.Stop()
+		return
 	}
-
-	receiver, err := client.NewReceiverForQueue(r.queueName, nil)
-	if err != nil {
-		log.Println("failure creating receiver")
-	}
-
-	defer receiver.Close(r.ctx)
 
 	for {
 		select {
 		case <-r.stop:
-			return
+			return nil
 		default:
 			for {
 				if r.stopped {
@@ -99,25 +101,50 @@ func (r *serviceBusReceiver) Start() {
 }
 
 func (r *serviceBusReceiver) Stop() {
+	log.Println("Stopping message receiver")
+
 	r.ctx.Done()
 	r.stop <- true
 	<-r.stop
 	close(r.stop)
 }
 
-func NewServiceBusReceiver(handler any, options ServiceBusMessageReceiverOptions) (MessageReceiver, error) {
+func (r *serviceBusReceiver) getQueueReceiver() (*azservicebus.Receiver, error) {
+	errorMessages := []string{}
+
+	client, err := azservicebus.NewClient(r.namespace, r.credential, nil)
+	if err != nil {
+		errorMessages = append(errorMessages, err.Error())
+		log.Println("failure creating client")
+	}
+
+	receiver, err := client.NewReceiverForQueue(r.queueName, nil)
+	if err != nil {
+		errorMessages = append(errorMessages, err.Error())
+		log.Println("failure creating receiver")
+	}
+
+	if len(errorMessages) > 0 {
+		return nil, utils.NewAggregateError(errorMessages)
+	}
+
+	return receiver, nil
+}
+
+func NewServiceBusReceiver(handler any, credential azcore.TokenCredential, options ServiceBusMessageReceiverOptions) (MessageReceiver, error) {
 	serviceBusMessageHandler, err := NewServiceMessageHandler(handler)
 	if err != nil {
 		return nil, err
 	}
 
 	receiver := serviceBusReceiver{
-		stop:      make(chan bool),
-		stopped:   true,
-		queueName: options.QueueName,
-		namespace: options.FullyQualifiedNamespace,
-		ctx:       context.TODO(),
-		handler:   serviceBusMessageHandler,
+		stop:       make(chan bool),
+		stopped:    true,
+		queueName:  options.QueueName,
+		namespace:  options.FullyQualifiedNamespace,
+		ctx:        context.TODO(),
+		credential: credential,
+		handler:    serviceBusMessageHandler,
 	}
 	return &receiver, nil
 }
