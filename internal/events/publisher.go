@@ -5,6 +5,8 @@ import (
 	"log"
 	"sync"
 
+	"github.com/google/uuid"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	model "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 )
 
@@ -15,17 +17,17 @@ type WebHookPublisher interface {
 
 type webHookPublisher struct {
 	subscriptionsProvider SubscriptionsProvider
-	sender                MessageSender
+	senders               map[uuid.UUID]WebHookSender
 }
 
-func NewWebHookPublisher(sender MessageSender, subscriptionsProvider SubscriptionsProvider) WebHookPublisher {
-	publisher := &webHookPublisher{sender: sender, subscriptionsProvider: subscriptionsProvider}
+func NewWebHookPublisher(subscriptionsProvider SubscriptionsProvider) WebHookPublisher {
+	publisher := &webHookPublisher{senders: map[uuid.UUID]WebHookSender{}, subscriptionsProvider: subscriptionsProvider}
 
 	return publisher
 }
 
 func (p *webHookPublisher) Publish(message *model.WebHookEventMessage) error {
-	subscriptions, err := p.subscriptionsProvider.GetSubscriptions(message.EventType)
+	subscriptions, err := p.subscriptionsProvider.GetSubscriptions()
 
 	if err != nil {
 		return err
@@ -43,8 +45,8 @@ func (p *webHookPublisher) Publish(message *model.WebHookEventMessage) error {
 			defer waitGroup.Done()
 			subscription := subscriptions[i]
 			message.SubscriptionId = subscription.ID
-
-			err := p.sender.Send(ctx, &message)
+			sender := p.getSender(*subscription)
+			err := sender.Send(ctx, &message)
 
 			if err != nil {
 				log.Printf("error sending message to subscription [%s]", subscription.Name)
@@ -54,4 +56,11 @@ func (p *webHookPublisher) Publish(message *model.WebHookEventMessage) error {
 	waitGroup.Wait()
 
 	return nil
+}
+
+func (p *webHookPublisher) getSender(subscription data.EventSubscription) WebHookSender {
+	if _, ok := p.senders[subscription.ID]; !ok {
+		p.senders[subscription.ID] = NewMessageSender(subscription.Callback, subscription.ApiKey)
+	}
+	return p.senders[subscription.ID]
 }

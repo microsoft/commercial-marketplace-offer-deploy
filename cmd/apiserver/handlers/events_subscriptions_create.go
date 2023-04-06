@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/labstack/echo"
@@ -12,8 +11,6 @@ import (
 
 // HTTP handler for creating deployments
 func CreateEventSubscription(c echo.Context, db *gorm.DB) error {
-	eventType := c.Param("eventType")
-
 	var request *api.CreateEventSubscriptionRequest
 	err := c.Bind(&request)
 
@@ -21,10 +18,10 @@ func CreateEventSubscription(c echo.Context, db *gorm.DB) error {
 		return err
 	}
 
-	model := data.FromCreateEventSubscription(eventType, request)
-	tx := db.Create(&model)
+	// TODO: validate with a test handshake before continuing
 
-	log.Printf("Event Subscription [%s] created for event type %s.", model.Name, model.EventType)
+	model := data.FromCreateEventSubscription(request)
+	tx := db.Create(&model)
 
 	if tx.Error != nil {
 		return err

@@ -58,7 +58,7 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 		hosting.Route{
 			Name:        "CreatEventSubscription",
 			Method:      http.MethodPost,
-			Path:        "/events/:eventType/subscriptions",
+			Path:        "/events/subscriptions",
 			HandlerFunc: hosting.ToHandlerFunc(handlers.CreateEventSubscription, databaseOptions),
 		},
 
@@ -79,7 +79,7 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 		hosting.Route{
 			Name:        "ListEventSubscriptions",
 			Method:      http.MethodGet,
-			Path:        "/events/:eventType/subscriptions",
+			Path:        "/events/subscriptions",
 			HandlerFunc: handlers.ListEventSubscriptions,
 		},
 
