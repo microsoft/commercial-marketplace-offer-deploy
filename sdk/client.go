@@ -31,7 +31,11 @@ func NewClient(endpoint string, credential azcore.TokenCredential, options *Clie
 		options.Cloud = cloud.AzurePublic
 	}
 
-	internalClient, err := api.NewDeploymentManagementClient(endpoint, credential, &options.ClientOptions)
+	internalClient, err := api.NewDeploymentManagementClient(endpoint, credential, &api.DeploymentManagementClientOptions{
+		ClientOptions: &options.ClientOptions,
+		ClientName:    moduleName,
+		Version:       moduleVersion,
+	})
 	if err != nil {
 		return nil, err
 	}
