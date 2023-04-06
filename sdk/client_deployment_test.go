@@ -18,16 +18,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	deploymentJson = `{
-		"name":"test-deployment", 
-		"subscriptionId":"test-id",
-		"resourceGroup":"test-rg",
-		"location":"testus",
-		"template": {}
-	}`
-)
-
 func TestStartDeployment(t *testing.T) {
 
 	// Setup
