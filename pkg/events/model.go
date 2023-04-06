@@ -11,13 +11,13 @@ type EventType string
 
 // the list of available / known event types
 const (
-	DeploymentDryRunCompletedEventType EventType = "deployment.dryruncompleted"
-	DeploymentCreatedEventType         EventType = "deployment.created"
-	DeploymentPendingEventType         EventType = "deployment.pending"
-	DeploymentStartedEventType         EventType = "deployment.started"
-	DeploymentCompletedEventType       EventType = "deployment.completed"
-	DeploymentErrorEventType           EventType = "deployment.error"
-	DeploymentRetryEventType           EventType = "deployment.retry"
+	DeploymentDryRunCompletedEventType EventType = "DryRunCompleted"
+	DeploymentCreatedEventType         EventType = "Created"
+	DeploymentPendingEventType         EventType = "Pending"
+	DeploymentStartedEventType         EventType = "Started"
+	DeploymentCompletedEventType       EventType = "Completed"
+	DeploymentErrorEventType           EventType = "Error"
+	DeploymentRetryEventType           EventType = "Retry"
 )
 
 // Gets the list of events
