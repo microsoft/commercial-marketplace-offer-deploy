@@ -22,9 +22,11 @@ type CreateDeployment struct {
 	SubscriptionID *string `json:"subscriptionId,omitempty"`
 }
 
-type CreateEventSubscription struct {
+type CreateEventSubscriptionRequest struct {
 	// API key to be used in the Authorization header, e.g. 'ApiKey =234dfsdf324234', to call the webhook callback URL.
 	APIKey *string `json:"ApiKey,omitempty"`
+
+	// The webhook callback
 	Callback *string `json:"callback,omitempty"`
 
 	// the name of the subscription
@@ -120,7 +122,8 @@ type DeploymentManagementClientUpdateDeploymentOptions struct {
 	// placeholder for future optional parameters
 }
 
-type EventSubscription struct {
+type EventSubscriptionResponse struct {
+	// The webhook callback
 	Callback *string `json:"callback,omitempty"`
 	ID *string `json:"id,omitempty"`
 
