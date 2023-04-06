@@ -3,6 +3,7 @@ package receivers
 import (
 	"log"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	e "github.com/microsoft/commercial-marketplace-offer-deploy/internal/events"
@@ -30,11 +31,11 @@ func newEventsMessageHandler(appConfig *config.AppConfig) *eventsMessageHandler 
 	}
 }
 
-func NewEventsMessageReceiver(appConfig *config.AppConfig) messaging.MessageReceiver {
+func NewEventsMessageReceiver(appConfig *config.AppConfig, credential azcore.TokenCredential) messaging.MessageReceiver {
 	options := getOptions(appConfig)
 
 	handler := newEventsMessageHandler(appConfig)
-	receiver, err := messaging.NewServiceBusReceiver(handler, options)
+	receiver, err := messaging.NewServiceBusReceiver(handler, credential, options)
 	if err != nil {
 		log.Fatal(err)
 	}

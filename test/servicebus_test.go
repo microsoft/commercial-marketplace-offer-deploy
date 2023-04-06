@@ -179,8 +179,11 @@ func (s *serviceBusSuite) sendTestMessage(queueName string, message any) {
 }
 
 func (s *serviceBusSuite) getMessageReceiver(queueName string, handler any) messaging.MessageReceiver {
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	require.NoError(s.T(), err)
+
 	options := s.getReceiverOptions(queueName)
-	receiver, err := messaging.NewServiceBusReceiver(handler, options)
+	receiver, err := messaging.NewServiceBusReceiver(handler, cred, options)
 
 	require.NoError(s.T(), err)
 	require.NotNil(s.T(), receiver)
