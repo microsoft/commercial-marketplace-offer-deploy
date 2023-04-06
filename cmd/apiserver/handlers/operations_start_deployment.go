@@ -48,7 +48,7 @@ func StartDeployment(deploymentId int, operation api.InvokeDeploymentOperation, 
 	// Post message to service bus operator queue
 	message := data.InvokedOperation{
 		DeploymentId:   uint(deploymentId),
-		DeploymentName: *operation.Name,
+		Name: *operation.Name,
 		Params:         templateParams.(map[string]interface{}),
 	}
 
