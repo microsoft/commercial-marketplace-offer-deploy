@@ -80,7 +80,7 @@ func (h *OperationsHandler) mapAzureDeployment(d *data.Deployment, io *data.Invo
 		ResourceGroupName: d.ResourceGroup,
 		DeploymentName:    d.GetAzureDeploymentName(),
 		Template:          d.Template,
-		Params:            io.Params,
+		Params:            io.Parameters,
 	}
 }
 

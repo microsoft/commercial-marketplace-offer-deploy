@@ -64,7 +64,7 @@ func (client *Client) ListDeployments(ctx context.Context) (api.DeploymentManage
 }
 
 // invoke a deployment operation with parameters
-func (client *Client) invokeDeploymentOperation(ctx context.Context, wait bool, operationType operations.OperationType, deploymentId int32, parameters map[string]interface{}) (*api.InvokedOperation, error) {
+func (client *Client) invokeDeploymentOperation(ctx context.Context, wait bool, operationType operations.OperationType, deploymentId int32, parameters map[string]interface{}) (*api.InvokedDeploymentOperation, error) {
 	operationTypeName := operations.DryRunDeploymentOperation.String()
 	command := &api.InvokeDeploymentOperation{
 		Name:       &operationTypeName,
@@ -77,5 +77,5 @@ func (client *Client) invokeDeploymentOperation(ctx context.Context, wait bool, 
 	if err != nil {
 		return nil, err
 	}
-	return &response.InvokedOperation, nil
+	return &response.InvokedDeploymentOperation, nil
 }
