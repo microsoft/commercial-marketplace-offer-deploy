@@ -14,7 +14,7 @@ import (
 
 const DeploymenIdParameterName = "deploymentId"
 
-type InvokeOperationDeploymentHandler func(int, api.InvokeDeploymentOperation, *gorm.DB) (interface{}, error)
+type InvokeOperationDeploymentHandler func(int, api.InvokeDeploymentOperation, *gorm.DB) (*api.InvokedOperation, error)
 
 func GetDeployment(c echo.Context) error {
 	return c.JSON(http.StatusOK, "")
