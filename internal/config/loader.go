@@ -1,4 +1,4 @@
-package hosting
+package config
 
 import (
 	"log"

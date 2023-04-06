@@ -139,12 +139,12 @@ func newWebHookEventMessageFactory(subscriptionId string, db *gorm.DB, credentia
 }
 
 func newMessageSender(appConfig *config.AppConfig, credential azcore.TokenCredential) (messaging.MessageSender, error) {
-	sender, err := messaging.NewServiceBusMessageSender(messaging.MessageSenderOptions{
-		SubscriptionId:      appConfig.Azure.SubscriptionId,
-		Location:            appConfig.Azure.Location,
-		ResourceGroupName:   appConfig.Azure.ResourceGroupName,
-		ServiceBusNamespace: appConfig.Azure.ServiceBusNamespace,
-	}, credential)
+	sender, err := messaging.NewServiceBusMessageSender(credential, messaging.MessageSenderOptions{
+		SubscriptionId:          appConfig.Azure.SubscriptionId,
+		Location:                appConfig.Azure.Location,
+		ResourceGroupName:       appConfig.Azure.ResourceGroupName,
+		FullyQualifiedNamespace: appConfig.Azure.ServiceBusNamespace,
+	})
 
 	if err != nil {
 		return nil, err

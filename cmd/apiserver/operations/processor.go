@@ -117,12 +117,12 @@ func NewInvokeOperationProcessor(appConfig *config.AppConfig, credential azcore.
 }
 
 func newMessageSender(appConfig *config.AppConfig, credential azcore.TokenCredential) (messaging.MessageSender, error) {
-	sender, err := messaging.NewServiceBusMessageSender(messaging.MessageSenderOptions{
-		SubscriptionId:      appConfig.Azure.SubscriptionId,
-		Location:            appConfig.Azure.Location,
-		ResourceGroupName:   appConfig.Azure.ResourceGroupName,
-		ServiceBusNamespace: appConfig.Azure.ServiceBusNamespace,
-	}, credential)
+	sender, err := messaging.NewServiceBusMessageSender(credential, messaging.MessageSenderOptions{
+		SubscriptionId:          appConfig.Azure.SubscriptionId,
+		Location:                appConfig.Azure.Location,
+		ResourceGroupName:       appConfig.Azure.ResourceGroupName,
+		FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
+	})
 	if err != nil {
 		return nil, err
 	}

@@ -2,7 +2,6 @@ package test_test
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -10,22 +9,22 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/google/uuid"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	internalmessage "github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/messaging"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
 type serviceBusSuite struct {
 	suite.Suite
+	appConfig           *config.AppConfig
 	testDirectory       string
 	ns                  string
-	queueName           string
+	eventsQueueName     string
 	operationsQueueName string
 	subscriptionId      string
 	resourceGroupName   string
@@ -41,23 +40,31 @@ func TestServiceBusSuite(t *testing.T) {
 }
 
 func (s *serviceBusSuite) SetupSuite() {
-	s.testDirectory = "./testdata"
+	testDirectory := "./testdata"
+
+	//load config from testdata/.env
+	appConfig := &config.AppConfig{}
+	config.LoadConfiguration(testDirectory, nil, appConfig)
+
+	log.Printf("SetupSuite - appConfig %v", appConfig)
+	s.appConfig = appConfig
+
+	s.ns = appConfig.Azure.GetFullQualifiedNamespace()
+	s.eventsQueueName = string(messaging.QueueNameEvents)
+	s.operationsQueueName = string(messaging.QueueNameOperations)
+	s.subscriptionId = appConfig.Azure.SubscriptionId
+	s.resourceGroupName = appConfig.Azure.ResourceGroupName
+	s.location = appConfig.Azure.Location
+	s.deploymentName = "test-deployment"
+
+	s.testDirectory = testDirectory
 	s.setupTestDirectory()
 	data.SetDefaultDatabasePath(s.testDirectory)
 
-	s.ns = "bobjacmodm.servicebus.windows.net"
-	s.queueName = "deployeventqueue"
-	s.operationsQueueName = "deployoperationsqueue"
-	s.subscriptionId = "31e9f9a0-9fd2-4294-a0a3-0101246d9700"
-	s.resourceGroupName = "demo2"
-	s.location = "eastus"
-	s.deploymentName = "test-deployment"
-	s.testDirectory = "./testdata"
 	s.db = data.NewDatabase(nil)
 }
 
 func (s *serviceBusSuite) SetupTest() {
-
 	s.createDeploymentForTests()
 }
 
@@ -66,11 +73,6 @@ func (s *serviceBusSuite) setupTestDirectory() {
 		err := os.Mkdir(s.testDirectory, 0755)
 		require.NoError(s.T(), err)
 	}
-}
-
-func (s *serviceBusSuite) cleanTestDirectory() {
-	//clean up
-	os.RemoveAll(s.testDirectory)
 }
 
 func (s *serviceBusSuite) createDeploymentForTests() {
@@ -104,32 +106,12 @@ func (s *serviceBusSuite) createDeploymentForTests() {
 	s.invokedOperationId = invokedOperation.ID
 }
 
-func (s *serviceBusSuite) publishTestMessage(sbConfig messaging.ServiceBusConfig, topicHeader string, body string) {
-	config := messaging.PublisherConfig{
-		Type:       "servicebus",
-		TypeConfig: sbConfig,
-	}
-	publisher, err := messaging.CreatePublisher(config)
-	require.NoError(s.T(), err)
-	require.NotNil(s.T(), publisher)
-	message := messaging.DeploymentMessage{
-		Header: messaging.DeploymentMessageHeader{
-			Topic: topicHeader,
-		},
-		Body: body,
-	}
-	err = publisher.Publish(message)
-	require.NoError(s.T(), err)
-}
-
 func (s *serviceBusSuite) TestMessageSendSuccess() {
-	sbConfig := messaging.ServiceBusConfig{
-		Namespace: s.ns,
-		QueueName: s.queueName,
-	}
+	log.Print("TestMessageSendSuccess")
 	for i := 0; i < 15; i++ {
-		body := fmt.Sprintf("testbody%d", i)
-		s.publishTestMessage(sbConfig, "testtopic", body)
+		text := fmt.Sprintf("testbody%d", i)
+		message := &testMessage{Id: uuid.New().String(), Text: text}
+		s.sendTestMessage(s.eventsQueueName, message)
 	}
 }
 
@@ -140,38 +122,22 @@ func (s *serviceBusSuite) TestOperationsSendSuccess() {
 	var invokedOperation data.InvokedOperation
 	s.db.Instance().First(&invokedOperation, s.invokedOperationId)
 
-	internalOperation := internalmessage.InvokedOperationMessage{
+	message := &messaging.InvokedOperationMessage{
 		OperationId: invokedOperation.ID.String(),
 	}
-
-	bodyByte, err := json.Marshal(internalOperation)
-	require.NoError(s.T(), err)
-
-	bodyString := string(bodyByte)
-	sbConfig := messaging.ServiceBusConfig{
-		Namespace: s.ns,
-		QueueName: s.operationsQueueName,
-	}
-
-	s.publishTestMessage(sbConfig, "testtopic", bodyString)
+	s.sendTestMessage(s.operationsQueueName, message)
 }
 
 func (s *serviceBusSuite) TestMessageReceiveSuccess() {
-	sbConfig := messaging.ServiceBusConfig{
-		Namespace: s.ns,
-		QueueName: s.queueName,
-	}
+	receiver := s.getMessageReceiver(s.eventsQueueName, s.getTestHandler())
 
-	handler := &fakeHandler{}
-
-	receiver, err := messaging.NewServiceBusReceiver(sbConfig, handler)
-	require.NoError(s.T(), err)
-	require.NotNil(s.T(), receiver)
 	fmt.Println("calling start")
 	go receiver.Start()
-	// sleep for 5 seconds to allow the receiver to start
+
+	//sleep for 5 seconds to allow the receiver to start
 	fmt.Println("starting sleep 1")
 	time.Sleep(5 * time.Second)
+
 	go receiver.Stop()
 	fmt.Println("After the stop in TestMessageReceiveSuccess")
 	fmt.Println("Starting sleep 2")
@@ -179,38 +145,78 @@ func (s *serviceBusSuite) TestMessageReceiveSuccess() {
 	fmt.Println("After the second sleep")
 }
 
-func (s *serviceBusSuite) TestUnmarshalMessageJson() {
-	messageString := "{\"header\":{\"topic\":\"testtopic\"},\"body\":\"{\\\"ID\\\":13,\\\"CreatedAt\\\":\\\"2023-04-05T10:11:10.346118-04:00\\\",\\\"UpdatedAt\\\":\\\"2023-04-05T10:11:10.346118-04:00\\\",\\\"DeletedAt\\\":null,\\\"deploymentId\\\":22,\\\"deploymentName\\\":\\\"test-deployment\\\",\\\"params\\\":{\\\"$schema\\\":\\\"https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#\\\",\\\"contentVersion\\\":\\\"1.0.0.0\\\",\\\"parameters\\\":{\\\"testName\\\":{\\\"value\\\":\\\"bobjacbicep1\\\"}}}}\"}"
-	var publishedMessage messaging.DeploymentMessage
-	var operation data.InvokedOperation
-	err := json.Unmarshal([]byte(messageString), &publishedMessage)
-	assert.NoError(s.T(), err)
-	publishedBodyString := publishedMessage.Body.(string)
-	err = json.Unmarshal([]byte(publishedBodyString), &operation)
-	assert.NoError(s.T(), err)
-	assert.NotEqual(s.T(), operation.ID, uint(0))
-}
-
 func (s *serviceBusSuite) TestOperationDeploymentSuccess() {
-	sbConfig := messaging.ServiceBusConfig{
-		Namespace: s.ns,
-		QueueName: s.operationsQueueName,
-	}
+	handler := &testOperationsHandler{}
+	receiver := s.getMessageReceiver(s.operationsQueueName, handler)
 
-	handler := messaging.NewOperationsHandler(s.db)
-	receiver, err := messaging.NewServiceBusReceiver(sbConfig, handler)
-	require.NoError(s.T(), err)
-	require.NotNil(s.T(), receiver)
 	fmt.Println("calling start")
 	go receiver.Start()
+
 	time.Sleep(60 * time.Minute)
 	go receiver.Stop()
 }
 
-type fakeHandler struct {
+// helpers
+
+func (s *serviceBusSuite) sendTestMessage(queueName string, message any) {
+	ctx := context.TODO()
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	require.NoError(s.T(), err)
+
+	options := messaging.MessageSenderOptions{
+		SubscriptionId:          s.subscriptionId,
+		Location:                s.location,
+		ResourceGroupName:       s.resourceGroupName,
+		FullyQualifiedNamespace: s.ns,
+	}
+	sender, err := messaging.NewServiceBusMessageSender(cred, options)
+	require.NoError(s.T(), err)
+	require.NotNil(s.T(), sender)
+
+	log.Printf("sending message to queue: %s", queueName)
+	_, err = sender.Send(ctx, queueName, message)
+	require.NoError(s.T(), err)
 }
 
-func (h *fakeHandler) Handle(ctx context.Context, message *azservicebus.ReceivedMessage) error {
-	log.Println("Handling message")
+func (s *serviceBusSuite) getMessageReceiver(queueName string, handler any) messaging.MessageReceiver {
+	options := s.getReceiverOptions(queueName)
+	receiver, err := messaging.NewServiceBusReceiver(handler, options)
+
+	require.NoError(s.T(), err)
+	require.NotNil(s.T(), receiver)
+
+	return receiver
+}
+
+func (s *serviceBusSuite) getReceiverOptions(queueName string) messaging.ServiceBusMessageReceiverOptions {
+	options := messaging.ServiceBusMessageReceiverOptions{
+		MessageReceiverOptions:  messaging.MessageReceiverOptions{QueueName: queueName},
+		FullyQualifiedNamespace: s.appConfig.Azure.GetFullQualifiedNamespace(),
+	}
+	return options
+}
+
+func (s *serviceBusSuite) getTestHandler() *testHandler {
+	return &testHandler{}
+}
+
+type testMessage struct {
+	Id   string
+	Text string
+}
+
+type testHandler struct {
+}
+
+func (h *testHandler) Handle(message *testMessage, context messaging.MessageHandlerContext) error {
+	log.Printf("Handling message [%s] - %s", message.Id, message.Text)
+	return nil
+}
+
+type testOperationsHandler struct {
+}
+
+func (h *testOperationsHandler) Handle(message *messaging.InvokedOperationMessage, context messaging.MessageHandlerContext) error {
+	log.Printf("Handling invoked operation message [%s]", message.OperationId)
 	return nil
 }

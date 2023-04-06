@@ -10,7 +10,6 @@ import (
 	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 	testutils "github.com/microsoft/commercial-marketplace-offer-deploy/test/utils"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
@@ -78,7 +77,7 @@ func getHandler(t *testing.T) echo.HandlerFunc {
 func getAppConfig() *config.AppConfig {
 	appConfig := &config.AppConfig{}
 	name := "test"
-	hosting.LoadConfiguration("testdata", &name, appConfig)
+	config.LoadConfiguration("testdata", &name, appConfig)
 
 	log.Printf("appConfig: %+v", appConfig)
 	return appConfig

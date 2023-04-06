@@ -49,8 +49,8 @@ func newWebHookPublisher(db *gorm.DB) e.WebHookPublisher {
 func getOptions(appConfig *config.AppConfig) messaging.ServiceBusMessageReceiverOptions {
 	queueName := string(messaging.QueueNameEvents)
 	options := messaging.ServiceBusMessageReceiverOptions{
-		MessageReceiverOptions: messaging.MessageReceiverOptions{QueueName: queueName},
-		NamespaceName:          appConfig.ServiceBusNamespace,
+		MessageReceiverOptions:  messaging.MessageReceiverOptions{QueueName: queueName},
+		FullyQualifiedNamespace: appConfig.ServiceBusNamespace,
 	}
 	return options
 }

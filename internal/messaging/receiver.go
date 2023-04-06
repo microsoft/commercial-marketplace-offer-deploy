@@ -20,11 +20,7 @@ type MessageReceiverOptions struct {
 
 type ServiceBusMessageReceiverOptions struct {
 	MessageReceiverOptions
-	NamespaceName string
-}
-
-func (o *ServiceBusMessageReceiverOptions) getFullQualifiedNamespace() string {
-	return o.NamespaceName + ".servicebus.windows.net"
+	FullyQualifiedNamespace string
 }
 
 //region servicebus receiver
@@ -69,7 +65,6 @@ func (r *serviceBusReceiver) Start() {
 					break
 				}
 
-				log.Println("inside of default")
 				var messages []*azservicebus.ReceivedMessage = []*azservicebus.ReceivedMessage{}
 				messages, err = receiver.ReceiveMessages(r.ctx, 1, nil)
 				if err != nil {
@@ -115,12 +110,12 @@ func NewServiceBusReceiver(handler any, options ServiceBusMessageReceiverOptions
 	if err != nil {
 		return nil, err
 	}
-	
+
 	receiver := serviceBusReceiver{
 		stop:      make(chan bool),
 		stopped:   true,
 		queueName: options.QueueName,
-		namespace: options.getFullQualifiedNamespace(),
+		namespace: options.FullyQualifiedNamespace,
 		ctx:       context.TODO(),
 		handler:   serviceBusMessageHandler,
 	}
