@@ -48,7 +48,7 @@ func (h *processor) Process(ctx context.Context, command *InvokeOperationCommand
 }
 
 func validateOperationName(name string) error {
-	_, err := operations.From(name)
+	_, err := operations.Type(name)
 	return err
 }
 

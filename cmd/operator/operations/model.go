@@ -5,10 +5,10 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 )
 
-type DeploymentOperationHandlerFunc func(operation *data.InvokedOperation) error
+type DeploymentOperationFunc func(operation *data.InvokedOperation) error
 
-type DeploymentOperationHandler interface {
-	Handle(operation *data.InvokedOperation) error
+type DeploymentOperation interface {
+	Invoke(operation *data.InvokedOperation) error
 }
 
 type DryRunProcessorFunc func(azureDeployment *deployment.AzureDeployment) *deployment.DryRunResponse

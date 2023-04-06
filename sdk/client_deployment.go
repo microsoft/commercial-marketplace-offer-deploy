@@ -22,7 +22,7 @@ type StartDeploymentResult struct {
 // Performs a dry run of a deployment and returns the verification results
 // returns: verification results
 func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, templateParameters map[string]interface{}) (*DryRunResult, error) {
-	invokedOperation, err := client.invokeDeploymentOperation(ctx, true, operations.DryRunDeploymentOperation, deploymentId, templateParameters)
+	invokedOperation, err := client.invokeDeploymentOperation(ctx, true, operations.OperationDryRun, deploymentId, templateParameters)
 
 	if err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, 
 }
 
 func (client *Client) StartDeployment(ctx context.Context, deploymentId int32, templateParameters map[string]interface{}) (*StartDeploymentResult, error) {
-	invokedOperation, err := client.invokeDeploymentOperation(ctx, false, operations.StartDeploymentOperation, deploymentId, templateParameters)
+	invokedOperation, err := client.invokeDeploymentOperation(ctx, false, operations.OperationStartDeployment, deploymentId, templateParameters)
 
 	if err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func (client *Client) ListDeployments(ctx context.Context) (api.DeploymentManage
 
 // invoke a deployment operation with parameters
 func (client *Client) invokeDeploymentOperation(ctx context.Context, wait bool, operationType operations.OperationType, deploymentId int32, parameters map[string]interface{}) (*api.InvokedDeploymentOperationResponse, error) {
-	operationTypeName := operations.DryRunDeploymentOperation.String()
+	operationTypeName := operations.OperationDryRun.String()
 	command := &api.InvokeDeploymentOperationRequest{
 		Name:       &operationTypeName,
 		Parameters: parameters,

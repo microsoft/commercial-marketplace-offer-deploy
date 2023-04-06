@@ -14,7 +14,7 @@ type dryRunOperation struct {
 	process DryRunProcessorFunc
 }
 
-func (h *dryRunOperation) Handle(operation *data.InvokedOperation) error {
+func (h *dryRunOperation) Invoke(operation *data.InvokedOperation) error {
 	azureDeployment := h.getAzureDeployment(operation)
 	response := deployment.DryRun(azureDeployment)
 
@@ -58,15 +58,13 @@ func (h *dryRunOperation) save(operation *data.InvokedOperation) error {
 
 //region factory
 
-func NewDryRunHandler(appConfig *config.AppConfig) DeploymentOperationHandlerFunc {
-	return func(operation *data.InvokedOperation) error {
-		db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
-		dryRunOperation := &dryRunOperation{
-			db:      db,
-			process: deployment.DryRun,
-		}
-		return dryRunOperation.Handle(operation)
+func NewDryRunProcessor(appConfig *config.AppConfig) DeploymentOperation {
+	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
+	dryRunOperation := &dryRunOperation{
+		db:      db,
+		process: deployment.DryRun,
 	}
+	return dryRunOperation
 }
 
 //endregion factory

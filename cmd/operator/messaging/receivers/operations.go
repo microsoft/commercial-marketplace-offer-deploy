@@ -1,87 +1,48 @@
 package receivers
 
 import (
-	"context"
 	"log"
-	"strings"
 
+	ops "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/operations"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
 )
 
-type operationsMessageHandler struct {
-	running  bool
+type operationMessageHandler struct {
 	database data.Database
+	factory  ops.DeploymentOperationFactory
 }
 
-func (h *operationsMessageHandler) Handle(message *messaging.InvokedOperationMessage, context messaging.MessageHandlerContext) error {
+func (h *operationMessageHandler) Handle(message *messaging.InvokedOperationMessage, context messaging.MessageHandlerContext) error {
 	db := h.database.Instance()
+	var invokedOperation data.InvokedOperation
+	db.First(&invokedOperation, message.OperationId)
 
-	var operation data.InvokedOperation
-	db.First(&operation, message.OperationId)
-
-	log.Println("Unmarshalled message: ", operation)
-	pulledOperationId := operation.ID
-	log.Println("Pulled operationId: ", pulledOperationId)
-	log.Println("Pulled params: ", operation.Parameters)
-
-	deployment := &data.Deployment{}
-	db.First(&deployment, operation.DeploymentId)
-	log.Println("Found deployment: ", deployment)
-
-	startedStatus := strings.Replace(string(events.DeploymentStartedEventType), "deployment.", "", 1)
-	caser := cases.Title(language.English)
-	deployment.Status = caser.String(startedStatus)
-
-	db.Save(deployment)
-	log.Println("Updated deployment: ", deployment)
-
-	azureDeployment := h.mapAzureDeployment(deployment, &operation)
-	log.Println("Mapped deployment: ", azureDeployment)
-	log.Println("Calling deployment.Create")
-
-	go func() {
-		_, err := h.deploy(context.Context(), azureDeployment)
-		if err != nil {
-			log.Println("Error calling deployment.Create: ", err)
-		}
-	}()
-
-	return nil
-}
-
-func (h *operationsMessageHandler) mapAzureDeployment(d *data.Deployment, io *data.InvokedOperation) *deployment.AzureDeployment {
-	return &deployment.AzureDeployment{
-		SubscriptionId:    d.SubscriptionId,
-		ResourceGroupName: d.ResourceGroup,
-		DeploymentName:    d.GetAzureDeploymentName(),
-		Template:          d.Template,
-		Params:            io.Parameters,
+	operationType, err := operations.Type(invokedOperation.Name)
+	if err != nil {
+		log.Println("Error getting operation type: ", err)
 	}
-}
 
-func (h *operationsMessageHandler) deploy(ctx context.Context, azureDeployment *deployment.AzureDeployment) (*deployment.AzureDeploymentResult, error) {
-	return deployment.Create(*azureDeployment)
+	operation, err := h.factory.Create(operationType)
+	if err != nil {
+		log.Println("Error creating operation: ", err)
+	}
+
+	return operation.Invoke(&invokedOperation)
 }
 
 //region factory
 
-func newOperationsMessageHandler(db data.Database) *operationsMessageHandler {
-	return &operationsMessageHandler{
-		running:  false,
-		database: db,
-	}
-}
-
 func NewOperationsMessageReceiver(appConfig *config.AppConfig) messaging.MessageReceiver {
 	db := data.NewDatabase(appConfig.GetDatabaseOptions())
 
-	handler := newOperationsMessageHandler(db)
+	handler := &operationMessageHandler{
+		database: db,
+		factory:  ops.NewDeploymentOperationFactory(appConfig),
+	}
+
 	options := messaging.ServiceBusMessageReceiverOptions{
 		MessageReceiverOptions:  messaging.MessageReceiverOptions{QueueName: string(messaging.QueueNameOperations)},
 		FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
