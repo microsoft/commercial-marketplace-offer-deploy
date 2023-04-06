@@ -42,9 +42,7 @@ func TestPublisherPublish(t *testing.T) {
 
 func getPublisher(url string) WebHookPublisher {
 	provider := newFakeSubscriptionProvider(url)
-	sender := NewMessageSender(url, "fakewebkey")
-
-	publisher := NewWebHookPublisher(sender, provider)
+	publisher := NewWebHookPublisher(provider)
 	return publisher
 }
 
@@ -70,6 +68,6 @@ func newFakeSubscriptionProvider(url string) SubscriptionsProvider {
 	return provider
 }
 
-func (p *fakeSubscriptionsProvider) GetSubscriptions(eventType string) ([]*data.EventSubscription, error) {
+func (p *fakeSubscriptionsProvider) GetSubscriptions() ([]*data.EventSubscription, error) {
 	return p.subscriptions, nil
 }

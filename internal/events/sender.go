@@ -15,7 +15,7 @@ import (
 
 const contentTypeJson string = "application/json"
 
-type MessageSender interface {
+type WebHookSender interface {
 	Send(ctx context.Context, data any) error
 }
 
@@ -24,7 +24,7 @@ type httpSender struct {
 	apiKey string
 }
 
-func NewMessageSender(url string, apiKey string) MessageSender {
+func NewMessageSender(url string, apiKey string) WebHookSender {
 	sender := &httpSender{url: url, apiKey: apiKey}
 	return sender
 }

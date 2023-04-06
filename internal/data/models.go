@@ -39,10 +39,9 @@ type Deployment struct {
 
 type EventSubscription struct {
 	BaseWithGuidPrimaryKey
-	Callback  string `json:"callback"`
-	Name      string `json:"name" gorm:"unique"`
-	EventType string `json:"eventType"`
-	ApiKey    string `json:"authKey"`
+	Callback string `json:"callback"`
+	Name     string `json:"name" gorm:"unique"`
+	ApiKey   string `json:"authKey"`
 }
 
 type InvokedOperation struct {
