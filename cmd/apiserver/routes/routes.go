@@ -5,11 +5,13 @@ import (
 	"strings"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/handlers"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 )
 
-func GetRoutes(databaseOptions *data.DatabaseOptions) hosting.Routes {
+func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
+	databaseOptions := appConfig.GetDatabaseOptions()
+
 	return hosting.Routes{
 		hosting.Route{
 			Name:        "Index",
@@ -36,7 +38,7 @@ func GetRoutes(databaseOptions *data.DatabaseOptions) hosting.Routes {
 			Name:        "InvokeDeploymentOperation",
 			Method:      http.MethodPost,
 			Path:        "/deployment/:deploymentId/operation",
-			HandlerFunc: hosting.ToHandlerFunc(handlers.InvokeOperation, databaseOptions),
+			HandlerFunc: handlers.NewInvokeDeploymentOperationHandler(appConfig, hosting.GetAzureCredential()),
 		},
 
 		hosting.Route{
