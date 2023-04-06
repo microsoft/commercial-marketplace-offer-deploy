@@ -1,6 +1,8 @@
 package messaging
 
+type QueueName string
+
 const (
-	EventsQueue   string = "events"
-	OperatorQueue string = "operations"
+	QueueNameEvents     QueueName = "events"
+	QueueNameOperations QueueName = "operations"
 )
