@@ -83,7 +83,7 @@ func (h *processor) save(c *InvokeOperationCommand) (uuid.UUID, error) {
 func (h *processor) send(ctx context.Context, operationId uuid.UUID) error {
 	message := messaging.InvokedOperationMessage{OperationId: operationId.String()}
 
-	results, err := h.sender.Send(ctx, messaging.OperatorQueue, message)
+	results, err := h.sender.Send(ctx, string(messaging.QueueNameOperations), message)
 	if err != nil {
 		return err
 	}
