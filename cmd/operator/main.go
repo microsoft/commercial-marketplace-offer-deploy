@@ -3,10 +3,11 @@ package main
 import (
 	"log"
 	"strconv"
+
 	operator "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/app"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/messaging/receivers"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/messaging"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 )
 
 var (
@@ -21,24 +22,18 @@ func main() {
 	app := operator.BuildApp(configurationFilePath)
 	go app.Start(port, nil)
 
+	events, operations := getMessageReceivers()
+	go events.Start()
+	go operations.Start()
+
+	select {}
+}
+
+func getMessageReceivers() (messaging.MessageReceiver, messaging.MessageReceiver) {
 	appConfig := config.GetAppConfig()
-	options := appConfig.GetDatabaseOptions()
 
-	namespace := "bobjacmodm.servicebus.windows.net"
-	operationsQueue := "deployoperationsqueue"
-	sbConfig := messaging.ServiceBusConfig{
-		Namespace: namespace,
-		QueueName: operationsQueue,
-	}
+	eventsReceiver := receivers.NewEventsMessageReceiver(appConfig)
+	operationsReceiver := receivers.NewOperationsMessageReceiver(appConfig)
 
-	db := data.NewDatabase(options)
-
-	handler := messaging.NewOperationsHandler(db)
-	receiver, err := messaging.NewServiceBusReceiver(sbConfig, handler)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	go receiver.Start()
-	select{}
+	return eventsReceiver, operationsReceiver
 }
