@@ -83,8 +83,8 @@ func NewOperationsMessageReceiver(appConfig *config.AppConfig) messaging.Message
 
 	handler := newOperationsMessageHandler(db)
 	options := messaging.ServiceBusMessageReceiverOptions{
-		MessageReceiverOptions: messaging.MessageReceiverOptions{QueueName: string(messaging.QueueNameOperations)},
-		NamespaceName:          appConfig.ServiceBusNamespace,
+		MessageReceiverOptions:  messaging.MessageReceiverOptions{QueueName: string(messaging.QueueNameOperations)},
+		FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
 	}
 	receiver, err := messaging.NewServiceBusReceiver(handler, options)
 	if err != nil {

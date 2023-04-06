@@ -39,3 +39,7 @@ func (appSettings *AppConfig) GetDatabaseOptions() *data.DatabaseOptions {
 	options := &data.DatabaseOptions{Dsn: dsn, UseInMemory: appSettings.Database.UseInMemory}
 	return options
 }
+
+func (s *AzureSettings) GetFullQualifiedNamespace() string {
+	return s.ServiceBusNamespace + ".servicebus.windows.net"
+}
