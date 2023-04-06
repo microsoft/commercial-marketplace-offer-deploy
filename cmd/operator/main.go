@@ -3,12 +3,6 @@ package main
 import (
 	"log"
 	"strconv"
-
-	//"time"
-
-	//"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
-	//"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	//"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	operator "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/app"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
@@ -47,6 +41,4 @@ func main() {
 
 	go receiver.Start()
 	select{}
-	//time.Sleep(60 * time.Minute)
-	//go receiver.Stop()
 }

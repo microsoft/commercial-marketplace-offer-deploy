@@ -100,10 +100,7 @@ func (r *ServiceBusReceiver) Start() {
 }
 
 func (r *ServiceBusReceiver) Stop() {
-	log.Println("Stopping the receiver")
-	//r.stopped = true
 	r.ctx.Done()
-	log.Println("Done with the context")
 	r.stop <- true
 	<-r.stop
 	close(r.stop)
