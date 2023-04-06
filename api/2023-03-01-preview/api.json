@@ -227,13 +227,13 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/InvokedOperation"
+              "$ref": "#/definitions/InvokedDeploymentOperation"
             }
           }
         }
       }
     },
-    "/operations/{operationId}": {
+    "/deployments/operations/{operationId}": {
       "get": {
         "tags": [
           "Operation"
@@ -255,7 +255,7 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/InvokedOperation"
+              "$ref": "#/definitions/InvokedDeploymentOperation"
             }
           }
         }
@@ -530,7 +530,7 @@
         }
       }
     },
-    "InvokedOperation": {
+    "InvokedDeploymentOperation": {
       "type": "object",
       "properties": {
         "id": {
@@ -540,8 +540,8 @@
         "name": {
           "type": "string"
         },
-        "target": {
-          "$ref": "#/definitions/InvokedOperationTarget"
+        "deploymentId": {
+          "type": "integer"
         },
         "parameters": {
           "type": "object"
@@ -555,28 +555,6 @@
         },
         "result": {
           "type": "object"
-        }
-      }
-    },
-    "InvokedOperationTarget": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string"
-        },
-        "id": {
-          "$ref": "#/definitions/InvokedOperationTargetId"
-        }
-      }
-    },
-    "InvokedOperationTargetId": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
         }
       }
     },

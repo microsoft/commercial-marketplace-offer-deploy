@@ -33,7 +33,7 @@ func GetRoutes(databaseOptions *data.DatabaseOptions) hosting.Routes {
 		},
 
 		hosting.Route{
-			Name:        "InvokeOperation",
+			Name:        "InvokeDeploymentOperation",
 			Method:      http.MethodPost,
 			Path:        "/deployment/:deploymentId/operation",
 			HandlerFunc: hosting.ToHandlerFunc(handlers.InvokeOperation, databaseOptions),
@@ -91,7 +91,7 @@ func GetRoutes(databaseOptions *data.DatabaseOptions) hosting.Routes {
 		hosting.Route{
 			Name:        "GetDeploymentOperation",
 			Method:      http.MethodGet,
-			Path:        "/operations/:operationId",
+			Path:        "/deployments/operations/:operationId",
 			HandlerFunc: handlers.GetDeploymentOperation,
 		},
 

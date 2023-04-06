@@ -49,7 +49,7 @@ func StartDeployment(deploymentId int, operation api.InvokeDeploymentOperation, 
 	message := data.InvokedOperation{
 		DeploymentId:   uint(deploymentId),
 		DeploymentName: *operation.Name,
-		Params:         templateParams.(map[string]interface{}),
+		Parameters:     templateParams.(map[string]interface{}),
 	}
 
 	err = enqueueForPublishing(credential, message, ctx)

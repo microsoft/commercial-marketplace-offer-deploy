@@ -144,7 +144,8 @@ type InvokeDeploymentOperation struct {
 	Wait *bool `json:"wait,omitempty"`
 }
 
-type InvokedOperation struct {
+type InvokedDeploymentOperation struct {
+	DeploymentID *int32 `json:"deploymentId,omitempty"`
 	ID *string `json:"id,omitempty"`
 	InvokedOn *time.Time `json:"invokedOn,omitempty"`
 	Name *string `json:"name,omitempty"`
@@ -155,17 +156,6 @@ type InvokedOperation struct {
 	// Anything
 	Result any `json:"result,omitempty"`
 	Status *string `json:"status,omitempty"`
-	Target *InvokedOperationTarget `json:"target,omitempty"`
-}
-
-type InvokedOperationTarget struct {
-	ID *InvokedOperationTargetID `json:"id,omitempty"`
-	Type *string `json:"type,omitempty"`
-}
-
-type InvokedOperationTargetID struct {
-	Type *string `json:"type,omitempty"`
-	Value *string `json:"value,omitempty"`
 }
 
 // Operation - Defines an available operation
