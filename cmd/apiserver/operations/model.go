@@ -1,19 +1,8 @@
 package operations
 
-import (
-	"github.com/labstack/echo"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
-)
+import "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 
-type DeploymentOperationParameters map[string]any
-
-type DeploymentOperationContext struct {
-	Name         operations.OperationType
+type InvokeOperationCommand struct {
 	DeploymentId int
-	Parameters   DeploymentOperationParameters
-	HttpContext  echo.Context
+	Request      *api.InvokeDeploymentOperationRequest
 }
-
-// deployment operation handler func
-type DeploymentOperationHandlerFunc func(c *DeploymentOperationContext) (*api.InvokedDeploymentOperation, error)
