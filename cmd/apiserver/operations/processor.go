@@ -2,55 +2,58 @@ package operations
 
 import (
 	"context"
-	"time"
 
 	//"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
 
 	"gorm.io/gorm"
 )
 
-// start deployment operation handler
-type startDeploymentOperation struct {
+type InvokeOperationProcessor interface {
+	Process(ctx context.Context, command *InvokeOperationCommand) (uuid.UUID, error)
+}
+
+// start deployment operation processor
+type processor struct {
 	db     *gorm.DB
 	sender messaging.MessageSender
 }
 
-func (h *startDeploymentOperation) Handle(c *DeploymentOperationContext) (*api.InvokedDeploymentOperation, error) {
-	id, err := h.save(c)
+func (h *processor) Process(ctx context.Context, command *InvokeOperationCommand) (uuid.UUID, error) {
+	err := validateOperationName(*command.Request.Name)
 	if err != nil {
-		return nil, err
+		return uuid.Nil, err
 	}
 
-	ctx := c.HttpContext.Request().Context()
+	id, err := h.save(command)
+	if err != nil {
+		return uuid.Nil, err
+	}
+
 	err = h.send(ctx, id)
 
 	if err != nil {
-		return nil, err
+		return uuid.Nil, err
 	}
 
-	return &api.InvokedDeploymentOperation{
-		ID:         to.Ptr(id.String()),
-		InvokedOn:  to.Ptr(time.Now().UTC()),
-		Name:       to.Ptr(c.Name.String()),
-		Parameters: c.Parameters,
-		Result:     operations.OperationResultAccepted,
-		Status:     to.Ptr(events.DeploymentPendingEventType.String()),
-	}, nil
+	return id, nil
+}
+
+func validateOperationName(name string) error {
+	_, err := operations.From(name)
+	return err
 }
 
 // save changes to the database
-func (h *startDeploymentOperation) save(c *DeploymentOperationContext) (uuid.UUID, error) {
+func (h *processor) save(c *InvokeOperationCommand) (uuid.UUID, error) {
 	tx := h.db.Begin()
 
 	deployment := &data.Deployment{}
@@ -59,9 +62,10 @@ func (h *startDeploymentOperation) save(c *DeploymentOperationContext) (uuid.UUI
 	tx.Save(deployment)
 
 	invokedOperation := &data.InvokedOperation{
-		DeploymentId: uint(c.DeploymentId),
-		Name:         c.Name.String(),
-		Parameters:   c.Parameters,
+		BaseWithGuidPrimaryKey: data.BaseWithGuidPrimaryKey{ID: uuid.New()},
+		DeploymentId:           uint(c.DeploymentId),
+		Name:                   *c.Request.Name,
+		Parameters:             c.Request.Parameters.(map[string]interface{}),
 	}
 	tx.Save(&invokedOperation)
 
@@ -76,7 +80,7 @@ func (h *startDeploymentOperation) save(c *DeploymentOperationContext) (uuid.UUI
 }
 
 // send the message on the queue
-func (h *startDeploymentOperation) send(ctx context.Context, operationId uuid.UUID) error {
+func (h *processor) send(ctx context.Context, operationId uuid.UUID) error {
 	message := messaging.InvokedOperationMessage{OperationId: operationId.String()}
 
 	results, err := h.sender.Send(ctx, messaging.OperatorQueue, message)
@@ -92,26 +96,24 @@ func (h *startDeploymentOperation) send(ctx context.Context, operationId uuid.UU
 
 // region factory
 
-func NewStartDeploymentOperationHandler(appConfig *config.AppConfig, credential azcore.TokenCredential) DeploymentOperationHandlerFunc {
-	return func(c *DeploymentOperationContext) (*api.InvokedDeploymentOperation, error) {
-		errors := []string{}
+func NewInvokeOperationProcessor(appConfig *config.AppConfig, credential azcore.TokenCredential) (InvokeOperationProcessor, error) {
+	errors := []string{}
 
-		db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
-		sender, err := newMessageSender(appConfig, credential)
-		if err != nil {
-			errors = append(errors, err.Error())
-		}
-
-		if len(errors) > 0 {
-			return nil, utils.NewAggregateError(errors)
-		}
-
-		handler := &startDeploymentOperation{
-			db:     db,
-			sender: sender,
-		}
-		return handler.Handle(c)
+	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
+	sender, err := newMessageSender(appConfig, credential)
+	if err != nil {
+		errors = append(errors, err.Error())
 	}
+
+	if len(errors) > 0 {
+		return nil, utils.NewAggregateError(errors)
+	}
+
+	processor := &processor{
+		db:     db,
+		sender: sender,
+	}
+	return processor, nil
 }
 
 func newMessageSender(appConfig *config.AppConfig, credential azcore.TokenCredential) (messaging.MessageSender, error) {

@@ -219,7 +219,7 @@
             "description": "Deployment operation invocation",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/InvokeDeploymentOperation"
+              "$ref": "#/definitions/InvokeDeploymentOperationRequest"
             }
           }
         ],
@@ -227,7 +227,7 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/InvokedDeploymentOperation"
+              "$ref": "#/definitions/InvokedDeploymentOperationResponse"
             }
           }
         }
@@ -240,7 +240,7 @@
         ],
         "summary": "Gets the state of an invoked operation",
         "description": "Gets the state of a command operation that's been invoked",
-        "operationId": "GetDeploymentOperation",
+        "operationId": "GetInvokedDeploymentOperation",
         "parameters": [
           {
             "name": "operationId",
@@ -255,7 +255,7 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/InvokedDeploymentOperation"
+              "$ref": "#/definitions/InvokedDeploymentOperationResponse"
             }
           }
         }
@@ -515,7 +515,7 @@
         }
       }
     },
-    "InvokeDeploymentOperation": {
+    "InvokeDeploymentOperationRequest": {
       "type": "object",
       "properties": {
         "name": {
@@ -530,7 +530,7 @@
         }
       }
     },
-    "InvokedDeploymentOperation": {
+    "InvokedDeploymentOperationResponse": {
       "type": "object",
       "properties": {
         "id": {
