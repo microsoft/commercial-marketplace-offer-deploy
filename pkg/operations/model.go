@@ -11,14 +11,14 @@ const (
 type OperationType string
 
 const (
-	StartDeploymentOperation  OperationType = "StartDeployment"
-	DryRunDeploymentOperation OperationType = "DryRun"
-	UnknownOperation          OperationType = "Unknown"
+	OperationStartDeployment OperationType = "StartDeployment"
+	OperationDryRun          OperationType = "DryRun"
+	OperationUnknown         OperationType = "Unknown"
 )
 
 // Gets the list of operations
 func GetOperations() []OperationType {
-	return []OperationType{StartDeploymentOperation, DryRunDeploymentOperation}
+	return []OperationType{OperationStartDeployment, OperationDryRun}
 }
 
 func (o OperationType) String() string {
@@ -26,14 +26,14 @@ func (o OperationType) String() string {
 	return stringValue
 }
 
-func From(o string) (OperationType, error) {
+func Type(o string) (OperationType, error) {
 	// TODO: return tuple with error
 	switch o {
-	case DryRunDeploymentOperation.String():
-		return DryRunDeploymentOperation, nil
-	case StartDeploymentOperation.String():
-		return StartDeploymentOperation, nil
+	case OperationDryRun.String():
+		return OperationDryRun, nil
+	case OperationStartDeployment.String():
+		return OperationStartDeployment, nil
 	default:
-		return UnknownOperation, fmt.Errorf("unknown operation type %s", o)
+		return OperationUnknown, fmt.Errorf("unknown operation type %s", o)
 	}
 }

@@ -14,6 +14,7 @@ const (
 	DeploymentDryRunCompletedEventType EventType = "DryRunCompleted"
 	DeploymentCreatedEventType         EventType = "Created"
 	DeploymentPendingEventType         EventType = "Pending"
+	DeploymentStartingEventType        EventType = "Starting"
 	DeploymentStartedEventType         EventType = "Started"
 	DeploymentCompletedEventType       EventType = "Completed"
 	DeploymentErrorEventType           EventType = "Error"
