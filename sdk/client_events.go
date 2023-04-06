@@ -16,3 +16,12 @@ func (client *Client) ListEventTypes(ctx context.Context) ([]*api.EventType, err
 	types := response.EventTypeArray
 	return types, nil
 }
+
+func (client *Client) CreateEventSubscription(ctx context.Context, request api.CreateEventSubscriptionRequest) (*api.CreateEventSubscriptionResponse, error) {
+	response, err := client.internalClient.CreatEventSubscription(ctx, request, nil)
+
+	if err != nil {
+		return nil, err
+	}
+	return &response.CreateEventSubscriptionResponse, nil
+}
