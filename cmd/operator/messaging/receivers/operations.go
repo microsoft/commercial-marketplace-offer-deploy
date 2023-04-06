@@ -1,47 +1,29 @@
-package messaging
+package receivers
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
-	//	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus/internal"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	internalmessage "github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
-type OperationsHandler struct {
+type operationsMessageHandler struct {
 	running  bool
 	database data.Database
 }
 
-func NewOperationsHandler(db data.Database) *OperationsHandler {
-	return &OperationsHandler{
-		running:  false,
-		database: db,
-	}
-}
-
-func (h *OperationsHandler) Handle(ctx context.Context, message *azservicebus.ReceivedMessage) error {
+func (h *operationsMessageHandler) Handle(message *messaging.InvokedOperationMessage, context messaging.MessageHandlerContext) error {
 	db := h.database.Instance()
 
-	messageString := string(message.Body)
-	log.Printf("Inside OperationsHandler.Handle with message: %s", messageString)
-
-	var publishedMessage internalmessage.InvokedOperationMessage
 	var operation data.InvokedOperation
-	err := json.Unmarshal([]byte(messageString), &publishedMessage)
-	if err != nil {
-		log.Println("Error unmarshalling message: ", err)
-		return err
-	}
-	db.First(&operation, publishedMessage.OperationId)
+	db.First(&operation, message.OperationId)
 
 	log.Println("Unmarshalled message: ", operation)
 	pulledOperationId := operation.ID
@@ -64,8 +46,7 @@ func (h *OperationsHandler) Handle(ctx context.Context, message *azservicebus.Re
 	log.Println("Calling deployment.Create")
 
 	go func() {
-		_, err = h.Deploy(ctx, azureDeployment)
-
+		_, err := h.deploy(context.Context(), azureDeployment)
 		if err != nil {
 			log.Println("Error calling deployment.Create: ", err)
 		}
@@ -74,7 +55,7 @@ func (h *OperationsHandler) Handle(ctx context.Context, message *azservicebus.Re
 	return nil
 }
 
-func (h *OperationsHandler) mapAzureDeployment(d *data.Deployment, io *data.InvokedOperation) *deployment.AzureDeployment {
+func (h *operationsMessageHandler) mapAzureDeployment(d *data.Deployment, io *data.InvokedOperation) *deployment.AzureDeployment {
 	return &deployment.AzureDeployment{
 		SubscriptionId:    d.SubscriptionId,
 		ResourceGroupName: d.ResourceGroup,
@@ -84,6 +65,32 @@ func (h *OperationsHandler) mapAzureDeployment(d *data.Deployment, io *data.Invo
 	}
 }
 
-func (h *OperationsHandler) Deploy(ctx context.Context, azureDeployment *deployment.AzureDeployment) (*deployment.AzureDeploymentResult, error) {
+func (h *operationsMessageHandler) deploy(ctx context.Context, azureDeployment *deployment.AzureDeployment) (*deployment.AzureDeploymentResult, error) {
 	return deployment.Create(*azureDeployment)
 }
+
+//region factory
+
+func newOperationsMessageHandler(db data.Database) *operationsMessageHandler {
+	return &operationsMessageHandler{
+		running:  false,
+		database: db,
+	}
+}
+
+func NewOperationsMessageReceiver(appConfig *config.AppConfig) messaging.MessageReceiver {
+	db := data.NewDatabase(appConfig.GetDatabaseOptions())
+
+	handler := newOperationsMessageHandler(db)
+	options := messaging.ServiceBusMessageReceiverOptions{
+		MessageReceiverOptions: messaging.MessageReceiverOptions{QueueName: string(messaging.QueueNameOperations)},
+		NamespaceName:          appConfig.ServiceBusNamespace,
+	}
+	receiver, err := messaging.NewServiceBusReceiver(handler, options)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return receiver
+}
+
+//endregion receiver factory

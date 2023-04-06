@@ -2,39 +2,43 @@ package messaging
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"log"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
-	// "github.com/sqs/goreturns/returns"
 )
 
-type ServiceBusConfig struct {
-	Namespace string
+type MessageReceiver interface {
+	Start()
+	Stop()
+}
+
+type MessageReceiverOptions struct {
 	QueueName string
 }
 
-type ServiceBusReceiver struct {
+type ServiceBusMessageReceiverOptions struct {
+	MessageReceiverOptions
+	NamespaceName string
+}
+
+func (o *ServiceBusMessageReceiverOptions) getFullQualifiedNamespace() string {
+	return o.NamespaceName + ".servicebus.windows.net"
+}
+
+//region servicebus receiver
+
+type serviceBusReceiver struct {
 	stopped   bool
 	stop      chan bool
 	ctx       context.Context
 	queueName string
 	namespace string
-	handler   MessageHandler
+	handler   ServiceBusMessageHandler
 }
 
-func MapDeploymentMessage(message *azservicebus.ReceivedMessage) (any, error) {
-	var deploymentMessage DeploymentMessage
-	err := json.Unmarshal(message.Body, &deploymentMessage)
-	if err != nil {
-		log.Println("Failure")
-	}
-	return deploymentMessage, err
-}
-
-func (r *ServiceBusReceiver) Start() {
+func (r *serviceBusReceiver) Start() {
 	r.stopped = false
 	log.Println("starting the receiver")
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
@@ -64,7 +68,7 @@ func (r *ServiceBusReceiver) Start() {
 				if r.stopped {
 					break
 				}
-				
+
 				log.Println("inside of default")
 				var messages []*azservicebus.ReceivedMessage = []*azservicebus.ReceivedMessage{}
 				messages, err = receiver.ReceiveMessages(r.ctx, 1, nil)
@@ -99,59 +103,28 @@ func (r *ServiceBusReceiver) Start() {
 	}
 }
 
-func (r *ServiceBusReceiver) Stop() {
+func (r *serviceBusReceiver) Stop() {
 	r.ctx.Done()
 	r.stop <- true
 	<-r.stop
 	close(r.stop)
 }
 
-func NewServiceBusReceiver(config ServiceBusConfig, handler MessageHandler) (*ServiceBusReceiver, error) {
-	receiver := ServiceBusReceiver{
+func NewServiceBusReceiver(handler any, options ServiceBusMessageReceiverOptions) (MessageReceiver, error) {
+	serviceBusMessageHandler, err := NewServiceMessageHandler(handler)
+	if err != nil {
+		return nil, err
+	}
+	
+	receiver := serviceBusReceiver{
 		stop:      make(chan bool),
 		stopped:   true,
-		queueName: config.QueueName,
-		namespace: config.Namespace,
+		queueName: options.QueueName,
+		namespace: options.getFullQualifiedNamespace(),
 		ctx:       context.TODO(),
-		handler:   handler,
+		handler:   serviceBusMessageHandler,
 	}
 	return &receiver, nil
 }
 
-type ServiceBusPublisher func(message DeploymentMessage) error
-
-func (f ServiceBusPublisher) Publish(message DeploymentMessage) error {
-	return f(message)
-}
-
-func NewServiceBusPublisher(ns string, queueName string) (ServiceBusPublisher, error) {
-	cred, err := azidentity.NewDefaultAzureCredential(nil)
-	if err != nil {
-		return nil, err
-	}
-
-	client, err := azservicebus.NewClient(ns, cred, nil)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return func(message DeploymentMessage) error {
-		sender, err := client.NewSender(queueName, nil)
-		if err != nil {
-			return err
-		}
-		defer sender.Close(context.TODO())
-
-		jsonContent, err := json.Marshal(message)
-		if err != nil {
-			return err
-		}
-
-		sbMessage := &azservicebus.Message{
-			Body: []byte(jsonContent),
-		}
-
-		return sender.SendMessage(context.TODO(), sbMessage, nil)
-	}, nil
-}
+//endregion servicebus receiver
