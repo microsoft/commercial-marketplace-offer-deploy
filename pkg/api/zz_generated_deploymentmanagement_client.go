@@ -211,7 +211,7 @@ func (client *DeploymentManagementClient) GetDeploymentOperation(ctx context.Con
 
 // getDeploymentOperationCreateRequest creates the GetDeploymentOperation request.
 func (client *DeploymentManagementClient) getDeploymentOperationCreateRequest(ctx context.Context, operationID string, options *DeploymentManagementClientGetDeploymentOperationOptions) (*policy.Request, error) {
-	urlPath := "/operations/{operationId}"
+	urlPath := "/deployments/operations/{operationId}"
 	urlPath = strings.ReplaceAll(urlPath, "{operationId}", url.PathEscape(operationID))
 	req, err := runtime.NewRequest(ctx, http.MethodGet, runtime.JoinPaths(client.endpoint, urlPath))
 	if err != nil {
@@ -224,7 +224,7 @@ func (client *DeploymentManagementClient) getDeploymentOperationCreateRequest(ct
 // getDeploymentOperationHandleResponse handles the GetDeploymentOperation response.
 func (client *DeploymentManagementClient) getDeploymentOperationHandleResponse(resp *http.Response) (DeploymentManagementClientGetDeploymentOperationResponse, error) {
 	result := DeploymentManagementClientGetDeploymentOperationResponse{}
-	if err := runtime.UnmarshalAsJSON(resp, &result.InvokedOperation); err != nil {
+	if err := runtime.UnmarshalAsJSON(resp, &result.InvokedDeploymentOperation); err != nil {
 		return DeploymentManagementClientGetDeploymentOperationResponse{}, err
 	}
 	return result, nil
@@ -352,7 +352,7 @@ func (client *DeploymentManagementClient) invokeDeploymentOperationCreateRequest
 // invokeDeploymentOperationHandleResponse handles the InvokeDeploymentOperation response.
 func (client *DeploymentManagementClient) invokeDeploymentOperationHandleResponse(resp *http.Response) (DeploymentManagementClientInvokeDeploymentOperationResponse, error) {
 	result := DeploymentManagementClientInvokeDeploymentOperationResponse{}
-	if err := runtime.UnmarshalAsJSON(resp, &result.InvokedOperation); err != nil {
+	if err := runtime.UnmarshalAsJSON(resp, &result.InvokedDeploymentOperation); err != nil {
 		return DeploymentManagementClientInvokeDeploymentOperationResponse{}, err
 	}
 	return result, nil

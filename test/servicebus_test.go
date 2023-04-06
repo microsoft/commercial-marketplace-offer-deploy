@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
@@ -20,9 +21,9 @@ import (
 
 type serviceBusSuite struct {
 	suite.Suite
-	testDirectory string
-	ns        string
-	queueName string
+	testDirectory       string
+	ns                  string
+	queueName           string
 	operationsQueueName string
 	subscriptionId      string
 	resourceGroupName   string
@@ -95,7 +96,7 @@ func (s *serviceBusSuite) createDeploymentForTests() {
 	invokedOperation := &data.InvokedOperation{
 		DeploymentId:   deployment.ID,
 		DeploymentName: s.deploymentName,
-		Params:         parameters,
+		Parameters:     parameters,
 	}
 
 	s.db.Instance().Create(invokedOperation)
@@ -173,7 +174,7 @@ func (s *serviceBusSuite) TestMessageReceiveSuccess() {
 	fmt.Println("After the second sleep")
 }
 
-func (s *serviceBusSuite) TestUnmarshalMessageJson(){
+func (s *serviceBusSuite) TestUnmarshalMessageJson() {
 	messageString := "{\"header\":{\"topic\":\"testtopic\"},\"body\":\"{\\\"ID\\\":13,\\\"CreatedAt\\\":\\\"2023-04-05T10:11:10.346118-04:00\\\",\\\"UpdatedAt\\\":\\\"2023-04-05T10:11:10.346118-04:00\\\",\\\"DeletedAt\\\":null,\\\"deploymentId\\\":22,\\\"deploymentName\\\":\\\"test-deployment\\\",\\\"params\\\":{\\\"$schema\\\":\\\"https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#\\\",\\\"contentVersion\\\":\\\"1.0.0.0\\\",\\\"parameters\\\":{\\\"testName\\\":{\\\"value\\\":\\\"bobjacbicep1\\\"}}}}\"}"
 	var publishedMessage messaging.DeploymentMessage
 	var operation data.InvokedOperation

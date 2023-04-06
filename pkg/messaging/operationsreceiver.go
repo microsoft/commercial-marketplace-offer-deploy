@@ -18,21 +18,21 @@ import (
 )
 
 type OperationsHandler struct {
-	running bool
+	running  bool
 	database data.Database
 }
 
 func NewOperationsHandler(db data.Database) *OperationsHandler {
 	return &OperationsHandler{
-		running: false,
+		running:  false,
 		database: db,
 	}
 }
 
-func (h *OperationsHandler) Handle(ctx context.Context, message *azservicebus.ReceivedMessage) (error) {
+func (h *OperationsHandler) Handle(ctx context.Context, message *azservicebus.ReceivedMessage) error {
 	messageString := string(message.Body)
 	log.Printf("Inside OperationsHandler.Handle with message: %s", messageString)
-	
+
 	var publishedMessage DeploymentMessage
 	var operation data.InvokedOperation
 	err := json.Unmarshal([]byte(messageString), &publishedMessage)
@@ -50,7 +50,7 @@ func (h *OperationsHandler) Handle(ctx context.Context, message *azservicebus.Re
 	log.Println("Unmarshalled message: ", operation)
 	pulledOperationId := operation.ID
 	log.Println("Pulled operationId: ", pulledOperationId)
-	log.Println("Pulled params: ", operation.Params)
+	log.Println("Pulled params: ", operation.Parameters)
 
 	db := h.database.Instance()
 
@@ -61,7 +61,7 @@ func (h *OperationsHandler) Handle(ctx context.Context, message *azservicebus.Re
 	startedStatus := strings.Replace(string(events.DeploymentStartedEventType), "deployment.", "", 1)
 	caser := cases.Title(language.English)
 	deployment.Status = caser.String(startedStatus)
-	
+
 	db.Save(deployment)
 	log.Println("Updated deployment: ", deployment)
 
@@ -69,7 +69,7 @@ func (h *OperationsHandler) Handle(ctx context.Context, message *azservicebus.Re
 	log.Println("Mapped deployment: ", azureDeployment)
 	log.Println("Calling deployment.Create")
 	_, err = h.Deploy(ctx, azureDeployment)
-	
+
 	if err != nil {
 		log.Println("Error calling deployment.Create: ", err)
 		return err
@@ -80,16 +80,16 @@ func (h *OperationsHandler) Handle(ctx context.Context, message *azservicebus.Re
 
 func (h *OperationsHandler) mapAzureDeployment(d *data.Deployment, io *data.InvokedOperation) *deployment.AzureDeployment {
 	return &deployment.AzureDeployment{
-		SubscriptionId: d.SubscriptionId,
+		SubscriptionId:    d.SubscriptionId,
 		ResourceGroupName: d.ResourceGroup,
-		DeploymentName: io.DeploymentName,
-		Template: d.Template,
-		Params: io.Params,
+		DeploymentName:    io.DeploymentName,
+		Template:          d.Template,
+		Params:            io.Parameters,
 	}
 }
 
-func (h *OperationsHandler) Deploy(ctx context.Context, azureDeployment *deployment.AzureDeployment) (*deployment.AzureDeploymentResult, error)  {
-	
+func (h *OperationsHandler) Deploy(ctx context.Context, azureDeployment *deployment.AzureDeployment) (*deployment.AzureDeploymentResult, error) {
+
 	return deployment.Create(*azureDeployment)
 	// h.running = true
 	// cred, err := azidentity.NewDefaultAzureCredential(nil)
@@ -101,9 +101,9 @@ func (h *OperationsHandler) Deploy(ctx context.Context, azureDeployment *deploym
 	// 	return nil
 	// }
 	// deploymentsClient.BeginCreateOrUpdate(
-	// 	ctx, 
-	// 	azureDeployment.ResourceGroupName, 
-	// 	azureDeployment.DeploymentName, 
+	// 	ctx,
+	// 	azureDeployment.ResourceGroupName,
+	// 	azureDeployment.DeploymentName,
 	// 	armresources.Deployment{
 	// 		Properties: &armresources.DeploymentProperties{
 	// 			Template: azureDeployment.Template,
@@ -115,6 +115,3 @@ func (h *OperationsHandler) Deploy(ctx context.Context, azureDeployment *deploym
 	// )
 	// return nil
 }
-
-
-

@@ -49,5 +49,7 @@ type InvokedOperation struct {
 	BaseWithGuidPrimaryKey
 	Name         string                 `json:"name"`
 	DeploymentId uint                   `json:"deploymentId"`
-	Params       map[string]interface{} `json:"params" gorm:"json"`
+	Parameters   map[string]interface{} `json:"params" gorm:"json"`
+	Result       any                    `json:"result" gorm:"json"`
+	Status       string                 `json:"status"`
 }
