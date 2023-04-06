@@ -34,7 +34,7 @@ type DeploymentManagementClient struct {
 //   - body - Create event subscription
 //   - options - DeploymentManagementClientCreatEventSubscriptionOptions contains the optional parameters for the DeploymentManagementClient.CreatEventSubscription
 //     method.
-func (client *DeploymentManagementClient) CreatEventSubscription(ctx context.Context, body CreateEventSubscription, options *DeploymentManagementClientCreatEventSubscriptionOptions) (DeploymentManagementClientCreatEventSubscriptionResponse, error) {
+func (client *DeploymentManagementClient) CreatEventSubscription(ctx context.Context, body CreateEventSubscriptionRequest, options *DeploymentManagementClientCreatEventSubscriptionOptions) (DeploymentManagementClientCreatEventSubscriptionResponse, error) {
 	req, err := client.creatEventSubscriptionCreateRequest(ctx, body, options)
 	if err != nil {
 		return DeploymentManagementClientCreatEventSubscriptionResponse{}, err
@@ -50,7 +50,7 @@ func (client *DeploymentManagementClient) CreatEventSubscription(ctx context.Con
 }
 
 // creatEventSubscriptionCreateRequest creates the CreatEventSubscription request.
-func (client *DeploymentManagementClient) creatEventSubscriptionCreateRequest(ctx context.Context, body CreateEventSubscription, options *DeploymentManagementClientCreatEventSubscriptionOptions) (*policy.Request, error) {
+func (client *DeploymentManagementClient) creatEventSubscriptionCreateRequest(ctx context.Context, body CreateEventSubscriptionRequest, options *DeploymentManagementClientCreatEventSubscriptionOptions) (*policy.Request, error) {
 	urlPath := "/events/subscriptions"
 	req, err := runtime.NewRequest(ctx, http.MethodPost, runtime.JoinPaths(client.endpoint, urlPath))
 	if err != nil {
@@ -187,7 +187,7 @@ func (client *DeploymentManagementClient) getDeploymentHandleResponse(resp *http
 	return result, nil
 }
 
-// GetEventSubscription - Gets a subscription to an even type
+// GetEventSubscription - Gets a subscription
 // If the operation fails it returns an *azcore.ResponseError type.
 //
 // Generated from API version 0.1.0
@@ -224,7 +224,7 @@ func (client *DeploymentManagementClient) getEventSubscriptionCreateRequest(ctx 
 // getEventSubscriptionHandleResponse handles the GetEventSubscription response.
 func (client *DeploymentManagementClient) getEventSubscriptionHandleResponse(resp *http.Response) (DeploymentManagementClientGetEventSubscriptionResponse, error) {
 	result := DeploymentManagementClientGetEventSubscriptionResponse{}
-	if err := runtime.UnmarshalAsJSON(resp, &result.EventSubscription); err != nil {
+	if err := runtime.UnmarshalAsJSON(resp, &result.EventSubscriptionResponse); err != nil {
 		return DeploymentManagementClientGetEventSubscriptionResponse{}, err
 	}
 	return result, nil
@@ -441,7 +441,7 @@ func (client *DeploymentManagementClient) listEventSubscriptionsCreateRequest(ct
 // listEventSubscriptionsHandleResponse handles the ListEventSubscriptions response.
 func (client *DeploymentManagementClient) listEventSubscriptionsHandleResponse(resp *http.Response) (DeploymentManagementClientListEventSubscriptionsResponse, error) {
 	result := DeploymentManagementClientListEventSubscriptionsResponse{}
-	if err := runtime.UnmarshalAsJSON(resp, &result.EventSubscriptionArray); err != nil {
+	if err := runtime.UnmarshalAsJSON(resp, &result.EventSubscriptionResponseArray); err != nil {
 		return DeploymentManagementClientListEventSubscriptionsResponse{}, err
 	}
 	return result, nil

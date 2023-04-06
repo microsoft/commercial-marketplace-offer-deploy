@@ -31,7 +31,7 @@ type DeploymentManagementClientGetDeploymentResponse struct {
 
 // DeploymentManagementClientGetEventSubscriptionResponse contains the response from method DeploymentManagementClient.GetEventSubscription.
 type DeploymentManagementClientGetEventSubscriptionResponse struct {
-	EventSubscription
+	EventSubscriptionResponse
 }
 
 // DeploymentManagementClientGetEventTypesResponse contains the response from method DeploymentManagementClient.GetEventTypes.
@@ -58,8 +58,8 @@ type DeploymentManagementClientListDeploymentsResponse struct {
 
 // DeploymentManagementClientListEventSubscriptionsResponse contains the response from method DeploymentManagementClient.ListEventSubscriptions.
 type DeploymentManagementClientListEventSubscriptionsResponse struct {
-	// Array of EventSubscription
-	EventSubscriptionArray []*EventSubscription
+	// Array of EventSubscriptionResponse
+	EventSubscriptionResponseArray []*EventSubscriptionResponse
 }
 
 // DeploymentManagementClientListOperationsResponse contains the response from method DeploymentManagementClient.ListOperations.

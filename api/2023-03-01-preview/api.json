@@ -323,7 +323,7 @@
             "description": "Create event subscription",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/CreateEventSubscription"
+              "$ref": "#/definitions/CreateEventSubscriptionRequest"
             }
           }
         ],
@@ -354,7 +354,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/EventSubscription"
+                "$ref": "#/definitions/EventSubscriptionResponse"
               }
             }
           },
@@ -373,7 +373,7 @@
           "Event"
         ],
         "summary": "Gets a subscription",
-        "description": "Gets a subscription to an even type",
+        "description": "Gets a subscription",
         "operationId": "GetEventSubscription",
         "parameters": [
           {
@@ -389,7 +389,7 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/EventSubscription"
+              "$ref": "#/definitions/EventSubscriptionResponse"
             }
           },
           "400": {
@@ -567,7 +567,7 @@
         }
       }
     },
-    "EventSubscription": {
+    "EventSubscriptionResponse": {
       "type": "object",
       "properties": {
         "id": {
@@ -580,11 +580,12 @@
         },
         "callback": {
           "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "The webhook callback"
         }
       }
     },
-    "CreateEventSubscription": {
+    "CreateEventSubscriptionRequest": {
       "type": "object",
       "properties": {
         "name": {
@@ -597,7 +598,8 @@
         },
         "callback": {
           "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "The webhook callback"
         }
       }
     },
