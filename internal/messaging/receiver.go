@@ -60,7 +60,7 @@ func (r *serviceBusReceiver) Start() {
 	for {
 		select {
 		case <-r.stop:
-			return nil
+			return
 		default:
 			for {
 				if r.stopped {
