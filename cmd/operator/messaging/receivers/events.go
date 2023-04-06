@@ -16,7 +16,8 @@ type eventsMessageHandler struct {
 }
 
 func (h *eventsMessageHandler) Handle(message *events.WebHookEventMessage, context messaging.MessageHandlerContext) error {
-	return nil
+	err := h.publisher.Publish(message)
+	return err
 }
 
 //region factory
