@@ -2,16 +2,11 @@ package handlers
 
 import (
 	"context"
-	"errors"
-	"log"
-	"strings"
-
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 
 	//"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
@@ -23,63 +18,54 @@ import (
 	"gorm.io/gorm"
 )
 
-func StartDeployment(deploymentId int, operation api.InvokeDeploymentOperation, db *gorm.DB) (interface{}, error) {
-	log.Printf("Inside StartDeployment deploymentId: %d", deploymentId)
+func StartDeployment(deploymentId int, operation api.InvokeDeploymentOperation, db *gorm.DB) (*api.InvokedOperation, error) {
+	deployment := &data.Deployment{}
+	db.First(&deployment, deploymentId)
+	deployment.Status = events.DeploymentPendingEventType.String()
+	db.Save(&deployment)
 
-	toUpdate := &data.Deployment{}
-	db.First(&toUpdate, deploymentId)
-	pendingStatus := strings.Replace(events.DeploymentPendingEventType.String(), "deployment.", "", 1)
-	caser := cases.Title(language.English)
-	toUpdate.Status = caser.String(pendingStatus)
-	db.Save(toUpdate)
-
-	templateParams := operation.Parameters
-	if templateParams == nil {
-		return nil, errors.New("templateParams were not provided")
+	invokedOperation := data.InvokedOperation{
+		DeploymentId: uint(deploymentId),
+		Name:         *operation.Name,
+		Params:       operation.Parameters.(map[string]interface{}),
 	}
+	invokedOperation.ID = uuid.New()
+	db.Save(&invokedOperation)
 
-	ctx := context.TODO()
-
-	credential, err := azidentity.NewDefaultAzureCredential(nil)
+	err := enqueueForPublishing(&invokedOperation)
 	if err != nil {
 		return nil, err
 	}
 
-	// Post message to service bus operator queue
-	message := data.InvokedOperation{
-		DeploymentId:   uint(deploymentId),
-		Name: *operation.Name,
-		Params:         templateParams.(map[string]interface{}),
-	}
-
-	err = enqueueForPublishing(credential, message, ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	uuid := uuid.New().String()
-	status := "OK"
-	returnedResult := api.InvokedOperation{
-		ID:     &uuid,
-		Result: events.DeploymentPendingEventType.String(),
-		Status: &status,
+	returnedResult := &api.InvokedOperation{
+		ID:     to.Ptr(invokedOperation.ID.String()),
+		Result: "Accepted",
+		Status: &deployment.Status,
 	}
 	return returnedResult, nil
 }
 
-func enqueueForPublishing(credential *azidentity.DefaultAzureCredential, message data.InvokedOperation, ctx context.Context) error {
-	// sender, err := getMessageSender(credential)
-	// if err != nil {
-	// 	return err
-	// }
-	// results, err := sender.Send(ctx, messaging.OperatorQueue, message)
-	// if err != nil {
-	// 	return err
-	// }
+func enqueueForPublishing(invokedOperation *data.InvokedOperation) error {
+	ctx := context.TODO()
 
-	// if len(results) > 0 {
-	// 	return utils.NewAggregateError(getErrorMessages(results))
-	// }
+	credential, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		return err
+	}
+	sender, err := getMessageSender(credential)
+	if err != nil {
+		return err
+	}
+	message := messaging.InvokedOperationMessage{
+		OperationId: invokedOperation.ID.String(),
+	}
+	results, err := sender.Send(ctx, string(messaging.QueueNameOperations), message)
+	if err != nil {
+		return err
+	}
+	if len(results) == 1 && !results[0].Success {
+		return results[0].Error
+	}
 	return nil
 }
 func getMessageSender(credential azcore.TokenCredential) (messaging.MessageSender, error) {
@@ -95,14 +81,4 @@ func getMessageSender(credential azcore.TokenCredential) (messaging.MessageSende
 	}
 
 	return sender, nil
-}
-func getErrorMessages(sendResults []messaging.SendMessageResult) []string {
-	errors := []string{}
-	for _, result := range sendResults {
-		if result.Error != nil {
-			errors = append(errors, result.Error.Error())
-		}
-	}
-
-	return errors
 }

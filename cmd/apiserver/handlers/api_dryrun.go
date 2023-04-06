@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"errors"
-	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,13 +11,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateDryRun(deploymentId int, operation api.InvokeDeploymentOperation, db *gorm.DB) (interface{}, error) {
-	log.Printf("Inisde CreateDryRun deploymentId: %d", deploymentId)
-
+func CreateDryRun(deploymentId int, operation api.InvokeDeploymentOperation, db *gorm.DB) (*api.InvokedOperation, error) {
 	retrieved := &data.Deployment{}
 	db.First(&retrieved, deploymentId)
-
-	log.Printf("Inisde CreateDryRun deploymentId: %v", retrieved)
 
 	templateParams := operation.Parameters
 	if templateParams == nil {
@@ -38,7 +33,7 @@ func CreateDryRun(deploymentId int, operation api.InvokeDeploymentOperation, db 
 	uuid := uuid.New().String()
 	timestamp := time.Now().UTC()
 	status := "OK"
-	returnedResult := api.InvokedOperation{
+	returnedResult := &api.InvokedOperation{
 		ID:        &uuid,
 		InvokedOn: &timestamp,
 		Result:    *res,
