@@ -43,7 +43,7 @@ type serviceBusReceiver struct {
 
 func (r *serviceBusReceiver) Start() {
 	fmt.Println(banner)
-	log.Println("starting message receiver")
+	log.Printf("starting message receiver: %s", r.queueName)
 
 	r.stopped = false
 	receiver, err := r.getQueueReceiver()
@@ -70,11 +70,11 @@ func (r *serviceBusReceiver) Start() {
 				var messages []*azservicebus.ReceivedMessage = []*azservicebus.ReceivedMessage{}
 				messages, err = receiver.ReceiveMessages(r.ctx, 1, nil)
 				if err != nil {
-					log.Printf("Error receiving messages: %s\n", err)
+					log.Printf("%s - error receiving: %s\n", r.queueName, err)
 				}
 
 				for _, message := range messages {
-					log.Printf("Received message: %s\n", message.MessageID)
+					log.Printf("%s - Received message: %s\n", r.queueName, message.MessageID)
 
 					err := r.handler.Handle(r.ctx, message)
 

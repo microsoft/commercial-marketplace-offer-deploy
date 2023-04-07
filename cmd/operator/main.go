@@ -23,8 +23,8 @@ func main() {
 	app := operator.BuildApp(configurationFilePath)
 	go app.Start(port, nil)
 
-	_, operations := getMessageReceivers()
-	//go events.Start()
+	events, operations := getMessageReceivers()
+	go events.Start()
 	go operations.Start()
 
 	select {}
@@ -34,9 +34,9 @@ func getMessageReceivers() (messaging.MessageReceiver, messaging.MessageReceiver
 	appConfig := config.GetAppConfig()
 	credential := hosting.GetAzureCredential()
 
-	//eventsReceiver := receivers.NewEventsMessageReceiver(appConfig, credential)
+	eventsReceiver := receivers.NewEventsMessageReceiver(appConfig, credential)
 
 	operationsReceiver := receivers.NewOperationsMessageReceiver(appConfig, credential)
 
-	return nil, operationsReceiver
+	return eventsReceiver, operationsReceiver
 }
