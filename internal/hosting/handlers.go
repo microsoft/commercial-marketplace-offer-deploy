@@ -1,6 +1,8 @@
 package hosting
 
 import (
+	"log"
+
 	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"gorm.io/gorm"
@@ -12,6 +14,7 @@ type DataHandlerFunc func(c echo.Context, db *gorm.DB) error
 // Wraps a data handler func into an echo.HandlerFunc for route registration purposes
 func ToHandlerFunc(h DataHandlerFunc, databaseOptions *data.DatabaseOptions) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		log.Printf("Inside ToHandlerFunc with database options %v", databaseOptions)
 		d := data.NewDatabase(databaseOptions)
 		return h(c, d.Instance())
 	}
