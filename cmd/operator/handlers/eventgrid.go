@@ -66,7 +66,7 @@ func (h *eventGridWebHook) Handle(c echo.Context) error {
 // send these event grid events through our message bus to be processed and published
 // to the web hook endpoints that are subscribed to our MODM events
 func (h *eventGridWebHook) enqueueResultForProcessing(ctx context.Context, messages []*events.WebHookEventMessage) error {
-	sendResults, err := h.sender.Send(ctx, "events", messages)
+	sendResults, err := h.sender.Send(ctx, string(messaging.QueueNameEvents), messages)
 
 	if err != nil {
 		return err
@@ -143,7 +143,7 @@ func newMessageSender(appConfig *config.AppConfig, credential azcore.TokenCreden
 		SubscriptionId:          appConfig.Azure.SubscriptionId,
 		Location:                appConfig.Azure.Location,
 		ResourceGroupName:       appConfig.Azure.ResourceGroupName,
-		FullyQualifiedNamespace: appConfig.Azure.ServiceBusNamespace,
+		FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
 	})
 
 	if err != nil {
