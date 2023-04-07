@@ -16,9 +16,9 @@ type DryRunResult struct {
 }
 
 type StartDeploymentResult struct {
-	Id      string
-	Results map[string]any
-	Status  string
+	Id     string
+	Result string
+	Status string
 }
 
 // Performs a dry run of a deployment and returns the verification results
@@ -45,9 +45,9 @@ func (client *Client) StartDeployment(ctx context.Context, deploymentId int32, t
 	}
 
 	return &StartDeploymentResult{
-		Id:      *invokedOperation.ID,
-		Results: invokedOperation.Result.(map[string]any),
-		Status:  *invokedOperation.Status,
+		Id:     *invokedOperation.ID,
+		Result: invokedOperation.Result.(string),
+		Status: *invokedOperation.Status,
 	}, nil
 }
 
