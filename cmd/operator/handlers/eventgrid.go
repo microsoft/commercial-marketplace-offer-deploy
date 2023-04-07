@@ -66,25 +66,20 @@ func (h *eventGridWebHook) Handle(c echo.Context) error {
 // send these event grid events through our message bus to be processed and published
 // to the web hook endpoints that are subscribed to our MODM events
 func (h *eventGridWebHook) enqueueResultForProcessing(ctx context.Context, messages []*events.WebHookEventMessage) error {
-	sendResults, err := h.sender.Send(ctx, string(messaging.QueueNameEvents), messages)
-
-	if err != nil {
-		return err
-	}
-
-	errors := getErrorMessages(sendResults)
-	return utils.NewAggregateError(errors)
-}
-
-func getErrorMessages(sendResults []messaging.SendMessageResult) []string {
 	errors := []string{}
-	for _, result := range sendResults {
-		if result.Error != nil {
-			errors = append(errors, result.Error.Error())
-		}
-	}
+	for _, message := range messages {
+		sendResult, err := h.sender.Send(ctx, string(messaging.QueueNameEvents), message)
 
-	return errors
+		if err != nil {
+			errors = append(errors, err.Error())
+		}
+
+		if len(sendResult) == 1 && sendResult[0].Error != nil {
+			errors = append(errors, sendResult[0].Error.Error())
+		} 
+	}
+	
+	return utils.NewAggregateError(errors)
 }
 
 //endregion handler
