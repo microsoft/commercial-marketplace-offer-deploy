@@ -42,6 +42,12 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 			Path:        "/startdeployment",
 			HandlerFunc: StartDeployment,
 		},
+		hosting.Route{
+			Name:        "CreateEventSubscription",
+			Method:      http.MethodGet,
+			Path:        "/ces",
+			HandlerFunc: StartDeployment,
+		},
 	}
 }
 
@@ -57,10 +63,10 @@ func ReceiveEventNotification(c echo.Context) error {
 	return c.JSON(http.StatusOK, "Registered endpoint hit")
 }
 
-func CreateDeployment(c echo.Context) error {
-	url := "http://localhost:8080/deployments"
-	templatePath := "./taggeddeployment/mainTemplateBicep.json"
-	templateMap := getJsonAsMap(templatePath)
+func CreateEventSubscription(c echo.Context) error {
+	url := "http://localhost:8080/events/subscriptions"
+//	templatePath := "./eventsubscription/mainTemplateBicep.json"
+	//templateMap := getJsonAsMap(templatePath)
 
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
@@ -73,6 +79,43 @@ func CreateDeployment(c echo.Context) error {
 	}
 	ctx := context.Background()
 
+	subscriptionName := "TaggedSubscription"
+	apiKey := "1234"
+	callbackUrl := "http://localhost:8280/deploymentevent"
+	request := api.CreateEventSubscriptionRequest{
+		APIKey: &apiKey,
+		Callback: &callbackUrl,
+		Name: &subscriptionName,
+	}
+
+	res, err := client.CreateEventSubscription(ctx, request)
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func CreateDeployment(c echo.Context) error {
+	log.Println("Inside CreateDeployment")
+	url := "http://localhost:8080"
+	templatePath := "./mainTemplateBicep.json"
+	templateMap := getJsonAsMap(templatePath)
+	log.Printf("The templateMap is %s", templateMap)
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println("Got the credentials")
+
+	client, err := sdk.NewClient(url, cred, nil)
+	if err != nil {
+		log.Panicln(err)
+	}
+	log.Println("Got the client")
+	ctx := context.Background()
+
 	deploymentName := "TaggedDeployment"
 	request := api.CreateDeployment{
 		Name:           &deploymentName,
@@ -83,6 +126,7 @@ func CreateDeployment(c echo.Context) error {
 	}
 
 	res, err := client.CreateDeployment(ctx, request)
+	log.Printf("%v", res)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -91,8 +135,8 @@ func CreateDeployment(c echo.Context) error {
 }
 
 func StartDeployment(c echo.Context) error {
-	url := "http://localhost:8080/deployments"
-	paramsPath := "./taggeddeployment/parametersBicep.json"
+	url := "http://localhost:8080"
+	paramsPath := "./parametersBicep.json"
 	paramsMap := getJsonAsMap(paramsPath)
 
 	cred, err := azidentity.NewDefaultAzureCredential(nil)

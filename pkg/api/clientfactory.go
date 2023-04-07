@@ -1,6 +1,8 @@
 package api
 
 import (
+	"log"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
@@ -18,6 +20,8 @@ func NewDeploymentManagementClient(endpoint string, credential azcore.TokenCrede
 	if err != nil {
 		return nil, err
 	}
+
+	log.Printf("options is %v", options)
 
 	internalClient, err := azcore.NewClient(options.ClientName, options.Version, runtime.PipelineOptions{
 		PerRetry: []policy.Policy{
