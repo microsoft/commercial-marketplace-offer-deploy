@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"context"
+	"log"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
@@ -50,8 +51,9 @@ func (client *Client) StartDeployment(ctx context.Context, deploymentId int32, t
 }
 
 func (client *Client) CreateDeployment(ctx context.Context, request api.CreateDeployment) (*api.Deployment, error) {
+	log.Println("Inside CreateDeplyoment")
 	response, err := client.internalClient.CreateDeployment(ctx, request, nil)
-
+	log.Printf("The response is %v\n", response)
 	if err != nil {
 		return nil, err
 	}

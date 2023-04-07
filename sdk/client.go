@@ -33,7 +33,7 @@ func NewClient(endpoint string, credential azcore.TokenCredential, options *Clie
 
 	internalClient, err := api.NewDeploymentManagementClient(endpoint, credential, &api.DeploymentManagementClientOptions{
 		ClientOptions: &options.ClientOptions,
-		ClientName:    moduleName,
+		ClientName:    moduleName + ".client",
 		Version:       moduleVersion,
 	})
 	if err != nil {
