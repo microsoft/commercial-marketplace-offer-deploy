@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -44,6 +45,8 @@ type serviceBusMessageSender struct {
 // TODO: need to get the message bus from configuration
 
 func NewServiceBusMessageSender(credential azcore.TokenCredential, options MessageSenderOptions) (MessageSender, error) {
+	log.Printf("New Service Bus Message Sender options:\n %v", options)
+
 	client, err := azservicebus.NewClient(options.FullyQualifiedNamespace, credential, nil)
 	if err != nil {
 		return nil, err
@@ -69,6 +72,8 @@ func (s *serviceBusMessageSender) Send(ctx context.Context, queueName string, me
 
 	for index, message := range messages {
 		body, err := json.Marshal(message)
+		log.Printf("marshaling message %d:\n %s", index, string(body))
+
 		if err != nil {
 			results = append(results, SendMessageResult{Success: false, Error: fmt.Errorf("failed to marshal message %d: %w", index, err)})
 			continue

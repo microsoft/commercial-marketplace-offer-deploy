@@ -46,7 +46,7 @@ func (f *WebHookEventMessageFactory) Create(ctx context.Context, matchAny d.Look
 	for _, item := range result {
 		message, err := f.convert(item)
 		if err != nil {
-			continue
+			log.Printf("failed to convert EventGridEventResource to WebHookEventMessage: %s", err.Error())
 		}
 
 		messages = append(messages, message)
@@ -127,8 +127,10 @@ func (f *WebHookEventMessageFactory) lookupDeploymentId(ctx context.Context, cor
 			for _, item := range nextResult.DeploymentListResult.Value {
 				correlationIdMatches := strings.EqualFold(*item.Properties.CorrelationID, correlationId)
 				if correlationIdMatches {
-					id, err := deployment.ParseAzureDeploymentName(deployment.Name)
+					id, err := deployment.ParseAzureDeploymentName(*item.Name)
 					if err != nil {
+						fmt.Printf("correlation: resource/%s/correlationId/%s", *item.Name, *item.Properties.CorrelationID)
+
 						// the name didn't match our pattern so we're not interested in this azure deployment, keep searching for a match
 						// until we find 1=1 for our deployment (the top level "main deployment")
 						continue

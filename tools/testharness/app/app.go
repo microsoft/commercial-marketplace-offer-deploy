@@ -28,7 +28,7 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 	return hosting.Routes{
 		hosting.Route{
 			Name:        "WebHookResponse",
-			Method:      http.MethodGet,
+			Method:      http.MethodPost,
 			Path:        "/webhook",
 			HandlerFunc: ReceiveEventNotification,
 		},
