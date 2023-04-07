@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/google/uuid"
 	ops "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/operations"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
@@ -18,8 +19,11 @@ type operationMessageHandler struct {
 
 func (h *operationMessageHandler) Handle(message *messaging.InvokedOperationMessage, context messaging.MessageHandlerContext) error {
 	db := h.database.Instance()
-	var invokedOperation data.InvokedOperation
-	db.First(&invokedOperation, message.OperationId)
+	var invokedOperation *data.InvokedOperation
+	db.First(&invokedOperation, uuid.MustParse(message.OperationId))
+
+	log.Printf("operation id: %s", message.OperationId)
+	log.Printf("Invoked Operation from DB: %v", invokedOperation)
 
 	operationType, err := operations.Type(invokedOperation.Name)
 	if err != nil {
@@ -32,7 +36,7 @@ func (h *operationMessageHandler) Handle(message *messaging.InvokedOperationMess
 		return err
 	}
 
-	return operation.Invoke(&invokedOperation)
+	return operation.Invoke(invokedOperation)
 }
 
 //region factory
