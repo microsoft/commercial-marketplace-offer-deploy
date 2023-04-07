@@ -2,8 +2,8 @@
 param serviceBusNamespaceName string
 
 var serviceBusQueueNames = [
-  'servicebus-events-queue'
-  'servicebus-operations-queue'
+  'events'
+  'operations'
 ]
 
 @description('Location for all resources.')
