@@ -21,7 +21,7 @@ func NewGormSubscriptionsProvider(db *gorm.DB) SubscriptionsProvider {
 
 func (p gormSubscriptionsProvider) GetSubscriptions() ([]*data.EventSubscription, error) {
 	data := []*data.EventSubscription{}
-	tx := p.db.Select(&data)
+	tx := p.db.Find(&data)
 
 	if tx.Error != nil {
 		return nil, tx.Error

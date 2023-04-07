@@ -23,8 +23,8 @@ func main() {
 	app := operator.BuildApp(configurationFilePath)
 	go app.Start(port, nil)
 
-	_, operations := getMessageReceivers()
-	// go events.Start()
+	events, operations := getMessageReceivers()
+	go events.Start()
 	go operations.Start()
 
 	select {}
