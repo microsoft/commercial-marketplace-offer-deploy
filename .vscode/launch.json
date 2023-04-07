@@ -35,6 +35,21 @@
             "dlvFlags": ["--check-go-version=false"]
         },
         {
+            "name": "TestHarness",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceRoot}/tools/testharness/main.go",
+            "dlvLoadConfig":{
+                "followPointers": true,
+                "maxVariableRecurse": 1,
+                "maxStringLen": 512, 
+                "maxArrayValues": 64,
+                "maxStructFields": -1
+              },
+            "dlvFlags": ["--check-go-version=false"]
+        },
+        {
             "name": "Attach to Process",
             "type": "go",
             "request": "attach",

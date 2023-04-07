@@ -46,9 +46,9 @@ type EventSubscription struct {
 
 type InvokedOperation struct {
 	BaseWithGuidPrimaryKey
-	Name         string                 `json:"name"`
-	DeploymentId uint                   `json:"deploymentId"`
-	Parameters   map[string]interface{} `json:"params" gorm:"json"`
-	Result       any                    `json:"result" gorm:"json"`
-	Status       string                 `json:"status"`
+	Name         string         `json:"name"`
+	DeploymentId uint           `json:"deploymentId"`
+	Parameters   map[string]any `json:"parameters" gorm:"json"`
+	Result       any            `json:"result" gorm:"json"`
+	Status       string         `json:"status"`
 }

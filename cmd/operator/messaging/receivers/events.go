@@ -52,7 +52,7 @@ func getOptions(appConfig *config.AppConfig) messaging.ServiceBusMessageReceiver
 	queueName := string(messaging.QueueNameEvents)
 	options := messaging.ServiceBusMessageReceiverOptions{
 		MessageReceiverOptions:  messaging.MessageReceiverOptions{QueueName: queueName},
-		FullyQualifiedNamespace: appConfig.ServiceBusNamespace,
+		FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
 	}
 	return options
 }

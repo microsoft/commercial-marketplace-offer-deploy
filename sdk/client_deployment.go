@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
 )
@@ -51,7 +52,7 @@ func (client *Client) StartDeployment(ctx context.Context, deploymentId int32, t
 }
 
 func (client *Client) CreateDeployment(ctx context.Context, request api.CreateDeployment) (*api.Deployment, error) {
-	log.Println("Inside CreateDeplyoment")
+	log.Println("Inside CreateDeployment")
 	response, err := client.internalClient.CreateDeployment(ctx, request, nil)
 	log.Printf("The response is %v\n", response)
 	if err != nil {
@@ -67,14 +68,13 @@ func (client *Client) ListDeployments(ctx context.Context) (api.DeploymentManage
 
 // invoke a deployment operation with parameters
 func (client *Client) invokeDeploymentOperation(ctx context.Context, wait bool, operationType operations.OperationType, deploymentId int32, parameters map[string]interface{}) (*api.InvokedDeploymentOperationResponse, error) {
-	operationTypeName := operations.OperationDryRun.String()
-	command := &api.InvokeDeploymentOperationRequest{
-		Name:       &operationTypeName,
+	command := api.InvokeDeploymentOperationRequest{
+		Name:       to.Ptr(operationType.String()),
 		Parameters: parameters,
 		Wait:       &wait,
 	}
 
-	response, err := client.internalClient.InvokeDeploymentOperation(ctx, deploymentId, *command, nil)
+	response, err := client.internalClient.InvokeDeploymentOperation(ctx, deploymentId, command, nil)
 
 	if err != nil {
 		return nil, err

@@ -339,7 +339,7 @@ func (client *DeploymentManagementClient) InvokeDeploymentOperation(ctx context.
 
 // invokeDeploymentOperationCreateRequest creates the InvokeDeploymentOperation request.
 func (client *DeploymentManagementClient) invokeDeploymentOperationCreateRequest(ctx context.Context, deploymentID int32, body InvokeDeploymentOperationRequest, options *DeploymentManagementClientInvokeDeploymentOperationOptions) (*policy.Request, error) {
-	urlPath := "/deployment/{deploymentId}/operation"
+	urlPath := "/deployments/{deploymentId}/operation"
 	urlPath = strings.ReplaceAll(urlPath, "{deploymentId}", url.PathEscape(strconv.FormatInt(int64(deploymentID), 10)))
 	req, err := runtime.NewRequest(ctx, http.MethodPost, runtime.JoinPaths(client.endpoint, urlPath))
 	if err != nil {
