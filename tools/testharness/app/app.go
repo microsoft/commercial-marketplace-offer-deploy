@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/labstack/echo"
@@ -40,7 +41,7 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 		hosting.Route{
 			Name:        "StartDeployment",
 			Method:      http.MethodGet,
-			Path:        "/startdeployment",
+			Path:        "/startdeployment/:deploymentId",
 			HandlerFunc: StartDeployment,
 		},
 		hosting.Route{
@@ -138,6 +139,12 @@ func CreateDeployment(c echo.Context) error {
 }
 
 func StartDeployment(c echo.Context) error {
+	deploymentId, err := strconv.Atoi(c.Param("deploymentId"))
+
+	if err != nil {
+		log.Println(err)
+	}
+
 	paramsPath := "./parametersBicep.json"
 	paramsMap := getJsonAsMap(paramsPath)
 
@@ -156,7 +163,7 @@ func StartDeployment(c echo.Context) error {
 
 	// TODO: properly construct the startdeployment params
 	// create
-	res, err := client.StartDeployment(ctx, 1, paramsMap)
+	res, err := client.StartDeployment(ctx, int32(deploymentId), paramsMap)
 	if err != nil {
 		log.Println(err)
 	}
