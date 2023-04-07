@@ -16,9 +16,10 @@ import (
 
 // TODO: this needs to go and pull from .env
 var (
-	location      = "eastus"
-	resourceGroup = "demo2"
-	subscription  = "31e9f9a0-9fd2-4294-a0a3-0101246d9700"
+	location       = "eastus"
+	resourceGroup  = "demo2"
+	subscription   = "31e9f9a0-9fd2-4294-a0a3-0101246d9700"
+	clientEndpoint = "http://localhost:8080"
 )
 
 func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
@@ -27,7 +28,7 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 		hosting.Route{
 			Name:        "WebHookResponse",
 			Method:      http.MethodGet,
-			Path:        "/deploymentevent",
+			Path:        "/webhook",
 			HandlerFunc: ReceiveEventNotification,
 		},
 		hosting.Route{
@@ -45,8 +46,8 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 		hosting.Route{
 			Name:        "CreateEventSubscription",
 			Method:      http.MethodGet,
-			Path:        "/ces",
-			HandlerFunc: StartDeployment,
+			Path:        "/createeventsubscription",
+			HandlerFunc: CreateEventSubscription,
 		},
 	}
 }
@@ -60,12 +61,14 @@ func getJsonAsMap(path string) map[string]interface{} {
 }
 
 func ReceiveEventNotification(c echo.Context) error {
-	return c.JSON(http.StatusOK, "Registered endpoint hit")
+	log.Println("Event Web Hook received")
+	var bodyJson any
+	c.Bind(&bodyJson)
+	return c.JSON(http.StatusOK, bodyJson)
 }
 
 func CreateEventSubscription(c echo.Context) error {
-	url := "http://localhost:8080/events/subscriptions"
-//	templatePath := "./eventsubscription/mainTemplateBicep.json"
+	//	templatePath := "./eventsubscription/mainTemplateBicep.json"
 	//templateMap := getJsonAsMap(templatePath)
 
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
@@ -73,19 +76,20 @@ func CreateEventSubscription(c echo.Context) error {
 		log.Println(err)
 	}
 
-	client, err := sdk.NewClient(url, cred, nil)
+	client, err := sdk.NewClient(clientEndpoint, cred, nil)
 	if err != nil {
 		log.Panicln(err)
 	}
 	ctx := context.Background()
 
-	subscriptionName := "TaggedSubscription"
+	subscriptionName := "webhook-1"
 	apiKey := "1234"
-	callbackUrl := "http://localhost:8280/deploymentevent"
+	callbackclientEndpoint := "http://localhost:8280/webhook"
+
 	request := api.CreateEventSubscriptionRequest{
-		APIKey: &apiKey,
-		Callback: &callbackUrl,
-		Name: &subscriptionName,
+		APIKey:   &apiKey,
+		Callback: &callbackclientEndpoint,
+		Name:     &subscriptionName,
 	}
 
 	res, err := client.CreateEventSubscription(ctx, request)
@@ -98,7 +102,6 @@ func CreateEventSubscription(c echo.Context) error {
 
 func CreateDeployment(c echo.Context) error {
 	log.Println("Inside CreateDeployment")
-	url := "http://localhost:8080"
 	templatePath := "./mainTemplateBicep.json"
 	templateMap := getJsonAsMap(templatePath)
 	log.Printf("The templateMap is %s", templateMap)
@@ -109,7 +112,7 @@ func CreateDeployment(c echo.Context) error {
 	}
 	log.Println("Got the credentials")
 
-	client, err := sdk.NewClient(url, cred, nil)
+	client, err := sdk.NewClient(clientEndpoint, cred, nil)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -135,7 +138,6 @@ func CreateDeployment(c echo.Context) error {
 }
 
 func StartDeployment(c echo.Context) error {
-	url := "http://localhost:8080"
 	paramsPath := "./parametersBicep.json"
 	paramsMap := getJsonAsMap(paramsPath)
 
@@ -145,7 +147,7 @@ func StartDeployment(c echo.Context) error {
 		log.Println(err)
 	}
 
-	client, err := sdk.NewClient(url, cred, nil)
+	client, err := sdk.NewClient(clientEndpoint, cred, nil)
 	if err != nil {
 		log.Println(err)
 	}

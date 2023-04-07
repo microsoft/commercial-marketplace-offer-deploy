@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"strconv"
+
 	testharness "github.com/microsoft/commercial-marketplace-offer-deploy/tools/testharness/app"
 )
 
@@ -16,5 +17,6 @@ func main() {
 	log.Printf("Server starting on %s", formattedPort)
 
 	app := testharness.BuildApp(configurationFilePath)
+
 	log.Fatal(app.Start(port, nil))
 }

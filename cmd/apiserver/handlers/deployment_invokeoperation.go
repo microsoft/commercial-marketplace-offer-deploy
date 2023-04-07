@@ -28,7 +28,7 @@ func (h *invokeDeploymentOperation) Handle(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("%s invalid", deploymenIdParameterName))
 	}
 
-	var request api.InvokeDeploymentOperationRequest
+	var request *api.InvokeDeploymentOperationRequest
 	err = c.Bind(&request)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
@@ -36,7 +36,7 @@ func (h *invokeDeploymentOperation) Handle(c echo.Context) error {
 
 	command := operations.InvokeOperationCommand{
 		DeploymentId: deploymentId,
-		Request:      &request,
+		Request:      request,
 	}
 	operationId, err := h.processor.Process(c.Request().Context(), &command)
 	if err != nil {

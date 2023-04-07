@@ -62,12 +62,11 @@ func (h *processor) save(c *InvokeOperationCommand) (uuid.UUID, error) {
 	tx.Save(deployment)
 
 	invokedOperation := &data.InvokedOperation{
-		BaseWithGuidPrimaryKey: data.BaseWithGuidPrimaryKey{ID: uuid.New()},
-		DeploymentId:           uint(c.DeploymentId),
-		Name:                   *c.Request.Name,
-		Parameters:             c.Request.Parameters.(map[string]interface{}),
+		DeploymentId: uint(c.DeploymentId),
+		Name:         *c.Request.Name,
+		Parameters:   c.Request.Parameters.(map[string]interface{}),
 	}
-	tx.Save(&invokedOperation)
+	tx.Save(invokedOperation)
 
 	if tx.Error != nil {
 		tx.Rollback()
@@ -93,6 +92,15 @@ func (h *processor) send(ctx context.Context, operationId uuid.UUID) error {
 	}
 	return nil
 }
+
+// func getParametersMap(parameters any) map[string]any {
+// 	bytes := []byte(fmt.Sprintf("%v"))
+// 	var parametersMap map[string]any
+// 	json.Unmarshal(bytes, &parametersMap)
+
+// 	return parametersMap
+
+// }
 
 // region factory
 

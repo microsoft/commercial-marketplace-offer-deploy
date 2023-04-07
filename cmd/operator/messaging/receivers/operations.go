@@ -29,6 +29,7 @@ func (h *operationMessageHandler) Handle(message *messaging.InvokedOperationMess
 	operation, err := h.factory.Create(operationType)
 	if err != nil {
 		log.Println("Error creating operation: ", err)
+		return err
 	}
 
 	return operation.Invoke(&invokedOperation)

@@ -37,7 +37,7 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 		hosting.Route{
 			Name:        "InvokeDeploymentOperation",
 			Method:      http.MethodPost,
-			Path:        "/deployment/:deploymentId/operation",
+			Path:        "/deployments/:deploymentId/operation",
 			HandlerFunc: handlers.NewInvokeDeploymentOperationHandler(appConfig, hosting.GetAzureCredential()),
 		},
 

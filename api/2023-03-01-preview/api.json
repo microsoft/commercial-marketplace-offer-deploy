@@ -197,7 +197,7 @@
         }
       }
     },
-    "/deployment/{deploymentId}/operation": {
+    "/deployments/{deploymentId}/operation": {
       "post": {
         "tags": [
           "Deployment"
