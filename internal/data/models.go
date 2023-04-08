@@ -22,7 +22,7 @@ func (base *BaseWithGuidPrimaryKey) BeforeCreate(tx *gorm.DB) error {
 }
 
 type Stage struct {
-	gorm.Model
+	BaseWithGuidPrimaryKey
 	Name string `json:"name"`
 }
 
@@ -39,8 +39,16 @@ type Deployment struct {
 
 type EventSubscription struct {
 	BaseWithGuidPrimaryKey
-	Callback  string `json:"callback"`
-	Name      string `json:"name" gorm:"unique"`
-	EventType string `json:"eventType"`
-	ApiKey    string `json:"authKey"`
+	Callback string `json:"callback"`
+	Name     string `json:"name" gorm:"unique"`
+	ApiKey   string `json:"authKey"`
+}
+
+type InvokedOperation struct {
+	BaseWithGuidPrimaryKey
+	Name         string         `json:"name"`
+	DeploymentId uint           `json:"deploymentId"`
+	Parameters   map[string]any `json:"parameters" gorm:"json"`
+	Result       any            `json:"result" gorm:"json"`
+	Status       string         `json:"status"`
 }

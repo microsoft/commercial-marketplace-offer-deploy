@@ -1,0 +1,20 @@
+[
+    {
+        "subject": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/kehilli01/providers/Microsoft.Resources/deployments/kehilli01sbns",
+        "eventType": "Microsoft.Resources.ResourceWriteSuccess",
+        "id": "9076a409-a84f-4362-a23f-cf5ba3565867",
+        "data": {
+            "correlationId": "9f4157f5-6a01-47bd-bd44-f86ac560d0e9",
+            "resourceProvider": "Microsoft.Resources",
+            "resourceUri": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/kehilli01/providers/Microsoft.Resources/deployments/kehilli01sbns",
+            "operationName": "Microsoft.Resources/deployments/write",
+            "status": "Succeeded",
+            "subscriptionId": "31e9f9a0-9fd2-4294-a0a3-0101246d9700",
+            "tenantId": "5e3992bd-1b0a-43cf-b87a-a1aaacbf0be2"
+        },
+        "dataVersion": "2",
+        "metadataVersion": "1",
+        "eventTime": "2023-04-05T17:02:50.4241852Z",
+        "topic": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/kehilli01"
+    }
+]

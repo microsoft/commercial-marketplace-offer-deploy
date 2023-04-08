@@ -1,6 +1,8 @@
 package events
 
 import (
+	"strconv"
+
 	"github.com/google/uuid"
 )
 
@@ -9,12 +11,14 @@ type EventType string
 
 // the list of available / known event types
 const (
-	DeploymentDryRunCompletedEventType EventType = "deployment.dryruncompleted"
-	DeploymentCreatedEventType         EventType = "deployment.created"
-	DeploymentStartedEventType         EventType = "deployment.started"
-	DeploymentCompletedEventType       EventType = "deployment.completed"
-	DeploymentErrorEventType           EventType = "deployment.error"
-	DeploymentRetryEventType           EventType = "deployment.retry"
+	DeploymentDryRunCompletedEventType EventType = "DryRunCompleted"
+	DeploymentCreatedEventType         EventType = "Created"
+	DeploymentPendingEventType         EventType = "Pending"
+	DeploymentStartingEventType        EventType = "Starting"
+	DeploymentStartedEventType         EventType = "Started"
+	DeploymentCompletedEventType       EventType = "Completed"
+	DeploymentErrorEventType           EventType = "Error"
+	DeploymentRetryEventType           EventType = "Retry"
 )
 
 // Gets the list of events
@@ -35,9 +39,41 @@ func (o EventType) String() string {
 }
 
 // subscription model for MODM webhook events
-type WebhookEventMessage struct {
-	Id             uuid.UUID      `json:"id,omitempty"`
-	SubscriptionId uuid.UUID      `json:"subscriptionId,omitempty"`
-	EventType      string         `json:"eventType,omitempty"`
-	Payload        map[string]any `json:"payload,omitempty"`
+type WebHookEventMessage struct {
+	Id             uuid.UUID `json:"id,omitempty"`
+	SubscriptionId uuid.UUID `json:"subscriptionId,omitempty"`
+
+	// subject is in format like /deployments/{deploymentId}/stages/{stageId}
+	Subject   string `json:"subject,omitempty"`
+	EventType string `json:"eventType,omitempty"`
+	Body      any    `json:"body,omitempty"`
+}
+
+// Dry run
+type WebHookDryRunCompletedBody struct {
+	Messages []WebHookDryRunMessage `json:"messages,omitempty"`
+}
+
+type WebHookDryRunMessage struct {
+	Type    string `json:"type,omitempty"`
+	Status  string `json:"status,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
+// all other deployment events
+
+type WebHookDeploymentEventMessageBody struct {
+	ResourceId string `json:"ResourceId,omitempty"`
+	Status     string `json:"status,omitempty"`
+	Message    string `json:"message,omitempty"`
+}
+
+func (m *WebHookEventMessage) SetSubject(deploymentId int, stageId *uuid.UUID, resourceName *string) {
+	m.Subject = "/deployments/" + strconv.Itoa(deploymentId)
+	if stageId != nil {
+		m.Subject += "/stages/" + stageId.String()
+	}
+	if resourceName != nil {
+		m.Subject += "/resources/" + *resourceName
+	}
 }

@@ -22,9 +22,11 @@ type CreateDeployment struct {
 	SubscriptionID *string `json:"subscriptionId,omitempty"`
 }
 
-type CreateEventSubscription struct {
+type CreateEventSubscriptionRequest struct {
 	// API key to be used in the Authorization header, e.g. 'ApiKey =234dfsdf324234', to call the webhook callback URL.
 	APIKey *string `json:"ApiKey,omitempty"`
+
+	// The webhook callback
 	Callback *string `json:"callback,omitempty"`
 
 	// the name of the subscription
@@ -65,12 +67,6 @@ type DeploymentManagementClientDeleteEventSubscriptionOptions struct {
 	// placeholder for future optional parameters
 }
 
-// DeploymentManagementClientGetDeploymentOperationOptions contains the optional parameters for the DeploymentManagementClient.GetDeploymentOperation
-// method.
-type DeploymentManagementClientGetDeploymentOperationOptions struct {
-	// placeholder for future optional parameters
-}
-
 // DeploymentManagementClientGetDeploymentOptions contains the optional parameters for the DeploymentManagementClient.GetDeployment
 // method.
 type DeploymentManagementClientGetDeploymentOptions struct {
@@ -86,6 +82,12 @@ type DeploymentManagementClientGetEventSubscriptionOptions struct {
 // DeploymentManagementClientGetEventTypesOptions contains the optional parameters for the DeploymentManagementClient.GetEventTypes
 // method.
 type DeploymentManagementClientGetEventTypesOptions struct {
+	// placeholder for future optional parameters
+}
+
+// DeploymentManagementClientGetInvokedDeploymentOperationOptions contains the optional parameters for the DeploymentManagementClient.GetInvokedDeploymentOperation
+// method.
+type DeploymentManagementClientGetInvokedDeploymentOperationOptions struct {
 	// placeholder for future optional parameters
 }
 
@@ -120,7 +122,8 @@ type DeploymentManagementClientUpdateDeploymentOptions struct {
 	// placeholder for future optional parameters
 }
 
-type EventSubscription struct {
+type EventSubscriptionResponse struct {
+	// The webhook callback
 	Callback *string `json:"callback,omitempty"`
 	ID *string `json:"id,omitempty"`
 
@@ -133,7 +136,7 @@ type EventType struct {
 	Name *string `json:"name,omitempty"`
 }
 
-type InvokeDeploymentOperation struct {
+type InvokeDeploymentOperationRequest struct {
 	Name *string `json:"name,omitempty"`
 
 	// Anything
@@ -144,7 +147,8 @@ type InvokeDeploymentOperation struct {
 	Wait *bool `json:"wait,omitempty"`
 }
 
-type InvokedOperation struct {
+type InvokedDeploymentOperationResponse struct {
+	DeploymentID *int32 `json:"deploymentId,omitempty"`
 	ID *string `json:"id,omitempty"`
 	InvokedOn *time.Time `json:"invokedOn,omitempty"`
 	Name *string `json:"name,omitempty"`
@@ -155,17 +159,6 @@ type InvokedOperation struct {
 	// Anything
 	Result any `json:"result,omitempty"`
 	Status *string `json:"status,omitempty"`
-	Target *InvokedOperationTarget `json:"target,omitempty"`
-}
-
-type InvokedOperationTarget struct {
-	ID *InvokedOperationTargetID `json:"id,omitempty"`
-	Type *string `json:"type,omitempty"`
-}
-
-type InvokedOperationTargetID struct {
-	Type *string `json:"type,omitempty"`
-	Value *string `json:"value,omitempty"`
 }
 
 // Operation - Defines an available operation

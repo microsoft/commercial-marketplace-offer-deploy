@@ -1,4 +1,4 @@
-package config
+package app
 
 import (
 	"github.com/labstack/echo"
@@ -8,26 +8,20 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 )
 
-func GetApp() *hosting.App {
-	return hosting.GetApp()
-}
-
 func BuildApp(configurationFilePath string) *hosting.App {
 	builder := hosting.NewAppBuilder()
 
-	appConfig := config.AppConfig{}
-	hosting.LoadConfiguration(configurationFilePath, nil, appConfig)
+	appConfig := &config.AppConfig{}
+	config.LoadConfiguration(configurationFilePath, nil, appConfig)
 	builder.AddConfig(appConfig)
 
 	builder.AddRoutes(func(options *hosting.RouteOptions) {
-		databaseOptions := appConfig.GetDatabaseOptions()
-		routes := routes.GetRoutes(databaseOptions)
-
+		routes := routes.GetRoutes(appConfig)
 		*options.Routes = routes
 	})
 
 	app := builder.Build(func(e *echo.Echo) {
-		e.Group("/eventgrid", middleware.EventGridWebHookSubscriptionValidation())
+		e.Use(middleware.EventGridWebHookSubscriptionValidation())
 	})
 	return app
 }

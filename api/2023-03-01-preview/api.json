@@ -197,7 +197,7 @@
         }
       }
     },
-    "/deployment/{deploymentId}/operation": {
+    "/deployments/{deploymentId}/operation": {
       "post": {
         "tags": [
           "Deployment"
@@ -219,7 +219,7 @@
             "description": "Deployment operation invocation",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/InvokeDeploymentOperation"
+              "$ref": "#/definitions/InvokeDeploymentOperationRequest"
             }
           }
         ],
@@ -227,20 +227,20 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/InvokedOperation"
+              "$ref": "#/definitions/InvokedDeploymentOperationResponse"
             }
           }
         }
       }
     },
-    "/operations/{operationId}": {
+    "/deployments/operations/{operationId}": {
       "get": {
         "tags": [
           "Operation"
         ],
         "summary": "Gets the state of an invoked operation",
         "description": "Gets the state of a command operation that's been invoked",
-        "operationId": "GetDeploymentOperation",
+        "operationId": "GetInvokedDeploymentOperation",
         "parameters": [
           {
             "name": "operationId",
@@ -255,7 +255,7 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/InvokedOperation"
+              "$ref": "#/definitions/InvokedDeploymentOperationResponse"
             }
           }
         }
@@ -323,7 +323,7 @@
             "description": "Create event subscription",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/CreateEventSubscription"
+              "$ref": "#/definitions/CreateEventSubscriptionRequest"
             }
           }
         ],
@@ -354,7 +354,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/EventSubscription"
+                "$ref": "#/definitions/EventSubscriptionResponse"
               }
             }
           },
@@ -373,7 +373,7 @@
           "Event"
         ],
         "summary": "Gets a subscription",
-        "description": "Gets a subscription to an even type",
+        "description": "Gets a subscription",
         "operationId": "GetEventSubscription",
         "parameters": [
           {
@@ -389,7 +389,7 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/EventSubscription"
+              "$ref": "#/definitions/EventSubscriptionResponse"
             }
           },
           "400": {
@@ -515,7 +515,7 @@
         }
       }
     },
-    "InvokeDeploymentOperation": {
+    "InvokeDeploymentOperationRequest": {
       "type": "object",
       "properties": {
         "name": {
@@ -530,7 +530,7 @@
         }
       }
     },
-    "InvokedOperation": {
+    "InvokedDeploymentOperationResponse": {
       "type": "object",
       "properties": {
         "id": {
@@ -540,8 +540,8 @@
         "name": {
           "type": "string"
         },
-        "target": {
-          "$ref": "#/definitions/InvokedOperationTarget"
+        "deploymentId": {
+          "type": "integer"
         },
         "parameters": {
           "type": "object"
@@ -558,28 +558,6 @@
         }
       }
     },
-    "InvokedOperationTarget": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string"
-        },
-        "id": {
-          "$ref": "#/definitions/InvokedOperationTargetId"
-        }
-      }
-    },
-    "InvokedOperationTargetId": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-        }
-      }
-    },
     "EventType": {
       "type": "object",
       "properties": {
@@ -589,7 +567,7 @@
         }
       }
     },
-    "EventSubscription": {
+    "EventSubscriptionResponse": {
       "type": "object",
       "properties": {
         "id": {
@@ -602,11 +580,12 @@
         },
         "callback": {
           "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "The webhook callback"
         }
       }
     },
-    "CreateEventSubscription": {
+    "CreateEventSubscriptionRequest": {
       "type": "object",
       "properties": {
         "name": {
@@ -619,7 +598,8 @@
         },
         "callback": {
           "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "The webhook callback"
         }
       }
     },

@@ -1,0 +1,26 @@
+[
+    {
+        "subject": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourcegroups/kehilli01/providers/Microsoft.ServiceBus/namespaces/kehilli01sbns/queues/events",
+        "eventType": "Microsoft.Resources.ResourceWriteSuccess",
+        "id": "0d7c5afd-fe1f-40fa-b234-91873dc5fbfa",
+        "data": {
+            "correlationId": "74d4ca65-ad95-4df1-8cad-57867eceaef6",
+            "httpRequest": {
+                "clientRequestId": "90f75f98-31e5-4c1f-b34a-07dc19d61a02",
+                "clientIpAddress": "172.73.181.161",
+                "method": "PUT",
+                "url": "https://management.azure.com/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourcegroups/kehilli01/providers/Microsoft.ServiceBus/namespaces/kehilli01sbns/queues/events?api-version=2022-01-01-preview"
+            },
+            "resourceProvider": "Microsoft.ServiceBus",
+            "resourceUri": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourcegroups/kehilli01/providers/Microsoft.ServiceBus/namespaces/kehilli01sbns/queues/events",
+            "operationName": "Microsoft.ServiceBus/namespaces/queues/write",
+            "status": "Succeeded",
+            "subscriptionId": "31e9f9a0-9fd2-4294-a0a3-0101246d9700",
+            "tenantId": "5e3992bd-1b0a-43cf-b87a-a1aaacbf0be2"
+        },
+        "dataVersion": "2",
+        "metadataVersion": "1",
+        "eventTime": "2023-04-05T13:24:00.5796225Z",
+        "topic": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourcegroups/kehilli01"
+    }
+]

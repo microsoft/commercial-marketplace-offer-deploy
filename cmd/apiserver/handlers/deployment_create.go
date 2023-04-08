@@ -12,6 +12,7 @@ import (
 
 // HTTP handler for creating deployments
 func CreateDeployment(c echo.Context, db *gorm.DB) error {
+	log.Println("Inside createdeplyoment")
 	var command *api.CreateDeployment
 	err := c.Bind(&command)
 
@@ -20,6 +21,7 @@ func CreateDeployment(c echo.Context, db *gorm.DB) error {
 	}
 
 	deployment := data.FromCreateDeployment(command)
+	log.Printf("Deployment: %v", deployment)
 	tx := db.Create(&deployment)
 
 	log.Printf("Deployment [%d] created.", deployment.ID)

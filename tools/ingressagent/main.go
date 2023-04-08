@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -10,6 +11,7 @@ import (
 	"github.com/labstack/echo"
 	apiserver "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/app"
 	operator "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/app"
+	testharness "github.com/microsoft/commercial-marketplace-offer-deploy/tools/testharness/app"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 	"github.com/spf13/viper"
 	"golang.ngrok.com/ngrok"
@@ -46,12 +48,15 @@ func run(ctx context.Context) error {
 
 func getApp(appName string) *hosting.App {
 	configPath := getExecutionDirectory()
+	fmt.Println("app name: ", appName)
 
 	switch appName {
 	case "operator":
 		return operator.BuildApp(configPath)
 	case "apiserver":
 		return apiserver.BuildApp(configPath)
+	case "testharness":
+		return testharness.BuildApp(configPath)
 	default:
 		log.Fatal("invalid app name")
 	}

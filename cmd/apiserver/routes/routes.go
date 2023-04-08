@@ -5,11 +5,13 @@ import (
 	"strings"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/handlers"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 )
 
-func GetRoutes(databaseOptions *data.DatabaseOptions) hosting.Routes {
+func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
+	databaseOptions := appConfig.GetDatabaseOptions()
+
 	return hosting.Routes{
 		hosting.Route{
 			Name:        "Index",
@@ -33,10 +35,10 @@ func GetRoutes(databaseOptions *data.DatabaseOptions) hosting.Routes {
 		},
 
 		hosting.Route{
-			Name:        "InvokeOperation",
+			Name:        "InvokeDeploymentOperation",
 			Method:      http.MethodPost,
-			Path:        "/deployment/:deploymentId/operation",
-			HandlerFunc: hosting.ToHandlerFunc(handlers.InvokeOperation, databaseOptions),
+			Path:        "/deployments/:deploymentId/operation",
+			HandlerFunc: handlers.NewInvokeDeploymentOperationHandler(appConfig, hosting.GetAzureCredential()),
 		},
 
 		hosting.Route{
@@ -56,7 +58,7 @@ func GetRoutes(databaseOptions *data.DatabaseOptions) hosting.Routes {
 		hosting.Route{
 			Name:        "CreatEventSubscription",
 			Method:      http.MethodPost,
-			Path:        "/events/:eventType/subscriptions",
+			Path:        "/events/subscriptions",
 			HandlerFunc: hosting.ToHandlerFunc(handlers.CreateEventSubscription, databaseOptions),
 		},
 
@@ -77,7 +79,7 @@ func GetRoutes(databaseOptions *data.DatabaseOptions) hosting.Routes {
 		hosting.Route{
 			Name:        "ListEventSubscriptions",
 			Method:      http.MethodGet,
-			Path:        "/events/:eventType/subscriptions",
+			Path:        "/events/subscriptions",
 			HandlerFunc: handlers.ListEventSubscriptions,
 		},
 
@@ -91,7 +93,7 @@ func GetRoutes(databaseOptions *data.DatabaseOptions) hosting.Routes {
 		hosting.Route{
 			Name:        "GetDeploymentOperation",
 			Method:      http.MethodGet,
-			Path:        "/operations/:operationId",
+			Path:        "/deployments/operations/:operationId",
 			HandlerFunc: handlers.GetDeploymentOperation,
 		},
 

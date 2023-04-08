@@ -9,15 +9,13 @@ import (
 // Reason:
 //
 //	1.18 doesn't have errors.Join. This facilicates easy aggregate errors
-func NewAggregateError(messages *[]string) error {
-	if messages == nil || len(*messages) == 0 {
+func NewAggregateError(messages []string) error {
+	if len(messages) == 0 {
 		return nil
 	}
 	aggregate := errors.New("aggregate error")
-	for _, message := range *messages {
-		aggregate = fmt.Errorf("run error: %w", errors.New(message))
+	for index, message := range messages {
+		aggregate = fmt.Errorf("error %d: %w", index, errors.New(message))
 	}
 	return aggregate
 }
-
-

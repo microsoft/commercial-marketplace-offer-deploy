@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"reflect"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
@@ -30,14 +31,14 @@ func NewClient(endpoint string, credential azcore.TokenCredential, options *Clie
 		options.Cloud = cloud.AzurePublic
 	}
 
-	internalClient, err := api.NewDeploymentManagementClient(endpoint, credential, &options.ClientOptions)
+	internalClient, err := api.NewDeploymentManagementClient(endpoint, credential, &api.DeploymentManagementClientOptions{
+		ClientOptions: &options.ClientOptions,
+		ClientName:    moduleName + ".client",
+		Version:       moduleVersion,
+	})
 	if err != nil {
 		return nil, err
 	}
-	
-	return &Client{internalClient: internalClient}, nil
-}
 
-func getDefaultScope(endpoint string) (string, error) {
-	return "api://modm/.default", nil
+	return &Client{internalClient: internalClient}, nil
 }
