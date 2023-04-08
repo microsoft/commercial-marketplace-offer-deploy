@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
@@ -12,10 +14,15 @@ import (
 )
 
 type MessageSenderOptions struct {
-	SubscriptionId      string
-	Location            string
-	ResourceGroupName   string
-	ServiceBusNamespace string
+	SubscriptionId          string
+	Location                string
+	ResourceGroupName       string
+	FullyQualifiedNamespace string
+}
+
+func (o *MessageSenderOptions) getNamespaceName() string {
+	parts := strings.Split(o.FullyQualifiedNamespace, ".")
+	return parts[0]
 }
 
 type SendMessageResult struct {
@@ -25,18 +32,22 @@ type SendMessageResult struct {
 
 type MessageSender interface {
 	Send(ctx context.Context, queueName string, messages ...any) ([]SendMessageResult, error)
+	EnsureTopology(ctx context.Context, queueName string) error
 }
 
 type serviceBusMessageSender struct {
 	options       MessageSenderOptions
 	client        *azservicebus.Client
 	clientFactory *armservicebus.ClientFactory
+	topology      bool
 }
 
 // TODO: need to get the message bus from configuration
 
-func NewServiceBusMessageSender(options MessageSenderOptions, credential azcore.TokenCredential) (MessageSender, error) {
-	client, err := azservicebus.NewClient(options.ServiceBusNamespace, credential, nil)
+func NewServiceBusMessageSender(credential azcore.TokenCredential, options MessageSenderOptions) (MessageSender, error) {
+	log.Printf("New Service Bus Message Sender options:\n %v", options)
+
+	client, err := azservicebus.NewClient(options.FullyQualifiedNamespace, credential, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -46,15 +57,10 @@ func NewServiceBusMessageSender(options MessageSenderOptions, credential azcore.
 		return nil, err
 	}
 
-	return &serviceBusMessageSender{client: client, clientFactory: clientFactory}, nil
+	return &serviceBusMessageSender{options: options, client: client, clientFactory: clientFactory}, nil
 }
 
 func (s *serviceBusMessageSender) Send(ctx context.Context, queueName string, messages ...any) ([]SendMessageResult, error) {
-	err := s.ensureTopology(ctx, queueName)
-	if err != nil {
-		return nil, err
-	}
-
 	sender, err := s.client.NewSender(queueName, nil)
 
 	if err != nil {
@@ -66,6 +72,8 @@ func (s *serviceBusMessageSender) Send(ctx context.Context, queueName string, me
 
 	for index, message := range messages {
 		body, err := json.Marshal(message)
+		log.Printf("marshaling message %d:\n %s", index, string(body))
+
 		if err != nil {
 			results = append(results, SendMessageResult{Success: false, Error: fmt.Errorf("failed to marshal message %d: %w", index, err)})
 			continue
@@ -81,7 +89,11 @@ func (s *serviceBusMessageSender) Send(ctx context.Context, queueName string, me
 }
 
 // implement a method on serviceBusMessageSender that ensures the queue exists
-func (s *serviceBusMessageSender) ensureTopology(ctx context.Context, queueName string) error {
+func (s *serviceBusMessageSender) EnsureTopology(ctx context.Context, queueName string) error {
+	if s.topology {
+		return nil
+	}
+
 	_, err := s.createOrUpdateNamespace(ctx)
 	if err != nil {
 		return err
@@ -91,6 +103,7 @@ func (s *serviceBusMessageSender) ensureTopology(ctx context.Context, queueName 
 	if err != nil {
 		return err
 	}
+	s.topology = true
 	return nil
 }
 
@@ -100,7 +113,7 @@ func (s *serviceBusMessageSender) createOrUpdateNamespace(ctx context.Context) (
 	pollerResp, err := namespacesClient.BeginCreateOrUpdate(
 		ctx,
 		s.options.ResourceGroupName,
-		s.options.ServiceBusNamespace,
+		s.options.getNamespaceName(),
 		armservicebus.SBNamespace{
 			Location: to.Ptr(s.options.Location),
 			SKU: &armservicebus.SBSKU{
@@ -127,7 +140,7 @@ func (s *serviceBusMessageSender) createOrUpdateQueue(ctx context.Context, queue
 	resp, err := queuesClient.CreateOrUpdate(
 		ctx,
 		s.options.ResourceGroupName,
-		s.options.ServiceBusNamespace,
+		s.options.getNamespaceName(),
 		queueName,
 		armservicebus.SBQueue{
 			Properties: &armservicebus.SBQueueProperties{

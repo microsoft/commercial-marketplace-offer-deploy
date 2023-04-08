@@ -1,15 +1,24 @@
 package operations
 
+import "fmt"
+
+type OperationResult string
+
+const (
+	OperationResultAccepted OperationResult = "Accepted"
+)
+
 type OperationType string
 
 const (
-	StartDeploymentOperation  OperationType = "StartDeployment"
-	DryRunDeploymentOperation OperationType = "DryRun"
+	OperationStartDeployment OperationType = "StartDeployment"
+	OperationDryRun          OperationType = "DryRun"
+	OperationUnknown         OperationType = "Unknown"
 )
 
 // Gets the list of operations
 func GetOperations() []OperationType {
-	return []OperationType{StartDeploymentOperation, DryRunDeploymentOperation}
+	return []OperationType{OperationStartDeployment, OperationDryRun}
 }
 
 func (o OperationType) String() string {
@@ -17,14 +26,14 @@ func (o OperationType) String() string {
 	return stringValue
 }
 
-func GetOperationFromString(o string) OperationType {
+func Type(o string) (OperationType, error) {
 	// TODO: return tuple with error
 	switch o {
-	case DryRunDeploymentOperation.String():
-		return DryRunDeploymentOperation
-	case StartDeploymentOperation.String():
-		return StartDeploymentOperation
+	case OperationDryRun.String():
+		return OperationDryRun, nil
+	case OperationStartDeployment.String():
+		return OperationStartDeployment, nil
 	default:
-		return DryRunDeploymentOperation
+		return OperationUnknown, fmt.Errorf("unknown operation type %s", o)
 	}
 }

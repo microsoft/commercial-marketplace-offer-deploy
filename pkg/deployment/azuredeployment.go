@@ -79,6 +79,8 @@ func (armDeployer *ArmTemplateDeployer) Deploy(ad *AzureDeployment) (*AzureDeplo
 
 	log.Printf("About to Create a deployment")
 
+	params := ad.Params["parameters"].(map[string]interface{})
+
 	deploymentPollerResp, err := deploymentsClient.BeginCreateOrUpdate(
 		ctx,
 		ad.ResourceGroupName,
@@ -86,7 +88,7 @@ func (armDeployer *ArmTemplateDeployer) Deploy(ad *AzureDeployment) (*AzureDeplo
 		armresources.Deployment{
 			Properties: &armresources.DeploymentProperties{
 				Template:   ad.Template,
-				Parameters: ad.Params,
+				Parameters: params,
 				Mode:       to.Ptr(armresources.DeploymentModeIncremental),
 			},
 		},

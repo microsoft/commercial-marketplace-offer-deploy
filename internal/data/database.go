@@ -23,7 +23,7 @@ type database struct {
 }
 
 const (
-	DataDatabasePath = "/data"
+	DataDatabasePath = "./"
 	DatabaseName     = "commercial-marketplace-offer-deploy"
 	DatabaseFileName = DatabaseName + ".db"
 	InMemoryDsn      = "file::memory:?cache=shared"
@@ -80,7 +80,7 @@ func createInstance(dsn string, models ...interface{}) (*gorm.DB, error) {
 		return nil, fmt.Errorf("could not open and connect to database at %s: %w", dsn, err)
 	}
 
-	if err := db.AutoMigrate(&Deployment{}, &Stage{}, &EventSubscription{}); err != nil {
+	if err := db.AutoMigrate(&Deployment{}, &Stage{}, &EventSubscription{}, &InvokedOperation{}); err != nil {
 		return nil, fmt.Errorf("could not migrate models %T: %w", models, err)
 	}
 

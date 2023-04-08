@@ -29,12 +29,16 @@ type AppConfig struct {
 }
 
 func GetAppConfig() *AppConfig {
-	appConfig := hosting.GetAppConfig[AppConfig]()
-	return &appConfig
+	appConfig := hosting.GetAppConfig[*AppConfig]()
+	return appConfig
 }
 
 func (appSettings *AppConfig) GetDatabaseOptions() *data.DatabaseOptions {
 	dsn := filepath.Join(appSettings.Database.Path, data.DatabaseFileName)
 	options := &data.DatabaseOptions{Dsn: dsn, UseInMemory: appSettings.Database.UseInMemory}
 	return options
+}
+
+func (s *AzureSettings) GetFullQualifiedNamespace() string {
+	return s.ServiceBusNamespace + ".servicebus.windows.net"
 }

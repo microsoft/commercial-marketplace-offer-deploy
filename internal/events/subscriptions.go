@@ -7,7 +7,7 @@ import (
 
 type SubscriptionsProvider interface {
 	// Gets the subscriptions for an event type
-	GetSubscriptions(eventType string) ([]*data.EventSubscription, error)
+	GetSubscriptions() ([]*data.EventSubscription, error)
 }
 
 type gormSubscriptionsProvider struct {
@@ -19,9 +19,9 @@ func NewGormSubscriptionsProvider(db *gorm.DB) SubscriptionsProvider {
 	return provider
 }
 
-func (p gormSubscriptionsProvider) GetSubscriptions(eventType string) ([]*data.EventSubscription, error) {
+func (p gormSubscriptionsProvider) GetSubscriptions() ([]*data.EventSubscription, error) {
 	data := []*data.EventSubscription{}
-	tx := p.db.Where("eventType = ?", eventType).Find(&data)
+	tx := p.db.Find(&data)
 
 	if tx.Error != nil {
 		return nil, tx.Error

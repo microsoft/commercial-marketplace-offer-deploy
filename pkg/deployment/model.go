@@ -1,0 +1,23 @@
+package deployment
+
+const LookupPrefix = "modm."
+
+type LookupTagKey string
+
+const (
+	// reference tag key for events
+
+	// The unique id for modm to identify something
+	LookupTagKeyId LookupTagKey = "modm.id"
+
+	// whether or not to send events, if this is not set to true, then the event will not be sent
+	LookupTagKeyEvents LookupTagKey = "modm.events"
+
+	// the friendly name of the resource used for logging
+	LookupTagKeyName LookupTagKey = "modm.name"
+
+	// the stage id reference. Use is on a resource that's a child of a 1-level parent deployment
+	LookupTagKeyStageId LookupTagKey = "modm.stage.id"
+)
+
+type LookupTags map[LookupTagKey]*string

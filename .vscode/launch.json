@@ -4,19 +4,12 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-    {
-        "name": "Attach to Process",
-        "type": "go",
-        "request": "attach",
-        "mode": "local",
-        "processId": 0
-    },
         {
-            "name": "Launch Package",
+            "name": "Api",
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${fileDirname}",
+            "program": "${workspaceRoot}/cmd/apiserver/main.go",
             "dlvLoadConfig":{
                 "followPointers": true,
                 "maxVariableRecurse": 1,
@@ -25,6 +18,43 @@
                 "maxStructFields": -1
               },
             "dlvFlags": ["--check-go-version=false"]
+        },
+        {
+            "name": "Operator",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceRoot}/cmd/operator/main.go",
+            "dlvLoadConfig":{
+                "followPointers": true,
+                "maxVariableRecurse": 1,
+                "maxStringLen": 512, 
+                "maxArrayValues": 64,
+                "maxStructFields": -1
+              },
+            "dlvFlags": ["--check-go-version=false"]
+        },
+        {
+            "name": "TestHarness",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceRoot}/tools/testharness/main.go",
+            "dlvLoadConfig":{
+                "followPointers": true,
+                "maxVariableRecurse": 1,
+                "maxStringLen": 512, 
+                "maxArrayValues": 64,
+                "maxStructFields": -1
+              },
+            "dlvFlags": ["--check-go-version=false"]
+        },
+        {
+            "name": "Attach to Process",
+            "type": "go",
+            "request": "attach",
+            "mode": "local",
+            "processId": 0
         }
     ]
 }

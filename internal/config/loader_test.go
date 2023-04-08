@@ -1,6 +1,7 @@
-package hosting
+package config
 
 import (
+	"log"
 	"os"
 	"testing"
 
@@ -26,6 +27,9 @@ func TestEnvironmentVariablesLoad(t *testing.T) {
 	config := &TestConfig{}
 	err := LoadConfiguration("./testdata", to.Ptr("test"), config)
 
+	if err != nil {
+		log.Printf("Error: %s", err.Error())
+	}
 	assert.NoError(t, err)
 	assert.Equal(t, value, config.Entry)
 }
