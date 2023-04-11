@@ -22,8 +22,6 @@ RUN go build -o ./bin/ ./cmd/operator
 RUN go build -o ./bin/ ./cmd/apiserver
 COPY ./scripts/startservices.sh ./bin
 
-#RUN CGO_ENABLED=0 GOOS=linux go build -o /docker-gs-ping
-
 # Use the official Debian slim image for a lean production container.
 # https://hub.docker.com/_/debian
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
@@ -55,4 +53,3 @@ RUN chmod +x ./apiserver
 
 # Run the web service on container startup.
 ENTRYPOINT ["./startservices.sh"]
-#ENTRYPOINT ["bin/bash"]
