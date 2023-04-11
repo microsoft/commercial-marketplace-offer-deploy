@@ -9,14 +9,19 @@ WORKDIR /app
 # Retrieve application dependencies.
 # This allows the container build to reuse cached dependencies.
 # Expecting to copy go.mod and if present go.sum.
-COPY go.* ./
+
+COPY go.mod go.sum ./
+
 RUN go mod download
+COPY *.go ./
 
 # Copy local code to the container image.
 COPY . ./
 
-# Build the binary.
-RUN go build -v -o server
+RUN go build -o ./bin/ ./cmd/operator
+COPY ./scripts/startservices.sh ./bin
+
+#RUN CGO_ENABLED=0 GOOS=linux go build -o /docker-gs-ping
 
 # Use the official Debian slim image for a lean production container.
 # https://hub.docker.com/_/debian
@@ -26,8 +31,25 @@ RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -
     ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
+ENV LANG en_US.utf8
+
+# install blobfuse
+RUN apt-get update \
+    && apt-get install -y wget apt-utils \
+    && wget https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb \
+    && dpkg -i packages-microsoft-prod.deb \
+    && apt-get remove -y wget \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends fuse blobfuse libcurl3-gnutls libgnutls30 \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy the binary to the production image from the builder stage.
-COPY --from=builder /app/server /server
+COPY --from=builder /app/bin/operator /operator
+COPY --from=builder /app/bin/startservices.sh /startservices.sh
+
+RUN chmod +x ./startservices.sh
+RUN chmod +x ./operator
 
 # Run the web service on container startup.
-CMD ["/server"]
+#ENTRYPOINT ["./startservices.sh"]
+ENTRYPOINT ["bin/bash"]

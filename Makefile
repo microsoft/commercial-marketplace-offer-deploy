@@ -9,7 +9,30 @@ ENV_LOCAL_TEST=\
 	RESOURCE_GROUP_NAME=aMODMTestb \
 	RESOURCE_GROUP_LOCATION=eastus \
 	ENV=local \
-	PORT=8080
+	PORT=8080 
+
+clean:
+	rm -rf bin
+	mkdir -p bin
+
+check-credentials:
+ifndef CONTAINER_REGISTRY_USERNAME
+	$(error Environment variable CONTAINER_REGISTRY_USERNAME is not set)
+endif
+ifndef CONTAINER_REGISTRY_PASSWORD
+	$(error Environment variable CONTAINER_REGISTRY_PASSWORD is not set)
+endif
+ifndef CONTAINER_REGISTRY_DEFAULT_SERVER
+	$(error Environment variable CONTAINER_REGISTRY_DEFAULT_SERVER is not set)
+endif
+
+resolve-registry:
+ifndef CONTAINER_REGISTRY_NAMESPACE
+CONTAINER_REGISTRY_NAMESPACE := ${CONTAINER_REGISTRY_DEFAULT_NAMESPACE}
+endif
+ifndef CONTAINER_REGISTRY
+CONTAINER_REGISTRY := ${CONTAINER_REGISTRY_DEFAULT_SERVER}/${CONTAINER_REGISTRY_NAMESPACE}
+endif
 	
 apiserver-local: apiserver
 	./scripts/apiserver-local.sh
@@ -18,7 +41,7 @@ apiserver:
 	go build -o ./bin/ ./cmd/apiserver
 
 operator:
-	go build -o ./bin/ ./cmd/operator
+	CGO_ENABLED=1 CC="x86_64-linux-musl-gcc" GOOS=linux GOARCH=amd64 go build -o ./bin/ ./cmd/operator
 
 operator-local:
 	./scripts/operator-local.sh
@@ -35,6 +58,11 @@ sdk:
 
 tools:
 	./scripts/build-tools.sh
+
+assemble: apiserver operator 
+	@echo "Building docker image: ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+	docker build --build-arg DRIVER_RELEASE_TAG=${DRIVER_RELEASE_TAG} -t ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} .
+	docker tag ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} ${CONTAINER_REGISTRY}/${IMAGE_NAME}:latest
 
 .NOTPARALLEL:
 
