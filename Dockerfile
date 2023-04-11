@@ -19,6 +19,7 @@ COPY *.go ./
 COPY . ./
 
 RUN go build -o ./bin/ ./cmd/operator
+RUN go build -o ./bin/ ./cmd/apiserver
 COPY ./scripts/startservices.sh ./bin
 
 #RUN CGO_ENABLED=0 GOOS=linux go build -o /docker-gs-ping
@@ -45,11 +46,13 @@ RUN apt-get update \
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /app/bin/operator /operator
+COPY --from=builder /app/bin/apiserver /apiserver
 COPY --from=builder /app/bin/startservices.sh /startservices.sh
 
 RUN chmod +x ./startservices.sh
 RUN chmod +x ./operator
+RUN chmod +x ./apiserver
 
 # Run the web service on container startup.
-#ENTRYPOINT ["./startservices.sh"]
-ENTRYPOINT ["bin/bash"]
+ENTRYPOINT ["./startservices.sh"]
+#ENTRYPOINT ["bin/bash"]
