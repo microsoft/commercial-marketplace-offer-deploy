@@ -13,7 +13,8 @@ const (
 	AzureAdJwksUri = "https://login.microsoftonline.com/common/discovery/v2.0/keys"
 
 	azureAdTenantIdToken = "{tenantId}"
-	AzureAdIssuerFormat  = "https://login.microsoftonline.com/" + azureAdTenantIdToken + "/v2.0"
+	AzureAdV2IssuerFormat  = "https://login.microsoftonline.com/" + azureAdTenantIdToken + "/v2.0/"
+	AzureAdV1IssuerFormat  = "https://sts.windows.net/" + azureAdTenantIdToken + "/"
 )
 
 // fetchs the Azure AD key set
@@ -22,6 +23,10 @@ func FetchAzureADKeySet(ctx context.Context) (jwk.Set, error) {
 	return keySet, err
 }
 
-func GetAzureAdIssuer(tenantId string) string {
-	return strings.Replace(AzureAdIssuerFormat, azureAdTenantIdToken, tenantId, 1)
+func GetAzureAdIssuers(tenantId string) []string {
+	issuers := []string { 
+		strings.Replace(AzureAdV2IssuerFormat, azureAdTenantIdToken, tenantId, 1), 
+		strings.Replace(AzureAdV1IssuerFormat, azureAdTenantIdToken, tenantId, 1), 
+	}
+	return issuers
 }
