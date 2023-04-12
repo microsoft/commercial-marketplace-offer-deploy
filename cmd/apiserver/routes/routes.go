@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/handlers"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/middleware"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 )
@@ -17,91 +18,91 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 			Name:        "Index",
 			Method:      http.MethodGet,
 			Path:        "/",
-			HandlerFunc: handlers.Index,
+			HandlerFunc: middleware.AddJwtBearer(handlers.Index, appConfig),
 		},
 
 		hosting.Route{
 			Name:        "CreateDeployment",
 			Method:      http.MethodPost,
 			Path:        "/deployments",
-			HandlerFunc: hosting.ToHandlerFunc(handlers.CreateDeployment, databaseOptions),
+			HandlerFunc: middleware.AddJwtBearer(hosting.ToHandlerFunc(handlers.CreateDeployment, databaseOptions), appConfig),
 		},
 
 		hosting.Route{
 			Name:        "GetDeployment",
 			Method:      http.MethodGet,
 			Path:        "/deployments/:deploymentId",
-			HandlerFunc: handlers.GetDeployment,
+			HandlerFunc: middleware.AddJwtBearer(handlers.GetDeployment, appConfig),
 		},
 
 		hosting.Route{
 			Name:        "InvokeDeploymentOperation",
 			Method:      http.MethodPost,
 			Path:        "/deployments/:deploymentId/operation",
-			HandlerFunc: handlers.NewInvokeDeploymentOperationHandler(appConfig, hosting.GetAzureCredential()),
+			HandlerFunc: middleware.AddJwtBearer(handlers.NewInvokeDeploymentOperationHandler(appConfig, hosting.GetAzureCredential()), appConfig),
 		},
 
 		hosting.Route{
 			Name:        "ListDeployments",
 			Method:      http.MethodGet,
 			Path:        "/deployments",
-			HandlerFunc: handlers.ListDeployments,
+			HandlerFunc: middleware.AddJwtBearer(handlers.ListDeployments, appConfig),
 		},
 
 		hosting.Route{
 			Name:        "UpdateDeployment",
 			Method:      strings.ToUpper("Put"),
 			Path:        "/deployments",
-			HandlerFunc: handlers.UpdateDeployment,
+			HandlerFunc: middleware.AddJwtBearer(handlers.UpdateDeployment, appConfig),
 		},
 
 		hosting.Route{
 			Name:        "CreatEventSubscription",
 			Method:      http.MethodPost,
 			Path:        "/events/subscriptions",
-			HandlerFunc: hosting.ToHandlerFunc(handlers.CreateEventSubscription, databaseOptions),
+			HandlerFunc: middleware.AddJwtBearer(hosting.ToHandlerFunc(handlers.CreateEventSubscription, databaseOptions), appConfig),
 		},
 
 		hosting.Route{
 			Name:        "DeleteEventSubscription",
 			Method:      strings.ToUpper("Delete"),
 			Path:        "/events/subscriptions/:subscriptionId",
-			HandlerFunc: handlers.DeleteEventSubscription,
+			HandlerFunc: middleware.AddJwtBearer(handlers.DeleteEventSubscription, appConfig),
 		},
 
 		hosting.Route{
 			Name:        "GetEventSubscription",
 			Method:      http.MethodGet,
 			Path:        "/events/subscriptions/:subscriptionId",
-			HandlerFunc: handlers.GetEventSubscription,
+			HandlerFunc: middleware.AddJwtBearer(handlers.GetEventSubscription, appConfig),
 		},
 
 		hosting.Route{
 			Name:        "ListEventSubscriptions",
 			Method:      http.MethodGet,
 			Path:        "/events/subscriptions",
-			HandlerFunc: handlers.ListEventSubscriptions,
+			HandlerFunc: middleware.AddJwtBearer(handlers.ListEventSubscriptions, appConfig),
 		},
 
 		hosting.Route{
 			Name:        "GetEvents",
 			Method:      http.MethodGet,
 			Path:        "/events",
-			HandlerFunc: handlers.GetEvents,
+			HandlerFunc: middleware.AddJwtBearer(handlers.GetEvents, appConfig),
 		},
 
 		hosting.Route{
 			Name:        "GetDeploymentOperation",
 			Method:      http.MethodGet,
 			Path:        "/deployments/operations/:operationId",
-			HandlerFunc: handlers.GetDeploymentOperation,
+			HandlerFunc: middleware.AddJwtBearer(handlers.GetDeploymentOperation, appConfig),
 		},
 
 		hosting.Route{
 			Name:        "ListOperations",
 			Method:      http.MethodGet,
 			Path:        "/operations",
-			HandlerFunc: handlers.ListOperations,
+			HandlerFunc: middleware.AddJwtBearer(handlers.ListOperations, appConfig),
 		},
 	}
 
