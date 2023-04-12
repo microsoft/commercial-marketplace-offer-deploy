@@ -36,7 +36,7 @@ func getJwtTokenValidationParameters(config *config.AppConfig) *authentication.J
 
 	return &authentication.JwtTokenValidationParameters{
 		Audience:     config.Azure.ClientId,
-		Issuer:       authentication.GetAzureAdIssuer(config.Azure.TenantId),
+		Issuers:       authentication.GetAzureAdIssuers(config.Azure.TenantId),
 		IssuerKeySet: keySet,
 	}
 }

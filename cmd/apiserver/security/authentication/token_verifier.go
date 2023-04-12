@@ -38,6 +38,7 @@ func NewJwtTokenVerifier(rawToken *string, parameters *JwtTokenValidationParamet
 
 // Verifies issuer and audience
 func verifyClaims(token *jwt.Token, parameters *JwtTokenValidationParameters) error {
+	modmAudience := "api://modm"
 	claims, ok := token.Claims.(jwt.MapClaims)
 	required := true
 	errorMessages := []string{}
@@ -46,12 +47,19 @@ func verifyClaims(token *jwt.Token, parameters *JwtTokenValidationParameters) er
 		errorMessages = append(errorMessages, "claims could not be mapped")
 	}
 
-	if !claims.VerifyAudience(parameters.Audience, required) {
+	if !claims.VerifyAudience(modmAudience, required) {
 		errorMessages = append(errorMessages, fmt.Sprintf("invalid audience %s", parameters.Audience))
 	}
 
-	if !claims.VerifyIssuer(parameters.Issuer, required) {
-		errorMessages = append(errorMessages, fmt.Sprintf("invalid issuer %s", parameters.Issuer))
+	issuerVerified := false
+	for _, issuer := range parameters.Issuers {
+		if claims.VerifyIssuer(issuer, required) {
+			issuerVerified = true
+			break
+		}
+	}
+	if !issuerVerified {
+		errorMessages = append(errorMessages, fmt.Sprintf("invalid issuer %s", claims["iss"]))
 	}
 
 	if len(errorMessages) == 0 {
