@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/handlers"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/middleware"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 )
@@ -24,7 +25,7 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 			Name:        "CreateDeployment",
 			Method:      http.MethodPost,
 			Path:        "/deployments",
-			HandlerFunc: hosting.ToHandlerFunc(handlers.CreateDeployment, databaseOptions),
+			HandlerFunc: middleware.AddJwtBearer(hosting.ToHandlerFunc(handlers.CreateDeployment, databaseOptions), appConfig),
 		},
 
 		hosting.Route{
