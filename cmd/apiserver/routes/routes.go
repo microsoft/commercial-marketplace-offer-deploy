@@ -18,7 +18,7 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 			Name:        "Index",
 			Method:      http.MethodGet,
 			Path:        "/",
-			HandlerFunc: middleware.AddJwtBearer(handlers.Index, appConfig),
+			HandlerFunc: handlers.Index,
 		},
 
 		hosting.Route{
