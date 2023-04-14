@@ -1,11 +1,13 @@
 @description('Name for the container group')
 param name string = 'bobjac26'
 
+
 @description('Location for all resources.')
 param location string = resourceGroup().location
 
 @description('Container image to deploy. Should be of the form repoName/imagename:tag for images stored in public Docker Hub, or a fully qualified URI for other registries. Images from private registries require additional registry credentials.')
 param image string = 'bobjac/modm:1.25'
+
 
 @description('Port to open on the container and the public IP address.')
 param port int = 8080
@@ -41,7 +43,6 @@ param azureServiceBusNamespace string
 @description('The email address used for the acme account')
 param acmeEmail string
 
-
 @description('The behavior of Azure runtime if container has stopped.')
 @allowed([
   'Always'
@@ -69,7 +70,6 @@ resource fileStore 'Microsoft.Storage/storageAccounts/fileServices/shares@2021-0
 
 var containerGroupName = 'installerGroup'
 var fqdn = 'dns${name}.${location}.azurecontainer.io'
-
 
 resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01' = {
   name: containerGroupName
@@ -107,6 +107,7 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01'
               port: 443
               protocol: 'TCP'
             }
+
           ]
           resources: {
             requests: {
