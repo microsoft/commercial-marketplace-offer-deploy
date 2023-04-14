@@ -1,11 +1,11 @@
 @description('Name for the container group')
-param name string = 'bobjac24'
+param name string = 'bobjac26'
 
 @description('Location for all resources.')
 param location string = resourceGroup().location
 
 @description('Container image to deploy. Should be of the form repoName/imagename:tag for images stored in public Docker Hub, or a fully qualified URI for other registries. Images from private registries require additional registry credentials.')
-param image string = 'bobjac/modm:1.21'
+param image string = 'bobjac/modm:1.25'
 
 @description('Port to open on the container and the public IP address.')
 param port int = 8080
@@ -38,6 +38,10 @@ param azureLocation string
 @description('The Azure Location')
 param azureServiceBusNamespace string
 
+@description('The email address used for the acme account')
+param acmeEmail string
+
+
 @description('The behavior of Azure runtime if container has stopped.')
 @allowed([
   'Always'
@@ -64,6 +68,9 @@ resource fileStore 'Microsoft.Storage/storageAccounts/fileServices/shares@2021-0
 }
 
 var containerGroupName = 'installerGroup'
+var fqdn = 'dns${name}.${location}.azurecontainer.io'
+
+
 resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01' = {
   name: containerGroupName
   location: location
@@ -92,6 +99,14 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01'
               port: port
               protocol: 'TCP'
             }
+            {
+              port: 80
+              protocol: 'TCP'
+            }
+            {
+              port: 443
+              protocol: 'TCP'
+            }
           ]
           resources: {
             requests: {
@@ -113,7 +128,7 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01'
             }
             {
               name: 'DB_PATH'
-              value: 'opt/share'
+              value: '/opt/share'
             }
             { 
               name: 'DB_USE_INMEMORY'
@@ -147,6 +162,14 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01'
               name: 'AZURE_SERVICEBUS_NAMESPACE'
               value: azureServiceBusNamespace
             }
+            {
+              name: 'ACME_ACCOUNT_EMAIL'
+              value: acmeEmail
+            }
+            {
+              name: 'INSTALLER_DOMAIN_NAME'
+              value: fqdn
+            }
           ]
         }
       }
@@ -158,6 +181,14 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01'
       ports: [
         {
           port: port
+          protocol: 'TCP'
+        }
+        {
+          port: 80
+          protocol: 'TCP'
+        }
+        {
+          port: 443
           protocol: 'TCP'
         }
       ]
