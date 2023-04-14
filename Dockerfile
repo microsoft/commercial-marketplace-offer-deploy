@@ -22,34 +22,38 @@ RUN go build -o ./bin/ ./cmd/operator
 RUN go build -o ./bin/ ./cmd/apiserver
 COPY ./scripts/startservices.sh ./bin
 
+
 # Use the official Debian slim image for a lean production container.
 # https://hub.docker.com/_/debian
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM debian:buster-slim
-RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
+#FROM debian:buster-slim
+FROM registry.access.redhat.com/ubi9/nginx-120
+#RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+#    ca-certificates && \
+#    rm -rf /var/lib/apt/lists/*
+USER root
+
+ARG ACME_RELEASE_TAG=3.0.5
+ARG DRIVER_RELEASE_TAG=dev
+
+RUN yum -y --repo ubi-9-appstream-rpms install socat && \
+  curl -L -o acme.zip https://github.com/acmesh-official/acme.sh/archive/refs/tags/v${ACME_RELEASE_TAG}.zip && \
+  unzip -qoj acme.zip acme.sh-${ACME_RELEASE_TAG}/acme.sh -d . && rm acme.zip && \
+  echo "ACME=${ACME_RELEASE_TAG}" >> versions && echo "DRIVER=${DRIVER_RELEASE_TAG}" >> versions && ls -al && cat versions
 
 ENV LANG en_US.utf8
 
-# install blobfuse
-# RUN apt-get update \
-#     && apt-get install -y wget apt-utils \
-#     && wget https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb \
-#     && dpkg -i packages-microsoft-prod.deb \
-#     && apt-get remove -y wget \
-#     && apt-get update \
-#     && apt-get install -y --no-install-recommends fuse blobfuse libcurl3-gnutls libgnutls30 \
-#     && rm -rf /var/lib/apt/lists/*
+
+ADD ["/templates/nginx", "/etc/nginx/"]
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /app/bin/operator /operator
 COPY --from=builder /app/bin/apiserver /apiserver
 COPY --from=builder /app/bin/startservices.sh /startservices.sh
 
-RUN chmod +x ./startservices.sh
-RUN chmod +x ./operator
-RUN chmod +x ./apiserver
+RUN chmod +x /operator
+RUN chmod +x /apiserver
+RUN chmod +x /startservices.sh
 
 # Run the web service on container startup.
-ENTRYPOINT ["./startservices.sh"]
+ENTRYPOINT ["/startservices.sh"]
