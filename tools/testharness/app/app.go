@@ -20,7 +20,7 @@ var (
 	location       = "eastus"
 	resourceGroup  = "demo2"
 	subscription   = "31e9f9a0-9fd2-4294-a0a3-0101246d9700"
-	clientEndpoint = "http://localhost:8080"
+	clientEndpoint = "http://dnsbobjac24.eastus.azurecontainer.io:8080"
 )
 
 func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
@@ -113,6 +113,7 @@ func CreateDeployment(c echo.Context) error {
 	}
 	log.Println("Got the credentials")
 
+	log.Printf("Calling NewClient with endpoint %s", clientEndpoint)
 	client, err := sdk.NewClient(clientEndpoint, cred, nil)
 	if err != nil {
 		log.Panicln(err)
