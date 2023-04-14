@@ -33,14 +33,14 @@ RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -
 ENV LANG en_US.utf8
 
 # install blobfuse
-RUN apt-get update \
-    && apt-get install -y wget apt-utils \
-    && wget https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb \
-    && dpkg -i packages-microsoft-prod.deb \
-    && apt-get remove -y wget \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends fuse blobfuse libcurl3-gnutls libgnutls30 \
-    && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update \
+#     && apt-get install -y wget apt-utils \
+#     && wget https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb \
+#     && dpkg -i packages-microsoft-prod.deb \
+#     && apt-get remove -y wget \
+#     && apt-get update \
+#     && apt-get install -y --no-install-recommends fuse blobfuse libcurl3-gnutls libgnutls30 \
+#     && rm -rf /var/lib/apt/lists/*
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /app/bin/operator /operator
