@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "name": {
+        "value": "PLACEHOLDER"
+      },
+      "azureClientId": {
+        "value": "PLACEHOLDER"
+      },
+      "azureClientSecret": {
+        "value": "PLACEHOLDER"
+      },
+      "azureTenantId": {
+        "value": "PLACEHOLDER"
+      },
+      "azureSubscriptionId": {
+        "value": "PLACEHOLDER"
+      },
+      "azureResourceGroup": {
+        "value": "PLACEHOLDER"
+      },
+      "azureLocation": {
+        "value": "PLACEHOLDER"
+      },
+      "azureServiceBusNamespace": {
+        "value": "PLACEHOLDER"
+      },
+      "acmeEmail": {
+        "value": "PLACEHOLDER"
+      }
+    }
+  }
