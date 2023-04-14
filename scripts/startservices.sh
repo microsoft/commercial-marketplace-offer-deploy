@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 # Verify that required env variables are set
 if [ -z ${ACME_ACCOUNT_EMAIL} ]; then
   echo "Environment variable ACME_ACCOUNT_EMAIL missing."
@@ -151,6 +152,7 @@ if [ ! -f /etc/nginx/sites-enabled/.aapinstaller.https.enabled. ]; then
 else
   log "Nginx already configured for HTTPS."
 fi
+
 
 # Start the api server
 /apiserver & 

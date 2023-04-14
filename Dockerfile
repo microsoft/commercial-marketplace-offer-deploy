@@ -43,6 +43,7 @@ RUN yum -y --repo ubi-9-appstream-rpms install socat && \
 
 ENV LANG en_US.utf8
 
+
 ADD ["/templates/nginx", "/etc/nginx/"]
 
 # Copy the binary to the production image from the builder stage.
