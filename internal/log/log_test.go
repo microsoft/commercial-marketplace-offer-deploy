@@ -11,12 +11,9 @@ func TestLogger(t *testing.T) {
 
 	//
 	myMsg := LogMessage{
-		Message: "317 test",
+		Message: "Testing from TestLogger()",
 		Level:   logrus.WarnLevel,
 	}
-	//
+
 	myLogger.Publish(&myMsg)
 }
-
-// logging level: Error, info
-// service name: operator, apiserver
