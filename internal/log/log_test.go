@@ -3,9 +3,15 @@ package log
 import "testing"
 
 func TestLogger(t *testing.T) {
-	myLogger := NewLogPublisher("", "")
+	myLogger := NewLoggerPublisher()
+
+	//
 	myMsg := LogMessage{
-		JSONPayload: "hello world!!!",
+		JSONPayload: "hello world, it works!!!!",
 	}
-	myLogger.Publish(&myMsg)
+	//
+	myLogger.Publish(&myMsg, "high")
 }
+
+// logging level: Error, info
+// service name: operator, apiserver

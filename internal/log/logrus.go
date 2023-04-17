@@ -3,7 +3,6 @@ package log
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -11,11 +10,47 @@ import (
 	"github.com/microsoft/ApplicationInsights-Go/appinsights/contracts"
 )
 
+type LogMessage struct {
+	JSONPayload string
+}
+
+type LogPublisher interface {
+	// publishes a message to all web hook subscriptions
+	Publish(message *LogMessage, severity string) error
+}
+
 type InsightsConfig struct {
 	InstrumentationKey string
 
 	Role    string
 	Version string
+}
+
+func NewLoggerPublisher() LogPublisher {
+
+	insightsConfig := &InsightsConfig{
+		Role:    "NAMEOFYOURAPP",
+		Version: "1.0",
+
+		InstrumentationKey: "e2af1774-2ab3-4eca-aa0b-7c75e6e6b8c5",
+	}
+
+	hook := &LogrusHook{
+		Client: createTelemetryClient(insightsConfig),
+	}
+
+	logrus.AddHook(hook)
+
+	return insightsConfig
+}
+
+func (p *InsightsConfig) Publish(message *LogMessage, severity string) error {
+	//log.Printf("recieved logged mesage: %s", message)
+	logrus.Println(*message)
+
+	// TODO: write to open telemetry which will write to app insights
+
+	return nil
 }
 
 func createTelemetryClient(config *InsightsConfig) appinsights.TelemetryClient {
@@ -30,28 +65,6 @@ func createTelemetryClient(config *InsightsConfig) appinsights.TelemetryClient {
 	}
 
 	return client
-}
-func main() {
-
-	insightsConfig := &InsightsConfig{
-		Role:    "NAMEOFYOURAPP",
-		Version: "1.0",
-
-		InstrumentationKey: "e2af1774-2ab3-4eca-aa0b-7c75e6e6b8c5",
-	}
-
-	SetupLogrus(insightsConfig) // remove if not using logrus
-
-	logrus.Println("Hello, world!")
-	time.Sleep(5 * time.Minute)
-}
-
-func SetupLogrus(config *InsightsConfig) {
-	hook := &LogrusHook{
-		Client: createTelemetryClient(config),
-	}
-
-	logrus.AddHook(hook)
 }
 
 type LogrusHook struct {
