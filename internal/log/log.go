@@ -1,103 +1,112 @@
 package log
 
 import (
-	"context"
-	"log"
+	"encoding/json"
+	"fmt"
+	"time"
 
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
-	"go.opentelemetry.io/otel/sdk/resource"
-	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"github.com/sirupsen/logrus"
 
-	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
-	"go.opentelemetry.io/otel/trace"
+	"github.com/microsoft/ApplicationInsights-Go/appinsights"
+	"github.com/microsoft/ApplicationInsights-Go/appinsights/contracts"
 )
 
-type LogMessage struct {
-	JSONPayload string
+type InsightsConfig struct {
+	InstrumentationKey string
+
+	Role    string
+	Version string
 }
 
-type LogPublisher interface {
-	// publishes a message to all web hook subscriptions
-	Publish(message *LogMessage) error
+func createTelemetryClient(config *InsightsConfig) appinsights.TelemetryClient {
+	client := appinsights.NewTelemetryClient(config.InstrumentationKey)
+
+	if len(config.Role) > 0 {
+		client.Context().Tags.Cloud().SetRole(config.Role)
+	}
+
+	if len(config.Version) > 0 {
+		client.Context().Tags.Application().SetVer(config.Version)
+	}
+
+	return client
+}
+func main() {
+
+	insightsConfig := &InsightsConfig{
+		Role:    "NAMEOFYOURAPP",
+		Version: "1.0",
+
+		InstrumentationKey: "e2af1774-2ab3-4eca-aa0b-7c75e6e6b8c5",
+	}
+
+	SetupLogrus(insightsConfig) // remove if not using logrus
+
+	logrus.Println("Hello, world!")
+	time.Sleep(5 * time.Minute)
 }
 
-type logPublisher struct {
-	logMode string
-	sender  string
+func SetupLogrus(config *InsightsConfig) {
+	hook := &LogrusHook{
+		Client: createTelemetryClient(config),
+	}
+
+	logrus.AddHook(hook)
 }
 
-func NewLogPublisher(sender string, logMode string) LogPublisher {
-	bootStrapOTel()
-	publisher := &logPublisher{sender: sender, logMode: logMode}
-
-	return publisher
+type LogrusHook struct {
+	Client appinsights.TelemetryClient
 }
 
-func (p *logPublisher) Publish(message *LogMessage) error {
-	log.Printf("recieved logged mesage: %s", message)
+func (hook *LogrusHook) Levels() []logrus.Level {
+	return logrus.AllLevels
+}
 
-	// TODO: write to open telemetry which will write to app insights
+func (hook *LogrusHook) Fire(entry *logrus.Entry) error {
+	if _, ok := entry.Data["message"]; !ok {
+		entry.Data["message"] = entry.Message
+	}
 
+	level := convertSeverityLevel(entry.Level)
+	telemetry := appinsights.NewTraceTelemetry(entry.Message, level)
+
+	for key, value := range entry.Data {
+		value = formatData(value)
+		telemetry.Properties[key] = fmt.Sprintf("%v", value)
+	}
+
+	hook.Client.Track(telemetry)
 	return nil
 }
 
-// Open Telemetry
-
-var tracer trace.Tracer
-
-func bootStrapOTel() {
-
-	ctx := context.Background()
-
-	exp, err := newExporter()
-	if err != nil {
-		log.Fatalf("failed to initialize exporter: %v", err)
+func convertSeverityLevel(level logrus.Level) contracts.SeverityLevel {
+	switch level {
+	case logrus.PanicLevel:
+		return contracts.Critical
+	case logrus.FatalLevel:
+		return contracts.Critical
+	case logrus.ErrorLevel:
+		return contracts.Error
+	case logrus.WarnLevel:
+		return contracts.Warning
+	case logrus.InfoLevel:
+		return contracts.Information
+	case logrus.DebugLevel, logrus.TraceLevel:
+		return contracts.Verbose
+	default:
+		return contracts.Information
 	}
-
-	// Create a new tracer provider with a batch span processor and the given exporter.
-	tp := newTraceProvider(exp)
-
-	// Handle shutdown properly so nothing leaks.
-	defer func() { _ = tp.Shutdown(ctx) }()
-
-	otel.SetTracerProvider(tp)
-
-	// Finally, set the tracer that can be used for this package.
-	tracer = tp.Tracer("MODM_Tracer")
-
-	ctx, span := tracer.Start(ctx, "MODM_tracer_start")
-	defer span.End()
-
-	span.AddEvent("Hello world event!")
-
 }
 
-func newTraceProvider(exp sdktrace.SpanExporter) *sdktrace.TracerProvider {
-	// Ensure default SDK resources and the required service name are set.
-	r, err := resource.Merge(
-		resource.Default(),
-		resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceName("MODM"),
-		),
-	)
-
-	if err != nil {
-		panic(err)
+func formatData(value interface{}) (formatted interface{}) {
+	switch value := value.(type) {
+	case json.Marshaler:
+		return value
+	case error:
+		return value.Error()
+	case fmt.Stringer:
+		return value.String()
+	default:
+		return value
 	}
-
-	return sdktrace.NewTracerProvider(
-		sdktrace.WithBatcher(exp),
-		sdktrace.WithResource(r),
-	)
-}
-
-func newExporter() (sdktrace.SpanExporter, error) {
-	return stdouttrace.New(
-		// Use human-readable output.
-		stdouttrace.WithPrettyPrint(),
-		// Do not print timestamps for the demo.
-		stdouttrace.WithoutTimestamps(),
-	)
 }
