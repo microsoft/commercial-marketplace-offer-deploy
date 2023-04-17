@@ -50,6 +50,12 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 			Path:        "/createeventsubscription",
 			HandlerFunc: CreateEventSubscription,
 		},
+		hosting.Route{
+			Name:        "ExecuteDryRun",
+			Method:      http.MethodGet,
+			Path:        "/dryrun",
+			HandlerFunc: DryRun,
+		},
 	}
 }
 
@@ -134,6 +140,37 @@ func CreateDeployment(c echo.Context) error {
 	log.Printf("%v", res)
 	if err != nil {
 		log.Panicln(err)
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func DryRun(c echo.Context) error {
+	deploymentId, err := strconv.Atoi(c.Param("deploymentId"))
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	paramsPath := "./parametersBicep.json"
+	paramsMap := getJsonAsMap(paramsPath)
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	client, err := sdk.NewClient(clientEndpoint, cred, nil)
+	if err != nil {
+		log.Println(err)
+	}
+
+	var ctx context.Context = context.Background()
+
+	res, err := client.DryRunDeployment(ctx, int32(deploymentId), paramsMap)
+	if err != nil {
+		log.Println(err)
 	}
 
 	return c.JSON(http.StatusOK, res)
