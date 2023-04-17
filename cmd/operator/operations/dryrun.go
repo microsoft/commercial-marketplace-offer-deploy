@@ -44,6 +44,7 @@ func (o *dryRunOperation) sendEvent(eventMessage *events.WebHookEventMessage) er
 	if err != nil {
 		return err
 	}
+	
 	if len(results) > 0 {
 		for _, result := range results {
 			if result.Error != nil {
