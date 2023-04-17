@@ -1,16 +1,21 @@
 package log
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/sirupsen/logrus"
+)
 
 func TestLogger(t *testing.T) {
 	myLogger := NewLoggerPublisher()
 
 	//
 	myMsg := LogMessage{
-		JSONPayload: "hello world, it works!!!!",
+		Message: "317 test",
+		Level:   logrus.WarnLevel,
 	}
 	//
-	myLogger.Publish(&myMsg, "high")
+	myLogger.Publish(&myMsg)
 }
 
 // logging level: Error, info

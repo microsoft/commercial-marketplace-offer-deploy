@@ -11,12 +11,13 @@ import (
 )
 
 type LogMessage struct {
-	JSONPayload string
+	Message string
+	Level   logrus.Level
 }
 
 type LogPublisher interface {
 	// publishes a message to all web hook subscriptions
-	Publish(message *LogMessage, severity string) error
+	Publish(message *LogMessage) error
 }
 
 type InsightsConfig struct {
@@ -33,6 +34,7 @@ func NewLoggerPublisher() LogPublisher {
 		Version: "1.0",
 
 		InstrumentationKey: "e2af1774-2ab3-4eca-aa0b-7c75e6e6b8c5",
+		// TODO: Move to ENV file
 	}
 
 	hook := &LogrusHook{
@@ -44,11 +46,23 @@ func NewLoggerPublisher() LogPublisher {
 	return insightsConfig
 }
 
-func (p *InsightsConfig) Publish(message *LogMessage, severity string) error {
-	//log.Printf("recieved logged mesage: %s", message)
-	logrus.Println(*message)
-
-	// TODO: write to open telemetry which will write to app insights
+func (p *InsightsConfig) Publish(message *LogMessage) error {
+	switch message.Level {
+	case logrus.PanicLevel:
+		logrus.Error(message.Message)
+	case logrus.FatalLevel:
+		logrus.Error(message.Message)
+	case logrus.ErrorLevel:
+		logrus.Error(message.Message)
+	case logrus.WarnLevel:
+		logrus.Warn(message.Message)
+	case logrus.InfoLevel:
+		logrus.Info(message.Message)
+	case logrus.DebugLevel, logrus.TraceLevel:
+		logrus.Warn(message.Message)
+	default:
+		logrus.Info(message.Message)
+	}
 
 	return nil
 }
