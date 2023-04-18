@@ -1,13 +1,13 @@
 @description('Name for the container group')
-param name string = 'bobjac48'
+param name string = 'bobjac51'
 
 @description('Location for all resources.')
 param location string = resourceGroup().location
 
 @description('Container image to deploy. Should be of the form repoName/imagename:tag for images stored in public Docker Hub, or a fully qualified URI for other registries. Images from private registries require additional registry credentials.')
-param image string = 'bobjac/modm:1.25'
+param image string = 'bobjac/modm:1.28'
 
-@description('Port to open on the container and the public IP address.')
+@description('Port to open on the container')
 param port int = 8080
 
 @description('The number of CPU cores to allocate to the container.')
@@ -40,6 +40,13 @@ param azureServiceBusNamespace string
 
 @description('The email address used for the acme account')
 param acmeEmail string
+
+@description('The public http port')
+param publicHttpPort int = 80
+
+@description('The public https port')
+param publicHttpsPort int = 443
+
 
 @description('The behavior of Azure runtime if container has stopped.')
 @allowed([
@@ -98,14 +105,13 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01'
               protocol: 'TCP'
             }
             {
-              port: 80
+              port: publicHttpPort
               protocol: 'TCP'
             }
             {
-              port: 443
+              port: publicHttpsPort
               protocol: 'TCP'
             }
-
           ]
           resources: {
             requests: {
@@ -166,8 +172,16 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01'
               value: acmeEmail
             }
             {
-              name: 'INSTALLER_DOMAIN_NAME'
+              name: 'PUBLIC_DOMAIN_NAME'
               value: fqdn
+            }
+            {
+              name: 'PUBLIC_HTTP_PORT'
+              value: string(publicHttpPort)
+            }
+            {
+              name: 'PUBLIC_HTTPS_PORT'
+              value: string(publicHttpsPort)
             }
           ]
         }
@@ -183,11 +197,11 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01'
           protocol: 'TCP'
         }
         {
-          port: 80
+          port: publicHttpPort
           protocol: 'TCP'
         }
         {
-          port: 443
+          port: publicHttpsPort
           protocol: 'TCP'
         }
       ]
