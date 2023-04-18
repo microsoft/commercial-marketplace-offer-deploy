@@ -1,11 +1,11 @@
 @description('Name for the container group')
-param name string = 'bobjacharness48'
+param name string = 'bobjacharness51'
 
 @description('Location for all resources.')
 param location string = resourceGroup().location
 
 @description('Container image to deploy. Should be of the form repoName/imagename:tag for images stored in public Docker Hub, or a fully qualified URI for other registries. Images from private registries require additional registry credentials.')
-param image string = 'bobjac/modmtestharness:1.35'
+param image string = 'bobjac/modmtestharness:1.37'
 
 @description('Port to open on the container and the public IP address.')
 param port int = 8280
