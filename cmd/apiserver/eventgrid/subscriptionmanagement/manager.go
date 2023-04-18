@@ -2,6 +2,7 @@ package subscriptionmanagement
 
 import (
 	"context"
+	"log"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -13,6 +14,7 @@ import (
 const systemTopicLocation = "global"
 
 type EventGridManager interface {
+	GetSystemTopicName() string
 	CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTopic, error)
 	CreateEventSubscription(ctx context.Context, subscriptionName string, endpointUrl string) (*armeventgrid.EventSubscriptionsClientCreateOrUpdateResponse, error)
 }
@@ -21,6 +23,10 @@ type EventGridManager interface {
 type manager struct {
 	Credential azcore.TokenCredential
 	Properties *eventGridManagerProperties
+}
+
+func (c *manager) GetSystemTopicName() string {
+	return c.Properties.SystemTopicName
 }
 
 // Creates an event grid manager to create system topic and event subscription for the purpose of receiving deployment events
@@ -118,12 +124,18 @@ func (c *manager) CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTo
 		nil,
 	)
 	if err != nil {
-		return nil, err
+		if responseError, ok := err.(*azcore.ResponseError); ok {
+			if responseError.StatusCode == 400 && strings.Contains(err.Error(), "Only one system topic is allowed per source.") {
+				log.Print("System topic already exists for resource group")
+				return nil, nil
+			}
+		}
 	}
 	resp, err := pollerResp.PollUntilDone(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
+
 	return &resp.SystemTopic, nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 	testharness "github.com/microsoft/commercial-marketplace-offer-deploy/tools/testharness/app"
 )
 
@@ -18,5 +19,8 @@ func main() {
 
 	app := testharness.BuildApp(configurationFilePath)
 
-	log.Fatal(app.Start(port, nil))
+	options := &hosting.AppStartOptions{
+		Port: &port,
+	}
+	log.Fatal(app.Start(options))
 }
