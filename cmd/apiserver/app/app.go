@@ -32,23 +32,11 @@ func BuildApp(configurationFilePath string) *hosting.App {
 func StartApp(app *hosting.App, options *hosting.AppStartOptions) error {
 	go app.Start(options)
 
+	appConfig := config.GetAppConfig()
 	runner := tasks.NewTaskRunner()
-	runner.Add(getEventGridRegistrationTask())
+	runner.Add(newEventGridRegistrationTask(appConfig))
 
 	go runner.Start()
 
 	select {}
-}
-
-func getEventGridRegistrationTask() tasks.Task {
-	appConfig := config.GetAppConfig()
-
-	taskOptions := EventGridRegistrationTaskOptions{
-		Credential:      hosting.GetAzureCredential(),
-		ResourceGroupId: appConfig.Azure.GetResourceGroupId(),
-		EndpointUrl:     appConfig.Http.GetBaseUrl(true) + "/eventgrid",
-	}
-	task := NewEventGridRegistrationTask(taskOptions)
-
-	return task
 }
