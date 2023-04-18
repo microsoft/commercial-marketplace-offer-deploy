@@ -10,13 +10,13 @@ import (
 
 var (
 	configurationFilePath string = "."
-	port                  int    = 8081
+	port                  int    = 8080
 )
+
+var myLogger = logger.NewLoggerPublisher()
 
 func main() {
 	formattedPort := ":" + strconv.Itoa(port)
-
-	myLogger := logger.NewLoggerPublisher()
 
 	myLogger.Publish(&logger.LogMessage{
 		Message: "apiserver: Server starting on " + formattedPort,
