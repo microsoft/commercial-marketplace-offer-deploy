@@ -6,7 +6,6 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/routes"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/tasks"
 )
 
 func BuildApp(configurationFilePath string) *hosting.App {
@@ -22,21 +21,11 @@ func BuildApp(configurationFilePath string) *hosting.App {
 		*options.Routes = routes
 	})
 
+	builder.AddTask(newEventGridRegistrationTask(appConfig))
+
 	app := builder.Build(func(e *echo.Echo) {
 		e.Use(middleware.EventGridWebHookSubscriptionValidation())
 	})
 
 	return app
-}
-
-func StartApp(app *hosting.App, options *hosting.AppStartOptions) error {
-	go app.Start(options)
-
-	appConfig := config.GetAppConfig()
-	runner := tasks.NewTaskRunner()
-	runner.Add(newEventGridRegistrationTask(appConfig))
-
-	go runner.Start()
-
-	select {}
 }

@@ -7,12 +7,14 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/tasks"
 )
 
 type App struct {
 	config   any
 	server   *echo.Echo
 	services []BackgroundService
+	tasks    []tasks.Task
 }
 
 type AppStartOptions struct {
@@ -60,7 +62,7 @@ func (app *App) Start(options *AppStartOptions) error {
 				port = *options.Port
 			}
 			address := ":" + strconv.Itoa(port)
-			log.Printf("Server starting on %s", address)
+			log.Printf("Server starting on local port %s", address)
 
 			if options.ConfigureWebServer != nil {
 				options.ConfigureWebServer(app.server)
@@ -73,6 +75,15 @@ func (app *App) Start(options *AppStartOptions) error {
 		log.Printf("Starting service: %s", service.GetName())
 		go service.Start()
 	}
+
+	if len(app.tasks) > 0 {
+		runner := tasks.NewTaskRunner()
+		for _, task := range app.tasks {
+			runner.Add(task)
+		}
+		go runner.Start()
+	}
+
 	select {}
 }
 
@@ -104,6 +115,11 @@ func (b *AppBuilder) AddConfig(config any) *AppBuilder {
 
 func (b *AppBuilder) AddService(service BackgroundService) *AppBuilder {
 	b.app.services = append(b.app.services, service)
+	return b
+}
+
+func (b *AppBuilder) AddTask(task tasks.Task) *AppBuilder {
+	b.app.tasks = append(b.app.tasks, task)
 	return b
 }
 

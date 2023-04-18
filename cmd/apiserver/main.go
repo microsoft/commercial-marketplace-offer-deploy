@@ -17,5 +17,5 @@ func main() {
 		WebServer: true,
 	}
 
-	apiserver.StartApp(app, startOptions)
+	app.Start(startOptions)
 }

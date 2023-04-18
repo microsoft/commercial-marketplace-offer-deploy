@@ -34,6 +34,8 @@ type eventGridRegistrationTaskOptions struct {
 // and a subscription using the provided options
 func create(options eventGridRegistrationTaskOptions) tasks.Task {
 	action := func(ctx context.Context) error {
+		log.Print("Registering event grid system topic for resource group deployment events...")
+
 		manager, err := subscriptionmanagement.NewEventGridManager(options.Credential, options.ResourceGroupId)
 
 		if err != nil {
