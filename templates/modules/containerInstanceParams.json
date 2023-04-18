@@ -1,33 +1,34 @@
+
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
       "name": {
-        "value": "PLACEHOLDER"
+        "value": "bobjac48"
       },
       "azureClientId": {
-        "value": "PLACEHOLDER"
+        "value": "17c82a62-7f2c-43da-86c6-99c78a69c6ae"
       },
       "azureClientSecret": {
-        "value": "PLACEHOLDER"
+        "value": "mBh8Q~xOsnvC7OV~RDzY6NpU2BTrJxuLxncVkagZ"
       },
       "azureTenantId": {
-        "value": "PLACEHOLDER"
+        "value": "5e3992bd-1b0a-43cf-b87a-a1aaacbf0be2"
       },
       "azureSubscriptionId": {
-        "value": "PLACEHOLDER"
+        "value": "31e9f9a0-9fd2-4294-a0a3-0101246d9700"
       },
       "azureResourceGroup": {
-        "value": "PLACEHOLDER"
+        "value": "demo2"
       },
       "azureLocation": {
-        "value": "PLACEHOLDER"
+        "value": "eastus"
       },
       "azureServiceBusNamespace": {
-        "value": "PLACEHOLDER"
+        "value": "modmdemo2sb"
       },
       "acmeEmail": {
-        "value": "PLACEHOLDER"
+        "value": "bobjac@microsoft.com"
       }
     }
   }

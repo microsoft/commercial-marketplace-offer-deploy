@@ -1,20 +1,23 @@
 @description('Name for the container group')
-param name string = 'bobjac48'
+param name string = 'bobjacharness48'
 
 @description('Location for all resources.')
 param location string = resourceGroup().location
 
 @description('Container image to deploy. Should be of the form repoName/imagename:tag for images stored in public Docker Hub, or a fully qualified URI for other registries. Images from private registries require additional registry credentials.')
-param image string = 'bobjac/modm:1.25'
+param image string = 'bobjac/modmtestharness:1.35'
 
 @description('Port to open on the container and the public IP address.')
-param port int = 8080
+param port int = 8280
 
 @description('The number of CPU cores to allocate to the container.')
 param cpuCores int = 1
 
 @description('The amount of memory to allocate to the container in gigabytes.')
 param memoryInGb int = 2
+
+@description('The api endpoint')
+param apiEndpoint string
 
 @description('The service principal client ID')
 param azureClientId string
@@ -26,20 +29,13 @@ param azureClientSecret string
 @description('The Azure Tenant Id')
 param azureTenantId string
 
+
 @description('The Azure Subscription Id')
 param azureSubscriptionId string
 
 @description('The Azure Resource Group')
 param azureResourceGroup string
 
-@description('The Azure Location')
-param azureLocation string
-
-@description('The Azure Location')
-param azureServiceBusNamespace string
-
-@description('The email address used for the acme account')
-param acmeEmail string
 
 @description('The behavior of Azure runtime if container has stopped.')
 @allowed([
@@ -49,24 +45,7 @@ param acmeEmail string
 ])
 param restartPolicy string = 'Always'
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
-  name: 'inst${name}'
-  location: location
-  kind: 'StorageV2'
-  sku: {
-    name: 'Standard_LRS'
-  }
-}
-
-resource fileStore 'Microsoft.Storage/storageAccounts/fileServices/shares@2021-09-01' = {
-  name: '${storageAccount.name}/default/share'
-  properties: {
-    shareQuota: 1
-    enabledProtocols: 'SMB'
-  }
-}
-
-var containerGroupName = 'modmGroup'
+var containerGroupName = 'harnessGroup'
 var fqdn = 'dns${name}.${location}.azurecontainer.io'
 
 resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01' = {
@@ -76,20 +55,9 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01'
     type: 'SystemAssigned'
   }
   properties: {
-    volumes: [
-      {
-        name: 'filestore'
-        azureFile: {
-          readOnly: false
-          shareName: 'share'
-          storageAccountName: storageAccount.name
-          storageAccountKey: storageAccount.listKeys().keys[0].value
-        }
-      }
-    ]
     containers: [
       {
-        name: 'modm'
+        name: 'modmtestharness'
         properties: {
           image: image
           ports: [
@@ -113,25 +81,22 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01'
               memoryInGB: memoryInGb
             }
           }
-          volumeMounts: [
-            {
-              name: 'filestore'
-              mountPath: '/opt/share'
-              readOnly: false
-            }
-          ]
           environmentVariables: [
             {
-              name: 'AZURE_STORAGE_MOUNT_POINT'
-              value: '/opt/share'
+              name: 'MODM_API_ENDPOINT'
+              value: apiEndpoint
             }
             {
-              name: 'DB_PATH'
-              value: '/opt/share'
+              name: 'API_URI'
+              value: apiEndpoint
             }
-            { 
-              name: 'DB_USE_INMEMORY'
-              value: 'false'
+            {
+              name: 'MODM_SUBSCRIPTION'
+              value: azureSubscriptionId
+            }
+            {
+              name: 'MODM_RESOURCE_GROUP'
+              value: azureResourceGroup
             }
             {
               name: 'AZURE_CLIENT_ID'
@@ -146,28 +111,16 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01'
               value: azureClientSecret
             }
             {
-              name: 'AZURE_SUBSCRIPTION_ID'
-              value: azureSubscriptionId
+              name: 'TEMPLATE_PATH'
+              value: '/mainTemplateBicep.json'
             }
             {
-              name: 'AZURE_RESOURCE_GROUP'
-              value: azureResourceGroup
+              name: 'TEMPLATEPARAMS_PATH'
+              value: '/parametersBicep.json'
             }
             {
-              name: 'AZURE_LOCATION'
-              value: azureLocation
-            }
-            {
-              name: 'AZURE_SERVICEBUS_NAMESPACE'
-              value: azureServiceBusNamespace
-            }
-            {
-              name: 'ACME_ACCOUNT_EMAIL'
-              value: acmeEmail
-            }
-            {
-              name: 'INSTALLER_DOMAIN_NAME'
-              value: fqdn
+              name: 'CALLBACK'
+              value: 'dns${name}'
             }
           ]
         }
