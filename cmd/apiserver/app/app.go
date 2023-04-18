@@ -21,6 +21,8 @@ func BuildApp(configurationFilePath string) *hosting.App {
 		*options.Routes = routes
 	})
 
+	builder.AddTask(newEventGridRegistrationTask(appConfig))
+
 	app := builder.Build(func(e *echo.Echo) {
 		e.Use(middleware.EventGridWebHookSubscriptionValidation())
 	})
