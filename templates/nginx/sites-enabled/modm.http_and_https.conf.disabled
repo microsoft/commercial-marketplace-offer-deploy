@@ -2,20 +2,20 @@
 
 server {
     listen                  443 ssl http2;
-    server_name             aapinstaller;
-    root                    /var/www/aapinstaller/public;
+    server_name             modm;
+    root                    /var/www/modm/public;
 
     # SSL
-    ssl_certificate         /etc/letsencrypt/live/aapinstaller/fullchain.pem;
-    ssl_certificate_key     /etc/letsencrypt/live/aapinstaller/privkey.pem;
-    ssl_trusted_certificate /etc/letsencrypt/live/aapinstaller/chain.pem;
+    ssl_certificate         /etc/letsencrypt/live/modm/fullchain.pem;
+    ssl_certificate_key     /etc/letsencrypt/live/modm/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/modm/chain.pem;
 
     # security
     include                 nginxconfig.io/security.conf;
 
     # logging
-    access_log              /var/log/nginx/aapinstaller.access.log;
-    error_log               /var/log/nginx/aapinstaller.error.log warn;
+    access_log              /var/log/nginx/modm.access.log;
+    error_log               /var/log/nginx/modm.error.log warn;
 
     # reverse proxy
     location /api/ {
@@ -59,22 +59,22 @@ server {
 # subdomains redirect
 server {
     listen                  443 ssl http2;
-    server_name             *.aapinstaller;
+    server_name             *.modm;
 
     # SSL
-    ssl_certificate         /etc/letsencrypt/live/aapinstaller/fullchain.pem;
-    ssl_certificate_key     /etc/letsencrypt/live/aapinstaller/privkey.pem;
-    ssl_trusted_certificate /etc/letsencrypt/live/aapinstaller/chain.pem;
-    return                  301 https://aapinstaller$request_uri;
+    ssl_certificate         /etc/letsencrypt/live/modm/fullchain.pem;
+    ssl_certificate_key     /etc/letsencrypt/live/modm/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/modm/chain.pem;
+    return                  301 https://modm$request_uri;
 }
 
 # HTTP redirect
 server {
     listen      80;
-    server_name aapinstaller;
+    server_name modm;
 
     location / {
-        return 301 https://aapinstaller$request_uri;
+        return 301 https://modm$request_uri;
     }
 
     location /status {

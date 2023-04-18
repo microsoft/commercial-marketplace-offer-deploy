@@ -2,8 +2,10 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
@@ -22,6 +24,64 @@ var (
 	subscription   = "31e9f9a0-9fd2-4294-a0a3-0101246d9700"
 	clientEndpoint = "https://dnsbobjac26.eastus.azurecontainer.io:443/api"
 )
+
+func getClientEndpoint() string {
+	// no real need for viper here as we are just pulling 1 environment variable for the test harness
+	endpoint := os.Getenv("MODM_API_ENDPOINT")
+	if len(endpoint) > 0 {
+		return endpoint
+	}
+	return clientEndpoint
+}
+
+func getLocation() string {
+	loc := os.Getenv("MODM_DEPLOYMENT_LOCATION")
+	if len(loc) > 0 {
+		return loc
+	}
+	return location
+}
+
+func getSubscription() string {
+	sub := os.Getenv("MODM_SUBSCRIPTION")
+	if len(sub) > 0 {
+		return sub
+	}
+	return subscription
+}
+
+func getResourceGroup() string {
+	rg := os.Getenv("MODM_RESOURCE_GROUP")
+	if len(rg) > 0 {
+		return rg
+	}
+	return resourceGroup
+}
+
+func getTemplatePath() string {
+	path := os.Getenv("TEMPLATE_PATH")
+	if len(path) > 0 {
+		return path
+	}
+	return "./mainTemplateBicep.json"
+}
+
+func getParamsPath() string {
+	templateParams := os.Getenv("TEMPLATEPARAMS_PATH")
+	if len(templateParams) > 0 {
+		log.Printf("Found TEMPLATEPARAMS_PATH - %s", templateParams)
+		return templateParams
+	}
+	return "./parametersBicep.json"
+}
+
+func getCallback() string {
+	callback := os.Getenv("CALLBACK")
+	if len(callback) > 0 {
+		return callback
+	}
+	return "http://localhost:8280"
+}
 
 func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 
@@ -83,7 +143,7 @@ func CreateEventSubscription(c echo.Context) error {
 		log.Println(err)
 	}
 
-	client, err := sdk.NewClient(clientEndpoint, cred, nil)
+	client, err := sdk.NewClient(getClientEndpoint(), cred, nil)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -91,7 +151,7 @@ func CreateEventSubscription(c echo.Context) error {
 
 	subscriptionName := "webhook-1"
 	apiKey := "1234"
-	callbackclientEndpoint := "http://localhost:8280/webhook"
+	callbackclientEndpoint := fmt.Sprintf("http://%s.eastus.azurecontainer.io:8280/webhook", getCallback())
 
 	request := api.CreateEventSubscriptionRequest{
 		APIKey:   &apiKey,
@@ -108,8 +168,12 @@ func CreateEventSubscription(c echo.Context) error {
 }
 
 func CreateDeployment(c echo.Context) error {
+	location = getLocation()
+	resourceGroup = getResourceGroup()
+	subscription = getSubscription()
+
 	log.Println("Inside CreateDeployment")
-	templatePath := "./mainTemplateBicep.json"
+	templatePath := getTemplatePath()
 	templateMap := getJsonAsMap(templatePath)
 	log.Printf("The templateMap is %s", templateMap)
 
@@ -119,8 +183,8 @@ func CreateDeployment(c echo.Context) error {
 	}
 	log.Println("Got the credentials")
 
-	log.Printf("Calling NewClient with endpoint %s", clientEndpoint)
-	client, err := sdk.NewClient(clientEndpoint, cred, nil)
+	log.Printf("Calling NewClient with endpoint %s", getClientEndpoint())
+	client, err := sdk.NewClient(getClientEndpoint(), cred, nil)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -152,7 +216,7 @@ func DryRun(c echo.Context) error {
 		log.Println(err)
 	}
 
-	paramsPath := "./parametersBicep.json"
+	paramsPath := getParamsPath()
 	paramsMap := getJsonAsMap(paramsPath)
 
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
@@ -161,7 +225,7 @@ func DryRun(c echo.Context) error {
 		log.Println(err)
 	}
 
-	client, err := sdk.NewClient(clientEndpoint, cred, nil)
+	client, err := sdk.NewClient(getClientEndpoint(), cred, nil)
 	if err != nil {
 		log.Println(err)
 	}
@@ -183,7 +247,7 @@ func StartDeployment(c echo.Context) error {
 		log.Println(err)
 	}
 
-	paramsPath := "./parametersBicep.json"
+	paramsPath := getParamsPath()
 	paramsMap := getJsonAsMap(paramsPath)
 
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
@@ -192,7 +256,7 @@ func StartDeployment(c echo.Context) error {
 		log.Println(err)
 	}
 
-	client, err := sdk.NewClient(clientEndpoint, cred, nil)
+	client, err := sdk.NewClient(getClientEndpoint(), cred, nil)
 	if err != nil {
 		log.Println(err)
 	}
