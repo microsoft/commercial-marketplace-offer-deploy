@@ -14,11 +14,19 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 	databaseOptions := appConfig.GetDatabaseOptions()
 
 	return hosting.Routes{
+
 		hosting.Route{
 			Name:        "Index",
 			Method:      http.MethodGet,
 			Path:        "/",
 			HandlerFunc: handlers.Index,
+		},
+
+		hosting.Route{
+			Name:        "EventGridWebHook",
+			Method:      http.MethodPost,
+			Path:        "/eventgrid",
+			HandlerFunc: handlers.NewEventGridWebHookHandler(appConfig, hosting.GetAzureCredential()),
 		},
 
 		hosting.Route{

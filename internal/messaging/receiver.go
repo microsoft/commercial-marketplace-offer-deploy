@@ -18,6 +18,7 @@ const banner = `
 type MessageReceiver interface {
 	Start()
 	Stop()
+	GetName() string
 }
 
 type MessageReceiverOptions struct {
@@ -129,6 +130,10 @@ func (r *serviceBusReceiver) getQueueReceiver() (*azservicebus.Receiver, error) 
 	}
 
 	return receiver, nil
+}
+
+func (r *serviceBusReceiver) GetName() string {
+	return r.queueName
 }
 
 func NewServiceBusReceiver(handler any, credential azcore.TokenCredential, options ServiceBusMessageReceiverOptions) (MessageReceiver, error) {

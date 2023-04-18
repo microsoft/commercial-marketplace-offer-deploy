@@ -10,8 +10,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
 	"github.com/labstack/echo"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid/eventsfiltering"
-	w "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid/webhookevent"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventsfiltering"
+	w "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/webhookevent"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
@@ -76,9 +76,9 @@ func (h *eventGridWebHook) enqueueResultForProcessing(ctx context.Context, messa
 
 		if len(sendResult) == 1 && sendResult[0].Error != nil {
 			errors = append(errors, sendResult[0].Error.Error())
-		} 
+		}
 	}
-	
+
 	return utils.NewAggregateError(errors)
 }
 
