@@ -10,8 +10,15 @@ import (
 )
 
 type App struct {
-	config any
-	server *echo.Echo
+	config   any
+	server   *echo.Echo
+	services []BackgroundService
+}
+
+type AppStartOptions struct {
+	Port               *int
+	ConfigureWebServer ConfigureEchoFunc
+	WebServer          bool
 }
 
 type AppBuilder struct {
@@ -44,14 +51,29 @@ func (app *App) GetConfig() any {
 // Start starts the server
 // port: the port to listen on
 // configure: (optional) a function to configure the echo server
-func (app *App) Start(port int, configure ConfigureEchoFunc) error {
-	address := ":" + strconv.Itoa(port)
-	log.Printf("Server starting on %s", address)
+func (app *App) Start(options *AppStartOptions) error {
+	if options != nil {
+		if options.WebServer {
+			port := 8080
 
-	if configure != nil {
-		configure(app.server)
+			if options.Port == nil {
+				port = *options.Port
+			}
+			address := ":" + strconv.Itoa(port)
+			log.Printf("Server starting on %s", address)
+
+			if options.ConfigureWebServer != nil {
+				options.ConfigureWebServer(app.server)
+			}
+			go app.server.Start(address)
+		}
 	}
-	return app.server.Start(address)
+
+	for _, service := range app.services {
+		log.Printf("Starting service: %s", service.GetName())
+		go service.Start()
+	}
+	select {}
 }
 
 // App Builder
@@ -65,7 +87,10 @@ func NewAppBuilder() *AppBuilder {
 	defer mutex.Unlock()
 
 	if appInstance == nil {
-		appInstance = &App{server: echo.New()}
+		appInstance = &App{
+			server:   echo.New(),
+			services: []BackgroundService{},
+		}
 	}
 
 	builder := &AppBuilder{app: appInstance}
@@ -74,6 +99,11 @@ func NewAppBuilder() *AppBuilder {
 
 func (b *AppBuilder) AddConfig(config any) *AppBuilder {
 	b.app.config = config
+	return b
+}
+
+func (b *AppBuilder) AddService(service BackgroundService) *AppBuilder {
+	b.app.services = append(b.app.services, service)
 	return b
 }
 
