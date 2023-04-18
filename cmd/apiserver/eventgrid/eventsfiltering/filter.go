@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
-	eg "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid"
+	eg "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	d "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 )
