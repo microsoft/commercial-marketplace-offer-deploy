@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/eventgrid/subscriptionvalidation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/subscriptionvalidation"
 )
 
 // EventGridSubscriptionValidationMiddleware is a middleware that validates the event grid subscription
