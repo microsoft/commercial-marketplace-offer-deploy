@@ -2,7 +2,6 @@ package tasks
 
 import (
 	"context"
-	"log"
 )
 
 type TaskType string
@@ -13,25 +12,27 @@ const (
 
 // Runnable task
 type Task interface {
+	Name() string
 	Run(ctx context.Context) error
 }
 
 type runnableTask struct {
+	name   string
 	action TaskAction
 }
 
-func NewTask(action TaskAction) Task {
+func NewTask(name string, action TaskAction) Task {
 	return &runnableTask{
+		name:   name,
 		action: action,
 	}
 }
 
+func (t *runnableTask) Name() string {
+	return t.name
+}
+
 func (t *runnableTask) Run(ctx context.Context) error {
-	log.Printf("Running task %v", t)
 	err := t.action(ctx)
-	if err != nil {
-		log.Printf("Error running task %v: %v", t, err)
-		return err
-	}
-	return nil
+	return err
 }

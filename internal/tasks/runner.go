@@ -36,10 +36,11 @@ func (r *runner) Start() error {
 		go func(i int) {
 			defer waitGroup.Done()
 			task := r.tasks[i]
+			log.Printf("Running task %s", task.Name())
 			err := task.Run(ctx)
 
 			if err != nil {
-				log.Printf("Error running task %v: %v", task, err)
+				log.Printf("Error running task %v: %v", task.Name(), err)
 			}
 		}(i)
 	}

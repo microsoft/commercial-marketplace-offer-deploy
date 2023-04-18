@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"log"
+	"os"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
@@ -46,13 +47,18 @@ func create(options eventGridRegistrationTaskOptions) tasks.Task {
 			return err
 		}
 
-		systemTopic, err := manager.CreateSystemTopic(ctx)
+		_, err = manager.CreateSystemTopic(ctx)
 		if err != nil {
 			return err
 		}
-		log.Printf("System topic created/updated: %s", *systemTopic.Name)
+		log.Printf("System topic created: %s", manager.GetSystemTopicName())
 
-		subscriptionName := resourceId.ResourceGroupName + "-deployment-events"
+		hostname, err := os.Hostname()
+		if err != nil {
+			hostname = "unknownhost"
+		}
+
+		subscriptionName := resourceId.ResourceGroupName + "-deployment-events-" + hostname
 		result, err := manager.CreateEventSubscription(ctx, subscriptionName, options.EndpointUrl)
 		if err != nil {
 			return err
@@ -61,5 +67,5 @@ func create(options eventGridRegistrationTaskOptions) tasks.Task {
 
 		return nil
 	}
-	return tasks.NewTask(action)
+	return tasks.NewTask("EventGrid Subscription Registration", action)
 }

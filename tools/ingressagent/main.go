@@ -63,7 +63,7 @@ func setPublicFQDN(tunnelUrl string) {
 		log.Fatal(err)
 	}
 	hostname := url.Hostname()
-	viper.Set("PUBLIC_FQDN", hostname)
+	os.Setenv("PUBLIC_FQDN", hostname)
 
 }
 
