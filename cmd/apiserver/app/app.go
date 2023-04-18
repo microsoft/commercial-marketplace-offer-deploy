@@ -1,6 +1,8 @@
 package app
 
 import (
+	"github.com/labstack/echo"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/middleware"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/routes"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
@@ -19,6 +21,9 @@ func BuildApp(configurationFilePath string) *hosting.App {
 		*options.Routes = routes
 	})
 
-	app := builder.Build(nil)
+	app := builder.Build(func(e *echo.Echo) {
+		e.Use(middleware.EventGridWebHookSubscriptionValidation())
+	})
+
 	return app
 }

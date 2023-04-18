@@ -1,11 +1,10 @@
 package app
 
 import (
-	"github.com/labstack/echo"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/middleware"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/routes"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/receivers"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 )
 
 func BuildApp(configurationFilePath string) *hosting.App {
@@ -15,13 +14,21 @@ func BuildApp(configurationFilePath string) *hosting.App {
 	config.LoadConfiguration(configurationFilePath, nil, appConfig)
 	builder.AddConfig(appConfig)
 
-	builder.AddRoutes(func(options *hosting.RouteOptions) {
-		routes := routes.GetRoutes(appConfig)
-		*options.Routes = routes
-	})
+	eventsReceiver, operationsReceiver := getMessageReceivers()
+	builder.AddService(eventsReceiver)
+	builder.AddService(operationsReceiver)
 
-	app := builder.Build(func(e *echo.Echo) {
-		e.Use(middleware.EventGridWebHookSubscriptionValidation())
-	})
+	app := builder.Build(nil)
 	return app
+}
+
+func getMessageReceivers() (messaging.MessageReceiver, messaging.MessageReceiver) {
+	appConfig := config.GetAppConfig()
+	credential := hosting.GetAzureCredential()
+
+	eventsReceiver := receivers.NewEventsMessageReceiver(appConfig, credential)
+
+	operationsReceiver := receivers.NewOperationsMessageReceiver(appConfig, credential)
+
+	return eventsReceiver, operationsReceiver
 }
