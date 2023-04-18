@@ -1,35 +1,23 @@
 package main
 
 import (
-	"strconv"
+	"log"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	apiserver "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/app"
-	logger "github.com/microsoft/commercial-marketplace-offer-deploy/internal/log"
-	"github.com/sirupsen/logrus"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 )
 
 var (
 	configurationFilePath string = "."
-	port                  int    = 8080
 )
 
-var myLogger = logger.NewLoggerPublisher()
-
 func main() {
-	formattedPort := ":" + strconv.Itoa(port)
-
-	myLogger.Publish(&logger.LogMessage{
-		Message: "apiserver: Server starting on " + formattedPort,
-		Level:   logrus.InfoLevel,
-	})
-
 	app := apiserver.BuildApp(configurationFilePath)
-	err := app.Start(port, nil)
-
-	if err != nil {
-		myLogger.Publish(&logger.LogMessage{
-			Message: "apiserver: Server failed to start on port " + formattedPort,
-			Level:   logrus.FatalLevel,
-		})
+	startOptions := &hosting.AppStartOptions{
+		Port:      to.Ptr(8080),
+		WebServer: true,
 	}
+
+	log.Fatal(app.Start(startOptions))
 }
