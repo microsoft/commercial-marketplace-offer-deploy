@@ -7,8 +7,8 @@ if [ -z ${ACME_ACCOUNT_EMAIL} ]; then
   exit 1
 fi
 
-if [ -z ${INSTALLER_DOMAIN_NAME} ]; then
-  echo "Environment variable INSTALLER_DOMAIN_NAME missing."
+if [ -z ${PUBLIC_DOMAIN_NAME} ]; then
+  echo "Environment variable PUBLIC_DOMAIN_NAME missing."
   exit 1
 fi
 
@@ -36,17 +36,17 @@ log "Creating required directories and links..."
 # Create folders for nginx and certs files. These might exist already in case of container restart
 mkdir -p /installerstore/nginx
 mkdir -p /installerstore/.acme.sh
-mkdir -p /etc/letsencrypt/live/aapinstaller
+mkdir -p /etc/letsencrypt/live/modm
 # Create a soft link to the directory in persistent volume if it does not exist yet
 test ! -d ~/.acme.sh && ln -s /installerstore/.acme.sh
 
 # update the server name and redirect URLs in nginx configuration files (if they exist)
 log "Updating host name in nginx configuration..."
-test -f /etc/nginx/sites-enabled/aapinstaller.http_only.conf && \
-  sed -i "s|aapinstaller;|${INSTALLER_DOMAIN_NAME};|g" /etc/nginx/sites-enabled/aapinstaller.http_only.conf
-test -f /etc/nginx/sites-enabled/aapinstaller.http_and_https.conf.disabled && \
-  sed -i "s|aapinstaller;|${INSTALLER_DOMAIN_NAME};|g" /etc/nginx/sites-enabled/aapinstaller.http_and_https.conf.disabled && \
-  sed -i "s|https://aapinstaller|https://${INSTALLER_DOMAIN_NAME}|g" /etc/nginx/sites-enabled/aapinstaller.http_and_https.conf.disabled
+test -f /etc/nginx/sites-enabled/modm.http_only.conf && \
+  sed -i "s|modm;|${PUBLIC_DOMAIN_NAME};|g" /etc/nginx/sites-enabled/modm.http_only.conf
+test -f /etc/nginx/sites-enabled/modm.http_and_https.conf.disabled && \
+  sed -i "s|modm;|${PUBLIC_DOMAIN_NAME};|g" /etc/nginx/sites-enabled/modm.http_and_https.conf.disabled && \
+  sed -i "s|https://modm|https://${PUBLIC_DOMAIN_NAME}|g" /etc/nginx/sites-enabled/modm.http_and_https.conf.disabled
 
 # at this point it is ok to start nginx, it will run in background
 log "Starting nginx..."
@@ -84,24 +84,24 @@ fi
 # request certificate if not obtained yet
 if [ ! -f ~/.acme.sh/.acme.sh.certissued. ]; then
   # verify that the requsts to the external host name are being routed to nginx running here
-  log "Making requests to http://${INSTALLER_DOMAIN_NAME}/status to verify traffic is reaching nginx..."
+  log "Making requests to http://${PUBLIC_DOMAIN_NAME}/status to verify traffic is reaching nginx..."
   curl -s -o /dev/null \
     --retry-all-errors \
     --retry-connrefused \
     --retry-delay 10 \
     --retry-max-time 600 \
     --retry 60 \
-    http://${INSTALLER_DOMAIN_NAME}/status
+    http://${PUBLIC_DOMAIN_NAME}/status
   RC=$?
   if [ ${RC} -ne 0 ]; then
-    log "Failed to get response from http://${INSTALLER_DOMAIN_NAME}/status, aborting."
+    log "Failed to get response from http://${PUBLIC_DOMAIN_NAME}/status, aborting."
     exit ${RC}
   fi
 
   log "Requesting certificate..."
   cd .acme.sh
   ./acme.sh --no-color --set-default-ca --server letsencrypt
-  ./acme.sh --no-color --issue --nginx -d ${INSTALLER_DOMAIN_NAME} --log
+  ./acme.sh --no-color --issue --nginx -d ${PUBLIC_DOMAIN_NAME} --log
   RC=$?
   if [ ${RC} -ne 0 ]; then
     log "Failed to issue certificate. See previous output for more information."
@@ -116,31 +116,31 @@ else
 fi
 
 # install certificate if not already installed
-if [ ! -f /etc/letsencrypt/live/aapinstaller/.acme.sh.certinstalled. ]; then
+if [ ! -f /etc/letsencrypt/live/modm/.acme.sh.certinstalled. ]; then
   log "Installing certificate..."
   cd .acme.sh
   ./acme.sh --no-color --install-cert \
-    -d ${INSTALLER_DOMAIN_NAME} \
-    --key-file /etc/letsencrypt/live/aapinstaller/privkey.pem  \
-    --fullchain-file /etc/letsencrypt/live/aapinstaller/fullchain.pem \
-    --ca-file /etc/letsencrypt/live/aapinstaller/chain.pem
+    -d ${PUBLIC_DOMAIN_NAME} \
+    --key-file /etc/letsencrypt/live/modm/privkey.pem  \
+    --fullchain-file /etc/letsencrypt/live/modm/fullchain.pem \
+    --ca-file /etc/letsencrypt/live/modm/chain.pem
   RC=$?
   if [ ${RC} -ne 0 ]; then
     log "Failed to install certificate. See previous output for more information."
     exit ${RC}
   else
-    touch /etc/letsencrypt/live/aapinstaller/.acme.sh.certinstalled.
+    touch /etc/letsencrypt/live/modm/.acme.sh.certinstalled.
   fi
   cd ~
 else
   log "Certificate already installed."
 fi
 
-if [ ! -f /etc/nginx/sites-enabled/.aapinstaller.https.enabled. ]; then
+if [ ! -f /etc/nginx/sites-enabled/.modm.https.enabled. ]; then
   # Rename configuration files to enable HTTPS
   log "Enabling HTTP and HTTPS nginx configuration files..."
-  mv /etc/nginx/sites-enabled/aapinstaller.http_and_https.conf.disabled /etc/nginx/sites-enabled/aapinstaller.http_and_https.conf
-  mv /etc/nginx/sites-enabled/aapinstaller.http_only.conf /etc/nginx/sites-enabled/aapinstaller.http_only.conf.disabled
+  mv /etc/nginx/sites-enabled/modm.http_and_https.conf.disabled /etc/nginx/sites-enabled/modm.http_and_https.conf
+  mv /etc/nginx/sites-enabled/modm.http_only.conf /etc/nginx/sites-enabled/modm.http_only.conf.disabled
   # wait for dhparam to finish if it was being generated before starting nginx in HTTPS mode
   if [ -n "$DHPARAM_PID" ]; then
     log "Waiting for process generating dhparam file to finish..."
@@ -148,7 +148,7 @@ if [ ! -f /etc/nginx/sites-enabled/.aapinstaller.https.enabled. ]; then
   fi
   log "Calling nginx to reload configuration ..."
   nginx -s reload
-  touch /etc/nginx/sites-enabled/.aapinstaller.https.enabled.
+  touch /etc/nginx/sites-enabled/.modm.https.enabled.
 else
   log "Nginx already configured for HTTPS."
 fi
