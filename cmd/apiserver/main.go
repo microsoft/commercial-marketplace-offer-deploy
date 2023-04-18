@@ -10,6 +10,7 @@ import (
 
 var (
 	configurationFilePath string = "."
+	myLogger = logger.NewLoggerPublisher()
 )
 
 func main() {
