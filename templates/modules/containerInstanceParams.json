@@ -4,31 +4,31 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
       "name": {
-        "value": "bobjac48"
+        "value": "PLACEHOLDER"
       },
       "azureClientId": {
-        "value": "17c82a62-7f2c-43da-86c6-99c78a69c6ae"
+        "value": "PLACEHOLDER"
       },
       "azureClientSecret": {
-        "value": "mBh8Q~xOsnvC7OV~RDzY6NpU2BTrJxuLxncVkagZ"
+        "value": "PLACEHOLDER"
       },
       "azureTenantId": {
-        "value": "5e3992bd-1b0a-43cf-b87a-a1aaacbf0be2"
+        "value": "PLACEHOLDER"
       },
       "azureSubscriptionId": {
-        "value": "31e9f9a0-9fd2-4294-a0a3-0101246d9700"
+        "value": "PLACEHOLDER"
       },
       "azureResourceGroup": {
-        "value": "demo2"
+        "value": "PLACEHOLDER"
       },
       "azureLocation": {
-        "value": "eastus"
+        "value": "PLACEHOLDER"
       },
       "azureServiceBusNamespace": {
-        "value": "modmdemo2sb"
+        "value": "PLACEHOLDER"
       },
       "acmeEmail": {
-        "value": "bobjac@microsoft.com"
+        "value": "PLACEHOLDER"
       }
     }
   }
