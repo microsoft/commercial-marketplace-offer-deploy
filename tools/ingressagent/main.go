@@ -5,18 +5,21 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 
 	"github.com/labstack/echo"
 	apiserver "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/app"
 	operator "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/app"
-	testharness "github.com/microsoft/commercial-marketplace-offer-deploy/tools/testharness/app"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
+	testharness "github.com/microsoft/commercial-marketplace-offer-deploy/tools/testharness/app"
 	"github.com/spf13/viper"
 	"golang.ngrok.com/ngrok"
 	"golang.ngrok.com/ngrok/config"
 )
+
+var isWebServer bool = true
 
 func main() {
 	if err := run(context.Background()); err != nil {
@@ -35,15 +38,33 @@ func run(ctx context.Context) error {
 	defer tunnel.Close()
 
 	log.Println("tunnel created:", tunnel.URL())
+	setPublicFQDN(tunnel.URL())
 
 	var appName string
 	flag.StringVar(&appName, "app", "", "App name to tunnel to")
 	port := flag.Int("port", 8080, "Port to tunnel to. default: 8080")
 	flag.Parse()
 
-	return getApp(appName).Start(*port, func(e *echo.Echo) {
-		e.Listener = tunnel
-	})
+	app := getApp(appName)
+	options := &hosting.AppStartOptions{
+		Port: port,
+		ConfigureWebServer: func(e *echo.Echo) {
+			e.Listener = tunnel
+		},
+		WebServer: isWebServer,
+	}
+
+	return app.Start(options)
+}
+
+func setPublicFQDN(tunnelUrl string) {
+	url, err := url.Parse(tunnelUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
+	hostname := url.Hostname()
+	viper.Set("PUBLIC_FQDN", hostname)
+
 }
 
 func getApp(appName string) *hosting.App {
@@ -52,6 +73,7 @@ func getApp(appName string) *hosting.App {
 
 	switch appName {
 	case "operator":
+		isWebServer = false
 		return operator.BuildApp(configPath)
 	case "apiserver":
 		return apiserver.BuildApp(configPath)
