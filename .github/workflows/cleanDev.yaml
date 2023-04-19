@@ -9,6 +9,9 @@ env:
   imageName: modm
 
 on:
+  push:
+    branches:
+      - "feature/newWorkflow-1"
   workflow_dispatch:
 
 jobs:
