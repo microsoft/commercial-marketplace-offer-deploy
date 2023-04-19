@@ -484,7 +484,8 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "integer"
+          "type": "string",
+          "format": "uuid"
         },
         "name": {
           "type": "string"

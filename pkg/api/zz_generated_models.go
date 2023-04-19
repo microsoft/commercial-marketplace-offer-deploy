@@ -124,7 +124,7 @@ type DeploymentManagementClientUpdateDeploymentOptions struct {
 }
 
 type DeploymentStage struct {
-	ID *int32 `json:"id,omitempty"`
+	ID *string `json:"id,omitempty"`
 	Name *string `json:"name,omitempty"`
 	Status *string `json:"status,omitempty"`
 }
