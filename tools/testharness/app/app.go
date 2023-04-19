@@ -87,7 +87,7 @@ func AddRoutes(e *echo.Echo) {
 	e.GET("/createdeployment", CreateDeployment)
 	e.GET("/startdeployment/:deploymentId", StartDeployment)
 	e.GET("/createeventsubscription", CreateEventSubscription)
-	e.GET("/dryrun", DryRun)
+	e.GET("/dryrun/:deploymentId", DryRun)
 	e.POST("/webhook", ReceiveEventNotification)
 }
 
@@ -121,7 +121,7 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 		hosting.Route{
 			Name:        "ExecuteDryRun",
 			Method:      http.MethodGet,
-			Path:        "/dryrun",
+			Path:        "/dryrun/:deploymentId",
 			HandlerFunc: DryRun,
 		},
 	}
@@ -139,7 +139,10 @@ func ReceiveEventNotification(c echo.Context) error {
 	log.Println("Event Web Hook received")
 	var bodyJson any
 	c.Bind(&bodyJson)
-	return c.JSON(http.StatusOK, bodyJson)
+
+	json := c.JSON(http.StatusOK, bodyJson)
+	log.Printf("ReceiveEventNotification response - %s", json)
+	return json
 }
 
 func CreateEventSubscription(c echo.Context) error {
@@ -172,7 +175,9 @@ func CreateEventSubscription(c echo.Context) error {
 		log.Panicln(err)
 	}
 
-	return c.JSON(http.StatusOK, res)
+	json := c.JSON(http.StatusOK, res)
+	log.Printf("CreateEventSubscription response - %s", json)
+	return json
 }
 
 func CreateDeployment(c echo.Context) error {
@@ -214,10 +219,14 @@ func CreateDeployment(c echo.Context) error {
 		log.Panicln(err)
 	}
 
-	return c.JSON(http.StatusOK, res)
+	json := c.JSON(http.StatusOK, res)
+	log.Printf("CreateDeployment response - %s", json)
+
+	return json
 }
 
 func DryRun(c echo.Context) error {
+	log.Println("Inside DryRun in the test harness")
 	deploymentId, err := strconv.Atoi(c.Param("deploymentId"))
 
 	if err != nil {
@@ -225,7 +234,9 @@ func DryRun(c echo.Context) error {
 	}
 
 	paramsPath := getParamsPath()
+	log.Printf("paramsPath - %v", paramsPath)
 	paramsMap := getJsonAsMap(paramsPath)
+	log.Printf("paramsMap - %v", paramsMap)
 
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 
@@ -240,12 +251,16 @@ func DryRun(c echo.Context) error {
 
 	var ctx context.Context = context.Background()
 
+	log.Printf("About to call DryRunDeployment - paramsMap: %s", paramsMap)
 	res, err := client.DryRunDeployment(ctx, int32(deploymentId), paramsMap)
 	if err != nil {
 		log.Println(err)
 	}
 
-	return c.JSON(http.StatusOK, res)
+	json := c.JSON(http.StatusOK, res)
+	log.Printf("Dry run response - %s", json)
+
+	return json
 }
 
 func StartDeployment(c echo.Context) error {

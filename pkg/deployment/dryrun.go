@@ -121,6 +121,8 @@ func whatIfDeployment(input DryRunValidationInput) (*armresources.DeploymentsCli
 		return nil, err
 	}
 
+	templateParams := azureDeployment.Params["parameters"]
+
 	pollerResp, err := deploymentsClient.BeginWhatIf(
 		ctx,
 		azureDeployment.ResourceGroupName,
@@ -128,7 +130,7 @@ func whatIfDeployment(input DryRunValidationInput) (*armresources.DeploymentsCli
 		armresources.DeploymentWhatIf{
 			Properties: &armresources.DeploymentWhatIfProperties{
 				Template:   azureDeployment.Template,
-				Parameters: azureDeployment.Params,
+				Parameters: templateParams,
 				Mode:       to.Ptr(armresources.DeploymentModeIncremental),
 			},
 		},
