@@ -34,8 +34,8 @@ ifndef CONTAINER_REGISTRY
 CONTAINER_REGISTRY := ${CONTAINER_REGISTRY_DEFAULT_SERVER}/${CONTAINER_REGISTRY_NAMESPACE}
 endif
 	
-apiserver-local: apiserver
-	./scripts/apiserver-local.sh
+apiserver-local:
+	./scripts/run-local.sh apiserver
 
 apiserver:
 	go build -o ./bin/ ./cmd/apiserver
@@ -43,8 +43,11 @@ apiserver:
 operator:
 	go build -o ./bin/ ./cmd/operator
 
+apiserver-local:
+	./scripts/run-local.sh apiserver
+
 operator-local:
-	./scripts/operator-local.sh
+	./scripts/run-local.sh operator
 
 test-all:
 	go test ./...
