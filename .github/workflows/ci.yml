@@ -6,6 +6,7 @@ name: CI
 env:
   targetGitHubAccount: gpsuscodewith
   versionPrefix: v0.1.
+  imageName: modm
 
 on:
   push:
@@ -55,4 +56,4 @@ jobs:
       with:
         context: ./build/package
         push: true
-        tags: ghcr.io/${{ env.targetGitHubAccount }}/modm:${{ env.versionPrefix }}${{github.run_number}}
+        tags: ghcr.io/${{ env.targetGitHubAccount }}/${{ env.imageName }}:${{ env.versionPrefix }}${{github.run_number}}
