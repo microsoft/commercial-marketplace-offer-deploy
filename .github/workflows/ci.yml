@@ -9,12 +9,12 @@ env:
   imageName: modm
 
 on:
-  push:
-    branches: [ "main" ]
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
@@ -25,35 +25,15 @@ jobs:
       with:
         go-version: 1.19
 
-    - name: Build apiserver
-      run: make apiserver
-      
+    - name: Build API Server & Operator
+      run: make apiserver && make operator
+    
     - name: Echo secrets
       run: |
           echo ${{secrets.ENV}} >> ./bin/.env
         
     - name: Show configs
       run: cat ./bin/.env
-      
-    - uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Build operator
-      run: make operator
-    
     # - name: Run tests
     # run: make test-all
-          
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v2
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-    - name: Login to GitHub Container Registry
-      run: echo ${{ secrets.CR_PAT2 }} | docker login ghcr.io -u ${{ env.targetGitHubAccount }} --password-stdin
-    - name: Build and push to registry
-      uses: docker/build-push-action@v4
-      with:
-        context: ./build/package
-        push: true
-        tags: ghcr.io/${{ env.targetGitHubAccount }}/${{ env.imageName }}:${{ env.versionPrefix }}${{github.run_number}}

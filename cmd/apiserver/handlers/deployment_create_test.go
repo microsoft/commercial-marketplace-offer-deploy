@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
@@ -16,9 +17,24 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	db             = data.NewDatabase(&data.DatabaseOptions{UseInMemory: true}).Instance()
+	deploymentJson = `{
+		"name":"test-deployment", 
+		"subscriptionId":"test-id",
+		"resourceGroup":"test-rg",
+		"location":"testus",
+		"template": {}
+	}`
+)
+
 func TestCreateDeployment(t *testing.T) {
 	// Setup
 	deploymentJson := getFakeCreateDeploymentJson(t)
+
+	if _, err := os.Stat("./testdata"); os.IsNotExist(err) {
+		assert.Fail(t, "testdata folder does not exist")
+	}
 
 	db := data.NewDatabase(&data.DatabaseOptions{Dsn: "./testdata/test.db"}).Instance()
 	e := echo.New()
