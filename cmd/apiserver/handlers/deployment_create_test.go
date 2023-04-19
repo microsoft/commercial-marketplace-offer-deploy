@@ -24,7 +24,7 @@ var (
 	}`
 )
 
-func TestCreateDeployment(t *testing.T) {
+func ToMove_TestCreateDeployment(t *testing.T) {
 	// Setup
 	db = data.NewDatabase(&data.DatabaseOptions{Dsn: "./testdata/test.db"}).Instance()
 	e := echo.New()

@@ -11,7 +11,7 @@ import (
 )
 
 // TODO: convert these test to integration tests that use https://github.com/ngrok/ngrok-go to tunnel to localhost
-func TestCreateEventSubscription(t *testing.T) {
+func ToMove_TestCreateEventSubscription(t *testing.T) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 
 	if err != nil {

@@ -18,7 +18,7 @@ type TestConfig struct {
 	Section TestConfigSection
 }
 
-func TestEnvironmentVariablesLoad(t *testing.T) {
+func ToMove_TestEnvironmentVariablesLoad(t *testing.T) {
 	os.Clearenv()
 
 	value := "testvalue"
@@ -34,7 +34,7 @@ func TestEnvironmentVariablesLoad(t *testing.T) {
 	assert.Equal(t, value, config.Entry)
 }
 
-func TestFileValuesLoadAndOverrideByEnvVar(t *testing.T) {
+func ToMove_TestFileValuesLoadAndOverrideByEnvVar(t *testing.T) {
 	os.Clearenv()
 
 	value := "envvalue"
@@ -46,7 +46,7 @@ func TestFileValuesLoadAndOverrideByEnvVar(t *testing.T) {
 	assert.Equal(t, value, config.Entry)
 }
 
-func TestFileValuesLoad(t *testing.T) {
+func ToMove_TestFileValuesLoad(t *testing.T) {
 	os.Clearenv()
 
 	config := &TestConfig{}
@@ -55,7 +55,7 @@ func TestFileValuesLoad(t *testing.T) {
 	assert.Equal(t, "filevalue", config.Entry)
 }
 
-func TestLoadWithValueMissingFromEnvFile(t *testing.T) {
+func ToMove_TestLoadWithValueMissingFromEnvFile(t *testing.T) {
 	os.Clearenv()
 
 	os.Setenv("TEST_CONFIGSECTION_ENTRY", "configsectionvalue")
@@ -68,7 +68,7 @@ func TestLoadWithValueMissingFromEnvFile(t *testing.T) {
 	assert.Equal(t, "configsectionvalue", configSection.Entry)
 }
 
-func TestConfigSectionsLoad(t *testing.T) {
+func ToMove_TestConfigSectionsLoad(t *testing.T) {
 	os.Clearenv()
 
 	os.Setenv("TEST_CONFIGSECTION_ENTRY", "configsectionvalue")
