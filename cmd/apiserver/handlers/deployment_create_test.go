@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
@@ -27,9 +28,13 @@ var (
 	}`
 )
 
-func ToMove_TestCreateDeployment(t *testing.T) {
+func TestCreateDeployment(t *testing.T) {
 	// Setup
 	deploymentJson := getFakeCreateDeploymentJson(t)
+
+	if _, err := os.Stat("./testdata"); os.IsNotExist(err) {
+		assert.Fail(t, "testdata folder does not exist")
+	}
 
 	db := data.NewDatabase(&data.DatabaseOptions{Dsn: "./testdata/test.db"}).Instance()
 	e := echo.New()
