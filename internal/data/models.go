@@ -25,7 +25,8 @@ func (base *BaseWithGuidPrimaryKey) BeforeCreate(tx *gorm.DB) error {
 
 type Stage struct {
 	BaseWithGuidPrimaryKey
-	Name string `json:"name"`
+	Name   string `json:"name"`
+	Status string `json:"status"`
 }
 
 type Deployment struct {

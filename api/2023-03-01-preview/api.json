@@ -469,8 +469,28 @@
         "status": {
           "type": "string"
         },
+        "stages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DeploymentStage"
+          }
+        },
         "template": {
           "type": "object"
+        }
+      }
+    },
+    "DeploymentStage": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
         }
       }
     },

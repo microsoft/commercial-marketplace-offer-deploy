@@ -61,6 +61,7 @@ func (m *CreateDeploymentMapper) getStages(template map[string]any) []data.Stage
 			stage := data.Stage{
 				BaseWithGuidPrimaryKey: data.BaseWithGuidPrimaryKey{ID: resource.getId()},
 				Name:                   resource.getName(),
+				Status:                 "New",
 			}
 			stages = append(stages, stage)
 		}
