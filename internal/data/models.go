@@ -17,7 +17,9 @@ type BaseWithGuidPrimaryKey struct {
 
 // BeforeCreate will set a UUID rather than numeric ID.
 func (base *BaseWithGuidPrimaryKey) BeforeCreate(tx *gorm.DB) error {
-	base.ID = uuid.New()
+	if base.ID == uuid.Nil {
+		base.ID = uuid.New()
+	}
 	return nil
 }
 
