@@ -34,7 +34,7 @@ type DatabaseSettings struct {
 type HttpSettings struct {
 	FQDN      string `mapstructure:"PUBLIC_FQDN"`
 	HttpPort  string `mapstructure:"PUBLIC_HTTP_PORT"`
-	HttpsPort bool   `mapstructure:"PUBLIC_HTTPS_PORT"`
+	HttpsPort string   `mapstructure:"PUBLIC_HTTPS_PORT"`
 }
 
 func (s *HttpSettings) GetBaseUrl(secure bool) string {

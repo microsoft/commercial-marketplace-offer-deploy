@@ -83,6 +83,14 @@ func getCallback() string {
 	return "http://localhost:8280"
 }
 
+func AddRoutes(e *echo.Echo) {
+	e.GET("/createdeployment", CreateDeployment)
+	e.GET("/startdeployment/:deploymentId", StartDeployment)
+	e.GET("/createeventsubscription", CreateEventSubscription)
+	e.GET("/dryrun", DryRun)
+	e.POST("/webhook", ReceiveEventNotification)
+}
+
 func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 
 	return hosting.Routes{
@@ -151,7 +159,7 @@ func CreateEventSubscription(c echo.Context) error {
 
 	subscriptionName := "webhook-1"
 	apiKey := "1234"
-	callbackclientEndpoint := fmt.Sprintf("http://%s.eastus.azurecontainer.io:8280/webhook", getCallback())
+	callbackclientEndpoint := fmt.Sprintf("http://%s.eastus.azurecontainer.io:8080/webhook", getCallback())
 
 	request := api.CreateEventSubscriptionRequest{
 		APIKey:   &apiKey,

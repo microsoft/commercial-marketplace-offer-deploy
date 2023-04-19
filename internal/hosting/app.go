@@ -2,10 +2,9 @@ package hosting
 
 import (
 	"log"
-	"net/http"
 	"strconv"
 	"sync"
-
+	"time"
 	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/tasks"
 )
@@ -62,6 +61,7 @@ func (app *App) startServer(options *AppStartOptions) {
 	if options != nil && options.WebServer {
 		port := 8080
 
+		
 		if options.Port == nil {
 			port = *options.Port
 		}
@@ -80,14 +80,7 @@ func (app *App) startServer(options *AppStartOptions) {
 
 // run until server is started so we know we can execute other tasks that depend on the server
 func (app *App) waitForReadiness() {
-	for {
-		res, err := http.Get("http://" + app.server.Listener.Addr().String())
-		started := err == nil && res.StatusCode == http.StatusOK
-		if started {
-			serverStarted <- true
-			break
-		}
-	}
+	time.Sleep(1 * time.Second)
 }
 
 func (app *App) startTasks() {
