@@ -43,6 +43,7 @@ type CreateEventSubscriptionResponse struct {
 type Deployment struct {
 	ID *int32 `json:"id,omitempty"`
 	Name *string `json:"name,omitempty"`
+	Stages []*DeploymentStage `json:"stages,omitempty"`
 	Status *string `json:"status,omitempty"`
 
 	// Anything
@@ -120,6 +121,12 @@ type DeploymentManagementClientListOperationsOptions struct {
 // method.
 type DeploymentManagementClientUpdateDeploymentOptions struct {
 	// placeholder for future optional parameters
+}
+
+type DeploymentStage struct {
+	ID *string `json:"id,omitempty"`
+	Name *string `json:"name,omitempty"`
+	Status *string `json:"status,omitempty"`
 }
 
 type EventSubscriptionResponse struct {

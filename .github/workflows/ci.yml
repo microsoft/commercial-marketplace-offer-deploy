@@ -3,6 +3,11 @@
 
 name: CI
 
+env:
+  targetGitHubAccount: gpsuscodewith
+  versionPrefix: v0.1.
+  imageName: modm
+
 on:
   push:
     branches: [ "main" ]
@@ -45,9 +50,10 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
     - name: Login to GitHub Container Registry
-      run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u kevinmgates --password-stdin
-    - name: Build and push
+      run: echo ${{ secrets.CR_PAT2 }} | docker login ghcr.io -u ${{ env.targetGitHubAccount }} --password-stdin
+    - name: Build and push to registry
       uses: docker/build-push-action@v4
       with:
+        context: ./build/package
         push: true
-        tags: ghcr.io/kevinmgates/modm:${{github.run_number}}
+        tags: ghcr.io/${{ env.targetGitHubAccount }}/${{ env.imageName }}:${{ env.versionPrefix }}${{github.run_number}}

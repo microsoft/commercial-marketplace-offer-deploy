@@ -17,13 +17,16 @@ type BaseWithGuidPrimaryKey struct {
 
 // BeforeCreate will set a UUID rather than numeric ID.
 func (base *BaseWithGuidPrimaryKey) BeforeCreate(tx *gorm.DB) error {
-	base.ID = uuid.New()
+	if base.ID == uuid.Nil {
+		base.ID = uuid.New()
+	}
 	return nil
 }
 
 type Stage struct {
 	BaseWithGuidPrimaryKey
-	Name string `json:"name"`
+	Name   string `json:"name"`
+	Status string `json:"status"`
 }
 
 type Deployment struct {
