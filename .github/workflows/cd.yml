@@ -12,7 +12,6 @@ on:
   push:
     branches:
       - main
-      - feature/newWorkflow-1 
   workflow_dispatch:
 
 jobs:
@@ -72,6 +71,7 @@ jobs:
             done 
             az group create -l eastus -n $RESOURCE_GROUP_NAME
 
+      # TODO: this requires that we setup main.bicep first...separate PR coming
       # - name: Deploy resources
       #   uses: azure/CLI@v1 
       #   with: 
