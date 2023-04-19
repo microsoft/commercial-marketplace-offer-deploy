@@ -33,7 +33,7 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 			Name:        "CreateDeployment",
 			Method:      http.MethodPost,
 			Path:        "/deployments",
-			HandlerFunc: middleware.AddJwtBearer(hosting.ToHandlerFunc(handlers.CreateDeployment, databaseOptions), appConfig),
+			HandlerFunc: middleware.AddJwtBearer(handlers.NewCreateDeploymentHandler(appConfig, hosting.GetAzureCredential()), appConfig),
 		},
 
 		hosting.Route{

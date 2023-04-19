@@ -24,8 +24,7 @@
       "name": "storageAccounts",
       "tags": {
         "modm.id": "31e9f9a0-9fd2-4294-a0a3-0101246d9700",
-        "modm.stage.id": "31e9f9a0-9fd2-4294-a0a3-0101246d9700",
-        "modm.name": "Example Title",
+        "modm.name": "Test Stage",
         "modm.events": "true"
       },
       "properties": {
@@ -103,6 +102,10 @@
                 "networkAcls": {
                   "defaultAction": "Deny"
                 }
+              },
+              "tags": {
+                "modm.stage.id": "31e9f9a0-9fd2-4294-a0a3-0101246d9700",
+                "modm.events": "true"
               }
             },
             {
