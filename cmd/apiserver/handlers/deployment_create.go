@@ -20,7 +20,6 @@ type createDeploymentHandler struct {
 
 // HTTP handler for creating deployments
 func (h *createDeploymentHandler) Handle(c echo.Context) error {
-	log.Println("Inside createdeplyoment")
 	var command *api.CreateDeployment
 	err := c.Bind(&command)
 
@@ -33,9 +32,7 @@ func (h *createDeploymentHandler) Handle(c echo.Context) error {
 		return err
 	}
 
-	log.Printf("Deployment: %v", deployment)
 	tx := h.db.Create(&deployment)
-
 	log.Printf("Deployment [%d] created.", deployment.ID)
 
 	if tx.Error != nil {

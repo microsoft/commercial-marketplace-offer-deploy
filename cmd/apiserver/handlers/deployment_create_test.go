@@ -7,45 +7,76 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/mapper"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
+	testutils "github.com/microsoft/commercial-marketplace-offer-deploy/test/utils"
 	"github.com/stretchr/testify/assert"
-)
-
-var (
-	db             = data.NewDatabase(&data.DatabaseOptions{UseInMemory: true}).Instance()
-	deploymentJson = `{
-		"name":"test-deployment", 
-		"subscriptionId":"test-id",
-		"resourceGroup":"test-rg",
-		"location":"testus",
-		"template": {}
-	}`
 )
 
 func TestCreateDeployment(t *testing.T) {
 	// Setup
-	db = data.NewDatabase(&data.DatabaseOptions{Dsn: "./testdata/test.db"}).Instance()
-	e := echo.New()
-	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(deploymentJson))
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	rec := httptest.NewRecorder()
-	c := e.NewContext(req, rec)
+	deploymentJson := getFakeCreateDeploymentJson(t)
 
-	// Assertions
+	db := data.NewDatabase(&data.DatabaseOptions{Dsn: "./testdata/test.db"}).Instance()
+	e := echo.New()
+	request := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(deploymentJson))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	recorder := httptest.NewRecorder()
+
+	c := e.NewContext(request, recorder)
+
 	handler := createDeploymentHandler{
 		db:     db,
 		mapper: mapper.NewCreateDeploymentMapper(),
 	}
 
-	if assert.NoError(t, handler.Handle(c)) {
-		assert.Equal(t, http.StatusOK, rec.Code)
+	//execute handler
+	err := handler.Handle(c)
 
-		var result api.Deployment
-		json.Unmarshal(rec.Body.Bytes(), &result)
-		assert.Equal(t, int32(1), *result.ID)
-		assert.Equal(t, "test-deployment", *result.Name)
+	// Assertions
+	assert.NoError(t, err)
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	// check response
+	var jsonResponse api.Deployment
+	json.Unmarshal(recorder.Body.Bytes(), &jsonResponse)
+	assert.Equal(t, "test name", *jsonResponse.Name)
+
+	// check database
+	id := uint(*jsonResponse.ID)
+	data := &data.Deployment{}
+	db.First(data, id)
+
+	assert.Equal(t, id, data.ID)
+	assert.Equal(t, *jsonResponse.Name, data.Name)
+
+	// make sure stages are created
+	assert.Len(t, data.Stages, 1)
+	assert.Equal(t, "Test Stage", data.Stages[0].Name)
+}
+
+func getFakeCreateDeploymentJson(t *testing.T) string {
+	template, err := testutils.NewFromJsonFile[map[string]any]("testdata/azuredeploy.json")
+	if err != nil {
+		t.Fatalf("Error: %v", err)
 	}
+
+	item := &api.CreateDeployment{
+		Name:           to.Ptr("test name"),
+		SubscriptionID: to.Ptr("test"),
+		ResourceGroup:  to.Ptr("test"),
+		Location:       to.Ptr("test"),
+		Template:       template,
+	}
+
+	bytes, err := json.Marshal(item)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	return string(bytes)
 }
