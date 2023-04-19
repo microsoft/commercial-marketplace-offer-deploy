@@ -26,3 +26,9 @@ bin/
 
 *.env
 .env
+
+deployments/certs/*.pem
+deployments/certs/*.crt
+deployments/certs/*.key
+deployments/certs/*.csr
+deployments/certs/*.srl
