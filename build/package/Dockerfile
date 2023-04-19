@@ -20,7 +20,7 @@ COPY . ./
 
 RUN go build -o ./bin/ ./cmd/operator
 RUN go build -o ./bin/ ./cmd/apiserver
-COPY ./scripts/startservices.sh ./bin
+COPY ./build/scripts/entrypoint.sh ./bin
 
 
 # Use the official Debian slim image for a lean production container.
@@ -49,11 +49,11 @@ ADD ["/templates/nginx", "/etc/nginx/"]
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /app/bin/operator /operator
 COPY --from=builder /app/bin/apiserver /apiserver
-COPY --from=builder /app/bin/startservices.sh /startservices.sh
+COPY --from=builder /app/bin/entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /operator
 RUN chmod +x /apiserver
-RUN chmod +x /startservices.sh
+RUN chmod +x /entrypoint.sh
 
 # Run the web service on container startup.
-ENTRYPOINT ["/startservices.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
