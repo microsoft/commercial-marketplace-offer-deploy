@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
 	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/tasks"
 )
@@ -61,7 +62,6 @@ func (app *App) startServer(options *AppStartOptions) {
 	if options != nil && options.WebServer {
 		port := 8080
 
-		
 		if options.Port == nil {
 			port = *options.Port
 		}
@@ -81,6 +81,7 @@ func (app *App) startServer(options *AppStartOptions) {
 // run until server is started so we know we can execute other tasks that depend on the server
 func (app *App) waitForReadiness() {
 	time.Sleep(1 * time.Second)
+	serverStarted <- true
 }
 
 func (app *App) startTasks() {
