@@ -1,0 +1,33 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: cleanDev
+
+env:
+  targetGitHubAccount: gpsuscodewith
+  versionPrefix: v0.1.
+  imageName: modm
+
+on:
+  workflow_dispatch:
+
+jobs:
+          
+  deploy-to-azure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+      - name: Azure CLI script 
+        uses: azure/CLI@v1 
+        with: 
+          azcliversion: 2.30.0 
+          inlineScript: | 
+            filter="[?starts_with(name,'development')].[name]" 
+            groups=$(az group list --query $filter -o tsv) 
+            for g in $groups; do 
+            az group delete -n $g --yes --no-wait; 
+            done 
+            az group create -l eastus -n development-${{github.run_number}}
