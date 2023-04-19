@@ -60,9 +60,7 @@ tools:
 	./scripts/build-tools.sh
 
 assemble: apiserver operator 
-	@echo "Building docker image: ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
-	docker build -t ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} .
-	docker tag ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} ${CONTAINER_REGISTRY}/${IMAGE_NAME}:latest
+	./scripts/assemble.sh
 
 .NOTPARALLEL:
 
