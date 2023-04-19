@@ -20,7 +20,7 @@ COPY . ./
 
 #RUN go build -o ./bin/ ./tools/testharness/main.go
 RUN go build -o ./bin/ ./tools/testharness
-COPY ./scripts/start-testharness.sh ./bin/
+COPY ./build/scripts/entrypoint.testharness.sh ./bin/
 COPY ./test/testdata/taggeddeployment/mainTemplateBicep.json ./bin
 COPY ./test/testdata/taggeddeployment/parametersBicep.json ./bin
 
@@ -41,10 +41,10 @@ ENV LANG en_US.utf8
 COPY --from=builder /app/bin/testharness /testharness
 COPY --from=builder /app/bin/mainTemplateBicep.json /mainTemplateBicep.json
 COPY --from=builder /app/bin/parametersBicep.json /parametersBicep.json
-COPY --from=builder /app/bin/start-testharness.sh /start-testharness.sh
+COPY --from=builder /app/bin/entrypoint.testharness.sh /entrypoint.testharness.sh
 
 RUN chmod +x /testharness
-RUN chmod +x /start-testharness.sh
+RUN chmod +x /entrypoint.testharness.sh
 
 # Run the web service on container startup.
-ENTRYPOINT ["/start-testharness.sh"]
+ENTRYPOINT ["/entrypoint.testharness.sh"]
