@@ -9,6 +9,7 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/mapper"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/stretchr/testify/assert"
 )
@@ -34,7 +35,12 @@ func TestCreateDeployment(t *testing.T) {
 	c := e.NewContext(req, rec)
 
 	// Assertions
-	if assert.NoError(t, CreateDeployment(c, db)) {
+	handler := createDeploymentHandler{
+		db:     db,
+		mapper: mapper.NewCreateDeploymentMapper(),
+	}
+
+	if assert.NoError(t, handler.Handle(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 
 		var result api.Deployment
