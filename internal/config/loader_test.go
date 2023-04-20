@@ -22,24 +22,24 @@ func TestMain(m *testing.M) {
 	path := "./testdata"
 	var _, err = os.Stat(path)
 	if os.IsNotExist(err) {
-        var file, err = os.Create(path)
-        if isError(err) {
-            return
-        }
-        file.Close()
-    }
+		var file, err = os.Create(path)
+		if isError(err) {
+			return
+		}
+		file.Close()
+	}
 
 	file, err := os.OpenFile(path, os.O_RDWR, 0644)
 	if isError(err) {
-        return
-    }
-    defer file.Close()
+		return
+	}
+	defer file.Close()
 
 	_, err = file.WriteString("TEST_CONFIG_ENTRY=filevalue \n")
 }
 
 func isError(err error) bool {
-    return (err != nil)
+	return (err != nil)
 }
 
 func TestEnvironmentVariablesLoad(t *testing.T) {
@@ -72,7 +72,7 @@ func TestFileValuesLoadAndOverrideByEnvVar(t *testing.T) {
 
 func TestFileValuesLoad(t *testing.T) {
 	os.Clearenv()
-// needs test.env
+	// needs test.env
 	config := &TestConfig{}
 	err := LoadConfiguration("./testdata", to.Ptr("test"), config)
 	assert.NoError(t, err)

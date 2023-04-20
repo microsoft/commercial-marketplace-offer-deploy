@@ -1,5 +1,5 @@
 @description('Name of the Service Bus namespace')
-param serviceBusNamespaceName string
+param appVersion string
 
 var serviceBusQueueNames = [
   'events'
@@ -9,8 +9,11 @@ var serviceBusQueueNames = [
 @description('Location for all resources.')
 param location string = resourceGroup().location
 
-resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-01-01-preview' = {
-  name: serviceBusNamespaceName
+var versionSuffix = replace(appVersion, '.', '')
+var serviceBusNamespace = 'modmsb-${versionSuffix}'
+
+resource serviceBus 'Microsoft.ServiceBus/namespaces@2022-01-01-preview' = {
+  name: serviceBusNamespace
   location: location
   sku: {
     name: 'Standard'
@@ -19,7 +22,7 @@ resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-01-01-preview
 }
 
 resource serviceBusQueues 'Microsoft.ServiceBus/namespaces/queues@2022-01-01-preview' = [for i in range(0, length(serviceBusQueueNames)): {
-  parent: serviceBusNamespace
+  parent: serviceBus
   name: serviceBusQueueNames[i]
   properties: {
     lockDuration: 'PT5M'
@@ -36,3 +39,4 @@ resource serviceBusQueues 'Microsoft.ServiceBus/namespaces/queues@2022-01-01-pre
   }
 }]
 
+output serviceBusNamespace string = serviceBusNamespace
