@@ -1,13 +1,29 @@
 services:
-  web:
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - web
+    volumes:
+      - ../deployments/caddy/Caddyfile:/etc/caddy/Caddyfile
+    restart: unless-stopped
+    environment:
+      - SITE_ADDRESS=modm.eastus.azurecontainer.io
+  modm:
     env_file: ../bin/.env
     image: ghcr.io/gpsuscodewith/modm:v0.1.8
     ports:
       - "8080:8080"
     environment:
       - GO_ENV=development
-      - HTTPS=false
-      - PUBLIC_DOMAIN_NAME
-      - ACME_ACCOUNT_EMAIL=local@nowhere.com
-    volumes:
-      - ../deployments/certs:/app/certs
+    networks:
+      - internal
+
+networks:
+  web:
+          external: true
+  internal:
+          external: false
+          driver: bridge
