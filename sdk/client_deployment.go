@@ -26,10 +26,7 @@ type StartDeploymentResult struct {
 // Performs a dry run of a deployment and returns the verification results
 // returns: verification results
 func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, templateParameters map[string]interface{}) (*DryRunResult, error) {
-	log.Printf("Inside DryRunDeployment in sdk\n")
-	log.Printf("The templateParameters are - %v\n", templateParameters)
 	invokedOperation, err := client.invokeDeploymentOperation(ctx, true, operations.OperationDryRun, deploymentId, templateParameters)
-	log.Printf("After call to invokeDeploymentOperation\n")
 	if err != nil {
 		return nil, err
 	}
@@ -60,9 +57,8 @@ func (client *Client) StartDeployment(ctx context.Context, deploymentId int32, t
 }
 
 func (client *Client) CreateDeployment(ctx context.Context, request api.CreateDeployment) (*api.Deployment, error) {
-	log.Println("Inside CreateDeployment")
 	response, err := client.internalClient.CreateDeployment(ctx, request, nil)
-	log.Printf("The response is %v\n", response)
+
 	if err != nil {
 		return nil, err
 	}
