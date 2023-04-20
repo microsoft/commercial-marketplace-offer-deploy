@@ -22,7 +22,8 @@ var (
 	location       = "eastus"
 	resourceGroup  = "demo2"
 	subscription   = "31e9f9a0-9fd2-4294-a0a3-0101246d9700"
-	clientEndpoint = "https://dnsbobjac26.eastus.azurecontainer.io:443/api"
+	//clientEndpoint = "https://dnsbobjac67.eastus.azurecontainer.io:443/api"
+	clientEndpoint = "http://localhost:8080"
 )
 
 func getClientEndpoint() string {
@@ -80,7 +81,7 @@ func getCallback() string {
 	if len(callback) > 0 {
 		return callback
 	}
-	return "http://localhost:8280"
+	return "http://localhost:8080"
 }
 
 func AddRoutes(e *echo.Echo) {

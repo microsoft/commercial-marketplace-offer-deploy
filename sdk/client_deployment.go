@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
@@ -11,7 +12,8 @@ import (
 
 type DryRunResult struct {
 	Id      string
-	Results map[string]any
+	//Results map[string]any
+	Results any
 	Status  string
 }
 
@@ -31,10 +33,14 @@ func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, 
 	if err != nil {
 		return nil, err
 	}
-
+	if invokedOperation == nil {
+		return nil, errors.New("invokedOperation is nil")
+	}
+	
 	return &DryRunResult{
 		Id:      *invokedOperation.ID,
-		Results: invokedOperation.Result.(map[string]any),
+		//Results: invokedOperation.Result.(map[string]any),
+		Results: invokedOperation.Result,
 		Status:  *invokedOperation.Status,
 	}, nil
 }
