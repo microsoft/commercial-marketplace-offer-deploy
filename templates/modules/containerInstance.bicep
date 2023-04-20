@@ -96,10 +96,6 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
           image: 'caddy:2-alpine'
           ports: [
             {
-              port: port
-              protocol: 'TCP'
-            }
-            {
               port: 80
               protocol: 'TCP'
             }
@@ -130,6 +126,7 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
               name: 'SITE_ADDRESS'
               value: '${containerName}.${location}.azurecontainer.io'
             }
+            // the hostname and port will be used to configure caddy and point to modm
             {
               name: 'HOSTNAME'
               value: 'localhost'

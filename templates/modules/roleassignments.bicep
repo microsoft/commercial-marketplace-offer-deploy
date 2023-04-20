@@ -11,7 +11,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' existing 
   name: storageAccountName
 }
 
-resource serviceBus 'Microsoft.ContainerInstance/containerGroups@2021-09-01' existing = {
+resource serviceBus 'Microsoft.ServiceBus/namespaces@2022-01-01-preview' existing = {
   name: serviceBusNamespace
 }
 
