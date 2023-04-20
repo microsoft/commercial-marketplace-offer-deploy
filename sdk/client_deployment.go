@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
@@ -11,7 +12,8 @@ import (
 
 type DryRunResult struct {
 	Id      string
-	Results map[string]any
+	//Results map[string]any
+	Results any
 	Status  string
 }
 
@@ -25,14 +27,17 @@ type StartDeploymentResult struct {
 // returns: verification results
 func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, templateParameters map[string]interface{}) (*DryRunResult, error) {
 	invokedOperation, err := client.invokeDeploymentOperation(ctx, true, operations.OperationDryRun, deploymentId, templateParameters)
-
 	if err != nil {
 		return nil, err
 	}
-
+	if invokedOperation == nil {
+		return nil, errors.New("invokedOperation is nil")
+	}
+	
 	return &DryRunResult{
 		Id:      *invokedOperation.ID,
-		Results: invokedOperation.Result.(map[string]any),
+		//Results: invokedOperation.Result.(map[string]any),
+		Results: invokedOperation.Result,
 		Status:  *invokedOperation.Status,
 	}, nil
 }
@@ -52,9 +57,8 @@ func (client *Client) StartDeployment(ctx context.Context, deploymentId int32, t
 }
 
 func (client *Client) CreateDeployment(ctx context.Context, request api.CreateDeployment) (*api.Deployment, error) {
-	log.Println("Inside CreateDeployment")
 	response, err := client.internalClient.CreateDeployment(ctx, request, nil)
-	log.Printf("The response is %v\n", response)
+
 	if err != nil {
 		return nil, err
 	}

@@ -12,7 +12,7 @@ import (
 
 var (
 	//configurationFilePath string = "."
-	port                  int    = 8080
+	port                  int    = 8280
 )
 
 func main() {
@@ -22,7 +22,7 @@ func main() {
 	e := echo.New()
 	app.AddRoutes(e)
 	
-	if err := e.Start(":8080"); err != http.ErrServerClosed {
+	if err := e.Start(":8280"); err != http.ErrServerClosed {
 		log.Fatal(err)
 	  }
 	// app := testharness.BuildApp(configurationFilePath)
