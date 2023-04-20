@@ -1,11 +1,13 @@
 services:
   web:
     env_file: ../bin/.env
-    image: modm:latest
+    image: ghcr.io/gpsuscodewith/modm:v0.1.8
     ports:
       - "8080:8080"
     environment:
+      - GO_ENV=development
       - HTTPS=false
-      - PUBLIC_DOMAIN_NAME=
+      - PUBLIC_DOMAIN_NAME
+      - ACME_ACCOUNT_EMAIL=local@nowhere.com
     volumes:
       - ../deployments/certs:/app/certs
