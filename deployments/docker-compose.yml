@@ -10,10 +10,10 @@ services:
       - ../deployments/caddy/Caddyfile:/etc/caddy/Caddyfile
     restart: unless-stopped
     environment:
-      - SITE_ADDRESS=modm.eastus.azurecontainer.io
+      - SITE_ADDRESS=http://localhost
   modm:
     env_file: ../bin/.env
-    image: ghcr.io/gpsuscodewith/modm:v0.1.8
+    image: modm:latest
     ports:
       - "8080:8080"
     environment:
