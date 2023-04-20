@@ -38,7 +38,7 @@ func run(ctx context.Context) error {
 	defer tunnel.Close()
 
 	log.Println("tunnel created:", tunnel.URL())
-	setPublicFQDN(tunnel.URL())
+	setPublicDomainName(tunnel.URL())
 
 	var appName string
 	flag.StringVar(&appName, "app", "", "App name to tunnel to")
@@ -57,13 +57,13 @@ func run(ctx context.Context) error {
 	return app.Start(options)
 }
 
-func setPublicFQDN(tunnelUrl string) {
+func setPublicDomainName(tunnelUrl string) {
 	url, err := url.Parse(tunnelUrl)
 	if err != nil {
 		log.Fatal(err)
 	}
 	hostname := url.Hostname()
-	os.Setenv("PUBLIC_FQDN", hostname)
+	os.Setenv("PUBLIC_DOMAIN_NAME", hostname)
 
 }
 
