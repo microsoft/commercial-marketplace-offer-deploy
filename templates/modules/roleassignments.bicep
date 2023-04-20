@@ -27,6 +27,11 @@ resource serviceBusDataSenderRoleDefinition 'Microsoft.Authorization/roleDefinit
   name: '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39'
 }
 
+resource applicationInsightsRoleDefinition 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing {
+  scope: subscription()
+  name: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
+}
+
 resource roleAssignmentStorageAcct 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
   scope: storageAccount //assigns to storage acct
   name: guid(storageAccount.id, containerGroup.name, storageAccountContributorRoleDefinition.id)
@@ -57,3 +62,12 @@ resource roleAssignmentServiceBusSender 'Microsoft.Authorization/roleAssignments
   }
 }
 
+resource roleAssignmentApplicationInsights 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' {
+  scope: storageAccount //assigns to storage acct
+  name: guid(storageAccount.id, containerGroup.name, applicationInsightsRoleDefinition.id)
+  properties: {
+    roleDefinitionId: applicationInsightsRoleDefinition.id
+    principalId: containerGroup.identity.principalId
+    principalType: 'ApplicationInsights'
+  }
+}
