@@ -34,8 +34,8 @@ ifndef CONTAINER_REGISTRY
 CONTAINER_REGISTRY := ${CONTAINER_REGISTRY_DEFAULT_SERVER}/${CONTAINER_REGISTRY_NAMESPACE}
 endif
 	
-apiserver-local: apiserver
-	./scripts/apiserver-local.sh
+apiserver-local:
+	./scripts/run-local.sh apiserver
 
 apiserver:
 	go build -o ./bin/ ./cmd/apiserver
@@ -43,8 +43,11 @@ apiserver:
 operator:
 	go build -o ./bin/ ./cmd/operator
 
+apiserver-local:
+	./scripts/run-local.sh apiserver
+
 operator-local:
-	./scripts/operator-local.sh
+	./scripts/run-local.sh operator
 
 test-all:
 	go test ./...
@@ -60,9 +63,7 @@ tools:
 	./scripts/build-tools.sh
 
 assemble: apiserver operator 
-	@echo "Building docker image: ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
-	docker build -t ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} .
-	docker tag ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} ${CONTAINER_REGISTRY}/${IMAGE_NAME}:latest
+	./scripts/assemble.sh
 
 .NOTPARALLEL:
 
