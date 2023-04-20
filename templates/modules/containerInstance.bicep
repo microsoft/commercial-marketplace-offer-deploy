@@ -1,11 +1,12 @@
-@description('Name for the container group')
-param name string = 'bobjac68'
+
+@description('Application version in this format: v1.0.0')
+param appVersion string
+
+@description('container image')
+param containerImage string
 
 @description('Location for all resources.')
 param location string = resourceGroup().location
-
-@description('Container image to deploy. Should be of the form repoName/imagename:tag for images stored in public Docker Hub, or a fully qualified URI for other registries. Images from private registries require additional registry credentials.')
-param image string = 'bobjac/modm:1.33'
 
 @description('Port to open on the container')
 param port int = 8080
@@ -16,27 +17,17 @@ param cpuCores int = 1
 @description('The amount of memory to allocate to the container in gigabytes.')
 param memoryInGb int = 2
 
-@description('The service principal client ID')
-param azureClientId string
-
-@description('The service principal client secret')
-@secure()
-param azureClientSecret string
-
 @description('The Azure Tenant Id')
-param azureTenantId string
+param tenantId string
 
 @description('The Azure Subscription Id')
-param azureSubscriptionId string
+param subscriptionId string
 
 @description('The Azure Resource Group')
-param azureResourceGroup string
+param resourceGroupName string
 
-@description('The Azure Location')
-param azureLocation string
-
-@description('The Azure Location')
-param azureServiceBusNamespace string
+@description('The Azure service bus name')
+param serviceBusNamespace string
 
 @description('The email address used for the acme account')
 param acmeEmail string
@@ -45,7 +36,7 @@ param acmeEmail string
 param publicHttpPort int = 80
 
 @description('The public https port')
-param publicHttpsPort int = 443
+param publicHttpsPort int = 8443
 
 
 @description('The behavior of Azure runtime if container has stopped.')
@@ -56,8 +47,10 @@ param publicHttpsPort int = 443
 ])
 param restartPolicy string = 'Always'
 
+var versionSuffix = replace(appVersion, '.', '')
+
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
-  name: 'inst${name}'
+  name: 'modmstor0${versionSuffix}'
   location: location
   kind: 'StorageV2'
   sku: {
@@ -65,24 +58,26 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
   }
 }
 
+var fileShareName = '${storageAccount.name}/default/share'
 resource fileStore 'Microsoft.Storage/storageAccounts/fileServices/shares@2021-09-01' = {
-  name: '${storageAccount.name}/default/share'
+  name: fileShareName
   properties: {
     shareQuota: 1
     enabledProtocols: 'SMB'
   }
 }
 
-var containerGroupName = 'modmGroup'
-var fqdn = 'dns${name}.${location}.azurecontainer.io'
+var fileShareMountPath = '/opt/share'
+var containerName = 'modm-${versionSuffix}'
 
-resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01' = {
-  name: containerGroupName
+resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-preview' = {
+  name: 'modm-group-${versionSuffix}'
   location: location
   identity: {
     type: 'SystemAssigned'
   }
   properties: {
+    
     volumes: [
       {
         name: 'filestore'
@@ -96,9 +91,9 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01'
     ]
     containers: [
       {
-        name: 'modm'
+        name: containerName
         properties: {
-          image: image
+          image: containerImage
           ports: [
             {
               port: port
@@ -122,50 +117,34 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01'
           volumeMounts: [
             {
               name: 'filestore'
-              mountPath: '/opt/share'
+              mountPath: fileShareMountPath
               readOnly: false
             }
           ]
           environmentVariables: [
             {
-              name: 'AZURE_STORAGE_MOUNT_POINT'
-              value: '/opt/share'
-            }
-            {
               name: 'DB_PATH'
-              value: '/opt/share'
-            }
-            { 
-              name: 'DB_USE_INMEMORY'
-              value: 'false'
-            }
-            {
-              name: 'AZURE_CLIENT_ID'
-              value: azureClientId
+              value: fileShareMountPath
             }
             {
               name: 'AZURE_TENANT_ID'
-              value: azureTenantId
-            }
-            {
-              name: 'AZURE_CLIENT_SECRET'
-              value: azureClientSecret
+              value: tenantId
             }
             {
               name: 'AZURE_SUBSCRIPTION_ID'
-              value: azureSubscriptionId
+              value: subscriptionId
             }
             {
               name: 'AZURE_RESOURCE_GROUP'
-              value: azureResourceGroup
+              value: resourceGroupName
             }
             {
               name: 'AZURE_LOCATION'
-              value: azureLocation
+              value: location
             }
             {
               name: 'AZURE_SERVICEBUS_NAMESPACE'
-              value: azureServiceBusNamespace
+              value: serviceBusNamespace
             }
             {
               name: 'ACME_ACCOUNT_EMAIL'
@@ -173,7 +152,7 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01'
             }
             {
               name: 'PUBLIC_DOMAIN_NAME'
-              value: fqdn
+              value: '${containerName}.${location}.azurecontainer.io'
             }
             {
               name: 'PUBLIC_HTTP_PORT'
@@ -205,9 +184,11 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01'
           protocol: 'TCP'
         }
       ]
-      dnsNameLabel: 'dns${name}'
+      dnsNameLabel: containerName
     }
   }
 }
 
+output storageAccountName string = storageAccount.name
+output containerGroupName string = containerGroup.name
 output containerIPv4Address string = containerGroup.properties.ipAddress.ip

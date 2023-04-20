@@ -1,9 +1,11 @@
 services:
   web:
-    env_file:
-      - ../bin/.env
+    env_file: ../bin/.env
     image: modm:latest
     ports:
       - "8080:8080"
     environment:
-      - PUBLIC_FQDN=
+      - HTTPS=false
+      - PUBLIC_DOMAIN_NAME=
+    volumes:
+      - ../deployments/certs:/app/certs
