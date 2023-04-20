@@ -11,19 +11,17 @@ services:
     restart: unless-stopped
     environment:
       - SITE_ADDRESS=http://localhost
+      - MODM_HOSTNAME=modm
   modm:
     env_file: ../bin/.env
     image: modm:latest
     ports:
-      - "8080:8080"
+      - 8080:8080
     environment:
       - GO_ENV=development
     networks:
-      - internal
+      - web
 
 networks:
   web:
-          external: true
-  internal:
-          external: false
-          driver: bridge
+    external: true
