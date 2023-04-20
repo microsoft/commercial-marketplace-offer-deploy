@@ -11,7 +11,8 @@ services:
     restart: unless-stopped
     environment:
       - SITE_ADDRESS=http://localhost
-      - MODM_HOSTNAME=modm
+      - HOSTNAME=modm
+      - PORT=8080
   modm:
     env_file: ../bin/.env
     image: modm:latest

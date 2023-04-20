@@ -8,7 +8,7 @@ param containerImage string
 @description('Location for all resources.')
 param location string = resourceGroup().location
 
-@description('Port to open on the container')
+@description('Port to open on the modm sidecar container')
 param port int = 8080
 
 @description('The number of CPU cores to allocate to the container.')
@@ -67,6 +67,7 @@ resource fileStore 'Microsoft.Storage/storageAccounts/fileServices/shares@2021-0
   }
 }
 
+var sharedVolumeName = 'filestore'
 var fileShareMountPath = '/opt/share'
 var containerName = 'modm-${versionSuffix}'
 
@@ -77,10 +78,9 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
     type: 'SystemAssigned'
   }
   properties: {
-    
     volumes: [
       {
-        name: 'filestore'
+        name: sharedVolumeName
         azureFile: {
           readOnly: false
           shareName: 'share'
@@ -91,20 +91,20 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
     ]
     containers: [
       {
-        name: containerName
+        name: 'proxy-server'
         properties: {
-          image: containerImage
+          image: 'caddy:2-alpine'
           ports: [
             {
               port: port
               protocol: 'TCP'
             }
             {
-              port: publicHttpPort
+              port: 80
               protocol: 'TCP'
             }
             {
-              port: publicHttpsPort
+              port: 443
               protocol: 'TCP'
             }
           ]
@@ -116,7 +116,50 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
           }
           volumeMounts: [
             {
-              name: 'filestore'
+              name: sharedVolumeName
+              mountPath: '/etc/caddy'
+              readOnly: false
+            }
+          ]
+          environmentVariables: [
+            {
+              name: 'ACME_ACCOUNT_EMAIL'
+              value: acmeEmail
+            }
+            {
+              name: 'SITE_ADDRESS'
+              value: '${containerName}.${location}.azurecontainer.io'
+            }
+            {
+              name: 'HOSTNAME'
+              value: 'localhost'
+            }
+            {
+              name: 'PORT'
+              value: '${port}'
+            }
+          ]
+        }
+      }
+      {
+        name: containerName
+        properties: {
+          image: containerImage
+          ports: [
+            {
+              port: port
+              protocol: 'TCP'
+            }
+          ]
+          resources: {
+            requests: {
+              cpu: cpuCores
+              memoryInGB: memoryInGb
+            }
+          }
+          volumeMounts: [
+            {
+              name: sharedVolumeName
               mountPath: fileShareMountPath
               readOnly: false
             }
@@ -172,20 +215,40 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
       type: 'Public'
       ports: [
         {
-          port: port
-          protocol: 'TCP'
-        }
-        {
-          port: publicHttpPort
-          protocol: 'TCP'
-        }
-        {
-          port: publicHttpsPort
+          port: 443
           protocol: 'TCP'
         }
       ]
       dnsNameLabel: containerName
     }
+  }
+}
+
+var filename = 'caddyFile'
+@description('this deployment script supports sucking in the caddyFile for caddy')
+resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
+  name: 'caddyFile'
+  location: location
+  kind: 'AzureCLI'
+  properties: {
+    azCliVersion: '2.26.1'
+    timeout: 'PT5M'
+    retentionInterval: 'PT1H'
+    environmentVariables: [
+      {
+        name: 'AZURE_STORAGE_ACCOUNT'
+        value: storageAccount.name
+      }
+      {
+        name: 'AZURE_STORAGE_KEY'
+        secureValue: storageAccount.listKeys().keys[0].value
+      }
+      {
+        name: 'CONFIG_FILE_CONTENT'
+        value: loadTextContent('../../deployments/caddy/caddyFile')
+      }
+    ]
+    scriptContent: 'echo "$CONFIG_FILE_CONTENT" > ${filename} && az storage file upload --source ${filename} -s share'
   }
 }
 
