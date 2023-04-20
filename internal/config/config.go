@@ -38,16 +38,12 @@ type HttpSettings struct {
 	IsSecure   bool   `mapstructure:"HTTPS"`
 }
 
-func (s *HttpSettings) GetBaseUrl() string {
+func (s *HttpSettings) GetPublicBaseUrl() string {
 	protocol := "http"
-	if s.IsSecure {
+	if !GetAppConfig().IsDevelopment() {
 		protocol = "https"
 	}
-	domainName := s.DomainName
-	if domainName == "" && GetAppConfig().IsDevelopment() {
-		domainName = "localhost"
-	}
-	return protocol + "://" + s.DomainName + "/"
+	return protocol + "https://" + s.DomainName + "/"
 }
 
 type AppConfig struct {
