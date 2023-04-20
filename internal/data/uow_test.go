@@ -2,20 +2,20 @@ package data
 
 import (
 	"testing"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
 type uowSuite struct {
-	suite.Suite	
+	suite.Suite
 	createEntity *Deployment
 	updateEntity *Deployment
 	deleteEntity *Deployment
-	database Database
-	uow UOW
+	database     Database
+	uow          UOW
 }
-
 
 func TestUnitOfWorkSuite(t *testing.T) {
 	suite.Run(t, &uowSuite{})
@@ -41,7 +41,7 @@ func (s *uowSuite) SetupTest() {
 	log.Print("SetupTest")
 }
 
-func (s *uowSuite) TestNewEntity(){
+func (s *uowSuite) TestNewEntity() {
 	s.uow.RegisterNew(s.createEntity)
 	err := s.uow.Commit()
 	require.NoError(s.T(), err)
@@ -52,7 +52,7 @@ func (s *uowSuite) TestNewEntity(){
 	require.Equal(s.T(), s.createEntity.Name, result.Name)
 }
 
-func (s *uowSuite) TestUpdateEntity(){
+func (s *uowSuite) TestUpdateEntity() {
 	s.uow.RegisterNew(s.updateEntity)
 	err := s.uow.Commit()
 	require.NoError(s.T(), err)
@@ -74,7 +74,7 @@ func (s *uowSuite) TestUpdateEntity(){
 	require.Equal(s.T(), uint(0), updateResult.ID)
 }
 
-func (s *uowSuite) TestDeleteEntity(){
+func (s *uowSuite) TestDeleteEntity() {
 	s.uow.RegisterNew(s.deleteEntity)
 	err := s.uow.Commit()
 	require.NoError(s.T(), err)

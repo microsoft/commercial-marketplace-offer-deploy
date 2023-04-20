@@ -3,10 +3,11 @@ package deployment
 import (
 	"context"
 	"errors"
-	"log"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
+	log "github.com/sirupsen/logrus"
 )
 
 type DryRunResponse struct {
@@ -74,7 +75,7 @@ func validate(validators []DryRunValidator, input DryRunValidationInput) *DryRun
 			responses = append(responses, res)
 		}
 	}
-	
+
 	return aggregateResponses(responses)
 }
 
@@ -93,8 +94,8 @@ func DryRun(azureDeployment *AzureDeployment) *DryRunResponse {
 	}
 	validators := loadValidators()
 	input := DryRunValidationInput{
-		ctx : context.Background(),
-		cred : cred,
+		ctx:             context.Background(),
+		cred:            cred,
 		azureDeployment: azureDeployment,
 	}
 	return validate(validators, input)
@@ -105,7 +106,7 @@ func whatIfDeployment(input DryRunValidationInput) (*armresources.DeploymentsCli
 		return nil, errors.New("azureDeployment is nil")
 	}
 	azureDeployment := input.azureDeployment
-	
+
 	if input.cred == nil {
 		return nil, errors.New("credential is nil")
 	}
@@ -115,7 +116,7 @@ func whatIfDeployment(input DryRunValidationInput) (*armresources.DeploymentsCli
 		return nil, errors.New("context is nil")
 	}
 	ctx := input.ctx
-	
+
 	deploymentsClient, err := armresources.NewDeploymentsClient(azureDeployment.SubscriptionId, cred, nil)
 	if err != nil {
 		return nil, err

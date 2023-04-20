@@ -1,17 +1,20 @@
 package hosting
 
 import (
-	"log"
 	"strconv"
 	"sync"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/labstack/echo"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/tasks"
+	"github.com/sirupsen/logrus"
 )
 
 type App struct {
-	config   any
+	config   *config.AppConfig
 	server   *echo.Echo
 	services []BackgroundService
 	tasks    []tasks.Task
@@ -38,12 +41,12 @@ func GetApp() *App {
 }
 
 // Gets strongly typed the App configuration
-func GetAppConfig[T any]() T {
-	return GetApp().GetConfig().(T)
+func GetAppConfig() *config.AppConfig {
+	return GetApp().GetConfig()
 }
 
 // GetConfig gets the app configuration
-func (app *App) GetConfig() any {
+func (app *App) GetConfig() *config.AppConfig {
 	return app.config
 }
 
@@ -59,6 +62,9 @@ func (app *App) Start(options *AppStartOptions) error {
 }
 
 func (app *App) startServer(options *AppStartOptions) {
+	logrus.Info("Calling logging from startServer")
+	logrus.Printf("This is a logrus.Printf call")
+
 	if options != nil && options.WebServer {
 		port := 8080
 

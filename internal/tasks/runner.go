@@ -2,8 +2,9 @@ package tasks
 
 import (
 	"context"
-	"log"
 	"sync"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type TaskRunner interface {

@@ -9,6 +9,7 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
+            "envFile": "${workspaceRoot}/cmd/apiserver/.env",
             "program": "${workspaceRoot}/cmd/apiserver/main.go",
             "dlvLoadConfig":{
                 "followPointers": true,

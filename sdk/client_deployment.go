@@ -3,7 +3,8 @@ package sdk
 import (
 	"context"
 	"errors"
-	"log"
+
+	//log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
@@ -11,7 +12,7 @@ import (
 )
 
 type DryRunResult struct {
-	Id      string
+	Id string
 	//Results map[string]any
 	Results any
 	Status  string
@@ -33,9 +34,9 @@ func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, 
 	if invokedOperation == nil {
 		return nil, errors.New("invokedOperation is nil")
 	}
-	
+
 	return &DryRunResult{
-		Id:      *invokedOperation.ID,
+		Id: *invokedOperation.ID,
 		//Results: invokedOperation.Result.(map[string]any),
 		Results: invokedOperation.Result,
 		Status:  *invokedOperation.Status,

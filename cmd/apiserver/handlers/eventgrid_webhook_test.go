@@ -1,10 +1,11 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/labstack/echo"

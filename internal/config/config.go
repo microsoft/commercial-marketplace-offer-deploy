@@ -4,7 +4,6 @@ import (
 	"path/filepath"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 )
 
 // The azure settings
@@ -31,6 +30,11 @@ type DatabaseSettings struct {
 	UseInMemory bool   `mapstructure:"DB_USE_INMEMEORY"`
 }
 
+type LoggingSettings struct {
+	DefaultLogLevel string `mapstructure:"LOG_LEVEL"`
+	InstrumentationKey string `mapstructure:"LOG_KEY"`
+}
+
 type HttpSettings struct {
 	FQDN      string `mapstructure:"PUBLIC_FQDN"`
 	HttpPort  string `mapstructure:"PUBLIC_HTTP_PORT"`
@@ -49,11 +53,7 @@ type AppConfig struct {
 	Azure    AzureSettings
 	Database DatabaseSettings
 	Http     HttpSettings
-}
-
-func GetAppConfig() *AppConfig {
-	appConfig := hosting.GetAppConfig[*AppConfig]()
-	return appConfig
+	Logging  LoggingSettings
 }
 
 func (appSettings *AppConfig) GetDatabaseOptions() *data.DatabaseOptions {

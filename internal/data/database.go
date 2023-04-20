@@ -2,8 +2,9 @@ package data
 
 import (
 	"fmt"
-	"log"
 	"path/filepath"
+
+	log "github.com/sirupsen/logrus"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

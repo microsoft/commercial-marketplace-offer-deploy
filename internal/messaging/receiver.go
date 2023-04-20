@@ -3,7 +3,8 @@ package messaging
 import (
 	"context"
 	"fmt"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 
 	"errors"
 

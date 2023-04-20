@@ -2,9 +2,10 @@ package middleware
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/security/authentication"
@@ -36,7 +37,7 @@ func getJwtTokenValidationParameters(config *config.AppConfig) *authentication.J
 
 	return &authentication.JwtTokenValidationParameters{
 		Audience:     config.Azure.ClientId,
-		Issuers:       authentication.GetAzureAdIssuers(config.Azure.TenantId),
+		Issuers:      authentication.GetAzureAdIssuers(config.Azure.TenantId),
 		IssuerKeySet: keySet,
 	}
 }
