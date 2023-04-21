@@ -6,6 +6,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type LogLevel string 
+
 func TestLogger(t *testing.T) {
 	myLogger := NewLoggerPublisher()
 
@@ -14,6 +16,8 @@ func TestLogger(t *testing.T) {
 		Message: "Testing from TestLogger()",
 		Level:   logrus.WarnLevel,
 	}
+
+	
 
 	myLogger.Publish(&myMsg)
 }

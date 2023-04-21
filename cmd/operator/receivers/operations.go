@@ -1,7 +1,7 @@
 package receivers
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/google/uuid"

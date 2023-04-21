@@ -1,8 +1,9 @@
 package data
 
 import (
-	"log"
 	"testing"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/stretchr/testify/require"
 )

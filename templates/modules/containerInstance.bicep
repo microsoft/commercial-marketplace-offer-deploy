@@ -8,7 +8,7 @@ param containerImage string
 @description('Location for all resources.')
 param location string = resourceGroup().location
 
-@description('Port to open on the modm sidecar container')
+@description('Port to open on the container')
 param port int = 8080
 
 @description('The number of CPU cores to allocate to the container.')

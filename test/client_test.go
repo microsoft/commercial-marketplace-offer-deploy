@@ -2,14 +2,15 @@ package test_test
 
 import (
 	"context"
-	"log"
 	"testing"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
-	"github.com/stretchr/testify/suite"
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
 type clientSuite struct {

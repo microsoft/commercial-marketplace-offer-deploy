@@ -6,6 +6,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/routes"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
+//	logger "github.com/microsoft/commercial-marketplace-offer-deploy/internal/log"
 )
 
 func BuildApp(configurationFilePath string) *hosting.App {
@@ -25,6 +26,7 @@ func BuildApp(configurationFilePath string) *hosting.App {
 
 	app := builder.Build(func(e *echo.Echo) {
 		e.Use(middleware.EventGridWebHookSubscriptionValidation())
+		
 	})
 
 	return app

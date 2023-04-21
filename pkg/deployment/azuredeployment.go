@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"time"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
+	log "github.com/sirupsen/logrus"
 )
 
 type ExecutionStatus string
@@ -25,14 +26,14 @@ const (
 )
 
 type AzureDeployment struct {
-	SubscriptionId string 			`json:"subscriptionId"`
-	Location string					`json:"location"`
-	ResourceGroupName string		`json:"resourceGroupName"`
-	DeploymentName string			`json:"deploymentName"`
-	DeploymentType DeploymentType	`json:"deploymentType"`
-	Template Template				`json:"template"`
-	Params TemplateParams			`json:"templateParams"`
-	ResumeToken string				`json:"resumeToken"`
+	SubscriptionId    string         `json:"subscriptionId"`
+	Location          string         `json:"location"`
+	ResourceGroupName string         `json:"resourceGroupName"`
+	DeploymentName    string         `json:"deploymentName"`
+	DeploymentType    DeploymentType `json:"deploymentType"`
+	Template          Template       `json:"template"`
+	Params            TemplateParams `json:"templateParams"`
+	ResumeToken       string         `json:"resumeToken"`
 }
 
 type AzureDeploymentResult struct {
@@ -44,7 +45,6 @@ type AzureDeploymentResult struct {
 	Outputs           map[string]interface{} `json:"outputs"`
 	Status            ExecutionStatus
 }
-
 
 func (ad *AzureDeployment) GetDeploymentType() DeploymentType {
 	return ad.DeploymentType
@@ -112,7 +112,7 @@ func (armDeployer *ArmTemplateDeployer) Deploy(ad *AzureDeployment) (*AzureDeplo
 	return mappedResult, nil
 }
 
-func (armDeployer *ArmTemplateDeployer) mapDeploymentResult(resp armresources.DeploymentsClientCreateOrUpdateResponse)	(*AzureDeploymentResult, error) {
+func (armDeployer *ArmTemplateDeployer) mapDeploymentResult(resp armresources.DeploymentsClientCreateOrUpdateResponse) (*AzureDeploymentResult, error) {
 	var status ExecutionStatus
 	deploymentExtended := resp.DeploymentExtended
 	provisioningState := *deploymentExtended.Properties.ProvisioningState
@@ -158,7 +158,7 @@ func CreateNewDeployer(deployment AzureDeployment) Deployer {
 	}
 }
 
-func (azureDeployment *AzureDeployment) validate() (error) {
+func (azureDeployment *AzureDeployment) validate() error {
 	if len(azureDeployment.SubscriptionId) == 0 {
 		return errors.New("subscriptionId is not set on azureDeployment input struct")
 	}

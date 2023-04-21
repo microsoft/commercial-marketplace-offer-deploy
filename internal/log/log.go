@@ -3,12 +3,37 @@ package log
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
-	"github.com/sirupsen/logrus"
-
+	//	log "github.com/sirupsen/logrus"
 	"github.com/microsoft/ApplicationInsights-Go/appinsights"
 	"github.com/microsoft/ApplicationInsights-Go/appinsights/contracts"
+	"github.com/sirupsen/logrus"
 )
+
+type LoggingConfig struct {
+	InstrumentationKey string
+	DefaultLogLevel    string
+}
+
+// todo, AppConfig drives there
+func ConfigureLogging(config *LoggingConfig) {
+	logrus.SetOutput(os.Stdout)
+	logrus.SetLevel(logrus.InfoLevel)
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+
+	if len(config.InstrumentationKey) == 0 {
+		insightsConfig := &InsightsConfig{
+			Role:               "MODM",
+			Version:            "1.0",
+			InstrumentationKey: config.InstrumentationKey,
+		}
+		hook := &LogrusHook{
+			Client: createTelemetryClient(insightsConfig),
+		}
+		logrus.AddHook(hook)
+	}
+}
 
 type LogMessage struct {
 	Message string
@@ -18,6 +43,9 @@ type LogMessage struct {
 type LogPublisher interface {
 	// publishes a message to all web hook subscriptions
 	Publish(message *LogMessage) error
+	Log(message string)
+	LogWarning(message string)
+	LogInfo(message string)
 }
 
 type InsightsConfig struct {
@@ -27,23 +55,51 @@ type InsightsConfig struct {
 	Version string
 }
 
-func NewLoggerPublisher() LogPublisher {
 
-	insightsConfig := &InsightsConfig{
-		Role:    "NAMEOFYOURAPP",
-		Version: "1.0",
 
-		InstrumentationKey: "e2af1774-2ab3-4eca-aa0b-7c75e6e6b8c5",
-		// TODO: Move to ENV file
-	}
+// PanicLevel Level = iota
+// 	// FatalLevel level. Logs and then calls `logger.Exit(1)`. It will exit even if the
+// 	// logging level is set to Panic.
+// 	FatalLevel
+// 	// ErrorLevel level. Logs. Used for errors that should definitely be noted.
+// 	// Commonly used for hooks to send errors to an error tracking service.
+// 	ErrorLevel
+// 	// WarnLevel level. Non-critical entries that deserve eyes.
+// 	WarnLevel
+// 	// InfoLevel level. General operational entries about what's going on inside the
+// 	// application.
+// 	InfoLevel
+// 	// DebugLevel level. Usually only enabled when debugging. Very verbose logging.
+// 	DebugLevel
+// 	// TraceLevel level. Designates finer-grained informational events than the Debug.
+// 	TraceLevel
 
-	hook := &LogrusHook{
-		Client: createTelemetryClient(insightsConfig),
-	}
+func (p *InsightsConfig) Log(message string) {
+	p.Publish(&LogMessage{
+		Message: message,
+		Level:   logrus.InfoLevel,
+	})
+}
 
-	logrus.AddHook(hook)
+func (p *InsightsConfig) LogError(message string) {
+	p.Publish(&LogMessage{
+		Message: message,
+		Level:   logrus.ErrorLevel,
+	})
+}
 
-	return insightsConfig
+func (p *InsightsConfig) LogInfo(message string) {
+	p.Publish(&LogMessage{
+		Message: message,
+		Level:   logrus.InfoLevel,
+	})
+}
+
+func (p *InsightsConfig) LogWarning(message string) {
+	p.Publish(&LogMessage{
+		Message: message,
+		Level:   logrus.WarnLevel,
+	})
 }
 
 func (p *InsightsConfig) Publish(message *LogMessage) error {

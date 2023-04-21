@@ -1,7 +1,7 @@
 package hosting
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"

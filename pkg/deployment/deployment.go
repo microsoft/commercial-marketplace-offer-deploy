@@ -2,12 +2,12 @@ package deployment
 
 import (
 	"context"
-	"log"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
-
+	log "github.com/sirupsen/logrus"
 )
 
 type DeploymentType int64
@@ -19,7 +19,6 @@ const (
 	Terraform
 )
 
-
 func mapResponse(whatIfResponse *armresources.DeploymentsClientWhatIfResponse) (*DryRunResponse, error) {
 	dryRunErrorResponse, err := mapError(whatIfResponse.Error)
 	if err != nil {
@@ -29,7 +28,7 @@ func mapResponse(whatIfResponse *armresources.DeploymentsClientWhatIfResponse) (
 	log.Printf("Before creation of DryRunResult")
 	dryRunResult := DryRunResult{
 		Status: whatIfResponse.Status,
-		Error: dryRunErrorResponse,
+		Error:  dryRunErrorResponse,
 	}
 
 	log.Printf("After creation of DryRunResult")
@@ -62,16 +61,16 @@ func mapError(armResourceResponse *armresources.ErrorResponse) (*DryRunErrorResp
 	var errorAdditionalInfo []*ErrorAdditionalInfo
 	if armResourceResponse.AdditionalInfo != nil && len(armResourceResponse.AdditionalInfo) > 0 {
 		for _, v := range armResourceResponse.AdditionalInfo {
-			errAddInfo := &ErrorAdditionalInfo { Info: v.Info, Type: v.Type }
+			errAddInfo := &ErrorAdditionalInfo{Info: v.Info, Type: v.Type}
 			errorAdditionalInfo = append(errorAdditionalInfo, errAddInfo)
 		}
 	}
 
 	dryRunErrorResponse := DryRunErrorResponse{
-		Message: armResourceResponse.Message,
-		Code: armResourceResponse.Code,
-		Target: armResourceResponse.Target,
-		Details: dryRunErrorDetails,
+		Message:        armResourceResponse.Message,
+		Code:           armResourceResponse.Code,
+		Target:         armResourceResponse.Target,
+		Details:        dryRunErrorDetails,
 		AdditionalInfo: errorAdditionalInfo,
 	}
 
