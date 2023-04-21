@@ -1,10 +1,46 @@
 param location string = resourceGroup().location
-param serviceBusNamespaceName string = 'modm-servicebus'
+
+param appVersion string = 'v0.1.8'
+
+@description('admin email used for Lets Encrypt.')
+param acmeEmail string
+
+var containerImage = 'gpsuscodewith/modm:latest'
 
 module servicebusModule 'modules/servicebus.bicep' = {
-  name: 'servicebusDeploy'
+  name: 'serviceBus'
   params: {
     location: location
-    serviceBusNamespaceName: serviceBusNamespaceName
+    appVersion: appVersion
   }
+}
+
+module containerInstanceModule 'modules/containerInstance.bicep' = {
+  name: 'containerInstance'
+  params: {
+    location: location
+    appVersion: appVersion
+    containerImage: containerImage
+    resourceGroupName: resourceGroup().name
+    subscriptionId: subscription().subscriptionId
+    tenantId: subscription().tenantId
+    acmeEmail: acmeEmail
+    serviceBusNamespace: servicebusModule.outputs.serviceBusNamespace
+  }
+  dependsOn: [
+    servicebusModule
+  ]
+}
+
+module roleAssignments 'modules/roleAssignments.bicep' = {
+  name: 'roleAssignments'
+  params: {
+    containerGroupName: containerInstanceModule.outputs.containerGroupName
+    serviceBusNamespace: servicebusModule.outputs.serviceBusNamespace
+    storageAccountName: containerInstanceModule.outputs.storageAccountName
+  }
+  dependsOn: [
+    servicebusModule
+    containerInstanceModule
+  ]
 }

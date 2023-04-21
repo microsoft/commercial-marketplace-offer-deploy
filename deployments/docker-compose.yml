@@ -1,9 +1,28 @@
 services:
-  web:
-    env_file:
-      - ../bin/.env
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - web
+    volumes:
+      - ../deployments/caddy/Caddyfile:/etc/caddy/Caddyfile
+    restart: unless-stopped
+    environment:
+      - SITE_ADDRESS=http://localhost
+      - HOSTNAME=modm
+      - PORT=8080
+  modm:
+    env_file: ../bin/.env
     image: modm:latest
     ports:
-      - "8080:8080"
+      - 8080:8080
     environment:
-      - PUBLIC_FQDN=
+      - GO_ENV=development
+    networks:
+      - web
+
+networks:
+  web:
+    external: true

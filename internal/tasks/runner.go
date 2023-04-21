@@ -35,6 +35,7 @@ func (r *runner) Start() error {
 	for i := 0; i < taskCount; i++ {
 		go func(i int) {
 			defer waitGroup.Done()
+			defer recoverPanic()
 			task := r.tasks[i]
 			log.Printf("Running task %s", task.Name())
 			err := task.Run(ctx)
@@ -46,4 +47,11 @@ func (r *runner) Start() error {
 	}
 	waitGroup.Wait()
 	return nil
+}
+
+// create a function that catches panics and logs them
+func recoverPanic() {
+	if r := recover(); r != nil {
+		log.Printf("Recovered from panic: %v", r)
+	}
 }
