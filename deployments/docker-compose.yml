@@ -11,11 +11,12 @@ services:
     restart: unless-stopped
     environment:
       - SITE_ADDRESS=http://localhost
+      - ACME_ACCOUNT_EMAIL=nowhere@nowhere.com
       - HOSTNAME=modm
       - PORT=8080
   modm:
     env_file: ../bin/.env
-    image: modm:latest
+    image: gpsuscodewith/modm:v0.1.18
     ports:
       - 8080:8080
     environment:

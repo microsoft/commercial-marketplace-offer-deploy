@@ -10,6 +10,13 @@ As the maintainer of this project, please make a few updates:
 - Understanding the security reporting process in SECURITY.MD
 - Remove this section from the README
 
+## Developer Setup
+
+Running locally
+```
+docker compose -f ./deployments/docker-compose.yml up  
+```
+
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
