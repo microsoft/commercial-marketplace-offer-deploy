@@ -31,33 +31,39 @@ type DatabaseSettings struct {
 }
 
 type LoggingSettings struct {
-	DefaultLogLevel string `mapstructure:"LOG_LEVEL"`
+	DefaultLogLevel    string `mapstructure:"LOG_LEVEL"`
 	InstrumentationKey string `mapstructure:"LOG_KEY"`
 }
 
 type HttpSettings struct {
-	FQDN      string `mapstructure:"PUBLIC_FQDN"`
-	HttpPort  string `mapstructure:"PUBLIC_HTTP_PORT"`
-	HttpsPort string   `mapstructure:"PUBLIC_HTTPS_PORT"`
+	DomainName string `mapstructure:"PUBLIC_DOMAIN_NAME"`
+	HttpPort   string `mapstructure:"PUBLIC_HTTP_PORT"`
+	HttpsPort  string `mapstructure:"PUBLIC_HTTPS_PORT"`
+	IsSecure   bool   `mapstructure:"HTTPS"`
 }
 
-func (s *HttpSettings) GetBaseUrl(secure bool) string {
+func (s *AppConfig) GetPublicBaseUrl() string {
 	protocol := "http"
-	if secure {
+	if !s.IsDevelopment() {
 		protocol = "https"
 	}
-	return protocol + "://" + s.FQDN + "/"
+	return protocol + "https://" + s.Http.DomainName + "/"
 }
 
 type AppConfig struct {
-	Azure    AzureSettings
-	Database DatabaseSettings
-	Http     HttpSettings
-	Logging  LoggingSettings
+	Azure       AzureSettings
+	Database    DatabaseSettings
+	Http        HttpSettings
+	Logging     LoggingSettings
+	Environment string `mapstructure:"GO_ENV"`
 }
 
 func (appSettings *AppConfig) GetDatabaseOptions() *data.DatabaseOptions {
 	dsn := filepath.Join(appSettings.Database.Path, data.DatabaseFileName)
 	options := &data.DatabaseOptions{Dsn: dsn, UseInMemory: appSettings.Database.UseInMemory}
 	return options
+}
+
+func (c *AppConfig) IsDevelopment() bool {
+	return c.Environment == "development"
 }

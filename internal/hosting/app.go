@@ -77,6 +77,7 @@ func (app *App) startServer(options *AppStartOptions) {
 		if options.ConfigureWebServer != nil {
 			options.ConfigureWebServer(app.server)
 		}
+
 		go app.server.Start(address)
 		app.waitForReadiness()
 	} else {

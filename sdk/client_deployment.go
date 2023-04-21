@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 
-	//log "github.com/sirupsen/logrus"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
@@ -36,8 +34,7 @@ func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, 
 	}
 
 	return &DryRunResult{
-		Id: *invokedOperation.ID,
-		//Results: invokedOperation.Result.(map[string]any),
+		Id:      *invokedOperation.ID,
 		Results: invokedOperation.Result,
 		Status:  *invokedOperation.Status,
 	}, nil
