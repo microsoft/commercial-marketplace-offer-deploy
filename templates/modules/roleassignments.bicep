@@ -56,12 +56,12 @@ resource serviceBusSenderAssignment 'Microsoft.Authorization/roleAssignments@202
   }
 }
 
-resource roleAssignmentApplicationInsights 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' {
+resource appInsightsAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
   scope: appInsights
   name: guid(appInsights.id, containerGroup.name, roles.appInsightsContributor)
   properties: {
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', roles.appInsightsContributor)
     principalId: containerGroup.identity.principalId
-    principalType: 'ApplicationInsights'
+    principalType: 'ServicePrincipal'
   }
 }

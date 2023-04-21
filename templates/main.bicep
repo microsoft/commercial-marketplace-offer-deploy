@@ -32,15 +32,25 @@ module containerInstanceModule 'modules/containerInstance.bicep' = {
   ]
 }
 
+module appInsightsModule 'modules/applicationInsights.bicep' = {
+  name: 'appInsights'
+  params: {
+    location: location
+    appVersion: appVersion
+  }
+}
+
 module roleAssignments 'modules/roleAssignments.bicep' = {
   name: 'roleAssignments'
   params: {
     containerGroupName: containerInstanceModule.outputs.containerGroupName
     serviceBusNamespace: servicebusModule.outputs.serviceBusNamespace
     storageAccountName: containerInstanceModule.outputs.storageAccountName
+    appInsightsName: appInsightsModule.outputs.appInsightsName
   }
   dependsOn: [
     servicebusModule
     containerInstanceModule
+    appInsightsModule
   ]
 }
