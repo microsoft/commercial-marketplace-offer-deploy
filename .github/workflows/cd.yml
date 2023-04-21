@@ -14,11 +14,6 @@ on:
       - main
       - kevinmgates-patch-1
   workflow_dispatch:
-    inputs:
-      imageTag:
-        description: 'Override the default image tag (ex, latest)'
-        required: false
-        default: ''
 
 jobs:
 
@@ -50,24 +45,14 @@ jobs:
       uses: docker/setup-buildx-action@v2
     - name: Login to Docker Hub
       run: echo ${{ secrets.DockerHubPassword }} | docker login -u ${{ env.targetAccount }} --password-stdin
-    
-    - if: github.event.inputs.imageTag == 'latest'
-      name: Build and push to registry
-      uses: docker/build-push-action@v4
-      with:
-        context: .
-        push: true
-        file: ./build/package/Dockerfile
-        tags: ${{ env.targetAccount }}/${{ env.imageName }}:${{ github.event.inputs.imageTag }}
         
-    - if: github.event.inputs.imageTag == ''
-      name: Build and push to registry
+    - name: Build and push to registry
       uses: docker/build-push-action@v4
       with:
         context: .
         push: true
         file: ./build/package/Dockerfile
-        tags: ${{ env.targetAccount }}/${{ env.imageName }}:${{ env.versionPrefix }}${{github.run_number}}
+        tags: ${{ env.targetAccount }}/${{ env.imageName }}
 
   azure-deploy:
     runs-on: ubuntu-latest
