@@ -5,7 +5,6 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
-	logger "github.com/microsoft/commercial-marketplace-offer-deploy/internal/log"
 )
 
 func BuildApp(configurationFilePath string) *hosting.App {
