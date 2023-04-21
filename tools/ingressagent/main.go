@@ -14,7 +14,7 @@ import (
 	apiserver "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/app"
 	operator "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/app"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
-	testharness "github.com/microsoft/commercial-marketplace-offer-deploy/tools/testharness/app"
+	//testharness "github.com/microsoft/commercial-marketplace-offer-deploy/tools/testharness/app"
 	"github.com/spf13/viper"
 	"golang.ngrok.com/ngrok"
 	"golang.ngrok.com/ngrok/config"
@@ -78,8 +78,8 @@ func getApp(appName string) *hosting.App {
 		return operator.BuildApp(configPath)
 	case "apiserver":
 		return apiserver.BuildApp(configPath)
-	case "testharness":
-		return testharness.BuildApp(configPath)
+	// case "testharness":
+	// 	return testharness.BuildApp(configPath)
 	default:
 		log.Fatal("invalid app name")
 	}
