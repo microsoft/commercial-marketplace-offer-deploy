@@ -1,8 +1,9 @@
 package hosting
 
 import (
-	"log"
 	"sync"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"

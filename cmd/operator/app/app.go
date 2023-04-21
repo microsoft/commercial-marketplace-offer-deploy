@@ -5,6 +5,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
+	logger "github.com/microsoft/commercial-marketplace-offer-deploy/internal/log"
 )
 
 func BuildApp(configurationFilePath string) *hosting.App {
@@ -14,7 +15,7 @@ func BuildApp(configurationFilePath string) *hosting.App {
 	config.LoadConfiguration(configurationFilePath, nil, appConfig)
 	builder.AddConfig(appConfig)
 
-	eventsReceiver, operationsReceiver := getMessageReceivers()
+	eventsReceiver, operationsReceiver := getMessageReceivers(appConfig)
 	builder.AddService(eventsReceiver)
 	builder.AddService(operationsReceiver)
 
@@ -22,8 +23,7 @@ func BuildApp(configurationFilePath string) *hosting.App {
 	return app
 }
 
-func getMessageReceivers() (messaging.MessageReceiver, messaging.MessageReceiver) {
-	appConfig := config.GetAppConfig()
+func getMessageReceivers(appConfig *config.AppConfig) (messaging.MessageReceiver, messaging.MessageReceiver) {
 	credential := hosting.GetAzureCredential()
 
 	eventsReceiver := receivers.NewEventsMessageReceiver(appConfig, credential)

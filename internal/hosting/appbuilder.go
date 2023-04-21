@@ -1,10 +1,12 @@
 package hosting
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
+	logger "github.com/microsoft/commercial-marketplace-offer-deploy/internal/log"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/tasks"
 )
 
@@ -31,7 +33,7 @@ func NewAppBuilder() *AppBuilder {
 	return builder
 }
 
-func (b *AppBuilder) AddConfig(config any) *AppBuilder {
+func (b *AppBuilder) AddConfig(config *config.AppConfig) *AppBuilder {
 	b.app.config = config
 	return b
 }
@@ -65,6 +67,11 @@ func (b *AppBuilder) Build(configure ConfigureEchoFunc) *App {
 	b.app.server.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
 		log.Printf("Body:\n %v\n", string(reqBody))
 	}))
+
+	loggingConfig := &logger.LoggingConfig{
+		InstrumentationKey: b.app.config.Logging.InstrumentationKey,
+	}
+	logger.ConfigureLogging(loggingConfig)
 
 	if configure != nil {
 		configure(b.app.server)

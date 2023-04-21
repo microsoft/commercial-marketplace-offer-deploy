@@ -1,11 +1,12 @@
 package config
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/spf13/viper"

@@ -4,10 +4,11 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
 	"net/url"
 	"os"
 	"path/filepath"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/labstack/echo"
 	apiserver "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/app"

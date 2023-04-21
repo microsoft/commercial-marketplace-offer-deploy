@@ -2,12 +2,12 @@ package subscriptionmanagement
 
 import (
 	"context"
-	"log"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	log "github.com/sirupsen/logrus"
 )
 
 // TODO: convert these test to integration tests that use https://github.com/ngrok/ngrok-go to tunnel to localhost

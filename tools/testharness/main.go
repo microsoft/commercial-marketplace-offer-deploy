@@ -1,18 +1,19 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/tools/testharness/app"
-//	testharness "github.com/microsoft/commercial-marketplace-offer-deploy/tools/testharness/app"
+	// testharness "github.com/microsoft/commercial-marketplace-offer-deploy/tools/testharness/app"
 )
 
 var (
 	//configurationFilePath string = "."
-	port                  int    = 8280
+	port int = 8280
 )
 
 func main() {
@@ -21,10 +22,10 @@ func main() {
 
 	e := echo.New()
 	app.AddRoutes(e)
-	
+
 	if err := e.Start(":8280"); err != http.ErrServerClosed {
 		log.Fatal(err)
-	  }
+	}
 	// app := testharness.BuildApp(configurationFilePath)
 
 	// options := &hosting.AppStartOptions{

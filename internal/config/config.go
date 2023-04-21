@@ -4,7 +4,6 @@ import (
 	"path/filepath"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 )
 
 // The azure settings
@@ -31,6 +30,11 @@ type DatabaseSettings struct {
 	UseInMemory bool   `mapstructure:"DB_USE_INMEMEORY"`
 }
 
+type LoggingSettings struct {
+	DefaultLogLevel    string `mapstructure:"LOG_LEVEL"`
+	InstrumentationKey string `mapstructure:"LOG_KEY"`
+}
+
 type HttpSettings struct {
 	DomainName string `mapstructure:"PUBLIC_DOMAIN_NAME"`
 	HttpPort   string `mapstructure:"PUBLIC_HTTP_PORT"`
@@ -38,24 +42,20 @@ type HttpSettings struct {
 	IsSecure   bool   `mapstructure:"HTTPS"`
 }
 
-func (s *HttpSettings) GetPublicBaseUrl() string {
+func (s *AppConfig) GetPublicBaseUrl() string {
 	protocol := "http"
-	if !GetAppConfig().IsDevelopment() {
+	if !s.IsDevelopment() {
 		protocol = "https"
 	}
-	return protocol + "https://" + s.DomainName + "/"
+	return protocol + "https://" + s.Http.DomainName + "/"
 }
 
 type AppConfig struct {
-	Environment string `mapstructure:"GO_ENV"`
 	Azure       AzureSettings
 	Database    DatabaseSettings
 	Http        HttpSettings
-}
-
-func GetAppConfig() *AppConfig {
-	appConfig := hosting.GetAppConfig[*AppConfig]()
-	return appConfig
+	Logging     LoggingSettings
+	Environment string `mapstructure:"GO_ENV"`
 }
 
 func (appSettings *AppConfig) GetDatabaseOptions() *data.DatabaseOptions {
