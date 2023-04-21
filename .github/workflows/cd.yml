@@ -51,7 +51,7 @@ jobs:
       run: echo ${{ secrets.DockerHubPassword }} | docker login -u ${{ env.targetAccount }} --password-stdin
     
     - if: github.event.inputs.imageTag == 'latest'
-    - name: Build and push to registry
+      name: Build and push to registry
       uses: docker/build-push-action@v4
       with:
         context: .
