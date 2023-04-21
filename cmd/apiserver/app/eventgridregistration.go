@@ -18,7 +18,7 @@ func newEventGridRegistrationTask(appConfig *config.AppConfig) tasks.Task {
 	taskOptions := eventGridRegistrationTaskOptions{
 		Credential:      hosting.GetAzureCredential(),
 		ResourceGroupId: appConfig.Azure.GetResourceGroupId(),
-		EndpointUrl:     appConfig.Http.GetPublicBaseUrl() + "/eventgrid",
+		EndpointUrl:     appConfig.GetPublicBaseUrl() + "/eventgrid",
 	}
 	task := create(taskOptions)
 
