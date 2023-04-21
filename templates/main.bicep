@@ -1,11 +1,9 @@
 param location string = resourceGroup().location
 
-param appVersion string = 'v0.1.8'
+param appVersion string = 'latest'
 
 @description('admin email used for Lets Encrypt.')
 param acmeEmail string
-
-var containerImage = 'gpsuscodewith/modm:latest'
 
 module servicebusModule 'modules/servicebus.bicep' = {
   name: 'serviceBus'
@@ -14,6 +12,8 @@ module servicebusModule 'modules/servicebus.bicep' = {
     appVersion: appVersion
   }
 }
+
+var containerImage = 'gpsuscodewith/modm:${appVersion}'
 
 module containerInstanceModule 'modules/containerInstance.bicep' = {
   name: 'containerInstance'
