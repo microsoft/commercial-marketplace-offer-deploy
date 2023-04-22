@@ -47,7 +47,7 @@ func (s *AppConfig) GetPublicBaseUrl() string {
 	if !s.IsDevelopment() {
 		protocol = "https"
 	}
-	return protocol + "https://" + s.Http.DomainName + "/"
+	return protocol + "://" + s.Http.DomainName + "/"
 }
 
 type AppConfig struct {
