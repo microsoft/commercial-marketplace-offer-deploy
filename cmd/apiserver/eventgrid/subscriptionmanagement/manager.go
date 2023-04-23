@@ -3,7 +3,7 @@ package subscriptionmanagement
 import (
 	"context"
 	"strings"
-
+	"encoding/json"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -131,15 +131,23 @@ func (c *manager) CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTo
 		},
 		nil,
 	)
+	log.Panicln("After getting pollerResp")
 	if err != nil {
+		log.Printf("Error creating system topic %s in resource group %s", c.Properties.SystemTopicName, c.Properties.ResourceGroupName)
 		if responseError, ok := err.(*azcore.ResponseError); ok {
 			if responseError.StatusCode == 400 && strings.Contains(err.Error(), "Only one system topic is allowed per source.") {
 				log.Print("System topic already exists for resource group")
 				return nil, nil
 			}
+			log.Printf("Error creating system topic %s in resource group %s. Error: %s", c.Properties.SystemTopicName, c.Properties.ResourceGroupName, err.Error())
 		}
 	}
 	resp, err := pollerResp.PollUntilDone(ctx, nil)
+	b, err := json.MarshalIndent(resp, "", "  ")
+    if err != nil {
+        log.Println(err)
+    }
+    log.Print(string(b))
 	if err != nil {
 		return nil, err
 	}
