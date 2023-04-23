@@ -21,7 +21,7 @@ func ConfigureLogging(config *LoggingConfig) {
 	logrus.SetOutput(os.Stdout)
 	logrus.SetLevel(logrus.InfoLevel)
 	logrus.SetReportCaller(true)
-	logrus.SetFormatter(&logrus.TextFormatter{})
+	logrus.SetFormatter(&logrus.JSONFormatter{})
 
 	if len(config.InstrumentationKey) == 0 {
 		insightsConfig := &InsightsConfig{
