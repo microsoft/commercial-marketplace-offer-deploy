@@ -63,7 +63,6 @@ func (app *App) Start(options *AppStartOptions) error {
 
 func (app *App) startServer(options *AppStartOptions) {
 	logrus.Info("Calling logging from startServer")
-	logrus.Printf("This is a logrus.Printf call")
 
 	if options != nil && options.WebServer {
 		port := 8080
