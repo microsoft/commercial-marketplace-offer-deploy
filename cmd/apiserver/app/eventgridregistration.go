@@ -40,10 +40,12 @@ func create(options eventGridRegistrationTaskOptions) tasks.Task {
 		manager, err := subscriptionmanagement.NewEventGridManager(options.Credential, options.ResourceGroupId)
 
 		if err != nil {
+			log.Printf("Error creating event grid manager: %v", err)
 			return err
 		}
 		resourceId, err := arm.ParseResourceID(options.ResourceGroupId)
 		if err != nil {
+			log.Printf("Error parsing resource group id: %v", err)
 			return err
 		}
 
