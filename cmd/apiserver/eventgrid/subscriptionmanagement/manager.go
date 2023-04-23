@@ -111,10 +111,12 @@ func (c *manager) DeleteSystemTopic(ctx context.Context) (*armeventgrid.SystemTo
 
 func (c *manager) CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTopic, error) {
 	log.Printf("Creating system topic %s in resource group %s", c.Properties.SystemTopicName, c.Properties.ResourceGroupName)
+	log.Printf("The system topic name is %s", c.Properties.SystemTopicName)
 	systemTopicsClient, err := armeventgrid.NewSystemTopicsClient(c.Properties.SubscriptionId, c.Credential, nil)
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("Created system topic client for resource group %s", c.Properties.ResourceGroupName)
 
 	pollerResp, err := systemTopicsClient.BeginCreateOrUpdate(
 		ctx,
