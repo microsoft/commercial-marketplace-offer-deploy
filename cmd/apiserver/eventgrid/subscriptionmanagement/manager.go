@@ -132,6 +132,9 @@ func (c *manager) CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTo
 		nil,
 	)
 	log.Panicln("After getting pollerResp")
+	if pollerResp == nil {
+		log.Print("Poller response is nil")
+	}
 	if err != nil {
 		log.Printf("Error creating system topic %s in resource group %s", c.Properties.SystemTopicName, c.Properties.ResourceGroupName)
 		if responseError, ok := err.(*azcore.ResponseError); ok {
@@ -142,6 +145,7 @@ func (c *manager) CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTo
 			log.Printf("Error creating system topic %s in resource group %s. Error: %s", c.Properties.SystemTopicName, c.Properties.ResourceGroupName, err.Error())
 		}
 	}
+	log.Printf("About to call PollUntilDone")
 	resp, err := pollerResp.PollUntilDone(ctx, nil)
 	b, err := json.MarshalIndent(resp, "", "  ")
     if err != nil {
