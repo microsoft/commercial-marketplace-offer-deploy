@@ -110,6 +110,7 @@ func (c *manager) DeleteSystemTopic(ctx context.Context) (*armeventgrid.SystemTo
 }
 
 func (c *manager) CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTopic, error) {
+	log.Printf("Creating system topic %s in resource group %s", c.Properties.SystemTopicName, c.Properties.ResourceGroupName)
 	systemTopicsClient, err := armeventgrid.NewSystemTopicsClient(c.Properties.SubscriptionId, c.Credential, nil)
 	if err != nil {
 		return nil, err
@@ -140,7 +141,7 @@ func (c *manager) CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTo
 	if err != nil {
 		return nil, err
 	}
-
+	log.Printf("Created system topic %s in resource group %s", c.Properties.SystemTopicName, c.Properties.ResourceGroupName)
 	return &resp.SystemTopic, nil
 }
 
@@ -179,6 +180,6 @@ func getProperties(ctx context.Context, cred azcore.TokenCredential, resourceGro
 		ResourceGroupId:   resourceGroupId,
 		SystemTopicName:   values[len(values)-1] + "-event-topic",
 	}
-
+	log.Printf("Properties: %+v", props)
 	return props, nil
 }
