@@ -131,7 +131,7 @@ func (c *manager) CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTo
 		},
 		nil,
 	)
-	log.Panicln("After getting pollerResp")
+	log.Printf("After getting pollerResp")
 	if pollerResp == nil {
 		log.Print("Poller response is nil")
 	}
