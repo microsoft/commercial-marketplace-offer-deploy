@@ -13,6 +13,14 @@ module servicebusModule 'modules/servicebus.bicep' = {
   }
 }
 
+module appInsightsModule 'modules/applicationInsights.bicep' = {
+  name: 'appInsights'
+  params: {
+    location: location
+    appVersion: appVersion
+  }
+}
+
 var containerImage = 'ghcr.io/gpsuscodewith/modm'
 
 module containerInstanceModule 'modules/containerInstance.bicep' = {
@@ -26,18 +34,12 @@ module containerInstanceModule 'modules/containerInstance.bicep' = {
     tenantId: subscription().tenantId
     acmeEmail: acmeEmail
     serviceBusNamespace: servicebusModule.outputs.serviceBusNamespace
+    appInsightsInstrumentationKey: appInsightsModule.outputs.appInsightsInstrumentationKey
   }
   dependsOn: [
     servicebusModule
+    appInsightsModule
   ]
-}
-
-module appInsightsModule 'modules/applicationInsights.bicep' = {
-  name: 'appInsights'
-  params: {
-    location: location
-    appVersion: appVersion
-  }
 }
 
 module roleAssignments 'modules/roleAssignments.bicep' = {
