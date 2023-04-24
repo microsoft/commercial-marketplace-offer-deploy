@@ -17,15 +17,22 @@ type LoggingConfig struct {
 	DefaultLogLevel    string
 }
 
+type appInsightsOptions struct {
+	InstrumentationKey string
+
+	Role    string
+	Version string
+}
+
 // todo, AppConfig drives there
 func ConfigureLogging(config *LoggingConfig) {
 	logrus.SetOutput(os.Stdout)
 	logrus.SetLevel(logrus.InfoLevel)
 	logrus.SetReportCaller(true)
-	logrus.SetFormatter(&logrus.JSONFormatter{})
+	//logrus.SetFormatter(&logrus.JSONFormatter{})
 
 	if len(config.InstrumentationKey) == 0 {
-		insightsConfig := &InsightsConfig{
+		insightsConfig := appInsightsOptions{
 			Role:               "MODM",
 			Version:            "1.0",
 			InstrumentationKey: config.InstrumentationKey,
@@ -50,15 +57,6 @@ type LogPublisher interface {
 	LogInfo(message string)
 }
 
-type InsightsConfig struct {
-	InstrumentationKey string
-
-	Role    string
-	Version string
-}
-
-
-
 // PanicLevel Level = iota
 // 	// FatalLevel level. Logs and then calls `logger.Exit(1)`. It will exit even if the
 // 	// logging level is set to Panic.
@@ -76,35 +74,35 @@ type InsightsConfig struct {
 // 	// TraceLevel level. Designates finer-grained informational events than the Debug.
 // 	TraceLevel
 
-func (p *InsightsConfig) Log(message string) {
+func (p *appInsightsOptions) Log(message string) {
 	p.Publish(&LogMessage{
 		Message: message,
 		Level:   logrus.InfoLevel,
 	})
 }
 
-func (p *InsightsConfig) LogError(message string) {
+func (p *appInsightsOptions) LogError(message string) {
 	p.Publish(&LogMessage{
 		Message: message,
 		Level:   logrus.ErrorLevel,
 	})
 }
 
-func (p *InsightsConfig) LogInfo(message string) {
+func (p *appInsightsOptions) LogInfo(message string) {
 	p.Publish(&LogMessage{
 		Message: message,
 		Level:   logrus.InfoLevel,
 	})
 }
 
-func (p *InsightsConfig) LogWarning(message string) {
+func (p *appInsightsOptions) LogWarning(message string) {
 	p.Publish(&LogMessage{
 		Message: message,
 		Level:   logrus.WarnLevel,
 	})
 }
 
-func (p *InsightsConfig) Publish(message *LogMessage) error {
+func (p *appInsightsOptions) Publish(message *LogMessage) error {
 	switch message.Level {
 	case logrus.PanicLevel:
 		logrus.Error(message.Message)
@@ -125,15 +123,15 @@ func (p *InsightsConfig) Publish(message *LogMessage) error {
 	return nil
 }
 
-func createTelemetryClient(config *InsightsConfig) appinsights.TelemetryClient {
-	client := appinsights.NewTelemetryClient(config.InstrumentationKey)
+func createTelemetryClient(options appInsightsOptions) appinsights.TelemetryClient {
+	client := appinsights.NewTelemetryClient(options.InstrumentationKey)
 
-	if len(config.Role) > 0 {
-		client.Context().Tags.Cloud().SetRole(config.Role)
+	if len(options.Role) > 0 {
+		client.Context().Tags.Cloud().SetRole(options.Role)
 	}
 
-	if len(config.Version) > 0 {
-		client.Context().Tags.Application().SetVer(config.Version)
+	if len(options.Version) > 0 {
+		client.Context().Tags.Application().SetVer(options.Version)
 	}
 
 	return client
