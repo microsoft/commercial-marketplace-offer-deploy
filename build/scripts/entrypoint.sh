@@ -2,10 +2,10 @@
 
 
 # Start the api server
-/apiserver & 
+/apiserver >&1 &
 
 # Start the operator server
-/operator &
+/operator >&1 &
 
 # Wait for any process to exit
 wait -n
