@@ -9,7 +9,6 @@ import (
 	"github.com/microsoft/ApplicationInsights-Go/appinsights"
 	"github.com/microsoft/ApplicationInsights-Go/appinsights/contracts"
 	"github.com/sirupsen/logrus"
-	
 )
 
 type LoggingConfig struct {
@@ -17,7 +16,7 @@ type LoggingConfig struct {
 	DefaultLogLevel    string
 }
 
-type appInsightsOptions struct {
+type InsightsConfig struct {
 	InstrumentationKey string
 
 	Role    string
@@ -32,7 +31,7 @@ func ConfigureLogging(config *LoggingConfig) {
 	//logrus.SetFormatter(&logrus.JSONFormatter{})
 
 	if len(config.InstrumentationKey) == 0 {
-		insightsConfig := appInsightsOptions{
+		insightsConfig := InsightsConfig{
 			Role:               "MODM",
 			Version:            "1.0",
 			InstrumentationKey: config.InstrumentationKey,
@@ -74,35 +73,35 @@ type LogPublisher interface {
 // 	// TraceLevel level. Designates finer-grained informational events than the Debug.
 // 	TraceLevel
 
-func (p *appInsightsOptions) Log(message string) {
+func (p *InsightsConfig) Log(message string) {
 	p.Publish(&LogMessage{
 		Message: message,
 		Level:   logrus.InfoLevel,
 	})
 }
 
-func (p *appInsightsOptions) LogError(message string) {
+func (p *InsightsConfig) LogError(message string) {
 	p.Publish(&LogMessage{
 		Message: message,
 		Level:   logrus.ErrorLevel,
 	})
 }
 
-func (p *appInsightsOptions) LogInfo(message string) {
+func (p *InsightsConfig) LogInfo(message string) {
 	p.Publish(&LogMessage{
 		Message: message,
 		Level:   logrus.InfoLevel,
 	})
 }
 
-func (p *appInsightsOptions) LogWarning(message string) {
+func (p *InsightsConfig) LogWarning(message string) {
 	p.Publish(&LogMessage{
 		Message: message,
 		Level:   logrus.WarnLevel,
 	})
 }
 
-func (p *appInsightsOptions) Publish(message *LogMessage) error {
+func (p *InsightsConfig) Publish(message *LogMessage) error {
 	switch message.Level {
 	case logrus.PanicLevel:
 		logrus.Error(message.Message)
@@ -123,7 +122,7 @@ func (p *appInsightsOptions) Publish(message *LogMessage) error {
 	return nil
 }
 
-func createTelemetryClient(options appInsightsOptions) appinsights.TelemetryClient {
+func createTelemetryClient(options InsightsConfig) appinsights.TelemetryClient {
 	client := appinsights.NewTelemetryClient(options.InstrumentationKey)
 
 	if len(options.Role) > 0 {
