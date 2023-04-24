@@ -45,7 +45,6 @@ func create(options eventGridRegistrationTaskOptions) tasks.Task {
 		}
 		log.Printf("EventGrid manager created for resource group: %s", options.ResourceGroupId)
 		resourceId, err := arm.ParseResourceID(options.ResourceGroupId)
-		log.Printf("Parsed ResourceGroupI - Resource group id: %s", resourceId)
 		if err != nil {
 			log.Printf("Error parsing resource group id: %v", err)
 			return err

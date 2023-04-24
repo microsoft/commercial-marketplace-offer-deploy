@@ -2,11 +2,13 @@ package subscriptionmanagement
 
 import (
 	"context"
+	"fmt"
 	"strings"
-	"encoding/json"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/eventgrid/armeventgrid"
 )
@@ -33,15 +35,11 @@ func (c *manager) GetSystemTopicName() string {
 // Creates an event grid manager to create system topic and event subscription for the purpose of receiving deployment events
 // It will use the resource group id to create the system topic in the resource group's location and subscription
 func NewEventGridManager(credential azcore.TokenCredential, resourceGroupId string) (EventGridManager, error) {
-	log.Printf("Creating event grid manager for resource group %s", resourceGroupId)
 	properties, err := getProperties(context.TODO(), credential, resourceGroupId)
-
 	if err != nil {
 		return nil, err
 	}
-	if properties == nil {
-		log.Printf("No properties found for resource group %s", resourceGroupId)
-	}
+
 	client := &manager{
 		Credential: credential,
 		Properties: properties,
@@ -110,13 +108,10 @@ func (c *manager) DeleteSystemTopic(ctx context.Context) (*armeventgrid.SystemTo
 }
 
 func (c *manager) CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTopic, error) {
-	log.Printf("Creating system topic %s in resource group %s", c.Properties.SystemTopicName, c.Properties.ResourceGroupName)
-	log.Printf("The system topic name is %s", c.Properties.SystemTopicName)
 	systemTopicsClient, err := armeventgrid.NewSystemTopicsClient(c.Properties.SubscriptionId, c.Credential, nil)
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Created system topic client for resource group %s", c.Properties.ResourceGroupName)
 
 	pollerResp, err := systemTopicsClient.BeginCreateOrUpdate(
 		ctx,
@@ -131,32 +126,28 @@ func (c *manager) CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTo
 		},
 		nil,
 	)
-	log.Printf("After getting pollerResp")
-	if pollerResp == nil {
-		log.Print("Poller response is nil")
-	}
+
 	if err != nil {
-		log.Printf("Error creating system topic %s in resource group %s", c.Properties.SystemTopicName, c.Properties.ResourceGroupName)
 		if responseError, ok := err.(*azcore.ResponseError); ok {
 			if responseError.StatusCode == 400 && strings.Contains(err.Error(), "Only one system topic is allowed per source.") {
 				log.Print("System topic already exists for resource group")
 				return nil, nil
 			}
-			log.Printf("Error creating system topic %s in resource group %s. Error: %s", c.Properties.SystemTopicName, c.Properties.ResourceGroupName, err.Error())
+		} else {
+			return nil, err
 		}
 	}
-	log.Printf("About to call PollUntilDone")
-	resp, err := pollerResp.PollUntilDone(ctx, nil)
-	b, err := json.MarshalIndent(resp, "", "  ")
-    if err != nil {
-        log.Println(err)
-    }
-    log.Print(string(b))
-	if err != nil {
-		return nil, err
+
+	if pollerResp != nil {
+		resp, err := pollerResp.PollUntilDone(ctx, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		log.Printf("Created system topic %s in resource group %s", c.Properties.SystemTopicName, c.Properties.ResourceGroupName)
+		return &resp.SystemTopic, nil
 	}
-	log.Printf("Created system topic %s in resource group %s", c.Properties.SystemTopicName, c.Properties.ResourceGroupName)
-	return &resp.SystemTopic, nil
+	return nil, fmt.Errorf("poller response nil in Event Grid subscription manager")
 }
 
 type eventGridManagerProperties struct {
@@ -187,13 +178,16 @@ func getIncludedEventTypesForFilter() []*string {
 }
 
 func getProperties(ctx context.Context, cred azcore.TokenCredential, resourceGroupId string) (*eventGridManagerProperties, error) {
-	values := strings.Split(resourceGroupId, "/")
-	props := &eventGridManagerProperties{
-		SubscriptionId:    values[2],
-		ResourceGroupName: values[len(values)-1],
-		ResourceGroupId:   resourceGroupId,
-		SystemTopicName:   values[len(values)-1] + "-event-topic",
+	resourceId, err := arm.ParseResourceID(resourceGroupId)
+
+	if err != nil {
+		return nil, err
 	}
-	log.Printf("Properties: %+v", props)
+	props := &eventGridManagerProperties{
+		SubscriptionId:    resourceId.SubscriptionID,
+		ResourceGroupName: resourceId.ResourceGroupName,
+		ResourceGroupId:   resourceGroupId,
+		SystemTopicName:   resourceId.ResourceGroupName + "-event-topic",
+	}
 	return props, nil
 }

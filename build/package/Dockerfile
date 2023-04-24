@@ -30,6 +30,10 @@ FROM debian:buster-slim
 
 USER root
 
+RUN apt-get clean && apt-get update
+RUN apt install curl -y
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /app/bin/operator /operator
 COPY --from=builder /app/bin/apiserver /apiserver

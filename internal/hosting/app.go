@@ -10,7 +10,6 @@ import (
 	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/tasks"
-	"github.com/sirupsen/logrus"
 )
 
 type App struct {
@@ -62,8 +61,6 @@ func (app *App) Start(options *AppStartOptions) error {
 }
 
 func (app *App) startServer(options *AppStartOptions) {
-	logrus.Info("Calling logging from startServer")
-
 	if options != nil && options.WebServer {
 		port := 8080
 
@@ -72,6 +69,7 @@ func (app *App) startServer(options *AppStartOptions) {
 		}
 		address := ":" + strconv.Itoa(port)
 		log.Printf("Server starting on local port %s", address)
+		log.Printf("Public domain: %s", app.config.Http.DomainName)
 
 		if options.ConfigureWebServer != nil {
 			options.ConfigureWebServer(app.server)

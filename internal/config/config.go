@@ -37,17 +37,11 @@ type LoggingSettings struct {
 
 type HttpSettings struct {
 	DomainName string `mapstructure:"PUBLIC_DOMAIN_NAME"`
-	HttpPort   string `mapstructure:"PUBLIC_HTTP_PORT"`
-	HttpsPort  string `mapstructure:"PUBLIC_HTTPS_PORT"`
-	IsSecure   bool   `mapstructure:"HTTPS"`
+	Port       string `mapstructure:"PUBLIC_PORT"`
 }
 
 func (s *AppConfig) GetPublicBaseUrl() string {
-	protocol := "http"
-	if !s.IsDevelopment() {
-		protocol = "https"
-	}
-	return protocol + "://" + s.Http.DomainName + "/"
+	return "https://" + s.Http.DomainName + "/"
 }
 
 type AppConfig struct {
