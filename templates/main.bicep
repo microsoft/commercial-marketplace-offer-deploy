@@ -13,7 +13,7 @@ module servicebusModule 'modules/servicebus.bicep' = {
   }
 }
 
-var containerImage = 'gpsuscodewith/modm:${appVersion}'
+var containerImage = 'ghcr.io/gpsuscodewith/modm'
 
 module containerInstanceModule 'modules/containerInstance.bicep' = {
   name: 'containerInstance'

@@ -9,6 +9,7 @@ import (
 	"github.com/microsoft/ApplicationInsights-Go/appinsights"
 	"github.com/microsoft/ApplicationInsights-Go/appinsights/contracts"
 	"github.com/sirupsen/logrus"
+	
 )
 
 type LoggingConfig struct {
