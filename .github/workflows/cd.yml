@@ -47,7 +47,10 @@ jobs:
         context: .
         push: true
         file: ./build/package/Dockerfile
-        tags: ghcr.io/${{ env.targetGitHubAccount }}/${{ env.imageName }}:${{ env.versionPrefix }}${{github.run_number}}
+        tags: |
+          ghcr.io/${{ env.targetGitHubAccount }}/${{ env.imageName }}:${{ env.versionPrefix }}${{github.run_number}}, 
+          ghcr.io/${{ env.targetGitHubAccount }}/${{ env.imageName }}:latest
+
 
   azure-deploy:
     runs-on: ubuntu-latest
