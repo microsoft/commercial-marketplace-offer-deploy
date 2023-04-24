@@ -70,12 +70,11 @@ jobs:
               az group delete -n $g --yes --no-wait; 
             done 
             az group create -l eastus -n $RESOURCE_GROUP_NAME
-      # TODO: this requires that we setup main.bicep first...separate PR coming
-      # - name: Deploy resources
-      #   uses: azure/CLI@v1 
-      #   with: 
-      #     azcliversion: 2.30.0 
-      #     inlineScript: | 
-      #       az deployment group create -g $RESOURCE_GROUP_NAME \
-      #         --template-file ./templates/main.bicep \
-      #         --parameters @./templates/main.parameters.json
+      - name: Deploy resources
+        uses: azure/CLI@v1 
+        with: 
+          azcliversion: 2.30.0 
+          inlineScript: |
+            az deployment group create --resource-group $RESOURCE_GROUP_NAME \
+                --template-file ./templates/main.bicep \
+                --parameters acmeEmail=nowhere@domain.com appVersion=v0.1.${{github.run_number}}
