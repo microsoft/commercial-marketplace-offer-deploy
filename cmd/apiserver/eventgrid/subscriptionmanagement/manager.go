@@ -136,7 +136,7 @@ func (c *manager) CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTo
 		log.Print("Poller response is nil")
 	}
 	if err != nil {
-		log.Printf("Error creating system topic %s in resource group %s", c.Properties.SystemTopicName, c.Properties.ResourceGroupName)
+		log.Error("Error creating system topic %s in resource group %s", c.Properties.SystemTopicName, c.Properties.ResourceGroupName)
 		if responseError, ok := err.(*azcore.ResponseError); ok {
 			if responseError.StatusCode == 400 && strings.Contains(err.Error(), "Only one system topic is allowed per source.") {
 				log.Print("System topic already exists for resource group")
