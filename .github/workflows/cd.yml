@@ -9,9 +9,6 @@ env:
   imageName: modm
   RESOURCE_GROUP_NAME: development-${{ github.run_number }}
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
