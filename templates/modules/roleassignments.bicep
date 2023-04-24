@@ -24,6 +24,10 @@ var roles = {
   serviceBusDataReceiver: '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0'
   serviceBusDataSender: '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39'
   appInsightsContributor: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
+  eventGridContributor: '1e241071-0855-49ea-94dc-649edcd759de'
+  eventGridDataSender: 'd5a91429-5739-47e2-a06b-3470a27159e7'
+  eventGridEventSubscriptionContributor: '428e0ff0-5e57-4d9c-a221-2c70d0e0a443'
+  eventGridEventSubscriptionReader: '2414bbcf-6497-4faf-8c65-045460748405'
 }
 
 resource roleAssignmentStorageAcct 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
@@ -61,6 +65,46 @@ resource appInsightsAssignment 'Microsoft.Authorization/roleAssignments@2020-04-
   name: guid(appInsights.id, containerGroup.name, roles.appInsightsContributor)
   properties: {
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', roles.appInsightsContributor)
+    principalId: containerGroup.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource eventGridContributorAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  scope: resourceGroup()
+  name: guid(containerGroup.id, containerGroup.name, roles.eventGridContributor)
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', roles.eventGridContributor)
+    principalId: containerGroup.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource eventGridDataSenderAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  scope: resourceGroup()
+  name: guid(containerGroup.id, containerGroup.name, roles.eventGridDataSender)
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', roles.eventGridDataSender)
+    principalId: containerGroup.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource eventGridEventSubscriptionContributorAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  scope: resourceGroup()
+  name: guid(containerGroup.id, containerGroup.name, roles.eventGridEventSubscriptionContributor)
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', roles.eventGridEventSubscriptionContributor)
+    principalId: containerGroup.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource eventGridEventSubscriptionReaderAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  scope: resourceGroup()
+  name: guid(containerGroup.id, containerGroup.name, roles.eventGridEventSubscriptionReader)
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', roles.eventGridEventSubscriptionReader)
     principalId: containerGroup.identity.principalId
     principalType: 'ServicePrincipal'
   }
