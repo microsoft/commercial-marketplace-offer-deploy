@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"os"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
@@ -35,7 +36,8 @@ type eventGridRegistrationTaskOptions struct {
 // and a subscription using the provided options
 func create(options eventGridRegistrationTaskOptions) tasks.Task {
 	action := func(ctx context.Context) error {
-		log.Print("Registering event grid system topic for resource group deployment events...")
+		log.Print("Registering event grid in 3 minutes...")
+		time.Sleep(3 * time.Minute)
 
 		manager, err := subscriptionmanagement.NewEventGridManager(options.Credential, options.ResourceGroupId)
 
