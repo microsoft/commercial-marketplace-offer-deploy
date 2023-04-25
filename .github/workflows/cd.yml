@@ -94,21 +94,12 @@ jobs:
             done 
             az group create -l eastus -n $RESOURCE_GROUP_NAME
       
-       # Deploy Bicep file
-      - name: deploy
-        uses: azure/arm-deploy@v1
-        with:
-          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
-          resourceGroupName: $RESOURCE_GROUP_NAME
-          template: ./templates/main.bicep
-          parameters: 'acmeEmail=nowhere@domain.com appVersion=v0.1.${{github.run_number}}'
-          failOnStdErr: false
-
-      # - name: Deploy resources
-      #   uses: azure/CLI@v1 
-      #   with: 
-      #     azcliversion: 2.30.0 
-      #     inlineScript: |
-      #       az deployment group create --resource-group $RESOURCE_GROUP_NAME \
-      #           --template-file ./templates/main.bicep \
-      #           --parameters acmeEmail=nowhere@domain.com appVersion=v0.1.${{github.run_number}}
+      - name: Deploy resources
+        uses: azure/CLI@v1 
+        with: 
+          azcliversion: 2.30.0 
+          inlineScript: |
+            cd ./templates 
+            az deployment group create --resource-group $RESOURCE_GROUP_NAME \
+                --template-file ./main.bicep \
+                --parameters acmeEmail=nowhere@domain.com appVersion=v0.1.${{github.run_number}}
