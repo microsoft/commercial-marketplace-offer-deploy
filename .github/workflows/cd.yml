@@ -9,9 +9,6 @@ env:
   imageName: modm
   RESOURCE_GROUP_NAME: development-${{ github.run_number }}
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
@@ -52,9 +49,31 @@ jobs:
         file: ./build/package/Dockerfile
         tags: ghcr.io/${{ env.targetGitHubAccount }}/${{ env.imageName }}:${{ env.versionPrefix }}${{github.run_number}}
 
+
+  push2:     
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+  
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+  
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    - name: Login to GitHub Container Registry
+      run: echo ${{ secrets.CR_PAT2 }} | docker login ghcr.io -u ${{ env.targetGitHubAccount }} --password-stdin
+    - name: Build and push to registry
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        file: ./build/package/Dockerfile
+        tags: ghcr.io/${{ env.targetGitHubAccount }}/${{ env.imageName }}:latest
+
   azure-deploy:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
@@ -70,12 +89,11 @@ jobs:
               az group delete -n $g --yes --no-wait; 
             done 
             az group create -l eastus -n $RESOURCE_GROUP_NAME
-      # TODO: this requires that we setup main.bicep first...separate PR coming
-      # - name: Deploy resources
-      #   uses: azure/CLI@v1 
-      #   with: 
-      #     azcliversion: 2.30.0 
-      #     inlineScript: | 
-      #       az deployment group create -g $RESOURCE_GROUP_NAME \
-      #         --template-file ./templates/main.bicep \
-      #         --parameters @./templates/main.parameters.json
+      - name: Deploy resources
+        uses: azure/CLI@v1 
+        with: 
+          azcliversion: 2.30.0 
+          inlineScript: |
+            az deployment group create --resource-group $RESOURCE_GROUP_NAME \
+                --template-file ./templates/main.bicep \
+                --parameters acmeEmail=nowhere@domain.com appVersion=v0.1.${{github.run_number}}
