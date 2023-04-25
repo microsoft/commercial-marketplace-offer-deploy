@@ -228,11 +228,14 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
       dnsNameLabel: containerName
     }
   }
+  dependsOn: [
+    caddyFileDeploymentScript
+  ]
 }
 
 var filename = 'caddyFile'
 @description('this deployment script supports sucking in the caddyFile for caddy')
-resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
+resource caddyFileDeploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   name: 'caddyFile'
   location: location
   kind: 'AzureCLI'
