@@ -6,15 +6,29 @@ param location string = resourceGroup().location
 
 var versionSuffix = replace(appVersion, '.', '')
 var name = 'modm-appinsights-${versionSuffix}'
+var logAnalyticsWorkspaceName = 'modm-loganalytics-${versionSuffix}'
+
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
+  name: logAnalyticsWorkspaceName
+  location: location
+  properties: {
+    sku: {
+      name: 'PerGB2018'
+    }
+    retentionInDays: 30
+    publicNetworkAccessForIngestion: 'Enabled'
+    publicNetworkAccessForQuery: 'Disabled'
+  }
+}
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: name
   location: location
-  kind: 'other'
+  kind: 'web'
   properties: {
     Application_Type: 'web'
     Flow_Type: 'Bluefield'
-    Request_Source: 'rest'
+    WorkspaceResourceId: logAnalyticsWorkspace.id
   }
 }
 
