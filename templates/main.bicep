@@ -5,7 +5,7 @@ param appVersion string = 'latest'
 @description('admin email used for Lets Encrypt.')
 param acmeEmail string
 
-module servicebusModule 'modules/servicebus.bicep' = {
+module servicebusModule './modules/servicebus.bicep' = {
   name: 'serviceBus'
   params: {
     location: location
@@ -13,7 +13,7 @@ module servicebusModule 'modules/servicebus.bicep' = {
   }
 }
 
-module appInsightsModule 'modules/applicationInsights.bicep' = {
+module appInsightsModule './modules/applicationInsights.bicep' = {
   name: 'appInsights'
   params: {
     location: location
@@ -23,7 +23,7 @@ module appInsightsModule 'modules/applicationInsights.bicep' = {
 
 var containerImage = 'ghcr.io/gpsuscodewith/modm'
 
-module containerInstanceModule 'modules/containerInstance.bicep' = {
+module containerInstanceModule './modules/containerInstance.bicep' = {
   name: 'containerInstance'
   params: {
     location: location
@@ -42,7 +42,7 @@ module containerInstanceModule 'modules/containerInstance.bicep' = {
   ]
 }
 
-module roleAssignments 'modules/roleAssignments.bicep' = {
+module roleAssignments './modules/roleAssignments.bicep' = {
   name: 'roleAssignments'
   params: {
     containerGroupName: containerInstanceModule.outputs.containerGroupName
