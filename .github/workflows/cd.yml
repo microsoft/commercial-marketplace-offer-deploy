@@ -69,6 +69,10 @@ jobs:
         push: true
         file: ./build/package/Dockerfile
         tags: ghcr.io/${{ env.targetGitHubAccount }}/${{ env.imageName }}:latest
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        provenance: false
 
   azure-deploy:
     runs-on: ubuntu-latest
