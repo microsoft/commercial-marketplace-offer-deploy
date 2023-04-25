@@ -99,7 +99,7 @@ jobs:
         uses: azure/arm-deploy@v1
         with:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
-          resourceGroupName: $RESOURCE_GROUP_NAME
+          resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
           template: ./templates/main.bicep
           parameters: 'acmeEmail=nowhere@domain.com appVersion=v0.1.${{github.run_number}}'
           failOnStdErr: false
