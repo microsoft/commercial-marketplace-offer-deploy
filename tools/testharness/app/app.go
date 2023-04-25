@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/labstack/echo"
@@ -25,11 +25,12 @@ var (
 	subscription  = "31e9f9a0-9fd2-4294-a0a3-0101246d9700"
 	//clientEndpoint = "https://dnsbobjac67.eastus.azurecontainer.io:443/api"
 	clientEndpoint = "http://localhost:8080"
+	env            = loadEnvironmentVariables()
 )
 
 func getClientEndpoint() string {
 	// no real need for viper here as we are just pulling 1 environment variable for the test harness
-	endpoint := os.Getenv("MODM_API_ENDPOINT")
+	endpoint := env.GetString("MODM_API_ENDPOINT")
 	if len(endpoint) > 0 {
 		return endpoint
 	}
@@ -37,7 +38,7 @@ func getClientEndpoint() string {
 }
 
 func getLocation() string {
-	loc := os.Getenv("MODM_DEPLOYMENT_LOCATION")
+	loc := env.GetString("MODM_DEPLOYMENT_LOCATION")
 	if len(loc) > 0 {
 		return loc
 	}
@@ -45,7 +46,7 @@ func getLocation() string {
 }
 
 func getSubscription() string {
-	sub := os.Getenv("MODM_SUBSCRIPTION")
+	sub := env.GetString("MODM_SUBSCRIPTION")
 	if len(sub) > 0 {
 		return sub
 	}
@@ -53,7 +54,7 @@ func getSubscription() string {
 }
 
 func getResourceGroup() string {
-	rg := os.Getenv("MODM_RESOURCE_GROUP")
+	rg := env.GetString("MODM_RESOURCE_GROUP")
 	if len(rg) > 0 {
 		return rg
 	}
@@ -61,7 +62,7 @@ func getResourceGroup() string {
 }
 
 func getTemplatePath() string {
-	path := os.Getenv("TEMPLATE_PATH")
+	path := env.GetString("TEMPLATE_PATH")
 	if len(path) > 0 {
 		return path
 	}
@@ -69,7 +70,7 @@ func getTemplatePath() string {
 }
 
 func getParamsPath() string {
-	templateParams := os.Getenv("TEMPLATEPARAMS_PATH")
+	templateParams := env.GetString("TEMPLATEPARAMS_PATH")
 	if len(templateParams) > 0 {
 		log.Printf("Found TEMPLATEPARAMS_PATH - %s", templateParams)
 		return templateParams
@@ -78,14 +79,19 @@ func getParamsPath() string {
 }
 
 func getCallback() string {
-	callback := os.Getenv("CALLBACK")
+	callback := env.GetString("CALLBACK_BASE_URL")
 	if len(callback) > 0 {
 		return callback
 	}
-	return "http://localhost:8080"
+
+	//TODO: use the value that's set on echo
+	return "http://localhost:" + strconv.Itoa(8280)
 }
 
 func AddRoutes(e *echo.Echo) {
+	e.GET("/", func(ctx echo.Context) error {
+		return ctx.String(http.StatusOK, "Ingress Agent Up.")
+	})
 	e.GET("/createdeployment", CreateDeployment)
 	e.GET("/startdeployment/:deploymentId", StartDeployment)
 	e.GET("/createeventsubscription", CreateEventSubscription)
@@ -164,7 +170,7 @@ func CreateEventSubscription(c echo.Context) error {
 
 	subscriptionName := "webhook-1"
 	apiKey := "1234"
-	callbackclientEndpoint := fmt.Sprintf("http://%s.eastus.azurecontainer.io:8080/webhook", getCallback())
+	callbackclientEndpoint := fmt.Sprintf("%s/webhook", getCallback())
 
 	request := api.CreateEventSubscriptionRequest{
 		APIKey:   &apiKey,
@@ -296,6 +302,20 @@ func StartDeployment(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, res)
+}
+
+func loadEnvironmentVariables() *viper.Viper {
+	env := viper.New()
+	env.AddConfigPath("./")
+	env.SetConfigName(".env")
+	env.SetConfigType("env")
+	env.AutomaticEnv()
+
+	err := env.ReadInConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return env
 }
 
 func BuildApp(configurationFilePath string) *hosting.App {

@@ -8,11 +8,9 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/tools/testharness/app"
-	// testharness "github.com/microsoft/commercial-marketplace-offer-deploy/tools/testharness/app"
 )
 
 var (
-	//configurationFilePath string = "."
 	port int = 8280
 )
 
@@ -23,14 +21,7 @@ func main() {
 	e := echo.New()
 	app.AddRoutes(e)
 
-	if err := e.Start(":8280"); err != http.ErrServerClosed {
+	if err := e.Start(formattedPort); err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
-	// app := testharness.BuildApp(configurationFilePath)
-
-	// options := &hosting.AppStartOptions{
-	// 	Port: &port,
-	// 	WebServer: true,
-	// }
-	// log.Fatal(app.Start(options))
 }
