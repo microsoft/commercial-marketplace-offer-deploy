@@ -29,6 +29,27 @@ jobs:
     # - name: Run tests
     # run: make test-all
 
+  # push:     
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v3
+  
+  #   - name: Set up QEMU
+  #     uses: docker/setup-qemu-action@v2
+  
+  #   - name: Set up Docker Buildx
+  #     uses: docker/setup-buildx-action@v2
+  #   - name: Login to GitHub Container Registry
+  #     run: echo ${{ secrets.CR_PAT2 }} | docker login ghcr.io -u ${{ env.targetGitHubAccount }} --password-stdin
+  #   - name: Build and push to registry
+  #     uses: docker/build-push-action@v4
+  #     with:
+  #       context: .
+  #       push: true
+  #       file: ./build/package/Dockerfile
+  #       tags: ghcr.io/${{ env.targetGitHubAccount }}/${{ env.imageName }}:${{ env.versionPrefix }}${{github.run_number}}
+
+
   push:     
     runs-on: ubuntu-latest
     steps:
@@ -47,28 +68,7 @@ jobs:
         context: .
         push: true
         file: ./build/package/Dockerfile
-        tags: ghcr.io/${{ env.targetGitHubAccount }}/${{ env.imageName }}:${{ env.versionPrefix }}${{github.run_number}}
-
-
-  push2:     
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-  
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v2
-  
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-    - name: Login to GitHub Container Registry
-      run: echo ${{ secrets.CR_PAT2 }} | docker login ghcr.io -u ${{ env.targetGitHubAccount }} --password-stdin
-    - name: Build and push to registry
-      uses: docker/build-push-action@v4
-      with:
-        context: .
-        push: true
-        file: ./build/package/Dockerfile
-        tags: ghcr.io/${{ env.targetGitHubAccount }}/${{ env.imageName }}:latest
+        tags: ghcr.io/${{ env.targetGitHubAccount }}/${{ env.imageName }}:latest, ghcr.io/${{ env.targetGitHubAccount }}/${{ env.imageName }}:${{ env.versionPrefix }}${{github.run_number}}
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
