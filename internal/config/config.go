@@ -32,9 +32,8 @@ type DatabaseSettings struct {
 }
 
 type LoggingSettings struct {
-	DefaultLogLevel    string `mapstructure:"LOG_LEVEL"`
-	InstrumentationKey string `mapstructure:"LOG_KEY"`
-	FilePath           string `mapstructure:"LOG_FILE_PATH"`
+	DefaultLogLevel string `mapstructure:"LOG_LEVEL"`
+	FilePath        string `mapstructure:"LOG_FILE_PATH"`
 }
 
 type HttpSettings struct {
@@ -60,11 +59,10 @@ func (appSettings *AppConfig) GetDatabaseOptions() *data.DatabaseOptions {
 	return options
 }
 
-func (appSettings *AppConfig) GetLogOptions() *log.LoggingConfig {
-	return &log.LoggingConfig{
-		InstrumentationKey: appSettings.Logging.InstrumentationKey,
-		DefaultLogLevel:    appSettings.Logging.DefaultLogLevel,
-		FilePath: 		 	filepath.Join(appSettings.Logging.FilePath, "modmlog.txt"),
+func (appSettings *AppConfig) GetLogOptions() *log.LoggingOptions {
+	return &log.LoggingOptions{
+		DefaultLogLevel: appSettings.Logging.DefaultLogLevel,
+		FilePath:        filepath.Join(appSettings.Logging.FilePath, "modmlog.txt"),
 	}
 }
 

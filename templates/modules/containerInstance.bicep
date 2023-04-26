@@ -38,8 +38,6 @@ param publicHttpPort int = 80
 @description('The public https port')
 param publicHttpsPort int = 8443
 
-param appInsightsInstrumentationKey string
-
 @description('The behavior of Azure runtime if container has stopped.')
 @allowed([
   'Always'
@@ -202,10 +200,6 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
             {
               name: 'PUBLIC_HTTPS_PORT'
               value: string(publicHttpsPort)
-            }
-            {
-              name: 'LOG_KEY'
-              value: appInsightsInstrumentationKey
             }
             {
               name: 'LOG_FILE_PATH'

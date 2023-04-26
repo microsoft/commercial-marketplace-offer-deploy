@@ -4,21 +4,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+
 	"github.com/microsoft/ApplicationInsights-Go/appinsights"
 	"github.com/microsoft/ApplicationInsights-Go/appinsights/contracts"
 	"github.com/sirupsen/logrus"
 )
 
 const (
-	LogPath = "./"
+	LogPath     = "./"
 	LogName     = "modmlog"
 	LogFileName = LogName + ".txt"
 )
 
-type LoggingConfig struct {
-	FilePath		   string
-	InstrumentationKey string
-	DefaultLogLevel    string
+type LoggingOptions struct {
+	FilePath        string
+	DefaultLogLevel string
 }
 
 type InsightsConfig struct {
@@ -28,8 +28,7 @@ type InsightsConfig struct {
 	Version string
 }
 
-
-func ConfigureLogging(config *LoggingConfig) {
+func ConfigureLogging(config *LoggingOptions) {
 	logrus.SetOutput(os.Stdout)
 	logrus.SetLevel(logrus.InfoLevel)
 	logrus.SetReportCaller(true)
