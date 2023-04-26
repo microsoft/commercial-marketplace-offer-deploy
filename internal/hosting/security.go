@@ -28,6 +28,11 @@ func (c *SecurityContext) GetAzureCredential() azcore.TokenCredential {
 	return credential
 }
 
+func GetAzureCredentialFunc() func() azcore.TokenCredential {
+	context := getDefaultContext()
+	return context.GetAzureCredential
+}
+
 func GetAzureCredential() azcore.TokenCredential {
 	context := getDefaultContext()
 	return context.GetAzureCredential()
