@@ -9,24 +9,12 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
-	"github.com/stretchr/testify/assert"
 )
 
-
 func TestLogHook(t *testing.T) {
-
-	env := viper.New()
-	env.AddConfigPath("./testdata")
-	env.SetConfigName(".env")
-	env.SetConfigType("env")
-
-	err := env.ReadInConfig()
-	assert.NoError(t, err)
-
 	stacktraceHook := &StacktraceHook{
 		innerHook: &FileHook{
-			fileName: "./test.log",
+			fileName: "./testdata/test.log",
 		},
 	}
 
@@ -42,7 +30,7 @@ func TestLogHook(t *testing.T) {
 	outputString := output.String()
 	fmt.Println(outputString)
 
-//	select {}
+	// select {}
 }
 
 func TestLogFormatter(t *testing.T) {

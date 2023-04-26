@@ -67,7 +67,7 @@ resource fileStore 'Microsoft.Storage/storageAccounts/fileServices/shares@2021-0
 }
 
 var sharedVolumeName = 'filestore'
-var fileShareMountPath = '/opt/share'
+var fileShareMountPath = '/opt/modm'
 var containerName = 'modm-${versionSuffix}'
 
 resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-preview' = {
@@ -82,7 +82,7 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
         name: sharedVolumeName
         azureFile: {
           readOnly: false
-          shareName: 'share'
+          shareName: 'modm'
           storageAccountName: storageAccount.name
           storageAccountKey: storageAccount.listKeys().keys[0].value
         }
