@@ -16,6 +16,7 @@ resource serviceBus 'Microsoft.ServiceBus/namespaces@2022-01-01-preview' existin
 
 var roles = {
   resourceGroupReader: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
+  resourceGroupOwner: '8e3af657-a8ff-443c-a75c-2fe8c4bcb635'
   storageAccountContributor: '0c867c2a-1d8c-454a-a3db-ab2ea1bdc8bb'
   serviceBusDataReceiver: '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0'
   serviceBusDataSender: '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39'
@@ -28,9 +29,19 @@ var roles = {
 
 resource resourceReader 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
   scope: resourceGroup() //assigns to storage acct
-  name: guid(storageAccount.id, containerGroup.name, roles.resourceGroupReader)
+  name: guid(containerGroup.id, containerGroup.name, roles.resourceGroupReader)
   properties: {
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', roles.resourceGroupReader)
+    principalId: containerGroup.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource resourceOwner 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  scope: resourceGroup() //assigns to storage acct
+  name: guid(containerGroup.id, containerGroup.name, roles.resourceGroupReader)
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', roles.resourceGroupOwner)
     principalId: containerGroup.identity.principalId
     principalType: 'ServicePrincipal'
   }
