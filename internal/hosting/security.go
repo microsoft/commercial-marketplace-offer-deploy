@@ -116,13 +116,17 @@ func getObjectId(rawToken *string) (string, error) {
 			return nil, fmt.Errorf("kid header not found")
 		}
 
-		keys, ok := j.parameters.IssuerKeySet.LookupKeyID(kid)
+		keySet, err := FetchAzureADKeySet(context.Background())
+		if err != nil {
+			return nil, fmt.Errorf("could not fetch keyset")
+		}
+		keys, ok := keySet.LookupKeyID(kid)
 		if !ok {
 			return nil, fmt.Errorf("key %v not found", kid)
 		}
 
 		publickey := &rsa.PublicKey{}
-		err := keys.Raw(publickey)
+		err = keys.Raw(publickey)
 		if err != nil {
 			return nil, fmt.Errorf("could not parse pubkey")
 		}
