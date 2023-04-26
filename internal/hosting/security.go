@@ -5,6 +5,7 @@ import (
 	"crypto/rsa"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -59,16 +60,24 @@ func CheckRoleAssignmentsForScope(appConfig *config.AppConfig, scope string, rol
 
 		if err != nil {
 			log.Printf("Failed to obtain a credential: %v", err)
+			continue
 		}
 
 		accessToken, err := cred.GetToken(ctx, policy.TokenRequestOptions{Scopes: []string{"https://management.azure.com/.default"}})
 		if err != nil {
 			log.Errorf("failed to get token: %v", err)
+			continue
 		}
 		log.Infof("Token: %s", accessToken.Token)
 
 		if err != nil {
 			log.Printf("Failed to obtain a credential: %v", err)
+			continue
+		}
+
+		objectId, err := getObjectId(&accessToken.Token)
+		if err != nil {
+			log.Errorf("failed to get object id from token: %v", err)
 			continue
 		}
 
@@ -86,14 +95,12 @@ func CheckRoleAssignmentsForScope(appConfig *config.AppConfig, scope string, rol
 				break
 			}
 			for _, v := range page.Value {
-				if v.Properties.PrincipalID == &appConfig.Azure.ClientId && *v.Properties.RoleDefinitionID == roleDefinition {
+				if strings.EqualFold(*v.Properties.PrincipalID, objectId) && strings.EqualFold(*v.Properties.RoleDefinitionID, roleDefinition) {
 					return true, nil
-				}
+				} 
 			}
 		}
 	}
-
-	return false, nil
 }
 
 func getDefaultContext() *SecurityContext {
