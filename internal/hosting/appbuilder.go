@@ -24,6 +24,7 @@ func NewAppBuilder(name string) *AppBuilder {
 
 	if appInstance == nil {
 		appInstance = &App{
+			name:     name,
 			server:   echo.New(),
 			services: []BackgroundService{},
 		}
