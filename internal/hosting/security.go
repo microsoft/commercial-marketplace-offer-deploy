@@ -68,12 +68,6 @@ func CheckRoleAssignmentsForScope(appConfig *config.AppConfig, scope string, rol
 			log.Errorf("failed to get token: %v", err)
 			continue
 		}
-		log.Infof("Token: %s", accessToken.Token)
-
-		if err != nil {
-			log.Printf("Failed to obtain a credential: %v", err)
-			continue
-		}
 
 		objectId, err := getObjectId(&accessToken.Token)
 		if err != nil {
@@ -97,7 +91,7 @@ func CheckRoleAssignmentsForScope(appConfig *config.AppConfig, scope string, rol
 			for _, v := range page.Value {
 				if strings.EqualFold(*v.Properties.PrincipalID, objectId) && strings.EqualFold(*v.Properties.RoleDefinitionID, roleDefinition) {
 					return true, nil
-				} 
+				}
 			}
 		}
 	}
