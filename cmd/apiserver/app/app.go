@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/middleware"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/routes"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"

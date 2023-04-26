@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"

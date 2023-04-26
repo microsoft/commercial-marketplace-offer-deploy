@@ -3,8 +3,8 @@ package hosting
 import (
 	log "github.com/sirupsen/logrus"
 
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	logger "github.com/microsoft/commercial-marketplace-offer-deploy/internal/log"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/tasks"

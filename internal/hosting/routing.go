@@ -1,6 +1,6 @@
 package hosting
 
-import "github.com/labstack/echo"
+import "github.com/labstack/echo/v4"
 
 // A route definition we can use to wire up all routes
 type Route struct {
