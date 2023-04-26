@@ -1,11 +1,16 @@
 package config
 
 import (
+	"os"
 	"path/filepath"
+	"strconv"
+	"time"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/log"
 )
+
+var logFileName string = ""
 
 // The azure settings
 type AzureSettings struct {
@@ -73,9 +78,19 @@ func (c *AppConfig) GetLoggingOptions() *log.LoggingOptions {
 	if len(c.Logging.FilePath) > 0 {
 		logfilePath = c.Logging.FilePath
 	}
+
+	if logFileName == "" {
+		name := "log"
+		hostname, err := os.Hostname()
+		if err != nil {
+			hostname = strconv.FormatInt(time.Now().Unix(), 10)
+		}
+		logFileName = name + "-" + hostname + ".txt"
+	}
+
 	return &log.LoggingOptions{
 		DefaultLogLevel: c.Logging.DefaultLogLevel,
-		FilePath:        filepath.Join(logfilePath, "modmlog.txt"),
+		FilePath:        filepath.Join(logfilePath, logFileName),
 	}
 }
 
