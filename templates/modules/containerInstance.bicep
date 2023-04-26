@@ -69,6 +69,7 @@ resource fileStore 'Microsoft.Storage/storageAccounts/fileServices/shares@2021-0
 var sharedVolumeName = 'filestore'
 var fileShareMountPath = '/opt/modm'
 var containerName = 'modm-${versionSuffix}'
+var readinessFilePath = '${fileShareMountPath}/apiserver-ready'
 
 resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-preview' = {
   name: 'modm-group-${versionSuffix}'
@@ -205,12 +206,16 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
               name: 'LOG_FILE_PATH'
               value: fileShareMountPath
             }
+            {
+              name: 'READINESS_FILE_PATH'
+              value: readinessFilePath
+            }
           ]
           readinessProbe: {
             exec: {
               command: [
                 'cat'
-                '${fileShareMountPath}/ready'
+                readinessFilePath
               ]
             }
             initialDelaySeconds: 120

@@ -18,7 +18,7 @@ type ConfigureRoutesFunc func(options *RouteOptions)
 type ConfigureAppConfigFunc func(config any)
 type ConfigureEchoFunc func(e *echo.Echo)
 
-func NewAppBuilder() *AppBuilder {
+func NewAppBuilder(name string) *AppBuilder {
 	mutex.Lock()
 	defer mutex.Unlock()
 

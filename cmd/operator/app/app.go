@@ -8,7 +8,7 @@ import (
 )
 
 func BuildApp(configurationFilePath string) *hosting.App {
-	builder := hosting.NewAppBuilder()
+	builder := hosting.NewAppBuilder("operator")
 
 	appConfig := &config.AppConfig{}
 	config.LoadConfiguration(configurationFilePath, nil, appConfig)

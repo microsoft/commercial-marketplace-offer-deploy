@@ -4,6 +4,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -13,6 +14,7 @@ import (
 )
 
 type App struct {
+	name     string
 	config   *config.AppConfig
 	server   *echo.Echo
 	services []BackgroundService
@@ -56,6 +58,10 @@ func (app *App) GetConfig() *config.AppConfig {
 	return app.config
 }
 
+func (app *App) Name() string {
+	return app.name
+}
+
 // Start starts the server
 // port: the port to listen on
 // configure: (optional) a function to configure the echo server
@@ -97,8 +103,19 @@ func (app *App) startTasks() {
 }
 
 func (app *App) startServices() {
+	app.waitForReadiness()
 	for _, service := range app.services {
 		log.Printf("Starting service: %s", service.GetName())
 		go service.Start()
+	}
+}
+
+func (app *App) waitForReadiness() {
+	log.Printf("%s: waiting for readiness", app.name)
+
+	ready := false
+	for ready {
+		ready = app.IsReady()
+		time.Sleep(1 * time.Second)
 	}
 }
