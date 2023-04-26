@@ -38,7 +38,7 @@ func (r *runner) Start() error {
 			defer waitGroup.Done()
 			defer recoverPanic()
 			task := r.tasks[i]
-			log.Printf("\n-------------------------\nTask Execution: %s\n-------------------------", task.Name())
+			log.Printf("Task: %s", task.Name())
 			err := task.Run(ctx)
 
 			if err != nil {

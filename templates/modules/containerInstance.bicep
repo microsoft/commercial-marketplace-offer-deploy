@@ -206,6 +206,16 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
               value: fileShareMountPath
             }
           ]
+          readinessProbe: {
+            exec: {
+              command: [
+                'cat'
+                'tmp/ready'
+              ]
+            }
+            initialDelaySeconds: 120
+            periodSeconds: 30
+          }
         }
       }
     ]

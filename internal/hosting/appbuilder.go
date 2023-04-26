@@ -26,6 +26,7 @@ func NewAppBuilder() *AppBuilder {
 		appInstance = &App{
 			server:   echo.New(),
 			services: []BackgroundService{},
+			ready:    make(chan bool),
 		}
 	}
 
@@ -68,7 +69,7 @@ func (b *AppBuilder) Build(configure ConfigureEchoFunc) *App {
 		log.Printf("Body:\n %v\n", string(reqBody))
 	}))
 
-	loggingConfig := b.app.config.GetLogOptions()
+	loggingConfig := b.app.config.GetLoggingOptions()
 	logger.ConfigureLogging(loggingConfig)
 
 	if configure != nil {

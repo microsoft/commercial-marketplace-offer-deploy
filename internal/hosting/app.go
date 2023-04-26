@@ -1,9 +1,9 @@
 package hosting
 
 import (
+	"os"
 	"strconv"
 	"sync"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -17,6 +17,7 @@ type App struct {
 	server   *echo.Echo
 	services []BackgroundService
 	tasks    []tasks.Task
+	ready    chan (bool)
 }
 
 type AppStartOptions struct {
@@ -32,7 +33,6 @@ type RouteOptions struct {
 
 var mutex sync.Mutex
 var appInstance *App
-var serverStarted = make(chan bool)
 
 // Gets the App instance running
 func GetApp() *App {
@@ -42,6 +42,18 @@ func GetApp() *App {
 // Gets strongly typed the App configuration
 func GetAppConfig() *config.AppConfig {
 	return GetApp().GetConfig()
+}
+
+// whether the app is ready
+func (app *App) IsReady() bool {
+	if _, err := os.Stat(app.config.GetReadinessFilePath()); err == nil {
+		return true
+	}
+	return false
+}
+
+func (app *App) SignalReadiness() {
+	app.ready <- app.IsReady()
 }
 
 // GetConfig gets the app configuration
@@ -76,21 +88,10 @@ func (app *App) startServer(options *AppStartOptions) {
 		}
 
 		go app.server.Start(address)
-		app.waitForReadiness()
-	} else {
-		serverStarted <- true
 	}
 }
 
-// run until server is started so we know we can execute other tasks that depend on the server
-func (app *App) waitForReadiness() {
-	time.Sleep(1 * time.Second)
-	serverStarted <- true
-}
-
 func (app *App) startTasks() {
-	<-serverStarted
-
 	if len(app.tasks) > 0 {
 		runner := tasks.NewTaskRunner()
 		for _, task := range app.tasks {

@@ -30,14 +30,24 @@ type eventGridRegistrationTaskOptions struct {
 	Credential      azcore.TokenCredential
 	ResourceGroupId string
 	EndpointUrl     string
+	Ready           chan (bool)
 }
 
 // factory for creating task that registers event grid system topic for the resource group deployment events
 // and a subscription using the provided options
 func create(options eventGridRegistrationTaskOptions) tasks.Task {
 	action := func(ctx context.Context) error {
-		log.Print("Registering event grid in 3 minutes...")
-		time.Sleep(3 * time.Minute)
+
+	Ready:
+		for {
+			select {
+			case <-options.Ready:
+				break Ready
+			default:
+				time.Sleep(10 * time.Second)
+				continue
+			}
+		}
 
 		manager, err := subscriptionmanagement.NewEventGridManager(options.Credential, options.ResourceGroupId)
 
