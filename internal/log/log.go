@@ -33,6 +33,12 @@ func ConfigureLogging(config *LoggingOptions) {
 	logrus.SetLevel(logrus.InfoLevel)
 	logrus.SetReportCaller(true)
 
+	formatter := &logrus.TextFormatter{
+		FullTimestamp:   true,
+		TimestampFormat: "2006-01-02 15:04:05",
+	}
+	logrus.SetFormatter(formatter)
+
 	if config == nil {
 		fmt.Println("No logging configuration provided")
 		return
