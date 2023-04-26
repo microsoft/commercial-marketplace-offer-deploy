@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/internal/exported"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v2"
 )
@@ -57,7 +57,7 @@ func CheckRoleAssignmentsForScope(appConfig *config.AppConfig, scope string, rol
 			log.Printf("Failed to obtain a credential: %v", err)
 		}
 
-		accessToken, err := cred.GetToken(ctx, exported.TokenRequestOptions{Scopes: []string{"https://management.azure.com/.default"}})
+		accessToken, err := cred.GetToken(ctx, policy.TokenRequestOptions{Scopes: []string{"https://management.azure.com/.default"}})
 		if err != nil {
 			log.Errorf("failed to get token: %v", err)
 		}
