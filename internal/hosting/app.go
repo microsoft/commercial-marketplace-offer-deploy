@@ -17,7 +17,6 @@ type App struct {
 	server   *echo.Echo
 	services []BackgroundService
 	tasks    []tasks.Task
-	ready    chan (bool)
 }
 
 type AppStartOptions struct {
@@ -50,13 +49,6 @@ func (app *App) IsReady() bool {
 		return true
 	}
 	return false
-}
-
-func (app *App) SignalReadiness() {
-	ready := app.IsReady()
-	app.ready <- ready
-
-	log.Infof("Signal Readiness [%s]", strconv.FormatBool(ready))
 }
 
 // GetConfig gets the app configuration

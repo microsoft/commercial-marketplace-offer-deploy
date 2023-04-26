@@ -25,7 +25,7 @@ func BuildApp(configurationFilePath string) *hosting.App {
 		e.Use(middleware.EventGridWebHookSubscriptionValidation())
 	})
 
-	builder.AddTask(newReadinessTask(appConfig, app.SignalReadiness))
+	builder.AddTask(newReadinessTask(appConfig, app.IsReady))
 	builder.AddTask(newEventGridRegistrationTask(appConfig))
 
 	return app

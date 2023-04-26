@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 
@@ -13,15 +12,15 @@ import (
 
 type readinessTaskOptions struct {
 	readinessFilePath string
-	signalReadiness   func()
+	isReady           func() bool
 	serviceUrl        string
 	name              string
 }
 
-func newReadinessTask(appConfig *config.AppConfig, signalReadiness func()) tasks.Task {
+func newReadinessTask(appConfig *config.AppConfig, isReady func() bool) tasks.Task {
 	options := readinessTaskOptions{
 		readinessFilePath: appConfig.GetReadinessFilePath(),
-		signalReadiness:   signalReadiness,
+		isReady:           isReady,
 		serviceUrl:        appConfig.GetPublicBaseUrl(),
 		name:              "Readiness Task",
 	}
@@ -58,12 +57,6 @@ func makeReady(options *readinessTaskOptions) error {
 	if err != nil {
 		return err
 	}
-
-	if options.signalReadiness == nil {
-		return fmt.Errorf("the signalReadiness func is nil for task %s", options.name)
-	}
-
-	options.signalReadiness()
 	defer readiness.Close()
 
 	return nil
