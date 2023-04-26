@@ -1,6 +1,7 @@
 package hosting
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"sync"
@@ -66,10 +67,22 @@ func (app *App) Name() string {
 // port: the port to listen on
 // configure: (optional) a function to configure the echo server
 func (app *App) Start(options *AppStartOptions) error {
-	go app.startServer(options)
-	go app.startServices()
-	go app.startTasks()
+	resourceGroup := app.config.Azure.ResourceGroupName
+	serviceBusNamespace := app.config.Azure.ServiceBusNamespace
+	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ServiceBus/namespaces/%s", app.config.Azure.SubscriptionId, resourceGroup, serviceBusNamespace)
+	// Azure Service Bus Data Receiver
+	roleDefinition := fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Authorization/roleDefinitions/%s", app.config.Azure.SubscriptionId, "4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0")
+	
+	hasCreds, err := CheckRoleAssignmentsForScope(app.config, scope, roleDefinition, time.Duration(5 * time.Minute))
+	if err != nil {
+		return err
+	}
 
+	if hasCreds {
+		go app.startServer(options)
+		go app.startServices()
+		go app.startTasks()
+	}
 	select {}
 }
 
