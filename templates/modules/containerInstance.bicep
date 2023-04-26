@@ -69,7 +69,7 @@ resource fileStore 'Microsoft.Storage/storageAccounts/fileServices/shares@2021-0
 var sharedVolumeName = 'filestore'
 var fileShareMountPath = '/opt/modm'
 var containerName = 'modm-${versionSuffix}'
-var readinessFilePath = '${fileShareMountPath}/apiserver-ready'
+var readinessFilePath = '${fileShareMountPath}/ready'
 
 resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-preview' = {
   name: 'modm-group-${versionSuffix}'
