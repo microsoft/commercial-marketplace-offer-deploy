@@ -39,7 +39,7 @@ resource resourceReader 'Microsoft.Authorization/roleAssignments@2020-04-01-prev
 
 resource resourceOwner 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
   scope: resourceGroup() //assigns to storage acct
-  name: guid(containerGroup.id, containerGroup.name, roles.resourceGroupReader)
+  name: guid(containerGroup.id, containerGroup.name, roles.resourceGroupOwner)
   properties: {
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', roles.resourceGroupOwner)
     principalId: containerGroup.identity.principalId
