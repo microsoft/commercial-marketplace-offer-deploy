@@ -207,6 +207,10 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
               name: 'LOG_KEY'
               value: appInsightsInstrumentationKey
             }
+            {
+              name: 'LOG_FILE_PATH'
+              value: fileShareMountPath
+            }
           ]
         }
       }

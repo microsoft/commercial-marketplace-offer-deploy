@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/log"
 )
 
 // The azure settings
@@ -33,6 +34,7 @@ type DatabaseSettings struct {
 type LoggingSettings struct {
 	DefaultLogLevel    string `mapstructure:"LOG_LEVEL"`
 	InstrumentationKey string `mapstructure:"LOG_KEY"`
+	FilePath           string `mapstructure:"LOG_FILE_PATH"`
 }
 
 type HttpSettings struct {
@@ -56,6 +58,14 @@ func (appSettings *AppConfig) GetDatabaseOptions() *data.DatabaseOptions {
 	dsn := filepath.Join(appSettings.Database.Path, data.DatabaseFileName)
 	options := &data.DatabaseOptions{Dsn: dsn, UseInMemory: appSettings.Database.UseInMemory}
 	return options
+}
+
+func (appSettings *AppConfig) GetLogOptions() *log.LoggingConfig {
+	return &log.LoggingConfig{
+		InstrumentationKey: appSettings.Logging.InstrumentationKey,
+		DefaultLogLevel:    appSettings.Logging.DefaultLogLevel,
+		FilePath: 		 	filepath.Join(appSettings.Logging.FilePath, "logs", "modmlog.txt"),
+	}
 }
 
 func (c *AppConfig) IsDevelopment() bool {

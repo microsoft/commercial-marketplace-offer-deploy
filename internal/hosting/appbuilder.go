@@ -68,9 +68,7 @@ func (b *AppBuilder) Build(configure ConfigureEchoFunc) *App {
 		log.Printf("Body:\n %v\n", string(reqBody))
 	}))
 
-	loggingConfig := &logger.LoggingConfig{
-		InstrumentationKey: b.app.config.Logging.InstrumentationKey,
-	}
+	loggingConfig := b.app.config.GetLogOptions()
 	logger.ConfigureLogging(loggingConfig)
 
 	if configure != nil {
