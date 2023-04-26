@@ -317,19 +317,3 @@ func loadEnvironmentVariables() *viper.Viper {
 	}
 	return env
 }
-
-func BuildApp(configurationFilePath string) *hosting.App {
-	builder := hosting.NewAppBuilder()
-
-	appConfig := &config.AppConfig{}
-	config.LoadConfiguration(configurationFilePath, nil, appConfig)
-	builder.AddConfig(appConfig)
-
-	builder.AddRoutes(func(options *hosting.RouteOptions) {
-		routes := GetRoutes(appConfig)
-		*options.Routes = routes
-	})
-
-	app := builder.Build(nil)
-	return app
-}
