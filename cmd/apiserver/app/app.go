@@ -26,7 +26,7 @@ func BuildApp(configurationFilePath string) *hosting.App {
 	})
 
 	builder.AddTask(newReadinessTask(appConfig, app.IsReady))
-	builder.AddTask(newEventGridRegistrationTask(appConfig))
+	builder.AddTask(newEventGridRegistrationTask(appConfig, app.IsReady))
 
 	return app
 }
