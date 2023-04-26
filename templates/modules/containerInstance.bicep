@@ -210,7 +210,7 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
             exec: {
               command: [
                 'cat'
-                'tmp/ready'
+                '${fileShareMountPath}/ready'
               ]
             }
             initialDelaySeconds: 120
