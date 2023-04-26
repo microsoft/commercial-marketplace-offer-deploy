@@ -42,7 +42,6 @@ func (client *Client) DryRunDeployment(ctx context.Context, deploymentId int32, 
 
 func (client *Client) StartDeployment(ctx context.Context, deploymentId int32, templateParameters map[string]interface{}) (*StartDeploymentResult, error) {
 	invokedOperation, err := client.invokeDeploymentOperation(ctx, false, operations.OperationStartDeployment, deploymentId, templateParameters)
-
 	if err != nil {
 		return nil, err
 	}
