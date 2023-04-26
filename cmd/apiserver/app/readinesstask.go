@@ -14,7 +14,7 @@ import (
 type readinessTaskOptions struct {
 	readinessFilePath string
 	signalReadiness   func()
-	publicUrl         string
+	serviceUrl        string
 	name              string
 }
 
@@ -22,7 +22,7 @@ func newReadinessTask(appConfig *config.AppConfig, signalReadiness func()) tasks
 	options := readinessTaskOptions{
 		readinessFilePath: appConfig.GetReadinessFilePath(),
 		signalReadiness:   signalReadiness,
-		publicUrl:         appConfig.GetPublicBaseUrl(),
+		serviceUrl:        appConfig.GetPublicBaseUrl(),
 		name:              "Readiness Task",
 	}
 
@@ -30,7 +30,7 @@ func newReadinessTask(appConfig *config.AppConfig, signalReadiness func()) tasks
 		statusCode := http.StatusNotFound
 
 		for statusCode != http.StatusOK {
-			response, err := http.Get(options.publicUrl)
+			response, err := http.Get(options.serviceUrl)
 
 			if err != nil {
 				continue
@@ -38,7 +38,8 @@ func newReadinessTask(appConfig *config.AppConfig, signalReadiness func()) tasks
 
 			statusCode = response.StatusCode
 		}
-		// with a 200 OK, we're ready (we need the public address to be there so event grid can work)
+		// with a 200 OK, we're ready (we need the service url to be there so event grid can work)
+		// this can be tested with a private URL that isn't reachable publicly, but event grid registration task will fail without a public url
 		err := makeReady(&options)
 
 		if err != nil {
@@ -58,7 +59,7 @@ func makeReady(options *readinessTaskOptions) error {
 	}
 
 	if options.signalReadiness == nil {
-		return fmt.Errorf("the signalReadiness func is nil for task %s.", options.name)
+		return fmt.Errorf("the signalReadiness func is nil for task %s", options.name)
 	}
 
 	options.signalReadiness()
