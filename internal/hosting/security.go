@@ -2,10 +2,14 @@ package hosting
 
 import (
 	"context"
+	"crypto/rsa"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
+	"github.com/golang-jwt/jwt"
+	"github.com/lestrrat-go/jwx/jwa"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	log "github.com/sirupsen/logrus"
 
@@ -99,4 +103,33 @@ func getDefaultContext() *SecurityContext {
 		securityContext = &SecurityContext{}
 	}
 	return securityContext
+}
+
+func getObjectId(rawToken *string) (string, error) {
+	token, err := jwt.Parse(*rawToken, func(token *jwt.Token) (interface{}, error) {
+		if token.Method.Alg() != jwa.RS256.String() {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		kid, ok := token.Header["kid"].(string)
+		if !ok {
+			return nil, fmt.Errorf("kid header not found")
+		}
+
+		keys, ok := j.parameters.IssuerKeySet.LookupKeyID(kid)
+		if !ok {
+			return nil, fmt.Errorf("key %v not found", kid)
+		}
+
+		publickey := &rsa.PublicKey{}
+		err := keys.Raw(publickey)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse pubkey")
+		}
+		return publickey, nil
+	})
+	if err != nil {
+		return "", err
+	}
+	return token.Claims.(jwt.MapClaims)["oid"].(string), nil
 }
