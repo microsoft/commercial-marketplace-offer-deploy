@@ -41,10 +41,14 @@ func create(options eventGridRegistrationTaskOptions) tasks.Task {
 	Ready:
 		for {
 			select {
-			case <-options.Ready:
-				break Ready
+			case ready := <-options.Ready:
+				log.Infof("Read from ready chan: %v", ready)
+				if ready {
+					break Ready
+				}
 			default:
-				time.Sleep(10 * time.Second)
+				log.Info("default ready case hit.")
+				time.Sleep(1 * time.Second)
 				continue
 			}
 		}

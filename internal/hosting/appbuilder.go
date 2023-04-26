@@ -26,7 +26,7 @@ func NewAppBuilder() *AppBuilder {
 		appInstance = &App{
 			server:   echo.New(),
 			services: []BackgroundService{},
-			ready:    make(chan bool),
+			ready:    make(chan bool, 100),
 		}
 	}
 

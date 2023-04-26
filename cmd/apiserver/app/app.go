@@ -23,7 +23,6 @@ func BuildApp(configurationFilePath string) *hosting.App {
 
 	app := builder.Build(func(e *echo.Echo) {
 		e.Use(middleware.EventGridWebHookSubscriptionValidation())
-
 	})
 
 	builder.AddTask(newReadinessTask(appConfig, app.SignalReadiness))

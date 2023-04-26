@@ -36,6 +36,7 @@ func newReadinessTask(appConfig *config.AppConfig, signalReadiness func()) tasks
 				continue
 			}
 
+			log.Infof("status code [%v] '%s'", response.StatusCode, options.serviceUrl)
 			statusCode = response.StatusCode
 		}
 		// with a 200 OK, we're ready (we need the service url to be there so event grid can work)

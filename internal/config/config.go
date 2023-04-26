@@ -69,7 +69,7 @@ func (c *AppConfig) GetReadinessFilePath() string {
 }
 
 func (c *AppConfig) GetLoggingOptions() *log.LoggingOptions {
-	logfilePath := "/data/logs"
+	logfilePath := "/logs"
 	if len(c.Logging.FilePath) > 0 {
 		logfilePath = c.Logging.FilePath
 	}

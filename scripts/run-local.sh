@@ -26,7 +26,7 @@ function run_docker() {
     ngrok http 8080 > /dev/null &
     NGROK_ID=$!
     echo "Pid: $NGROK_ID"
-
+    sleep 2
     export PUBLIC_DOMAIN_NAME=$(curl -s localhost:4040/api/tunnels | jq '.tunnels[0].public_url' -r | sed -E 's/^\s*.*:\/\///g')
     echo "Public Domain: $PUBLIC_DOMAIN_NAME"
     

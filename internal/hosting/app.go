@@ -53,7 +53,10 @@ func (app *App) IsReady() bool {
 }
 
 func (app *App) SignalReadiness() {
-	app.ready <- app.IsReady()
+	ready := app.IsReady()
+	app.ready <- ready
+
+	log.Infof("Signal Readiness [%s]", strconv.FormatBool(ready))
 }
 
 // GetConfig gets the app configuration
