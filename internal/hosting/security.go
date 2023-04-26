@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/internal/exported"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v2"
 )
@@ -45,17 +46,28 @@ func GetAzureCredential() azcore.TokenCredential {
 
 func CheckRoleAssignmentsForScope(appConfig *config.AppConfig, scope string, roleDefinition string, duration time.Duration) (bool, error) {
 	threshold := time.Now().Add(duration)
-
+	ctx := context.Background()
 	for {
 		if time.Now().After(threshold) {
 			return false, errors.New("timeout waiting for role assignment")
 		}
 		cred, err := azidentity.NewDefaultAzureCredential(nil)
+
+		if err != nil {
+			log.Printf("Failed to obtain a credential: %v", err)
+		}
+
+		accessToken, err := cred.GetToken(ctx, exported.TokenRequestOptions{Scopes: []string{"https://management.azure.com/.default"}})
+		if err != nil {
+			log.Errorf("failed to get token: %v", err)
+		}
+		log.Infof("Token: %s", accessToken.Token)
+
 		if err != nil {
 			log.Printf("Failed to obtain a credential: %v", err)
 			continue
 		}
-		ctx := context.Background()
+
 		//todo: use the credential function if necessary
 		clientFactory, err := armauthorization.NewClientFactory(appConfig.Azure.SubscriptionId, cred, nil)
 		if err != nil {
