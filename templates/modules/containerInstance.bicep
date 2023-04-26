@@ -82,7 +82,7 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
         name: sharedVolumeName
         azureFile: {
           readOnly: false
-          shareName: 'modm'
+          shareName: 'share'
           storageAccountName: storageAccount.name
           storageAccountKey: storageAccount.listKeys().keys[0].value
         }
