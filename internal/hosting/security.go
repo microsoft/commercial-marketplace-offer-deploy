@@ -28,7 +28,7 @@ func (c *SecurityContext) GetAzureCredential() azcore.TokenCredential {
 
 	// we MUST have a credential or we're dead in the water anyway
 	if err != nil {
-		log.Fatalf("failed to create credential: %v", err)
+		log.Errorf("failed to create credential: %v", err)
 	}
 	return credential
 }
