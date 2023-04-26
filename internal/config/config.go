@@ -64,7 +64,7 @@ func (appSettings *AppConfig) GetLogOptions() *log.LoggingConfig {
 	return &log.LoggingConfig{
 		InstrumentationKey: appSettings.Logging.InstrumentationKey,
 		DefaultLogLevel:    appSettings.Logging.DefaultLogLevel,
-		FilePath: 		 	filepath.Join(appSettings.Logging.FilePath, "logs", "modmlog.txt"),
+		FilePath: 		 	filepath.Join(appSettings.Logging.FilePath, "modmlog.txt"),
 	}
 }
 
