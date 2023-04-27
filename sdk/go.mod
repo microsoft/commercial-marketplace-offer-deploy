@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.4.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.2.2
-	github.com/microsoft/commercial-marketplace-offer-deploy v0.1.1
+	github.com/microsoft/commercial-marketplace-offer-deploy v0.0.0-20230427175326-47e12b43885f
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.2
 )
