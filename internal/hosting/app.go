@@ -75,9 +75,10 @@ func (app *App) Name() string {
 // port: the port to listen on
 // configure: (optional) a function to configure the echo server
 func (app *App) Start(options *AppStartOptions) error {
+	go app.startServer(options)
+
 	app.checkReadiness()
 
-	go app.startServer(options)
 	go app.startServices()
 	go app.startTasks()
 	select {}

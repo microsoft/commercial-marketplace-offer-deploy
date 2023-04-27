@@ -36,7 +36,7 @@ func BuildApp(configurationFilePath string) *hosting.App {
 }
 
 func addReadinessChecks(builder *hosting.AppBuilder, appConfig *config.AppConfig) {
-	defaultTimeout := time.Duration(2 * time.Minute)
+	defaultTimeout := time.Duration(3 * time.Minute)
 
 	azureCredentialCheck := diagnostics.NewAzureCredentialHealthCheck(diagnostics.AzureCredentialHealthCheckOptions{
 		Timeout: defaultTimeout,

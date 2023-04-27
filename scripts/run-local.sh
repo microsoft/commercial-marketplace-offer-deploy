@@ -20,7 +20,7 @@ function run_operator() {
 function run_docker() {
     echo "Building modm container image."
     docker build . -t modm:latest -f ./build/package/Dockerfile --quiet
-
+    
     echo "starting NGROK"
     # start up ngrok and get address
     ngrok http 8080 > /dev/null &

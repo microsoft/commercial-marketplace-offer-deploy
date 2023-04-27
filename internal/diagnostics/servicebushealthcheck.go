@@ -20,7 +20,9 @@ type ServiceBusHealthCheckOptions struct {
 }
 
 type serviceBusHealthCheck struct {
-	options *ServiceBusHealthCheckOptions
+	options       *ServiceBusHealthCheckOptions
+	sendResult    HealthCheckResult
+	receiveResult HealthCheckResult
 }
 
 // Check whether the url is accessible
@@ -56,6 +58,11 @@ func (c *serviceBusHealthCheck) getResult(ctx context.Context) HealthCheckResult
 			Status:      HealthCheckStatusUnhealthy,
 			Error:       err,
 		}
+	} else {
+		c.sendResult = HealthCheckResult{
+			Description: fmt.Sprintf("Successfully sent message to queue %s", c.options.QueueName),
+			Status:      HealthCheckStatusHealthy,
+		}
 	}
 
 	err = c.checkReceiver()
@@ -66,15 +73,32 @@ func (c *serviceBusHealthCheck) getResult(ctx context.Context) HealthCheckResult
 			Status:      HealthCheckStatusUnhealthy,
 			Error:       err,
 		}
+	} else {
+		c.receiveResult = HealthCheckResult{
+			Description: fmt.Sprintf("Successfully received message from queue %s", c.options.QueueName),
+			Status:      HealthCheckStatusHealthy,
+		}
+	}
+
+	if c.sendResult.Status == HealthCheckStatusHealthy && c.receiveResult.Status == HealthCheckStatusHealthy {
+		return HealthCheckResult{
+			Description: fmt.Sprintf("Successfully connected to queue %s", c.options.QueueName),
+			Status:      HealthCheckStatusHealthy,
+		}
 	}
 
 	return HealthCheckResult{
-		Description: fmt.Sprintf("Successfully sent and received message from queue %s", c.options.QueueName),
-		Status:      HealthCheckStatusHealthy,
+		Description: fmt.Sprintf("Failed to connect to queue %s", c.options.QueueName),
+		Status:      HealthCheckStatusUnhealthy,
+		Error:       errors.New("failed to connect to queue"),
 	}
 }
 
 func (c *serviceBusHealthCheck) checkSend() error {
+	if c.sendResult.Status == HealthCheckStatusHealthy {
+		return nil
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
@@ -97,6 +121,10 @@ func (c *serviceBusHealthCheck) checkSend() error {
 }
 
 func (c *serviceBusHealthCheck) checkReceiver() error {
+	if c.receiveResult.Status == HealthCheckStatusHealthy {
+		return nil
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
