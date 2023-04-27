@@ -1,6 +1,9 @@
 package diagnostics
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 const (
 	HealthCheckStatusHealthy   = 2
@@ -13,6 +16,12 @@ type HealthCheckResult struct {
 	Status      int
 	Error       error
 }
+
+type HealthCheckOptions struct {
+	Timeout time.Duration
+}
+
+type Check func(ctx context.Context) HealthCheckResult
 
 // A health check, which can be used to check the status of a component in the application, such as a backend service, database or some internal state.
 type HealthCheck interface {
@@ -37,6 +46,7 @@ func (service *healthCheckService) AddHealthCheck(check HealthCheck) {
 func (service *healthCheckService) CheckHealth(ctx context.Context) []HealthCheckResult {
 	results := make([]HealthCheckResult, len(service.checks))
 	for i, check := range service.checks {
+
 		results[i] = check.Check(ctx)
 	}
 	return results

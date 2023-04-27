@@ -77,10 +77,6 @@ func (app *App) Name() string {
 func (app *App) Start(options *AppStartOptions) error {
 	app.checkReadiness()
 
-	if !app.IsReady() {
-		log.Fatal("App is not ready")
-	}
-
 	go app.startServer(options)
 	go app.startServices()
 	go app.startTasks()

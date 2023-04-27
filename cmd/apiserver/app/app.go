@@ -30,7 +30,6 @@ func BuildApp(configurationFilePath string) *hosting.App {
 		e.Use(middleware.EventGridWebHookSubscriptionValidation())
 	})
 
-	builder.AddTask(newReadinessTask(appConfig, app.IsReady))
 	builder.AddTask(newEventGridRegistrationTask(appConfig, app.IsReady))
 
 	return app
@@ -39,16 +38,16 @@ func BuildApp(configurationFilePath string) *hosting.App {
 func addReadinessChecks(builder *hosting.AppBuilder, appConfig *config.AppConfig) {
 	defaultTimeout := time.Duration(2 * time.Minute)
 
+	publicUrlHealthCheck := diagnostics.NewUrlHealthCheck(diagnostics.UrlHealthCheckOptions{
+		ReadinessFilePath: appConfig.GetReadinessFilePath(),
+		Url:               appConfig.GetPublicBaseUrl(),
+		Timeout:           defaultTimeout,
+	})
+
 	azureCredentialCheck := diagnostics.NewAzureCredentialHealthCheck(diagnostics.AzureCredentialHealthCheckOptions{
 		Timeout: defaultTimeout,
 	})
 
-	azureRoleAssignmentsHealthCheck := diagnostics.NewRoleAssignmentsHealthCheck(diagnostics.AzureRoleAssignmentsHealthCheckOptions{
-		RoleAssignmentIds: appConfig.Azure.RoleAssignmentIds,
-		SubscriptionId:    appConfig.Azure.SubscriptionId,
-		Timeout:           defaultTimeout,
-	})
-
+	builder.AddReadinessCheck(publicUrlHealthCheck)
 	builder.AddReadinessCheck(azureCredentialCheck)
-	builder.AddReadinessCheck(azureRoleAssignmentsHealthCheck)
 }

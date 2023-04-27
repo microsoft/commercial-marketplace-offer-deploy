@@ -31,14 +31,7 @@ func addReadinessChecks(builder *hosting.AppBuilder, appConfig *config.AppConfig
 		Timeout: defaultTimeout,
 	})
 
-	azureRoleAssignmentsHealthCheck := diagnostics.NewRoleAssignmentsHealthCheck(diagnostics.AzureRoleAssignmentsHealthCheckOptions{
-		RoleAssignmentIds: appConfig.Azure.RoleAssignmentIds,
-		SubscriptionId:    appConfig.Azure.SubscriptionId,
-		Timeout:           defaultTimeout,
-	})
-
 	builder.AddReadinessCheck(azureCredentialCheck)
-	builder.AddReadinessCheck(azureRoleAssignmentsHealthCheck)
 }
 
 func addMessageReceivers(builder *hosting.AppBuilder, appConfig *config.AppConfig) {
@@ -51,7 +44,6 @@ func getMessageReceivers(appConfig *config.AppConfig) (messaging.MessageReceiver
 	credential := hosting.GetAzureCredential()
 
 	eventsReceiver := receivers.NewEventsMessageReceiver(appConfig, credential)
-
 	operationsReceiver := receivers.NewOperationsMessageReceiver(appConfig, credential)
 
 	return eventsReceiver, operationsReceiver
