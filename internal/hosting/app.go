@@ -1,7 +1,7 @@
 package hosting
 
 import (
-	"fmt"
+	"context"
 	"os"
 	"strconv"
 	"sync"
@@ -11,15 +11,18 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/diagnostics"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/tasks"
 )
 
 type App struct {
-	name     string
-	config   *config.AppConfig
-	server   *echo.Echo
-	services []BackgroundService
-	tasks    []tasks.Task
+	name               string
+	config             *config.AppConfig
+	server             *echo.Echo
+	services           []BackgroundService
+	tasks              []tasks.Task
+	healthCheckService diagnostics.HealthCheckService
+	healthCheckResults []diagnostics.HealthCheckResult
 }
 
 type AppStartOptions struct {
@@ -47,6 +50,11 @@ func GetAppConfig() *config.AppConfig {
 }
 
 // whether the app is ready
+func (app *App) GetHealthCheckResults() []diagnostics.HealthCheckResult {
+	return app.healthCheckResults
+}
+
+// whether the app is ready
 func (app *App) IsReady() bool {
 	if _, err := os.Stat(app.config.GetReadinessFilePath()); err == nil {
 		return true
@@ -67,23 +75,22 @@ func (app *App) Name() string {
 // port: the port to listen on
 // configure: (optional) a function to configure the echo server
 func (app *App) Start(options *AppStartOptions) error {
-	resourceGroup := app.config.Azure.ResourceGroupName
-	serviceBusNamespace := app.config.Azure.ServiceBusNamespace
-	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ServiceBus/namespaces/%s", app.config.Azure.SubscriptionId, resourceGroup, serviceBusNamespace)
-	// Azure Service Bus Data Receiver
-	roleDefinition := fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Authorization/roleDefinitions/%s", app.config.Azure.SubscriptionId, "4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0")
+	app.checkReadiness()
 
-	hasCreds, err := CheckRoleAssignmentsForScope(app.config, scope, roleDefinition, time.Duration(5*time.Minute))
-	if err != nil {
-		return err
+	if !app.IsReady() {
+		log.Fatal("App is not ready")
 	}
 
-	if hasCreds {
-		go app.startServer(options)
-		go app.startServices()
-		go app.startTasks()
-	}
+	go app.startServer(options)
+	go app.startServices()
+	go app.startTasks()
 	select {}
+}
+
+func (app *App) checkReadiness() {
+	ctx := context.Background()
+	results := app.healthCheckService.CheckHealth(ctx)
+	app.healthCheckResults = results
 }
 
 func (app *App) startServer(options *AppStartOptions) {
