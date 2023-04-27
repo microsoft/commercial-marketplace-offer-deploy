@@ -242,10 +242,10 @@ github.com/mattn/go-sqlite3 v1.14.16 h1:yOQRA0RpS5PFz/oikGwBEqvAWhWg5ufRz4ETLjwp
 github.com/mattn/go-sqlite3 v1.14.16/go.mod h1:2eHXhiwb8IkHr+BDWZGa96P6+rkvnG63S2DGjv9HUNg=
 github.com/microsoft/ApplicationInsights-Go v0.4.4 h1:G4+H9WNs6ygSCe6sUyxRc2U81TI5Es90b2t/MwX5KqY=
 github.com/microsoft/ApplicationInsights-Go v0.4.4/go.mod h1:fKRUseBqkw6bDiXTs3ESTiU/4YTIHsQS4W3fP2ieF4U=
-github.com/microsoft/commercial-marketplace-offer-deploy v0.1.1 h1:DQRZx2ro5C4C3UiCNBEq1Z0aukuEjBBut2xFwqUNulM=
-github.com/microsoft/commercial-marketplace-offer-deploy v0.1.1/go.mod h1:TZyOv1vo1Wv/8LMiZT9xB7exaG2+81OhCK1EOrXFgh4=
-github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.0.0-20230421142734-e601994f7071 h1:R692e/qXZQnBrJh93ruXu9AD3vfP9rRyYE9dyKpUeUc=
-github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.0.0-20230421142734-e601994f7071/go.mod h1:USYqpNba3W5iQZiVkvItv1rbsdcogsqTACvGvyp4Xfw=
+github.com/microsoft/commercial-marketplace-offer-deploy v0.0.0-20230427175326-47e12b43885f h1:yQr76CqBj4c5a7kNxVpQ4P7qrPrba7JXdnGljwMiw/0=
+github.com/microsoft/commercial-marketplace-offer-deploy v0.0.0-20230427175326-47e12b43885f/go.mod h1:TZyOv1vo1Wv/8LMiZT9xB7exaG2+81OhCK1EOrXFgh4=
+github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.0.0-20230427175326-47e12b43885f h1:qbnBsMNrqY73UYnLuNEi/MvIZxj79W+8EdHdgWCNytA=
+github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.0.0-20230427175326-47e12b43885f/go.mod h1:1iFSBexpjF6GtY01LOdM7qm2r1c6jm6S/WB44iGTUVQ=
 github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyuac5Z2hdY=
 github.com/mitchellh/mapstructure v1.5.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
