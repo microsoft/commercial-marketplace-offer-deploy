@@ -42,12 +42,6 @@ func addReadinessChecks(builder *hosting.AppBuilder, appConfig *config.AppConfig
 		Timeout: defaultTimeout,
 	})
 
-	publicUrlHealthCheck := diagnostics.NewUrlHealthCheck(diagnostics.UrlHealthCheckOptions{
-		ReadinessFilePath: appConfig.GetReadinessFilePath(),
-		Url:               appConfig.GetPublicBaseUrl(),
-		Timeout:           defaultTimeout,
-	})
-
 	// TODO: get queue name, pull from config -> env var
 	serviceBusCheck := diagnostics.NewServiceBusHealthCheck(diagnostics.ServiceBusHealthCheckOptions{
 		FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
@@ -55,7 +49,16 @@ func addReadinessChecks(builder *hosting.AppBuilder, appConfig *config.AppConfig
 		Timeout:                 defaultTimeout,
 	})
 
+	publicUrlHealthCheck := diagnostics.NewUrlHealthCheck(diagnostics.UrlHealthCheckOptions{
+		ReadinessFilePath: appConfig.GetReadinessFilePath(),
+		Url:               appConfig.GetPublicBaseUrl(),
+		Timeout:           defaultTimeout,
+	})
+
+	// make sure that the last thing we do is verify public url health which will signal that MODM is ready
+	// to begin receiving traffic. The ready file will be created which the operator is waiting for
+
 	builder.AddReadinessCheck(azureCredentialCheck)
-	builder.AddReadinessCheck(publicUrlHealthCheck)
 	builder.AddReadinessCheck(serviceBusCheck)
+	builder.AddReadinessCheck(publicUrlHealthCheck)
 }

@@ -23,12 +23,15 @@ func (c *azureCredentialHealthCheck) Check(ctx context.Context) HealthCheckResul
 
 	for {
 		if time.Now().After(threshold) {
-			return HealthCheckResult{
-				Description: "Timeout exceeded while waiting for role assignments to be created",
+			result := HealthCheckResult{
+				Description: "Timeout exceeded while waiting for azure credential check",
 				Status:      HealthCheckStatusUnhealthy,
-				Error:       errors.New("timeout exceeded while waiting for role assignments to be created"),
+				Error:       errors.New("timeout exceeded while waiting for azure credential check"),
 			}
+			log.Warnf("Health Check timed out: %v", result)
+			return result
 		}
+
 		result := c.getResult(ctx)
 
 		if result.Status != HealthCheckStatusHealthy || result.Error != nil {

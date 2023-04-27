@@ -25,20 +25,15 @@ func BuildApp(configurationFilePath string) *hosting.App {
 }
 
 func addReadinessChecks(builder *hosting.AppBuilder, appConfig *config.AppConfig) {
-	defaultTimeout := time.Duration(5 * time.Minute)
-
-	azureCredentialCheck := diagnostics.NewAzureCredentialHealthCheck(diagnostics.AzureCredentialHealthCheckOptions{
-		Timeout: defaultTimeout,
+	// have the operator wait for the readiness of the app which will be controlled via file check by the apiserver's
+	// trigger that creates the ready file
+	readyCheck := diagnostics.NewFuncHealthCheck(diagnostics.FuncHealthCheckOptions{
+		Timeout: time.Duration(10 * time.Minute),
+		Ready: func() bool {
+			return hosting.GetApp().IsReady()
+		},
 	})
-
-	serviceBusCheck := diagnostics.NewServiceBusHealthCheck(diagnostics.ServiceBusHealthCheckOptions{
-		FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
-		QueueName:               diagnostics.HealthCheckQueueName,
-		Timeout:                 defaultTimeout,
-	})
-
-	builder.AddReadinessCheck(azureCredentialCheck)
-	builder.AddReadinessCheck(serviceBusCheck)
+	builder.AddReadinessCheck(readyCheck)
 }
 
 func addMessageReceivers(builder *hosting.AppBuilder, appConfig *config.AppConfig) {
