@@ -88,6 +88,8 @@ func (app *App) checkReadiness() {
 	ctx := context.Background()
 	results := app.healthCheckService.CheckHealth(ctx)
 	app.healthCheckResults = results
+
+	log.Infof("App Health check results: %v", results)
 }
 
 func (app *App) startServer(options *AppStartOptions) {
