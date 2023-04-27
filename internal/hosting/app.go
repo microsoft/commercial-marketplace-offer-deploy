@@ -73,8 +73,9 @@ func (app *App) Start(options *AppStartOptions) error {
 	// Azure Service Bus Data Receiver
 	roleDefinition := fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Authorization/roleDefinitions/%s", app.config.Azure.SubscriptionId, "4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0")
 
-	hasCreds, err := CheckRoleAssignmentsForScope(app.config, scope, roleDefinition, time.Duration(5*time.Minute))
+	hasCreds, err := CheckRoleAssignmentsForScope(app.config, scope, roleDefinition, time.Duration(2*time.Minute))
 	if err != nil {
+		log.Error(err)
 		return err
 	}
 
