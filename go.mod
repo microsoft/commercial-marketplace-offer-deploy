@@ -7,7 +7,6 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.4.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.2.2
 	github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus v1.2.1
-	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v2 v2.1.1
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armpolicy v0.6.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources v1.0.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/servicebus/armservicebus/v2 v2.0.0-beta.3
