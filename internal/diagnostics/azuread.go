@@ -44,7 +44,7 @@ func GetAzureCredentialObjectId(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	accessToken, err := cred.GetToken(ctx, policy.TokenRequestOptions{Scopes: []string{"https://management.azure.com/.default"}})
+	accessToken, err := cred.GetToken(ctx, policy.TokenRequestOptions{})
 	if err != nil {
 		log.Errorf("failed to get JWT token to extract ObjectID from the Azure Credential: %v", err)
 	}
