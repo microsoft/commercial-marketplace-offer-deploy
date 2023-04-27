@@ -44,8 +44,9 @@ func addReadinessChecks(builder *hosting.AppBuilder, appConfig *config.AppConfig
 	})
 
 	azureRoleAssignmentsHealthCheck := diagnostics.NewRoleAssignmentsHealthCheck(diagnostics.AzureRoleAssignmentsHealthCheckOptions{
-		SubscriptionId: appConfig.Azure.SubscriptionId,
-		Timeout:        defaultTimeout,
+		RoleAssignmentIds: appConfig.Azure.RoleAssignmentIds,
+		SubscriptionId:    appConfig.Azure.SubscriptionId,
+		Timeout:           defaultTimeout,
 	})
 
 	builder.AddReadinessCheck(azureCredentialCheck)
