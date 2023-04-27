@@ -39,9 +39,6 @@ func (r *runner) Start() error {
 			defer waitGroup.Done()
 			defer recoverPanic()
 			task := r.tasks[i]
-			// log.Printf("Executing: %s", task.Name())
-			// err := task.Run(ctx)
-			// log.Printf("Task Completed: %s", task.Name())
 			retryCount := 10 * 60
 			retriedExecutor := Retry(executeTask,  retryCount, 10 * time.Second)
 			err := retriedExecutor(ctx, task)
