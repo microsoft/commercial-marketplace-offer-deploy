@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"os"
-	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
@@ -20,7 +19,6 @@ func newEventGridRegistrationTask(appConfig *config.AppConfig, isReady func() bo
 		CredentialFunc:  hosting.GetAzureCredentialFunc(),
 		ResourceGroupId: appConfig.Azure.GetResourceGroupId(),
 		EndpointUrl:     appConfig.GetPublicBaseUrl() + "eventgrid",
-		IsReady:         isReady,
 	}
 	task := create(taskOptions)
 
@@ -31,22 +29,12 @@ type eventGridRegistrationTaskOptions struct {
 	CredentialFunc  func() azcore.TokenCredential
 	ResourceGroupId string
 	EndpointUrl     string
-	IsReady         func() bool
 }
 
 // factory for creating task that registers event grid system topic for the resource group deployment events
 // and a subscription using the provided options
 func create(options eventGridRegistrationTaskOptions) tasks.Task {
 	action := func(ctx context.Context) error {
-
-		// wait for readiness checks to pass
-		ready := false
-		for ready {
-			ready = options.IsReady()
-			log.Info("Ready: %v", ready)
-			time.Sleep(1 * time.Second)
-		}
-
 		manager, err := subscriptionmanagement.NewEventGridManager(options.CredentialFunc(), options.ResourceGroupId)
 
 		if err != nil {
