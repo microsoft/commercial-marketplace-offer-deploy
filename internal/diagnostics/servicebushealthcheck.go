@@ -36,13 +36,14 @@ func (c *serviceBusHealthCheck) Check(ctx context.Context) HealthCheckResult {
 				Status:      HealthCheckStatusUnhealthy,
 				Error:       errors.New("timeout exceeded while waiting for connectivity to service"),
 			}
-			log.Warnf("Health Check attempt failed: %v", result)
+			log.Warnf("Health Check timed out: %v", result)
+			return result
 		}
 		result := c.getResult(ctx)
 
 		if result.Status != HealthCheckStatusHealthy || result.Error != nil {
 			log.Warnf("Health Check attempt failed: %v", result)
-			time.Sleep(5 * time.Second)
+			time.Sleep(10 * time.Second)
 			continue
 		}
 
@@ -51,7 +52,7 @@ func (c *serviceBusHealthCheck) Check(ctx context.Context) HealthCheckResult {
 }
 
 func (c *serviceBusHealthCheck) getResult(ctx context.Context) HealthCheckResult {
-	err := c.checkSend()
+	err := c.checkSend(ctx)
 
 	if err != nil {
 		return HealthCheckResult{
@@ -59,15 +60,9 @@ func (c *serviceBusHealthCheck) getResult(ctx context.Context) HealthCheckResult
 			Status:      HealthCheckStatusUnhealthy,
 			Error:       err,
 		}
-	} else {
-		c.sendResult = HealthCheckResult{
-			Description: fmt.Sprintf("Successfully sent message to queue %s", c.options.QueueName),
-			Status:      HealthCheckStatusHealthy,
-		}
-		log.Info(c.sendResult.Description)
 	}
 
-	err = c.checkReceiver()
+	err = c.checkReceiver(ctx)
 
 	if err != nil {
 		return HealthCheckResult{
@@ -75,12 +70,6 @@ func (c *serviceBusHealthCheck) getResult(ctx context.Context) HealthCheckResult
 			Status:      HealthCheckStatusUnhealthy,
 			Error:       err,
 		}
-	} else {
-		c.receiveResult = HealthCheckResult{
-			Description: fmt.Sprintf("Successfully received message from queue %s", c.options.QueueName),
-			Status:      HealthCheckStatusHealthy,
-		}
-		log.Info(c.receiveResult.Description)
 	}
 
 	if c.sendResult.Status == HealthCheckStatusHealthy && c.receiveResult.Status == HealthCheckStatusHealthy {
@@ -97,15 +86,12 @@ func (c *serviceBusHealthCheck) getResult(ctx context.Context) HealthCheckResult
 	}
 }
 
-func (c *serviceBusHealthCheck) checkSend() error {
+func (c *serviceBusHealthCheck) checkSend(ctx context.Context) error {
 	if c.sendResult.Status == HealthCheckStatusHealthy {
 		return nil
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	client, err := c.getServiceBusClient()
+	client, err := c.getServiceBusClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -120,18 +106,23 @@ func (c *serviceBusHealthCheck) checkSend() error {
 		Body: []byte("test"),
 	}, nil)
 
+	if err == nil {
+		c.sendResult = HealthCheckResult{
+			Description: fmt.Sprintf("Successfully sent message to queue %s", c.options.QueueName),
+			Status:      HealthCheckStatusHealthy,
+		}
+		log.Info(c.sendResult.Description)
+	}
+
 	return err
 }
 
-func (c *serviceBusHealthCheck) checkReceiver() error {
+func (c *serviceBusHealthCheck) checkReceiver(ctx context.Context) error {
 	if c.receiveResult.Status == HealthCheckStatusHealthy {
 		return nil
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	client, err := c.getServiceBusClient()
+	client, err := c.getServiceBusClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -142,21 +133,22 @@ func (c *serviceBusHealthCheck) checkReceiver() error {
 	}
 	defer receiver.Close(ctx)
 
-	var messages []*azservicebus.ReceivedMessage
-	messages, err = receiver.ReceiveMessages(ctx, 1, nil)
+	_, err = receiver.ReceiveMessages(ctx, 100, nil)
 
 	if err != nil {
 		return err
-	}
-
-	if len(messages) == 0 {
-		return errors.New("no messages received")
+	} else {
+		c.receiveResult = HealthCheckResult{
+			Description: fmt.Sprintf("Successfully received message from queue %s", c.options.QueueName),
+			Status:      HealthCheckStatusHealthy,
+		}
+		log.Info(c.receiveResult.Description)
 	}
 
 	return nil
 }
 
-func (c *serviceBusHealthCheck) getServiceBusClient() (*azservicebus.Client, error) {
+func (c *serviceBusHealthCheck) getServiceBusClient(ctx context.Context) (*azservicebus.Client, error) {
 	credential, err := azidentity.NewDefaultAzureCredential(nil)
 
 	if err != nil {
