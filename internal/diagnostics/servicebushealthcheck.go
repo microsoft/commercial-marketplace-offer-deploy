@@ -63,6 +63,7 @@ func (c *serviceBusHealthCheck) getResult(ctx context.Context) HealthCheckResult
 			Description: fmt.Sprintf("Successfully sent message to queue %s", c.options.QueueName),
 			Status:      HealthCheckStatusHealthy,
 		}
+		log.Info(c.sendResult.Description)
 	}
 
 	err = c.checkReceiver()
@@ -78,6 +79,7 @@ func (c *serviceBusHealthCheck) getResult(ctx context.Context) HealthCheckResult
 			Description: fmt.Sprintf("Successfully received message from queue %s", c.options.QueueName),
 			Status:      HealthCheckStatusHealthy,
 		}
+		log.Info(c.receiveResult.Description)
 	}
 
 	if c.sendResult.Status == HealthCheckStatusHealthy && c.receiveResult.Status == HealthCheckStatusHealthy {
