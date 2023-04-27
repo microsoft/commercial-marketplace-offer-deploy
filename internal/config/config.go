@@ -14,12 +14,13 @@ var logFileName string = ""
 
 // The azure settings
 type AzureSettings struct {
-	ClientId            string `mapstructure:"AZURE_CLIENT_ID"`
-	TenantId            string `mapstructure:"AZURE_TENANT_ID"`
-	SubscriptionId      string `mapstructure:"AZURE_SUBSCRIPTION_ID"`
-	ResourceGroupName   string `mapstructure:"AZURE_RESOURCE_GROUP"`
-	Location            string `mapstructure:"AZURE_LOCATION"`
-	ServiceBusNamespace string `mapstructure:"AZURE_SERVICEBUS_NAMESPACE"`
+	ClientId            string   `mapstructure:"AZURE_CLIENT_ID"`
+	TenantId            string   `mapstructure:"AZURE_TENANT_ID"`
+	SubscriptionId      string   `mapstructure:"AZURE_SUBSCRIPTION_ID"`
+	ResourceGroupName   string   `mapstructure:"AZURE_RESOURCE_GROUP"`
+	Location            string   `mapstructure:"AZURE_LOCATION"`
+	ServiceBusNamespace string   `mapstructure:"AZURE_SERVICEBUS_NAMESPACE"`
+	RoleAssignmentIds   []string `mapstructure:"AZURE_ROLE_ASSIGNMENTS"`
 }
 
 func (s *AzureSettings) GetFullQualifiedNamespace() string {

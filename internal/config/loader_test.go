@@ -15,8 +15,9 @@ type TestConfigSection struct {
 }
 
 type TestConfig struct {
-	Entry   string `mapstructure:"TEST_CONFIG_ENTRY"`
-	Section TestConfigSection
+	Entry      string   `mapstructure:"TEST_CONFIG_ENTRY"`
+	ArrayEntry []string `mapstructure:"TEST_CONFIG_ARRAY_ENTRY"`
+	Section    TestConfigSection
 }
 
 func TestMain(m *testing.M) {
@@ -36,7 +37,7 @@ func TestMain(m *testing.M) {
 	}
 	defer file.Close()
 
-	_, err = file.WriteString("TEST_CONFIG_ENTRY=filevalue \n")
+	file.WriteString("TEST_CONFIG_ENTRY=filevalue \n")
 }
 
 func isError(err error) bool {
@@ -106,4 +107,20 @@ func TestConfigSectionsLoad(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, "configsectionvalue", config.Section.Entry)
+}
+
+func TestConfigArrayValue(t *testing.T) {
+	os.Clearenv()
+
+	os.Setenv("TEST_CONFIG_ARRAY_ENTRY", "item1,item2,item3")
+
+	config := &TestConfig{
+		Section: TestConfigSection{},
+	}
+
+	err := LoadConfiguration("./testdata", to.Ptr("test"), config)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 3, len(config.ArrayEntry))
+	assert.Equal(t, "item1", config.ArrayEntry[0])
 }

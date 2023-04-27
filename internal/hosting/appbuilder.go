@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/diagnostics"
 	logger "github.com/microsoft/commercial-marketplace-offer-deploy/internal/log"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/tasks"
 )
@@ -24,9 +25,12 @@ func NewAppBuilder(name string) *AppBuilder {
 
 	if appInstance == nil {
 		appInstance = &App{
-			name:     name,
-			server:   echo.New(),
-			services: []BackgroundService{},
+			name:               name,
+			server:             echo.New(),
+			services:           []BackgroundService{},
+			tasks:              []tasks.Task{},
+			healthCheckResults: []diagnostics.HealthCheckResult{},
+			healthCheckService: diagnostics.NewHealthCheckService(),
 		}
 	}
 
@@ -36,6 +40,12 @@ func NewAppBuilder(name string) *AppBuilder {
 
 func (b *AppBuilder) AddConfig(config *config.AppConfig) *AppBuilder {
 	b.app.config = config
+	return b
+}
+
+// adds readiness checks to the app instance when it starts. The order that the checks are added will be the order in which they are executed.
+func (b *AppBuilder) AddReadinessCheck(check diagnostics.HealthCheck) *AppBuilder {
+	b.app.healthCheckService.AddHealthCheck(check)
 	return b
 }
 
