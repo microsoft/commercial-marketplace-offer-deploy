@@ -14,7 +14,7 @@ import (
 )
 
 // constructor for creating task that registers event grid system topic for the resource group deployment events
-func newEventGridRegistrationTask(appConfig *config.AppConfig, isReady func() bool) tasks.Task {
+func newEventGridRegistrationTask(appConfig *config.AppConfig) tasks.Task {
 	taskOptions := eventGridRegistrationTaskOptions{
 		CredentialFunc:  hosting.GetAzureCredentialFunc(),
 		ResourceGroupId: appConfig.Azure.GetResourceGroupId(),
