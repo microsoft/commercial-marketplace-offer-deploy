@@ -125,7 +125,7 @@ func (c *azureRoleAssignmentsHealthCheck) getRoleAssignments(objectId string, ct
 	roleAssignmentsClient := clientFactory.NewRoleAssignmentsClient()
 	getAllAssignmentsByObjectId := to.Ptr(fmt.Sprintf("principalId eq '%s'", objectId))
 
-	pager := roleAssignmentsClient.NewListForScopePager(&armauthorization.RoleAssignmentsClientListForSubscriptionOptions{
+	pager := roleAssignmentsClient.NewListForSubscriptionPager(&armauthorization.RoleAssignmentsClientListForSubscriptionOptions{
 		Filter: getAllAssignmentsByObjectId,
 	})
 
