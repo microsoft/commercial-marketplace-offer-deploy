@@ -17,6 +17,17 @@ Running locally
 docker compose -f ./deployments/docker-compose.yml up  
 ```
 
+Minimum Requirements
+* Go Version: 1.20.2+
+* Docker Version: v4+
+
+Tools Needed
+* Ngrok
+  * Developer will need to install Ngrok locally
+  * [Officlal Getting Started Documentation](https://ngrok.com/docs/using-ngrok-with/go/)
+* Setup a .env file in /bin (see ./configs for the template)
+
+
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
