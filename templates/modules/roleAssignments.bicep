@@ -2,6 +2,8 @@ param storageAccountName string
 param containerGroupName string
 param serviceBusNamespace string
 
+param roleAssignmentIds object
+
 resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01' existing = {
   name: containerGroupName
 }
@@ -18,6 +20,7 @@ var roles = {
   resourceGroupReader: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
   owner: '8e3af657-a8ff-443c-a75c-2fe8c4bcb635'
   storageAccountContributor: '0c867c2a-1d8c-454a-a3db-ab2ea1bdc8bb'
+
   serviceBusDataReceiver: '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0'
   serviceBusDataSender: '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39'
   serviceBusDataOwner: '090c5cfd-751d-490a-894a-3ce6f1109419'
@@ -28,9 +31,9 @@ var roles = {
   eventGridEventSubscriptionReader: '2414bbcf-6497-4faf-8c65-045460748405'
 }
 
-resource resourceReader 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  scope: resourceGroup() //assigns to storage acct
-  name: guid(containerGroup.id, containerGroup.name, roles.resourceGroupReader)
+resource resourceReaderAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  scope: resourceGroup()
+  name: roleAssignmentIds.reader
   properties: {
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', roles.resourceGroupReader)
     principalId: containerGroup.identity.principalId
@@ -38,9 +41,9 @@ resource resourceReader 'Microsoft.Authorization/roleAssignments@2020-04-01-prev
   }
 }
 
-resource resourceOwner 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  scope: resourceGroup() //assigns to storage acct
-  name: guid(containerGroup.id, containerGroup.name, roles.owner)
+resource resourceOwnerAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  scope: resourceGroup()
+  name: roleAssignmentIds.owner
   properties: {
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', roles.owner)
     principalId: containerGroup.identity.principalId
@@ -48,8 +51,8 @@ resource resourceOwner 'Microsoft.Authorization/roleAssignments@2020-04-01-previ
   }
 }
 
-resource roleAssignmentStorageAcct 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  scope: storageAccount //assigns to storage acct
+resource storageAccountAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  scope: storageAccount 
   name: guid(storageAccount.id, containerGroup.name, roles.storageAccountContributor)
   properties: {
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', roles.storageAccountContributor)
@@ -127,3 +130,17 @@ resource eventGridEventSubscriptionReaderAssignment 'Microsoft.Authorization/rol
     principalType: 'ServicePrincipal'
   }
 }
+
+
+output roleAssignmentIds array = [
+  resourceReaderAssignment.name
+  resourceOwnerAssignment.name
+  storageAccountAssignment.name
+  eventGridContributorAssignment.name
+  eventGridDataSenderAssignment.name
+  eventGridEventSubscriptionContributorAssignment.name
+  eventGridEventSubscriptionReaderAssignment.name
+  serviceBusOwnerAssignment.name
+  serviceBusReceiverAssignment.name
+  serviceBusSenderAssignment.name
+]
