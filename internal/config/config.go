@@ -1,10 +1,16 @@
 package config
 
 import (
+	"os"
 	"path/filepath"
+	"strconv"
+	"time"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/log"
 )
+
+var logFileName string = ""
 
 // The azure settings
 type AzureSettings struct {
@@ -31,8 +37,8 @@ type DatabaseSettings struct {
 }
 
 type LoggingSettings struct {
-	DefaultLogLevel    string `mapstructure:"LOG_LEVEL"`
-	InstrumentationKey string `mapstructure:"LOG_KEY"`
+	DefaultLogLevel string `mapstructure:"LOG_LEVEL"`
+	FilePath        string `mapstructure:"LOG_FILE_PATH"`
 }
 
 type HttpSettings struct {
@@ -45,17 +51,47 @@ func (s *AppConfig) GetPublicBaseUrl() string {
 }
 
 type AppConfig struct {
-	Azure       AzureSettings
-	Database    DatabaseSettings
-	Http        HttpSettings
-	Logging     LoggingSettings
-	Environment string `mapstructure:"GO_ENV"`
+	Azure             AzureSettings
+	Database          DatabaseSettings
+	Http              HttpSettings
+	Logging           LoggingSettings
+	Environment       string `mapstructure:"GO_ENV"`
+	ReadinessFilePath string `mapstructure:"READINESS_FILE_PATH"`
 }
 
-func (appSettings *AppConfig) GetDatabaseOptions() *data.DatabaseOptions {
-	dsn := filepath.Join(appSettings.Database.Path, data.DatabaseFileName)
-	options := &data.DatabaseOptions{Dsn: dsn, UseInMemory: appSettings.Database.UseInMemory}
+func (c *AppConfig) GetDatabaseOptions() *data.DatabaseOptions {
+	dsn := filepath.Join(c.Database.Path, data.DatabaseFileName)
+	options := &data.DatabaseOptions{Dsn: dsn, UseInMemory: c.Database.UseInMemory}
 	return options
+}
+
+func (c *AppConfig) GetReadinessFilePath() string {
+	path := "/tmp/ready"
+	if len(c.ReadinessFilePath) > 0 {
+		path = c.ReadinessFilePath
+	}
+	return path
+}
+
+func (c *AppConfig) GetLoggingOptions() *log.LoggingOptions {
+	logfilePath := "/logs"
+	if len(c.Logging.FilePath) > 0 {
+		logfilePath = c.Logging.FilePath
+	}
+
+	if logFileName == "" {
+		name := "log"
+		hostname, err := os.Hostname()
+		if err != nil {
+			hostname = strconv.FormatInt(time.Now().Unix(), 10)
+		}
+		logFileName = name + "-" + hostname + ".txt"
+	}
+
+	return &log.LoggingOptions{
+		DefaultLogLevel: c.Logging.DefaultLogLevel,
+		FilePath:        filepath.Join(logfilePath, logFileName),
+	}
 }
 
 func (c *AppConfig) IsDevelopment() bool {

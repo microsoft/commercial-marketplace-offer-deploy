@@ -5,15 +5,20 @@ import (
 	"fmt"
 	"os"
 
-	//	log "github.com/sirupsen/logrus"
 	"github.com/microsoft/ApplicationInsights-Go/appinsights"
 	"github.com/microsoft/ApplicationInsights-Go/appinsights/contracts"
 	"github.com/sirupsen/logrus"
 )
 
-type LoggingConfig struct {
-	InstrumentationKey string
-	DefaultLogLevel    string
+const (
+	LogPath     = "./"
+	LogName     = "modmlog"
+	LogFileName = LogName + ".txt"
+)
+
+type LoggingOptions struct {
+	FilePath        string
+	DefaultLogLevel string
 }
 
 type InsightsConfig struct {
@@ -23,117 +28,35 @@ type InsightsConfig struct {
 	Version string
 }
 
-// todo, AppConfig drives there
-func ConfigureLogging(config *LoggingConfig) {
+func ConfigureLogging(config *LoggingOptions) {
 	logrus.SetOutput(os.Stdout)
 	logrus.SetLevel(logrus.InfoLevel)
 	logrus.SetReportCaller(true)
-	//logrus.SetFormatter(&logrus.JSONFormatter{})
 
-	if len(config.InstrumentationKey) == 0 {
-		insightsConfig := InsightsConfig{
-			Role:               "MODM",
-			Version:            "1.0",
-			InstrumentationKey: config.InstrumentationKey,
+	formatter := &logrus.TextFormatter{
+		FullTimestamp:   true,
+		TimestampFormat: "2006-01-02 15:04:05",
+	}
+	logrus.SetFormatter(formatter)
+
+	if config == nil {
+		fmt.Println("No logging configuration provided")
+		return
+	}
+
+	if len(config.FilePath) > 0 {
+		stacktraceHook := &StacktraceHook{
+			innerHook: &FileHook{
+				fileName: config.FilePath,
+			},
 		}
-		hook := &LogrusHook{
-			Client: createTelemetryClient(insightsConfig),
-		}
-		logrus.AddHook(hook)
+		logrus.AddHook(stacktraceHook)
 	}
 }
 
 type LogMessage struct {
 	Message string
 	Level   logrus.Level
-}
-
-type LogPublisher interface {
-	// publishes a message to all web hook subscriptions
-	Publish(message *LogMessage) error
-	Log(message string)
-	LogWarning(message string)
-	LogInfo(message string)
-}
-
-// PanicLevel Level = iota
-// 	// FatalLevel level. Logs and then calls `logger.Exit(1)`. It will exit even if the
-// 	// logging level is set to Panic.
-// 	FatalLevel
-// 	// ErrorLevel level. Logs. Used for errors that should definitely be noted.
-// 	// Commonly used for hooks to send errors to an error tracking service.
-// 	ErrorLevel
-// 	// WarnLevel level. Non-critical entries that deserve eyes.
-// 	WarnLevel
-// 	// InfoLevel level. General operational entries about what's going on inside the
-// 	// application.
-// 	InfoLevel
-// 	// DebugLevel level. Usually only enabled when debugging. Very verbose logging.
-// 	DebugLevel
-// 	// TraceLevel level. Designates finer-grained informational events than the Debug.
-// 	TraceLevel
-
-func (p *InsightsConfig) Log(message string) {
-	p.Publish(&LogMessage{
-		Message: message,
-		Level:   logrus.InfoLevel,
-	})
-}
-
-func (p *InsightsConfig) LogError(message string) {
-	p.Publish(&LogMessage{
-		Message: message,
-		Level:   logrus.ErrorLevel,
-	})
-}
-
-func (p *InsightsConfig) LogInfo(message string) {
-	p.Publish(&LogMessage{
-		Message: message,
-		Level:   logrus.InfoLevel,
-	})
-}
-
-func (p *InsightsConfig) LogWarning(message string) {
-	p.Publish(&LogMessage{
-		Message: message,
-		Level:   logrus.WarnLevel,
-	})
-}
-
-func (p *InsightsConfig) Publish(message *LogMessage) error {
-	switch message.Level {
-	case logrus.PanicLevel:
-		logrus.Error(message.Message)
-	case logrus.FatalLevel:
-		logrus.Error(message.Message)
-	case logrus.ErrorLevel:
-		logrus.Error(message.Message)
-	case logrus.WarnLevel:
-		logrus.Warn(message.Message)
-	case logrus.InfoLevel:
-		logrus.Info(message.Message)
-	case logrus.DebugLevel, logrus.TraceLevel:
-		logrus.Warn(message.Message)
-	default:
-		logrus.Info(message.Message)
-	}
-
-	return nil
-}
-
-func createTelemetryClient(options InsightsConfig) appinsights.TelemetryClient {
-	client := appinsights.NewTelemetryClient(options.InstrumentationKey)
-
-	if len(options.Role) > 0 {
-		client.Context().Tags.Cloud().SetRole(options.Role)
-	}
-
-	if len(options.Version) > 0 {
-		client.Context().Tags.Application().SetVer(options.Version)
-	}
-
-	return client
 }
 
 type LogrusHook struct {

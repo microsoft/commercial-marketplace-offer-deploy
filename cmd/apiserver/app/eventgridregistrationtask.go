@@ -16,7 +16,7 @@ import (
 // constructor for creating task that registers event grid system topic for the resource group deployment events
 func newEventGridRegistrationTask(appConfig *config.AppConfig) tasks.Task {
 	taskOptions := eventGridRegistrationTaskOptions{
-		Credential:      hosting.GetAzureCredential(),
+		CredentialFunc:  hosting.GetAzureCredentialFunc(),
 		ResourceGroupId: appConfig.Azure.GetResourceGroupId(),
 		EndpointUrl:     appConfig.GetPublicBaseUrl() + "eventgrid",
 	}
@@ -26,7 +26,7 @@ func newEventGridRegistrationTask(appConfig *config.AppConfig) tasks.Task {
 }
 
 type eventGridRegistrationTaskOptions struct {
-	Credential      azcore.TokenCredential
+	CredentialFunc  func() azcore.TokenCredential
 	ResourceGroupId string
 	EndpointUrl     string
 }
@@ -35,9 +35,7 @@ type eventGridRegistrationTaskOptions struct {
 // and a subscription using the provided options
 func create(options eventGridRegistrationTaskOptions) tasks.Task {
 	action := func(ctx context.Context) error {
-		log.Print("Registering event grid system topic for resource group deployment events...")
-
-		manager, err := subscriptionmanagement.NewEventGridManager(options.Credential, options.ResourceGroupId)
+		manager, err := subscriptionmanagement.NewEventGridManager(options.CredentialFunc(), options.ResourceGroupId)
 
 		if err != nil {
 			log.Printf("Error creating event grid manager: %v", err)
