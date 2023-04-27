@@ -4,6 +4,7 @@ param appVersion string
 var serviceBusQueueNames = [
   'events'
   'operations'
+  'healthcheck'
 ]
 
 @description('Location for all resources.')

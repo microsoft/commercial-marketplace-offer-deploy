@@ -3,7 +3,6 @@ package messaging
 import (
 	"context"
 	"fmt"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -83,16 +82,16 @@ func (r *serviceBusReceiver) Start() {
 				messages, err = receiver.ReceiveMessages(r.ctx, 1, nil)
 				if err != nil {
 					log.Printf("%s - error receiving: %v", r.queueName, err)
-
-					// if the receiver couldn't connect due to permissions, then wait 5 seconds and try again
-					if amqpError, ok := err.(*amqpError); ok {
-						if amqpError.Condition == "amqp:unauthorized-access" {
-							time.Sleep(5 * time.Second)
-							receiver.Close(r.ctx)
-							receiver, _ = r.getQueueReceiver()
-							continue
-						}
-					}
+					continue
+					// // if the receiver couldn't connect due to permissions, then wait 5 seconds and try again
+					// if amqpError, ok := err.(*amqpError); ok {
+					// 	if amqpError.Condition == "amqp:unauthorized-access" {
+					// 		time.Sleep(5 * time.Second)
+					// 		receiver.Close(r.ctx)
+					// 		receiver, _ = r.getQueueReceiver()
+					// 		continue
+					// 	}
+					// }
 				}
 
 				for _, message := range messages {

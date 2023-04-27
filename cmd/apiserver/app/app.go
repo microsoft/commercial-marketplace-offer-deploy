@@ -38,16 +38,24 @@ func BuildApp(configurationFilePath string) *hosting.App {
 func addReadinessChecks(builder *hosting.AppBuilder, appConfig *config.AppConfig) {
 	defaultTimeout := time.Duration(2 * time.Minute)
 
+	azureCredentialCheck := diagnostics.NewAzureCredentialHealthCheck(diagnostics.AzureCredentialHealthCheckOptions{
+		Timeout: defaultTimeout,
+	})
+
 	publicUrlHealthCheck := diagnostics.NewUrlHealthCheck(diagnostics.UrlHealthCheckOptions{
 		ReadinessFilePath: appConfig.GetReadinessFilePath(),
 		Url:               appConfig.GetPublicBaseUrl(),
 		Timeout:           defaultTimeout,
 	})
 
-	azureCredentialCheck := diagnostics.NewAzureCredentialHealthCheck(diagnostics.AzureCredentialHealthCheckOptions{
-		Timeout: defaultTimeout,
+	// TODO: get queue name, pull from config -> env var
+	serviceBusCheck := diagnostics.NewServiceBusHealthCheck(diagnostics.ServiceBusHealthCheckOptions{
+		FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
+		QueueName:               diagnostics.HealthCheckQueueName,
+		Timeout:                 defaultTimeout,
 	})
 
-	builder.AddReadinessCheck(publicUrlHealthCheck)
 	builder.AddReadinessCheck(azureCredentialCheck)
+	builder.AddReadinessCheck(publicUrlHealthCheck)
+	builder.AddReadinessCheck(serviceBusCheck)
 }
