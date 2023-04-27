@@ -31,11 +31,12 @@ func (c *serviceBusHealthCheck) Check(ctx context.Context) HealthCheckResult {
 
 	for {
 		if time.Now().After(threshold) {
-			return HealthCheckResult{
+			result := HealthCheckResult{
 				Description: fmt.Sprintf("Timeout exceeded while connecting to service bus %s", c.options.FullyQualifiedNamespace),
 				Status:      HealthCheckStatusUnhealthy,
 				Error:       errors.New("timeout exceeded while waiting for connectivity to service"),
 			}
+			log.Warnf("Health Check attempt failed: %v", result)
 		}
 		result := c.getResult(ctx)
 
