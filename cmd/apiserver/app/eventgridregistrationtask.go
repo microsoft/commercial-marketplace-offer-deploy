@@ -39,6 +39,7 @@ type eventGridRegistrationTaskOptions struct {
 func create(options eventGridRegistrationTaskOptions) tasks.Task {
 	action := func(ctx context.Context) error {
 
+		// wait for readiness checks to pass
 		ready := false
 		for ready {
 			ready = options.IsReady()
