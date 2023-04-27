@@ -46,8 +46,6 @@ param publicHttpsPort int = 8443
 ])
 param restartPolicy string = 'Always'
 
-param roleAssignmentIds object
-
 var versionSuffix = replace(appVersion, '.', '')
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
@@ -211,10 +209,6 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
             {
               name: 'READINESS_FILE_PATH'
               value: readinessFilePath
-            }
-            {
-              name: 'AZURE_ROLE_ASSIGNMENTS'
-              value: '${roleAssignmentIds.owner},${roleAssignmentIds.reader}'
             }
           ]
           readinessProbe: {
