@@ -9,7 +9,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v2"
-	"github.com/labstack/gommon/log"
+	log "github.com/sirupsen/logrus"
 )
 
 type AzureRoleAssignmentsHealthCheckOptions struct {
@@ -38,6 +38,7 @@ func (c *azureRoleAssignmentsHealthCheck) Check(ctx context.Context) HealthCheck
 
 		if result.Status != HealthCheckStatusHealthy || result.Error != nil {
 			log.Warnf("Health Check attempt failed: %v", result)
+			time.Sleep(5 * time.Second)
 			continue
 		}
 
@@ -122,9 +123,9 @@ func (c *azureRoleAssignmentsHealthCheck) getRoleAssignments(objectId string, ct
 	}
 
 	roleAssignmentsClient := clientFactory.NewRoleAssignmentsClient()
-	getAllAssignmentsByObjectId := to.Ptr(fmt.Sprintf("atScope() and principalId eq '%s'", objectId))
+	getAllAssignmentsByObjectId := to.Ptr(fmt.Sprintf("principalId eq '%s'", objectId))
 
-	pager := roleAssignmentsClient.NewListForSubscriptionPager(&armauthorization.RoleAssignmentsClientListForSubscriptionOptions{
+	pager := roleAssignmentsClient.NewListForScopePager(&armauthorization.RoleAssignmentsClientListForSubscriptionOptions{
 		Filter: getAllAssignmentsByObjectId,
 	})
 
@@ -137,9 +138,7 @@ func (c *azureRoleAssignmentsHealthCheck) getRoleAssignments(objectId string, ct
 		}
 
 		if nextResult.RoleAssignmentListResult.Value != nil {
-			for _, item := range nextResult.RoleAssignmentListResult.Value {
-				roleAssignments = append(roleAssignments, item)
-			}
+			roleAssignments = append(roleAssignments, nextResult.RoleAssignmentListResult.Value...)
 		}
 	}
 	return roleAssignments, nil

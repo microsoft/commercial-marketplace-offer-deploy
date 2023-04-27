@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/labstack/gommon/log"
+	log "github.com/sirupsen/logrus"
 )
 
 type AzureCredentialHealthCheckOptions struct {
@@ -33,6 +33,7 @@ func (c *azureCredentialHealthCheck) Check(ctx context.Context) HealthCheckResul
 
 		if result.Status != HealthCheckStatusHealthy || result.Error != nil {
 			log.Warnf("Health Check attempt failed: %v", result)
+			time.Sleep(5 * time.Second)
 			continue
 		}
 
