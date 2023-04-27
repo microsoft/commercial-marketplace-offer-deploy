@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 )

@@ -38,8 +38,6 @@ param publicHttpPort int = 80
 @description('The public https port')
 param publicHttpsPort int = 8443
 
-param appInsightsInstrumentationKey string
-
 @description('The behavior of Azure runtime if container has stopped.')
 @allowed([
   'Always'
@@ -69,8 +67,9 @@ resource fileStore 'Microsoft.Storage/storageAccounts/fileServices/shares@2021-0
 }
 
 var sharedVolumeName = 'filestore'
-var fileShareMountPath = '/opt/share'
+var fileShareMountPath = '/opt/modm'
 var containerName = 'modm-${versionSuffix}'
+var readinessFilePath = '${fileShareMountPath}/ready'
 
 resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-preview' = {
   name: 'modm-group-${versionSuffix}'
@@ -204,10 +203,24 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
               value: string(publicHttpsPort)
             }
             {
-              name: 'LOG_KEY'
-              value: appInsightsInstrumentationKey
+              name: 'LOG_FILE_PATH'
+              value: fileShareMountPath
+            }
+            {
+              name: 'READINESS_FILE_PATH'
+              value: readinessFilePath
             }
           ]
+          readinessProbe: {
+            exec: {
+              command: [
+                'cat'
+                readinessFilePath
+              ]
+            }
+            initialDelaySeconds: 120
+            periodSeconds: 30
+          }
         }
       }
     ]

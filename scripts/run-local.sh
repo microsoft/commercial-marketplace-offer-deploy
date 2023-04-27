@@ -18,15 +18,19 @@ function run_operator() {
 }
 
 function run_docker() {
-    echo "Building modm container image."
-    docker build . -t modm:latest -f ./build/package/Dockerfile --quiet
+    arg=$1
+
+    if [ "$arg" = "build" ]; then
+      echo "Building modm container image."
+      docker build . -t modm:latest -f ./build/package/Dockerfile --quiet
+    fi
 
     echo "starting NGROK"
     # start up ngrok and get address
     ngrok http 8080 > /dev/null &
     NGROK_ID=$!
     echo "Pid: $NGROK_ID"
-
+    sleep 2
     export PUBLIC_DOMAIN_NAME=$(curl -s localhost:4040/api/tunnels | jq '.tunnels[0].public_url' -r | sed -E 's/^\s*.*:\/\///g')
     echo "Public Domain: $PUBLIC_DOMAIN_NAME"
     
@@ -53,7 +57,7 @@ case $process in
 
   docker)
     trap kill_ngrok EXIT
-    run_docker
+    run_docker $2
     ;;
   *)
     echo -n "unknown"

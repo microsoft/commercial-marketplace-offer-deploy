@@ -10,9 +10,9 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/labstack/echo"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
+	"github.com/labstack/echo/v4"
+	// "github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
+	// "github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
@@ -99,41 +99,41 @@ func AddRoutes(e *echo.Echo) {
 	e.POST("/webhook", ReceiveEventNotification)
 }
 
-func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
+// func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 
-	return hosting.Routes{
-		hosting.Route{
-			Name:        "WebHookResponse",
-			Method:      http.MethodPost,
-			Path:        "/webhook",
-			HandlerFunc: ReceiveEventNotification,
-		},
-		hosting.Route{
-			Name:        "CreateDeployment",
-			Method:      http.MethodGet,
-			Path:        "/createdeployment",
-			HandlerFunc: CreateDeployment,
-		},
-		hosting.Route{
-			Name:        "StartDeployment",
-			Method:      http.MethodGet,
-			Path:        "/startdeployment/:deploymentId",
-			HandlerFunc: StartDeployment,
-		},
-		hosting.Route{
-			Name:        "CreateEventSubscription",
-			Method:      http.MethodGet,
-			Path:        "/createeventsubscription",
-			HandlerFunc: CreateEventSubscription,
-		},
-		hosting.Route{
-			Name:        "ExecuteDryRun",
-			Method:      http.MethodGet,
-			Path:        "/dryrun/:deploymentId",
-			HandlerFunc: DryRun,
-		},
-	}
-}
+// 	return hosting.Routes{
+// 		hosting.Route{
+// 			Name:        "WebHookResponse",
+// 			Method:      http.MethodPost,
+// 			Path:        "/webhook",
+// 			HandlerFunc: ReceiveEventNotification,
+// 		},
+// 		hosting.Route{
+// 			Name:        "CreateDeployment",
+// 			Method:      http.MethodGet,
+// 			Path:        "/createdeployment",
+// 			HandlerFunc: CreateDeployment,
+// 		},
+// 		hosting.Route{
+// 			Name:        "StartDeployment",
+// 			Method:      http.MethodGet,
+// 			Path:        "/startdeployment/:deploymentId",
+// 			HandlerFunc: StartDeployment,
+// 		},
+// 		hosting.Route{
+// 			Name:        "CreateEventSubscription",
+// 			Method:      http.MethodGet,
+// 			Path:        "/createeventsubscription",
+// 			HandlerFunc: CreateEventSubscription,
+// 		},
+// 		hosting.Route{
+// 			Name:        "ExecuteDryRun",
+// 			Method:      http.MethodGet,
+// 			Path:        "/dryrun/:deploymentId",
+// 			HandlerFunc: DryRun,
+// 		},
+// 	}
+// }
 
 func getJsonAsMap(path string) map[string]interface{} {
 	jsonMap, err := utils.ReadJson(path)
@@ -271,6 +271,7 @@ func DryRun(c echo.Context) error {
 	return json
 }
 
+
 func StartDeployment(c echo.Context) error {
 	deploymentId, err := strconv.Atoi(c.Param("deploymentId"))
 
@@ -316,20 +317,4 @@ func loadEnvironmentVariables() *viper.Viper {
 		log.Fatal(err)
 	}
 	return env
-}
-
-func BuildApp(configurationFilePath string) *hosting.App {
-	builder := hosting.NewAppBuilder()
-
-	appConfig := &config.AppConfig{}
-	config.LoadConfiguration(configurationFilePath, nil, appConfig)
-	builder.AddConfig(appConfig)
-
-	builder.AddRoutes(func(options *hosting.RouteOptions) {
-		routes := GetRoutes(appConfig)
-		*options.Routes = routes
-	})
-
-	app := builder.Build(nil)
-	return app
 }

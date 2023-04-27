@@ -1,22 +1,27 @@
 package hosting
 
 import (
+	"context"
+	"os"
 	"strconv"
 	"sync"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/diagnostics"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/tasks"
 )
 
 type App struct {
-	config   *config.AppConfig
-	server   *echo.Echo
-	services []BackgroundService
-	tasks    []tasks.Task
+	name               string
+	config             *config.AppConfig
+	server             *echo.Echo
+	services           []BackgroundService
+	tasks              []tasks.Task
+	healthCheckService diagnostics.HealthCheckService
+	healthCheckResults []diagnostics.HealthCheckResult
 }
 
 type AppStartOptions struct {
@@ -32,7 +37,6 @@ type RouteOptions struct {
 
 var mutex sync.Mutex
 var appInstance *App
-var serverStarted = make(chan bool)
 
 // Gets the App instance running
 func GetApp() *App {
@@ -44,9 +48,26 @@ func GetAppConfig() *config.AppConfig {
 	return GetApp().GetConfig()
 }
 
+// whether the app is ready
+func (app *App) GetHealthCheckResults() []diagnostics.HealthCheckResult {
+	return app.healthCheckResults
+}
+
+// whether the app is ready
+func (app *App) IsReady() bool {
+	if _, err := os.Stat(app.config.GetReadinessFilePath()); err == nil {
+		return true
+	}
+	return false
+}
+
 // GetConfig gets the app configuration
 func (app *App) GetConfig() *config.AppConfig {
 	return app.config
+}
+
+func (app *App) Name() string {
+	return app.name
 }
 
 // Start starts the server
@@ -54,10 +75,20 @@ func (app *App) GetConfig() *config.AppConfig {
 // configure: (optional) a function to configure the echo server
 func (app *App) Start(options *AppStartOptions) error {
 	go app.startServer(options)
+
+	app.checkReadiness()
+
 	go app.startServices()
 	go app.startTasks()
-
 	select {}
+}
+
+func (app *App) checkReadiness() {
+	ctx := context.Background()
+	results := app.healthCheckService.CheckHealth(ctx)
+	app.healthCheckResults = results
+
+	log.Infof("App Health check results: %v", results)
 }
 
 func (app *App) startServer(options *AppStartOptions) {
@@ -76,21 +107,10 @@ func (app *App) startServer(options *AppStartOptions) {
 		}
 
 		go app.server.Start(address)
-		app.waitForReadiness()
-	} else {
-		serverStarted <- true
 	}
 }
 
-// run until server is started so we know we can execute other tasks that depend on the server
-func (app *App) waitForReadiness() {
-	time.Sleep(1 * time.Second)
-	serverStarted <- true
-}
-
 func (app *App) startTasks() {
-	<-serverStarted
-
 	if len(app.tasks) > 0 {
 		runner := tasks.NewTaskRunner()
 		for _, task := range app.tasks {

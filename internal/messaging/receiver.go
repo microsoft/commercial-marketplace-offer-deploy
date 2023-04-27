@@ -31,6 +31,15 @@ type ServiceBusMessageReceiverOptions struct {
 	FullyQualifiedNamespace string
 }
 
+type amqpError struct {
+	Condition   string
+	Description string
+}
+
+func (e *amqpError) Error() string {
+	return fmt.Sprintf("amqp error: %s - %s", e.Condition, e.Description)
+}
+
 //region servicebus receiver
 
 type serviceBusReceiver struct {
@@ -72,7 +81,8 @@ func (r *serviceBusReceiver) Start() {
 				var messages []*azservicebus.ReceivedMessage = []*azservicebus.ReceivedMessage{}
 				messages, err = receiver.ReceiveMessages(r.ctx, 1, nil)
 				if err != nil {
-					log.Printf("%s - error receiving: %s\n", r.queueName, err)
+					log.Printf("%s - error receiving: %v", r.queueName, err)
+					continue
 				}
 
 				for _, message := range messages {

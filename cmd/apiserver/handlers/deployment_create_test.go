@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/mapper"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"

@@ -128,6 +128,8 @@ func (c *manager) CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTo
 	)
 
 	if err != nil {
+		log.Errorf("Error pollerResp: %v", err)
+
 		if responseError, ok := err.(*azcore.ResponseError); ok {
 			if responseError.StatusCode == 400 && strings.Contains(err.Error(), "Only one system topic is allowed per source.") {
 				log.Print("System topic already exists for resource group")

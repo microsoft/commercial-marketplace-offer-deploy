@@ -3,7 +3,7 @@ package hosting
 import (
 	log "github.com/sirupsen/logrus"
 
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"gorm.io/gorm"
 )

@@ -54,7 +54,7 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 			Name:        "ListDeployments",
 			Method:      http.MethodGet,
 			Path:        "/deployments",
-			HandlerFunc: middleware.AddJwtBearer(handlers.ListDeployments, appConfig),
+			HandlerFunc: middleware.AddJwtBearer(handlers.NewListDeploymentsHandler(appConfig), appConfig),
 		},
 
 		hosting.Route{

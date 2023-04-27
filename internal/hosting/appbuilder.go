@@ -3,9 +3,10 @@ package hosting
 import (
 	log "github.com/sirupsen/logrus"
 
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/diagnostics"
 	logger "github.com/microsoft/commercial-marketplace-offer-deploy/internal/log"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/tasks"
 )
@@ -18,14 +19,18 @@ type ConfigureRoutesFunc func(options *RouteOptions)
 type ConfigureAppConfigFunc func(config any)
 type ConfigureEchoFunc func(e *echo.Echo)
 
-func NewAppBuilder() *AppBuilder {
+func NewAppBuilder(name string) *AppBuilder {
 	mutex.Lock()
 	defer mutex.Unlock()
 
 	if appInstance == nil {
 		appInstance = &App{
-			server:   echo.New(),
-			services: []BackgroundService{},
+			name:               name,
+			server:             echo.New(),
+			services:           []BackgroundService{},
+			tasks:              []tasks.Task{},
+			healthCheckResults: []diagnostics.HealthCheckResult{},
+			healthCheckService: diagnostics.NewHealthCheckService(),
 		}
 	}
 
@@ -35,6 +40,12 @@ func NewAppBuilder() *AppBuilder {
 
 func (b *AppBuilder) AddConfig(config *config.AppConfig) *AppBuilder {
 	b.app.config = config
+	return b
+}
+
+// adds readiness checks to the app instance when it starts. The order that the checks are added will be the order in which they are executed.
+func (b *AppBuilder) AddReadinessCheck(check diagnostics.HealthCheck) *AppBuilder {
+	b.app.healthCheckService.AddHealthCheck(check)
 	return b
 }
 
@@ -68,9 +79,7 @@ func (b *AppBuilder) Build(configure ConfigureEchoFunc) *App {
 		log.Printf("Body:\n %v\n", string(reqBody))
 	}))
 
-	loggingConfig := &logger.LoggingConfig{
-		InstrumentationKey: b.app.config.Logging.InstrumentationKey,
-	}
+	loggingConfig := b.app.config.GetLoggingOptions()
 	logger.ConfigureLogging(loggingConfig)
 
 	if configure != nil {
