@@ -4,22 +4,24 @@ This marketplace offer deployment manager (MODM) simplifies the deployment of co
 
 
 ## How it works
-The 
+
+- Create a `Controller` (some call it a driver--same thing) codebase that consumes the MODM client SDK
+- Build the controller into a Docker image
+- Use the start
 
 ## Feature Overview
 
-- Deployment Dry Run
-- Simplified interaction
+- Simplified deployment semantics
+- Deployment Stages
+- Automatical retries of a Deployment and/or Stage
+- Dry Run operation support
 - Client SDK (Go, C#, Python)
+
+A full description of each feature can be found in the [features](./docs/features.md) documentation.
 
 ## Contributing
 
-## Developer Setup
-
-Running locally
-```
-docker compose -f ./deployments/docker-compose.yml up  
-```
+### Developer Setup
 
 Minimum Requirements
 * Go Version: 1.20.2+
@@ -58,3 +60,10 @@ trademarks or logos is subject to and must follow
 [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
 Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
 Any use of third-party trademarks or logos are subject to those third-party's policies.
+
+## Credits
+
+- [Ashwin Senthilkumar](https://github.com/ashsenth) (Contributor)
+- [Bob Jacobs](https://github.com/bobjac) (Author)
+- [Kevin M. Gates](https://github.com/kevinmgates) (Contributor)
+- [Kevin Hillinger](https://github.com/kevinhillinger) (Author)
