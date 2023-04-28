@@ -27,6 +27,11 @@ Tools Needed
   * [Officlal Getting Started Documentation](https://ngrok.com/docs/using-ngrok-with/go/)
 * Setup a .env file in /bin (see ./configs for the template)
 
+## Getting Started
+
+- [Building the Docker image](./docs/docker-image.md)
+- [Running locally](./docs/run-locally.md)
+- [Client SDK usage (Go)](./docs/sdk-usage-go.md)
 
 ## Contributing
 
