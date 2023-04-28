@@ -20,7 +20,7 @@ function run_operator() {
 function run_docker() {
     arg=$1
 
-    if [ "$arg" = "build" ]; then
+    if [ "$arg" = "build" ]  || [ "$arg" = "true" ]; then
       echo "Building modm container image."
       docker build . -t modm:latest -f ./build/package/Dockerfile --quiet
     fi

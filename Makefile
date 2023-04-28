@@ -23,7 +23,7 @@ operator-local:
 # Builds docker container, starts ngrok in the background, and 
 # calls docker compose up with the public NGROK endpoint for MODM to receive event messages from Azure
 run-local:
-	./scripts/run-local.sh docker build
+	./scripts/run-local.sh docker $(build)
 
 test-all:
 	go test ./...
