@@ -17,33 +17,15 @@ This marketplace offer deployment manager (MODM) simplifies the deployment of co
 ## Feature Overview
 
 - Simplified deployment semantics
-- Deployment Stages
+- Includes deployment "Stages" that are tracked separate
 - Automatical retries of a Deployment and/or Stage
 - Dry Run operation support
-- Client SDK (Go, C#, Python)
+- Async operations built-in
+- Web Hook registration to receive only relevant deployment events
+- Client SDK (Go, C#, Python) 
 
 A full description of each feature can be found in the [features](./docs/features.md) documentation.
 
-
-## Contributing
-
-### Developer Setup
-
-Minimum Requirements
-* Go Version: 1.20.2+
-* Docker Version: v4+
-
-Tools Needed
-* Ngrok
-  * Developer will need to install Ngrok locally
-  * [Officlal Getting Started Documentation](https://ngrok.com/docs/using-ngrok-with/go/)
-* Setup a .env file in /bin (see ./configs for the template)
-
-## Getting Started
-
-- [Building the Docker image](./docs/docker-image.md)
-- [Running locally](./docs/run-locally.md)
-- [Client SDK usage (Go)](./docs/sdk-usage-go.md)
 
 ## Contributing
 
@@ -58,6 +40,24 @@ provided by the bot. You will only need to do this once across all repos using o
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+
+### Development Setup
+
+**Prerequisites**
+- Go Version: 1.18+
+- Docker Version: v4+
+- An Azure subscription
+- Azure CLI (latest)
+- IDE that works with Go
+- Ngrok ([Create a free account](https://ngrok.com/))
+* Setup a .env file in /bin (see ./configs for the template)
+
+**Developer activities**
+
+- [Building the Docker image](./docs/docker-image.md)
+- [Running locally](./docs/run-locally.md)
+- [Client SDK usage (Go)](./docs/sdk-usage-go.md)
 
 ## Trademarks
 
