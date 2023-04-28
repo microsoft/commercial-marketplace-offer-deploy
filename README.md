@@ -11,7 +11,7 @@ This marketplace offer deployment manager (MODM) simplifies the deployment of co
 - Create your marketplace package
 
 
-<img src="" />
+<img src="https://github.com/microsoft/commercial-marketplace-offer-deploy/blob/main/docs/img/modm-architecture.png?raw=true" />
 
 
 ## Feature Overview
