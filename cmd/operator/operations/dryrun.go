@@ -2,10 +2,7 @@ package operations
 
 import (
 	"context"
-	"encoding/json"
-	"log"
 	"time"
-
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
@@ -14,6 +11,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"gorm.io/gorm"
+	log "github.com/sirupsen/logrus"
 )
 
 type dryRunOperation struct {
@@ -23,10 +21,10 @@ type dryRunOperation struct {
 }
 
 func (h *dryRunOperation) Invoke(operation *data.InvokedOperation) error {
-	log.Printf("Inside Invoke for DryRun with an operation of %v", *operation)
+	log.Debug("Inside Invoke for DryRun with an operation of %v", *operation)
 	azureDeployment := h.getAzureDeployment(operation)
 	response := deployment.DryRun(azureDeployment)
-	log.Printf("DryRun response is %v", *response)
+	log.Debug("DryRun response is %v", *response)
 
 	operation.Status = *response.Status
 	operation.Result = response.DryRunResult
@@ -44,28 +42,20 @@ func (h *dryRunOperation) Invoke(operation *data.InvokedOperation) error {
 }
 
 func (o *dryRunOperation) sendEvent(eventMessage *events.EventHookMessage) error {
-	jsonMsg, err := json.Marshal(eventMessage)
-	if err != nil {
-		log.Printf("Error marshalling event message: %v", err)
-	} else {
-		log.Printf("Inside sendEvent for DryRun with a jsonMsg of %v", string(jsonMsg))
-	}
-
 	ctx := context.TODO()
 	results, err := o.sender.Send(ctx, string(messaging.QueueNameEvents), *eventMessage)
-	//results, err := o.sender.Send(ctx, string(messaging.QueueNameEvents), string(jsonMsg))
 	if err != nil {
-		log.Printf("Error sending event message: %v", err)
+		log.Error("Error sending event message: %v", err)
 		return err
 	} else {
-		log.Printf("Event message sent successfully")
-		log.Printf("Inside sendEvent for DryRun with a results of %v", results)
+		log.Debug("Event message sent successfully")
+		log.Debug("Inside sendEvent for DryRun with a results of %v", results)
 	}
 
 	if len(results) > 0 {
 		for _, result := range results {
 			if result.Error != nil {
-				log.Printf("Error sending event message: %v", result.Error)
+				log.Error("Error sending event message: %v", result.Error)
 				return result.Error
 			}
 		}

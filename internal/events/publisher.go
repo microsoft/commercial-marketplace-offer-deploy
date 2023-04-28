@@ -50,7 +50,7 @@ func (p *eventHookPublisher) Publish(message *model.EventHookMessage) error {
 			err := sender.Send(ctx, &message)
 
 			if err != nil {
-				log.Printf("error sending message to subscription [%s]", subscription.Name)
+				log.Error("error sending message to subscription [%s]", subscription.Name)
 			}
 		}(i)
 	}

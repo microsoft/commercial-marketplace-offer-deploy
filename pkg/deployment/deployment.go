@@ -25,13 +25,13 @@ func mapResponse(whatIfResponse *armresources.DeploymentsClientWhatIfResponse) (
 		return nil, err
 	}
 
-	log.Printf("Before creation of DryRunResult")
+	log.Debug("Before creation of DryRunResult")
 	dryRunResult := DryRunResult{
 		Status: whatIfResponse.Status,
 		Error:  dryRunErrorResponse,
 	}
 
-	log.Printf("After creation of DryRunResult")
+	log.Debug("After creation of DryRunResult")
 	dryRunResponse := DryRunResponse{
 		DryRunResult: dryRunResult,
 	}
@@ -41,7 +41,7 @@ func mapResponse(whatIfResponse *armresources.DeploymentsClientWhatIfResponse) (
 
 func mapError(armResourceResponse *armresources.ErrorResponse) (*DryRunErrorResponse, error) {
 	if armResourceResponse == nil {
-		log.Printf("returning nil")
+		log.Debug("returning nil")
 		return nil, nil
 	}
 
@@ -50,7 +50,7 @@ func mapError(armResourceResponse *armresources.ErrorResponse) (*DryRunErrorResp
 		for _, v := range armResourceResponse.Details {
 			dryRunError, err := mapError(v)
 			if err != nil {
-				log.Printf("There was an error mapping an error detail")
+				log.Error("There was an error mapping an error detail")
 				return nil, err
 			}
 			dryRunErrorDetails = append(dryRunErrorDetails, dryRunError)
@@ -79,7 +79,7 @@ func mapError(armResourceResponse *armresources.ErrorResponse) (*DryRunErrorResp
 func DeleteResourceGroup(subscriptionId string, resourceGroupName string) error {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		log.Print(err)
+		log.Error(err)
 	}
 	ctx := context.Background()
 	resourceGroupClient, err := armresources.NewResourceGroupsClient(subscriptionId, cred, nil)
@@ -102,7 +102,7 @@ func DeleteResourceGroup(subscriptionId string, resourceGroupName string) error 
 func createResourceGroup(subscriptionId string, resourceGroupName string, location string) (*armresources.ResourceGroup, error) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		log.Print(err)
+		log.Error(err)
 	}
 	ctx := context.Background()
 
@@ -125,7 +125,7 @@ func createResourceGroup(subscriptionId string, resourceGroupName string, locati
 }
 
 func Create(dep AzureDeployment) (*AzureDeploymentResult, error) {
-	log.Println("Inside Create")
+	log.Debug("Inside Create")
 	deployer := CreateNewDeployer(dep)
 	return deployer.Deploy(&dep)
 }

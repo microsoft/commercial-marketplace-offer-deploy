@@ -24,24 +24,24 @@ func (h *operationMessageHandler) Handle(message *messaging.InvokedOperationMess
 	var invokedOperation *data.InvokedOperation
 	db.First(&invokedOperation, uuid.MustParse(message.OperationId))
 
-	log.Printf("operation id: %s", message.OperationId)
-	log.Printf("Invoked Operation from DB: %v", invokedOperation)
+	log.Debug("operation id: %s", message.OperationId)
+	log.Debug("Invoked Operation from DB: %v", invokedOperation)
 
 	operationType, err := operations.Type(invokedOperation.Name)
 	if err != nil {
-		log.Println("Error getting operation type: ", err)
+		log.Error("Error getting operation type: ", err)
 	}
 
 	operation, err := h.factory.Create(operationType)
 	if err != nil {
-		log.Println("Error creating operation: ", err)
+		log.Error("Error creating operation: ", err)
 		return err
 	}
 	operationJson, err := json.Marshal(operation)
 	if err != nil {
-		log.Println("Error marshalling operation: ", err)
+		log.Error("Error marshalling operation: ", err)
 	} else {
-		log.Printf("Pulled the operation - Operation: %v", string(operationJson))
+		log.Debug("Pulled the operation - Operation: %v", string(operationJson))
 	}
 	
 	return operation.Invoke(invokedOperation)

@@ -35,7 +35,7 @@ func (p *startDeploymentOperation) Invoke(operation *data.InvokedOperation) erro
 	go func() {
 		_, err := p.deploy(context.TODO(), azureDeployment)
 		if err != nil {
-			log.Println("Error calling deployment.Create: ", err)
+			log.Error("Error calling deployment.Create: ", err)
 		}
 	}()
 

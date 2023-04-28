@@ -40,21 +40,21 @@ type DryRunErrorResponse struct {
 
 func whatIfValidator(input DryRunValidationInput) *DryRunResponse {
 	if input.azureDeployment == nil {
-		log.Fatal(errors.New("azureDeployment is not set on input struct"))
+		log.Error(errors.New("azureDeployment is not set on input struct"))
 	}
 	err := input.azureDeployment.validate()
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	whatIfResult, err := whatIfDeployment(input)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	dryResponse, err := mapResponse(whatIfResult)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	return dryResponse

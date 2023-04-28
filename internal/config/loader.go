@@ -30,7 +30,7 @@ func LoadConfiguration(path string, name *string, root any) error {
 
 	err := builder.ReadInConfig()
 	if err != nil {
-		log.Print(err)
+		log.Error(err)
 		errors = append(errors, err.Error())
 	}
 
@@ -38,7 +38,7 @@ func LoadConfiguration(path string, name *string, root any) error {
 	err = unmarshal(builder, root)
 
 	if err != nil {
-		log.Print(err)
+		log.Error(err)
 		errors = append(errors, err.Error())
 	}
 
@@ -90,7 +90,7 @@ func automaticEnvs(builder *viper.Viper) {
 			//builder.Set(key, os.Getenv(key))
 			err := builder.BindEnv(key)
 			if err != nil {
-				log.Print(err)
+				log.Error(err)
 			}
 		}
 	}

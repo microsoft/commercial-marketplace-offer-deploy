@@ -2,7 +2,6 @@ package operations
 
 import (
 	"context"
-	"log"
 
 	//"time"
 
@@ -14,8 +13,8 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
-
 	"gorm.io/gorm"
+	log "github.com/sirupsen/logrus"
 )
 
 type InvokeOperationProcessor interface {
@@ -82,7 +81,7 @@ func (h *processor) save(c *InvokeOperationCommand) (uuid.UUID, error) {
 // send the message on the queue
 func (h *processor) send(ctx context.Context, operationId uuid.UUID) error {
 	message := messaging.InvokedOperationMessage{OperationId: operationId.String()}
-	log.Printf("sending message from api/operations/processor.go - message: %v", message)
+	log.Debug("sending message from api/operations/processor.go - message: %v", message)
 	results, err := h.sender.Send(ctx, string(messaging.QueueNameOperations), message)
 	if err != nil {
 		return err
