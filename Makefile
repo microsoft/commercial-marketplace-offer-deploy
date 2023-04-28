@@ -20,6 +20,11 @@ apiserver-local:
 operator-local:
 	./scripts/run-local.sh operator
 
+# Builds docker container, starts ngrok in the background, and 
+# calls docker compose up with the public NGROK endpoint for MODM to receive event messages from Azure
+run-local:
+	./scripts/run-local.sh docker $(build)
+
 test-all:
 	go test ./...
 
@@ -38,4 +43,4 @@ assemble: apiserver operator
 
 .NOTPARALLEL:
 
-.PHONY: apiserver-local apiserver sdk operator test-all generate tools
+.PHONY: run apiserver-local operator-local apiserver sdk operator test-all generate tools

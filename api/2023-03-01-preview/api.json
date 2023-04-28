@@ -3,7 +3,7 @@
   "info": {
     "description": "Commercial Marketplace deployment management for azure offers.",
     "version": "0.1.0",
-    "title": "Marketplace Offer Deployment Management",
+    "title": "Marketplace Offer Deployment Manager",
     "license": {
       "name": "MIT",
       "url": "https://opensource.org/license/mit/"
@@ -64,7 +64,7 @@
         "tags": [
           "Deployment"
         ],
-        "summary": "Get all Deployments",
+        "summary": "List all Deployments",
         "description": "List all deployments",
         "operationId": "ListDeployments",
         "parameters": [
@@ -308,22 +308,22 @@
         }
       }
     },
-    "/events/subscriptions": {
+    "/events/hooks": {
       "post": {
         "tags": [
-          "Event"
+          "Hook"
         ],
-        "summary": "Create event subscription",
-        "description": "Create a subscription",
-        "operationId": "CreatEventSubscription",
+        "summary": "Create event hook",
+        "description": "Create an event hook",
+        "operationId": "CreateEvenHook",
         "parameters": [
           {
             "in": "body",
             "name": "body",
-            "description": "Create event subscription",
+            "description": "Create event hook",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/CreateEventSubscriptionRequest"
+              "$ref": "#/definitions/CreateEventHookRequest"
             }
           }
         ],
@@ -331,7 +331,7 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/CreateEventSubscriptionResponse"
+              "$ref": "#/definitions/CreateEventHookResponse"
             }
           },
           "405": {
@@ -341,11 +341,11 @@
       },
       "get": {
         "tags": [
-          "Event"
+          "Hook"
         ],
-        "summary": "Lists all subscription",
-        "description": "List all subscriptions",
-        "operationId": "ListEventSubscriptions",
+        "summary": "Lists all event hooks",
+        "description": "List all event hooks",
+        "operationId": "ListEventHooks",
         "parameters": [
         ],
         "responses": {
@@ -354,32 +354,26 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/EventSubscriptionResponse"
+                "$ref": "#/definitions/EventHookResponse"
               }
             }
-          },
-          "400": {
-            "description": "Invalid event type supplied"
-          },
-          "404": {
-            "description": "Subscription not found"
           }
         }
       }
     },
-    "/events/subscriptions/{subscriptionId}": {
+    "/events/hooks/{hookId}": {
       "get": {
         "tags": [
-          "Event"
+          "Hook"
         ],
-        "summary": "Gets a subscription",
-        "description": "Gets a subscription",
-        "operationId": "GetEventSubscription",
+        "summary": "Gets an event hook",
+        "description": "Gets an event hook instance",
+        "operationId": "GetEventHook",
         "parameters": [
           {
-            "name": "subscriptionId",
+            "name": "hookId",
             "in": "path",
-            "description": "ID of subscription",
+            "description": "ID of the hook",
             "required": true,
             "type": "string",
             "format": "uuid"
@@ -389,14 +383,11 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/EventSubscriptionResponse"
+              "$ref": "#/definitions/EventHookResponse"
             }
           },
           "400": {
             "description": "Invalid ID supplied"
-          },
-          "404": {
-            "description": "Subscription not found"
           }
         }
       },
@@ -404,14 +395,14 @@
         "tags": [
           "Event"
         ],
-        "summary": "Delete a subscription",
-        "description": "Deletes a subscription to an even type",
-        "operationId": "DeleteEventSubscription",
+        "summary": "Delete an event hook",
+        "description": "Deletes an event hook by id",
+        "operationId": "DeleteEventHook",
         "parameters": [
           {
-            "name": "subscriptionId",
+            "name": "hookId",
             "in": "path",
-            "description": "ID of subscription",
+            "description": "ID of the hook",
             "required": true,
             "type": "string",
             "format": "uuid"
@@ -425,7 +416,7 @@
             "description": "Invalid ID supplied"
           },
           "404": {
-            "description": "Subscription not found"
+            "description": "Hook not found"
           }
         }
       }
@@ -588,7 +579,7 @@
         }
       }
     },
-    "EventSubscriptionResponse": {
+    "EventHookResponse": {
       "type": "object",
       "properties": {
         "id": {
@@ -606,7 +597,7 @@
         }
       }
     },
-    "CreateEventSubscriptionRequest": {
+    "CreateEventHookRequest": {
       "type": "object",
       "properties": {
         "name": {
@@ -624,7 +615,7 @@
         }
       }
     },
-    "CreateEventSubscriptionResponse": {
+    "CreateEventHookResponse": {
       "type": "object",
       "properties": {
         "id": {

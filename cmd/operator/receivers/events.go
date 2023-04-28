@@ -13,10 +13,10 @@ import (
 )
 
 type eventsMessageHandler struct {
-	publisher e.WebHookPublisher
+	publisher e.EventHookPublisher
 }
 
-func (h *eventsMessageHandler) Handle(message *events.WebHookEventMessage, context messaging.MessageHandlerContext) error {
+func (h *eventsMessageHandler) Handle(message *events.EventHookMessage, context messaging.MessageHandlerContext) error {
 	err := h.publisher.Publish(message)
 	return err
 }
@@ -42,8 +42,8 @@ func NewEventsMessageReceiver(appConfig *config.AppConfig, credential azcore.Tok
 	return receiver
 }
 
-func newWebHookPublisher(db *gorm.DB) e.WebHookPublisher {
-	subscriptionsProvider := e.NewGormSubscriptionsProvider(db)
+func newWebHookPublisher(db *gorm.DB) e.EventHookPublisher {
+	subscriptionsProvider := e.NewEventHooksProvider(db)
 	publisher := e.NewWebHookPublisher(subscriptionsProvider)
 	return publisher
 }

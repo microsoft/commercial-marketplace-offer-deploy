@@ -19,7 +19,7 @@ import (
 type dryRunOperation struct {
 	db      *gorm.DB
 	process DryRunProcessorFunc
-	sender messaging.MessageSender
+	sender  messaging.MessageSender
 }
 
 func (h *dryRunOperation) Invoke(operation *data.InvokedOperation) error {
@@ -39,11 +39,11 @@ func (h *dryRunOperation) Invoke(operation *data.InvokedOperation) error {
 
 	eventMsg := h.mapWebHookEventMessage(operation, &response.DryRunResult)
 	_ = h.sendEvent(eventMsg)
-	
+
 	return nil
 }
 
-func (o *dryRunOperation) sendEvent(eventMessage *events.WebHookEventMessage) error {
+func (o *dryRunOperation) sendEvent(eventMessage *events.EventHookMessage) error {
 	jsonMsg, err := json.Marshal(eventMessage)
 	if err != nil {
 		log.Printf("Error marshalling event message: %v", err)
@@ -61,7 +61,7 @@ func (o *dryRunOperation) sendEvent(eventMessage *events.WebHookEventMessage) er
 		log.Printf("Event message sent successfully")
 		log.Printf("Inside sendEvent for DryRun with a results of %v", results)
 	}
-	
+
 	if len(results) > 0 {
 		for _, result := range results {
 			if result.Error != nil {
@@ -73,14 +73,13 @@ func (o *dryRunOperation) sendEvent(eventMessage *events.WebHookEventMessage) er
 	return nil
 }
 
-func (h *dryRunOperation) mapWebHookEventMessage(operation *data.InvokedOperation, dryRunResult *deployment.DryRunResult) *events.WebHookEventMessage {
-	log.Printf("Inside mapWebHookEventMessage for DryRun with an operation of %v and a dryRunResult of %v", *operation, *dryRunResult)
+func (h *dryRunOperation) mapWebHookEventMessage(operation *data.InvokedOperation, dryRunResult *deployment.DryRunResult) *events.EventHookMessage {
 	eventType := "DryRunResult"
-	return &events.WebHookEventMessage{
-		Id: uuid.New(),
-		SubscriptionId: [16]byte{},
+	return &events.EventHookMessage{
+		Id:        uuid.New(),
+		HookId:    [16]byte{},
 		EventType: eventType,
-		Body:   dryRunResult,
+		Body:      dryRunResult,
 	}
 }
 
@@ -123,11 +122,10 @@ func NewDryRunProcessor(appConfig *config.AppConfig) DeploymentOperation {
 		FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
 	})
 
-
 	dryRunOperation := &dryRunOperation{
 		db:      db,
 		process: deployment.DryRun,
-		sender: sender,
+		sender:  sender,
 	}
 	return dryRunOperation
 }

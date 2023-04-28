@@ -10,8 +10,8 @@ import (
 )
 
 // HTTP handler for creating deployments
-func CreateEventSubscription(c echo.Context, db *gorm.DB) error {
-	var request *api.CreateEventSubscriptionRequest
+func CreateEventHook(c echo.Context, db *gorm.DB) error {
+	var request *api.CreateEventHookRequest
 	err := c.Bind(&request)
 
 	if err != nil {
@@ -20,7 +20,7 @@ func CreateEventSubscription(c echo.Context, db *gorm.DB) error {
 
 	// TODO: validate with a test handshake before continuing
 
-	model := data.FromCreateEventSubscription(request)
+	model := data.FromCreateEventHook(request)
 	tx := db.Create(&model)
 
 	if tx.Error != nil {
@@ -28,7 +28,7 @@ func CreateEventSubscription(c echo.Context, db *gorm.DB) error {
 	}
 
 	id := model.ID.String()
-	result := &api.EventSubscriptionResponse{
+	result := &api.EventHookResponse{
 		ID:       &id,
 		Name:     &model.Name,
 		Callback: &model.Callback,

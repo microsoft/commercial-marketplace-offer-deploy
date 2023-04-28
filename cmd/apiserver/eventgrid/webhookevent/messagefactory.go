@@ -38,9 +38,9 @@ func NewWebHookEventMessageFactory(filter filtering.EventGridEventFilter, client
 }
 
 // Creates a list of WebHookEventMessage from a list of EventGridEventResource
-func (f *WebHookEventMessageFactory) Create(ctx context.Context, matchAny d.LookupTags, eventGridEvents []*eventgrid.Event) []*events.WebHookEventMessage {
+func (f *WebHookEventMessageFactory) Create(ctx context.Context, matchAny d.LookupTags, eventGridEvents []*eventgrid.Event) []*events.EventHookMessage {
 	result := f.filter.Filter(ctx, matchAny, eventGridEvents)
-	messages := []*events.WebHookEventMessage{}
+	messages := []*events.EventHookMessage{}
 
 	log.Printf("factory received %d EventGridEvents, filtered to %d messages", len(eventGridEvents), len(result))
 
@@ -58,7 +58,7 @@ func (f *WebHookEventMessageFactory) Create(ctx context.Context, matchAny d.Look
 
 //region private methods
 
-func (f *WebHookEventMessageFactory) convert(item *eg.EventGridEventResource) (*events.WebHookEventMessage, error) {
+func (f *WebHookEventMessageFactory) convert(item *eg.EventGridEventResource) (*events.EventHookMessage, error) {
 	deployment, err := f.getRelatedDeployment(item)
 	if err != nil {
 		return nil, err
@@ -69,11 +69,11 @@ func (f *WebHookEventMessageFactory) convert(item *eg.EventGridEventResource) (*
 	eventData := eg.ResourceEventData{}
 	mapstructure.Decode(item.Message.Data, &eventData)
 
-	message := &events.WebHookEventMessage{
-		Id:             messageId,
-		SubscriptionId: [16]byte{},
-		EventType:      *item.Message.EventType,
-		Body: events.WebHookDeploymentEventMessageBody{
+	message := &events.EventHookMessage{
+		Id:        messageId,
+		HookId:    [16]byte{},
+		EventType: *item.Message.EventType,
+		Body: events.EventHookDeploymentMessageBody{
 			ResourceId: *item.Resource.ID,
 			Status:     eventData.Status,
 			Message:    eventData.OperationName,

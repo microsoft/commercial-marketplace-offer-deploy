@@ -39,9 +39,9 @@ func (o EventType) String() string {
 }
 
 // subscription model for MODM webhook events
-type WebHookEventMessage struct {
-	Id             uuid.UUID `json:"id,omitempty"`
-	SubscriptionId uuid.UUID `json:"subscriptionId,omitempty"`
+type EventHookMessage struct {
+	Id     uuid.UUID `json:"id,omitempty"`
+	HookId uuid.UUID `json:"hookId,omitempty"`
 
 	// subject is in format like /deployments/{deploymentId}/stages/{stageId}
 	Subject   string `json:"subject,omitempty"`
@@ -50,11 +50,11 @@ type WebHookEventMessage struct {
 }
 
 // Dry run
-type WebHookDryRunCompletedBody struct {
-	Messages []WebHookDryRunMessage `json:"messages,omitempty"`
+type DryRunCompletedBody struct {
+	Messages []EventHookDryRunMessage `json:"messages,omitempty"`
 }
 
-type WebHookDryRunMessage struct {
+type EventHookDryRunMessage struct {
 	Type    string `json:"type,omitempty"`
 	Status  string `json:"status,omitempty"`
 	Message string `json:"message,omitempty"`
@@ -62,13 +62,13 @@ type WebHookDryRunMessage struct {
 
 // all other deployment events
 
-type WebHookDeploymentEventMessageBody struct {
+type EventHookDeploymentMessageBody struct {
 	ResourceId string `json:"ResourceId,omitempty"`
 	Status     string `json:"status,omitempty"`
 	Message    string `json:"message,omitempty"`
 }
 
-func (m *WebHookEventMessage) SetSubject(deploymentId int, stageId *uuid.UUID, resourceName *string) {
+func (m *EventHookMessage) SetSubject(deploymentId int, stageId *uuid.UUID, resourceName *string) {
 	m.Subject = "/deployments/" + strconv.Itoa(deploymentId)
 	if stageId != nil {
 		m.Subject += "/stages/" + stageId.String()

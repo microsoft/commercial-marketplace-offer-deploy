@@ -66,7 +66,7 @@ func (h *eventGridWebHook) Handle(c echo.Context) error {
 
 // send these event grid events through our message bus to be processed and published
 // to the web hook endpoints that are subscribed to our MODM events
-func (h *eventGridWebHook) enqueueResultForProcessing(ctx context.Context, messages []*events.WebHookEventMessage) error {
+func (h *eventGridWebHook) enqueueResultForProcessing(ctx context.Context, messages []*events.EventHookMessage) error {
 	errors := []string{}
 	for _, message := range messages {
 		sendResult, err := h.sender.Send(ctx, string(messaging.QueueNameEvents), message)
