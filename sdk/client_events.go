@@ -17,11 +17,11 @@ func (client *Client) ListEventTypes(ctx context.Context) ([]*api.EventType, err
 	return types, nil
 }
 
-func (client *Client) CreateEventSubscription(ctx context.Context, request api.CreateEventSubscriptionRequest) (*api.CreateEventSubscriptionResponse, error) {
-	response, err := client.internalClient.CreatEventSubscription(ctx, request, nil)
+func (client *Client) CreateEventHook(ctx context.Context, request api.CreateEventHookRequest) (*api.CreateEventHookResponse, error) {
+	response, err := client.internalClient.CreateEvenHook(ctx, request, nil)
 
 	if err != nil {
 		return nil, err
 	}
-	return &response.CreateEventSubscriptionResponse, nil
+	return &response.CreateEventHookResponse, nil
 }

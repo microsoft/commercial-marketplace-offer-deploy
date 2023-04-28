@@ -3,6 +3,7 @@ package operations
 import (
 	"context"
 	"time"
+
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
@@ -16,7 +17,7 @@ import (
 type dryRunOperation struct {
 	db      *gorm.DB
 	process DryRunProcessorFunc
-	sender messaging.MessageSender
+	sender  messaging.MessageSender
 }
 
 func (h *dryRunOperation) Invoke(operation *data.InvokedOperation) error {
@@ -34,17 +35,17 @@ func (h *dryRunOperation) Invoke(operation *data.InvokedOperation) error {
 
 	eventMsg := h.mapWebHookEventMessage(operation, &response.DryRunResult)
 	_ = h.sendEvent(eventMsg)
-	
+
 	return nil
 }
 
-func (o *dryRunOperation) sendEvent(eventMessage *events.WebHookEventMessage) error {
+func (o *dryRunOperation) sendEvent(eventMessage *events.EventHookMessage) error {
 	ctx := context.TODO()
 	results, err := o.sender.Send(ctx, string(messaging.QueueNameEvents), eventMessage)
 	if err != nil {
 		return err
 	}
-	
+
 	if len(results) > 0 {
 		for _, result := range results {
 			if result.Error != nil {
@@ -55,13 +56,13 @@ func (o *dryRunOperation) sendEvent(eventMessage *events.WebHookEventMessage) er
 	return nil
 }
 
-func (h *dryRunOperation) mapWebHookEventMessage(operation *data.InvokedOperation, dryRunResult *deployment.DryRunResult) *events.WebHookEventMessage {
+func (h *dryRunOperation) mapWebHookEventMessage(operation *data.InvokedOperation, dryRunResult *deployment.DryRunResult) *events.EventHookMessage {
 	eventType := "DryRunResult"
-	return &events.WebHookEventMessage{
-		Id: uuid.New(),
-		SubscriptionId: [16]byte{},
+	return &events.EventHookMessage{
+		Id:        uuid.New(),
+		HookId:    [16]byte{},
 		EventType: eventType,
-		Body:   dryRunResult,
+		Body:      dryRunResult,
 	}
 }
 
@@ -104,11 +105,10 @@ func NewDryRunProcessor(appConfig *config.AppConfig) DeploymentOperation {
 		FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
 	})
 
-
 	dryRunOperation := &dryRunOperation{
 		db:      db,
 		process: deployment.DryRun,
-		sender: sender,
+		sender:  sender,
 	}
 	return dryRunOperation
 }

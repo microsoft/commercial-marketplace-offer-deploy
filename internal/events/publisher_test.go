@@ -16,7 +16,7 @@ import (
 )
 
 func TestPublisherPublish(t *testing.T) {
-	message := &WebHookEventMessage{
+	message := &EventHookMessage{
 		Id:        uuid.New(),
 		EventType: "test.event",
 		Body:      make(map[string]any),
@@ -24,7 +24,7 @@ func TestPublisherPublish(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, _ := io.ReadAll(r.Body)
-		var received = &WebHookEventMessage{}
+		var received = &EventHookMessage{}
 		json.Unmarshal(body, &received)
 
 		// assert that the message that was published was received by the server that was registered to the publisher
@@ -40,20 +40,21 @@ func TestPublisherPublish(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func getPublisher(url string) WebHookPublisher {
-	provider := newFakeSubscriptionProvider(url)
+func getPublisher(url string) EventHookPublisher {
+	provider := newFakProvider(url)
 	publisher := NewWebHookPublisher(provider)
 	return publisher
 }
 
-// FAKE
-type fakeSubscriptionsProvider struct {
-	subscriptions []*data.EventSubscription
+//region fakes
+
+type fakeProvider struct {
+	subscriptions []*data.EventHook
 }
 
-func newFakeSubscriptionProvider(url string) SubscriptionsProvider {
-	provider := &fakeSubscriptionsProvider{
-		subscriptions: []*data.EventSubscription{
+func newFakProvider(url string) EventHooksProvider {
+	provider := &fakeProvider{
+		subscriptions: []*data.EventHook{
 			{Callback: url, Name: "test-subscription-1", ApiKey: "testapikey", BaseWithGuidPrimaryKey: data.BaseWithGuidPrimaryKey{
 				ID: uuid.New(),
 			}},
@@ -68,6 +69,8 @@ func newFakeSubscriptionProvider(url string) SubscriptionsProvider {
 	return provider
 }
 
-func (p *fakeSubscriptionsProvider) GetSubscriptions() ([]*data.EventSubscription, error) {
+func (p *fakeProvider) Get() ([]*data.EventHook, error) {
 	return p.subscriptions, nil
 }
+
+//endregion fakes

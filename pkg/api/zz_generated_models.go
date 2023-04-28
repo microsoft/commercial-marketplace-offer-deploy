@@ -22,7 +22,7 @@ type CreateDeployment struct {
 	SubscriptionID *string `json:"subscriptionId,omitempty"`
 }
 
-type CreateEventSubscriptionRequest struct {
+type CreateEventHookRequest struct {
 	// API key to be used in the Authorization header, e.g. 'ApiKey =234dfsdf324234', to call the webhook callback URL.
 	APIKey *string `json:"ApiKey,omitempty"`
 
@@ -33,7 +33,7 @@ type CreateEventSubscriptionRequest struct {
 	Name *string `json:"name,omitempty"`
 }
 
-type CreateEventSubscriptionResponse struct {
+type CreateEventHookResponse struct {
 	ID *string `json:"id,omitempty"`
 
 	// the name of the subscription
@@ -50,21 +50,21 @@ type Deployment struct {
 	Template any `json:"template,omitempty"`
 }
 
-// DeploymentManagementClientCreatEventSubscriptionOptions contains the optional parameters for the DeploymentManagementClient.CreatEventSubscription
-// method.
-type DeploymentManagementClientCreatEventSubscriptionOptions struct {
-	// placeholder for future optional parameters
-}
-
 // DeploymentManagementClientCreateDeploymentOptions contains the optional parameters for the DeploymentManagementClient.CreateDeployment
 // method.
 type DeploymentManagementClientCreateDeploymentOptions struct {
 	// placeholder for future optional parameters
 }
 
-// DeploymentManagementClientDeleteEventSubscriptionOptions contains the optional parameters for the DeploymentManagementClient.DeleteEventSubscription
+// DeploymentManagementClientCreateEvenHookOptions contains the optional parameters for the DeploymentManagementClient.CreateEvenHook
 // method.
-type DeploymentManagementClientDeleteEventSubscriptionOptions struct {
+type DeploymentManagementClientCreateEvenHookOptions struct {
+	// placeholder for future optional parameters
+}
+
+// DeploymentManagementClientDeleteEventHookOptions contains the optional parameters for the DeploymentManagementClient.DeleteEventHook
+// method.
+type DeploymentManagementClientDeleteEventHookOptions struct {
 	// placeholder for future optional parameters
 }
 
@@ -74,9 +74,9 @@ type DeploymentManagementClientGetDeploymentOptions struct {
 	// placeholder for future optional parameters
 }
 
-// DeploymentManagementClientGetEventSubscriptionOptions contains the optional parameters for the DeploymentManagementClient.GetEventSubscription
+// DeploymentManagementClientGetEventHookOptions contains the optional parameters for the DeploymentManagementClient.GetEventHook
 // method.
-type DeploymentManagementClientGetEventSubscriptionOptions struct {
+type DeploymentManagementClientGetEventHookOptions struct {
 	// placeholder for future optional parameters
 }
 
@@ -105,9 +105,9 @@ type DeploymentManagementClientListDeploymentsOptions struct {
 	Status []Status
 }
 
-// DeploymentManagementClientListEventSubscriptionsOptions contains the optional parameters for the DeploymentManagementClient.ListEventSubscriptions
+// DeploymentManagementClientListEventHooksOptions contains the optional parameters for the DeploymentManagementClient.ListEventHooks
 // method.
-type DeploymentManagementClientListEventSubscriptionsOptions struct {
+type DeploymentManagementClientListEventHooksOptions struct {
 	// placeholder for future optional parameters
 }
 
@@ -129,7 +129,7 @@ type DeploymentStage struct {
 	Status *string `json:"status,omitempty"`
 }
 
-type EventSubscriptionResponse struct {
+type EventHookResponse struct {
 	// The webhook callback
 	Callback *string `json:"callback,omitempty"`
 	ID *string `json:"id,omitempty"`

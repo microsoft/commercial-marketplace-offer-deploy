@@ -11,41 +11,41 @@ import (
 	model "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 )
 
-type WebHookPublisher interface {
+type EventHookPublisher interface {
 	// publishes a message to all web hook subscriptions
-	Publish(message *model.WebHookEventMessage) error
+	Publish(message *model.EventHookMessage) error
 }
 
-type webHookPublisher struct {
-	subscriptionsProvider SubscriptionsProvider
-	senders               map[uuid.UUID]WebHookSender
+type eventHookPublisher struct {
+	provider EventHooksProvider
+	senders  map[uuid.UUID]WebHookSender
 }
 
-func NewWebHookPublisher(subscriptionsProvider SubscriptionsProvider) WebHookPublisher {
-	publisher := &webHookPublisher{senders: map[uuid.UUID]WebHookSender{}, subscriptionsProvider: subscriptionsProvider}
+func NewWebHookPublisher(subscriptionsProvider EventHooksProvider) EventHookPublisher {
+	publisher := &eventHookPublisher{senders: map[uuid.UUID]WebHookSender{}, provider: subscriptionsProvider}
 
 	return publisher
 }
 
-func (p *webHookPublisher) Publish(message *model.WebHookEventMessage) error {
-	subscriptions, err := p.subscriptionsProvider.GetSubscriptions()
+func (p *eventHookPublisher) Publish(message *model.EventHookMessage) error {
+	hooks, err := p.provider.Get()
 
 	if err != nil {
 		return err
 	}
 
-	subscriptionsCount := len(subscriptions)
+	hookCount := len(hooks)
 
 	waitGroup := sync.WaitGroup{}
-	waitGroup.Add(subscriptionsCount)
+	waitGroup.Add(hookCount)
 
 	var ctx context.Context = context.Background()
 
-	for i := 0; i < subscriptionsCount; i++ {
+	for i := 0; i < hookCount; i++ {
 		go func(i int) {
 			defer waitGroup.Done()
-			subscription := subscriptions[i]
-			message.SubscriptionId = subscription.ID
+			subscription := hooks[i]
+			message.HookId = subscription.ID
 			sender := p.getSender(*subscription)
 			err := sender.Send(ctx, &message)
 
@@ -59,7 +59,7 @@ func (p *webHookPublisher) Publish(message *model.WebHookEventMessage) error {
 	return nil
 }
 
-func (p *webHookPublisher) getSender(subscription data.EventSubscription) WebHookSender {
+func (p *eventHookPublisher) getSender(subscription data.EventHook) WebHookSender {
 	if _, ok := p.senders[subscription.ID]; !ok {
 		p.senders[subscription.ID] = NewMessageSender(subscription.Callback, subscription.ApiKey)
 	}

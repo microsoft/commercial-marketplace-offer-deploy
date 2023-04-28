@@ -59,8 +59,8 @@ func (c *CreateDeployment) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// MarshalJSON implements the json.Marshaller interface for type CreateEventSubscriptionRequest.
-func (c CreateEventSubscriptionRequest) MarshalJSON() ([]byte, error) {
+// MarshalJSON implements the json.Marshaller interface for type CreateEventHookRequest.
+func (c CreateEventHookRequest) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]any)
 	populate(objectMap, "ApiKey", c.APIKey)
 	populate(objectMap, "callback", c.Callback)
@@ -68,8 +68,8 @@ func (c CreateEventSubscriptionRequest) MarshalJSON() ([]byte, error) {
 	return json.Marshal(objectMap)
 }
 
-// UnmarshalJSON implements the json.Unmarshaller interface for type CreateEventSubscriptionRequest.
-func (c *CreateEventSubscriptionRequest) UnmarshalJSON(data []byte) error {
+// UnmarshalJSON implements the json.Unmarshaller interface for type CreateEventHookRequest.
+func (c *CreateEventHookRequest) UnmarshalJSON(data []byte) error {
 	var rawMsg map[string]json.RawMessage
 	if err := json.Unmarshal(data, &rawMsg); err != nil {
 		return fmt.Errorf("unmarshalling type %T: %v", c, err)
@@ -94,16 +94,16 @@ func (c *CreateEventSubscriptionRequest) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// MarshalJSON implements the json.Marshaller interface for type CreateEventSubscriptionResponse.
-func (c CreateEventSubscriptionResponse) MarshalJSON() ([]byte, error) {
+// MarshalJSON implements the json.Marshaller interface for type CreateEventHookResponse.
+func (c CreateEventHookResponse) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]any)
 	populate(objectMap, "id", c.ID)
 	populate(objectMap, "name", c.Name)
 	return json.Marshal(objectMap)
 }
 
-// UnmarshalJSON implements the json.Unmarshaller interface for type CreateEventSubscriptionResponse.
-func (c *CreateEventSubscriptionResponse) UnmarshalJSON(data []byte) error {
+// UnmarshalJSON implements the json.Unmarshaller interface for type CreateEventHookResponse.
+func (c *CreateEventHookResponse) UnmarshalJSON(data []byte) error {
 	var rawMsg map[string]json.RawMessage
 	if err := json.Unmarshal(data, &rawMsg); err != nil {
 		return fmt.Errorf("unmarshalling type %T: %v", c, err)
@@ -203,8 +203,8 @@ func (d *DeploymentStage) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// MarshalJSON implements the json.Marshaller interface for type EventSubscriptionResponse.
-func (e EventSubscriptionResponse) MarshalJSON() ([]byte, error) {
+// MarshalJSON implements the json.Marshaller interface for type EventHookResponse.
+func (e EventHookResponse) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]any)
 	populate(objectMap, "callback", e.Callback)
 	populate(objectMap, "id", e.ID)
@@ -212,8 +212,8 @@ func (e EventSubscriptionResponse) MarshalJSON() ([]byte, error) {
 	return json.Marshal(objectMap)
 }
 
-// UnmarshalJSON implements the json.Unmarshaller interface for type EventSubscriptionResponse.
-func (e *EventSubscriptionResponse) UnmarshalJSON(data []byte) error {
+// UnmarshalJSON implements the json.Unmarshaller interface for type EventHookResponse.
+func (e *EventHookResponse) UnmarshalJSON(data []byte) error {
 	var rawMsg map[string]json.RawMessage
 	if err := json.Unmarshal(data, &rawMsg); err != nil {
 		return fmt.Errorf("unmarshalling type %T: %v", e, err)
