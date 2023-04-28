@@ -1,6 +1,8 @@
 package receivers
 
 import (
+	"encoding/json"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -35,7 +37,13 @@ func (h *operationMessageHandler) Handle(message *messaging.InvokedOperationMess
 		log.Println("Error creating operation: ", err)
 		return err
 	}
-
+	operationJson, err := json.Marshal(operation)
+	if err != nil {
+		log.Println("Error marshalling operation: ", err)
+	} else {
+		log.Printf("Pulled the operation - Operation: %v", string(operationJson))
+	}
+	
 	return operation.Invoke(invokedOperation)
 }
 

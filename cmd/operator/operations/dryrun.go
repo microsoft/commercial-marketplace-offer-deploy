@@ -2,7 +2,10 @@ package operations
 
 import (
 	"context"
+	"encoding/json"
+	"log"
 	"time"
+
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
@@ -20,8 +23,10 @@ type dryRunOperation struct {
 }
 
 func (h *dryRunOperation) Invoke(operation *data.InvokedOperation) error {
+	log.Printf("Inside Invoke for DryRun with an operation of %v", *operation)
 	azureDeployment := h.getAzureDeployment(operation)
 	response := deployment.DryRun(azureDeployment)
+	log.Printf("DryRun response is %v", *response)
 
 	operation.Status = *response.Status
 	operation.Result = response.DryRunResult
@@ -39,15 +44,28 @@ func (h *dryRunOperation) Invoke(operation *data.InvokedOperation) error {
 }
 
 func (o *dryRunOperation) sendEvent(eventMessage *events.WebHookEventMessage) error {
-	ctx := context.TODO()
-	results, err := o.sender.Send(ctx, string(messaging.QueueNameEvents), eventMessage)
+	jsonMsg, err := json.Marshal(eventMessage)
 	if err != nil {
+		log.Printf("Error marshalling event message: %v", err)
+	} else {
+		log.Printf("Inside sendEvent for DryRun with a jsonMsg of %v", string(jsonMsg))
+	}
+
+	ctx := context.TODO()
+	results, err := o.sender.Send(ctx, string(messaging.QueueNameEvents), *eventMessage)
+	//results, err := o.sender.Send(ctx, string(messaging.QueueNameEvents), string(jsonMsg))
+	if err != nil {
+		log.Printf("Error sending event message: %v", err)
 		return err
+	} else {
+		log.Printf("Event message sent successfully")
+		log.Printf("Inside sendEvent for DryRun with a results of %v", results)
 	}
 	
 	if len(results) > 0 {
 		for _, result := range results {
 			if result.Error != nil {
+				log.Printf("Error sending event message: %v", result.Error)
 				return result.Error
 			}
 		}
@@ -56,6 +74,7 @@ func (o *dryRunOperation) sendEvent(eventMessage *events.WebHookEventMessage) er
 }
 
 func (h *dryRunOperation) mapWebHookEventMessage(operation *data.InvokedOperation, dryRunResult *deployment.DryRunResult) *events.WebHookEventMessage {
+	log.Printf("Inside mapWebHookEventMessage for DryRun with an operation of %v and a dryRunResult of %v", *operation, *dryRunResult)
 	eventType := "DryRunResult"
 	return &events.WebHookEventMessage{
 		Id: uuid.New(),

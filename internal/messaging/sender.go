@@ -83,9 +83,11 @@ func (s *serviceBusMessageSender) Send(ctx context.Context, queueName string, me
 		err = sender.SendMessage(ctx, &azservicebus.Message{
 			Body: body,
 		}, nil)
+		log.Println("sent message")
 
 		results = append(results, SendMessageResult{Success: err == nil, Error: err})
 	}
+	log.Printf("finished sending messages with results of %v", results)
 	return results, nil
 }
 

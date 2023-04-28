@@ -40,7 +40,6 @@ func mapResponse(whatIfResponse *armresources.DeploymentsClientWhatIfResponse) (
 }
 
 func mapError(armResourceResponse *armresources.ErrorResponse) (*DryRunErrorResponse, error) {
-	log.Printf("Inside MapError")
 	if armResourceResponse == nil {
 		log.Printf("returning nil")
 		return nil, nil
