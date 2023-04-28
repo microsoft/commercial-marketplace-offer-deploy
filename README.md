@@ -1,21 +1,31 @@
-# Project
+# Commercial Marketplace Offer Deployment Manager (MODM)
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+This marketplace offer deployment manager (MODM) simplifies the deployment of complex managed and packaged applications for the Azure Commercial Marketplace.
 
-As the maintainer of this project, please make a few updates:
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+## How it works
 
-## Developer Setup
+- Create a `Controller` (some call it a driver--same thing) codebase that consumes the MODM client SDK
+- Build your controller binary into a Docker image along with your managed/package app templates
+- Create the createUIDefinition.json as usual, but now have the mainTemplate.json represent the deployment of your controller + MODM (See our starter bicep templates)
+- Create your marketplace package
 
-Running locally
-```
-docker compose -f ./deployments/docker-compose.yml up  
-```
+
+<img src="https://github.com/microsoft/commercial-marketplace-offer-deploy/blob/main/docs/img/modm-architecture.png?raw=true" />
+
+
+## Feature Overview
+
+- Simplified deployment semantics
+- Includes deployment "Stages" that are tracked separate
+- Automatical retries of a Deployment and/or Stage
+- Dry Run operation support
+- Async operations built-in
+- Web Hook registration to receive only relevant deployment events
+- Client SDK (Go, C#, Python) 
+
+A full description of each feature can be found in the [features](./docs/features.md) documentation.
+
 
 ## Contributing
 
@@ -31,6 +41,24 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
+
+### Development Setup
+
+**Prerequisites**
+- Go Version: 1.18+
+- Docker Version: v4+
+- An Azure subscription
+- Azure CLI (latest)
+- IDE that works with Go
+- Ngrok ([Create a free account](https://ngrok.com/))
+* Setup a .env file in /bin (see ./configs for the template)
+
+**Developer activities**
+
+- [Building the Docker image](./docs/docker-image.md)
+- [Running locally](./docs/run-locally.md)
+- [Client SDK usage (Go)](./docs/sdk-usage-go.md)
+
 ## Trademarks
 
 This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft 
@@ -38,3 +66,10 @@ trademarks or logos is subject to and must follow
 [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
 Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
 Any use of third-party trademarks or logos are subject to those third-party's policies.
+
+## Credits
+
+- [Ashwin Senthilkumar](https://github.com/ashsenth) (Contributor)
+- [Bob Jacobs](https://github.com/bobjac) (Author)
+- [Kevin M. Gates](https://github.com/kevinmgates) (Contributor)
+- [Kevin Hillinger](https://github.com/kevinhillinger) (Author)
