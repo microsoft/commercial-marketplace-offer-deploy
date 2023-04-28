@@ -6,8 +6,13 @@ This marketplace offer deployment manager (MODM) simplifies the deployment of co
 ## How it works
 
 - Create a `Controller` (some call it a driver--same thing) codebase that consumes the MODM client SDK
-- Build the controller into a Docker image
-- Use the start
+- Build your controller binary into a Docker image along with your managed/package app templates
+- Create the createUIDefinition.json as usual, but now have the mainTemplate.json represent the deployment of your controller + MODM (See our starter bicep templates)
+- Create your marketplace package
+
+
+<img src="" />
+
 
 ## Feature Overview
 
@@ -18,6 +23,7 @@ This marketplace offer deployment manager (MODM) simplifies the deployment of co
 - Client SDK (Go, C#, Python)
 
 A full description of each feature can be found in the [features](./docs/features.md) documentation.
+
 
 ## Contributing
 
