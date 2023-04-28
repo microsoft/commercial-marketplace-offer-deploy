@@ -25,7 +25,7 @@ type database struct {
 
 const (
 	DataDatabasePath = "./"
-	DatabaseName     = "commercial-marketplace-offer-deploy"
+	DatabaseName     = "modm"
 	DatabaseFileName = DatabaseName + ".db"
 	InMemoryDsn      = "file::memory:?cache=shared"
 )
