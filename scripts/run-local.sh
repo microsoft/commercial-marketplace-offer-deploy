@@ -25,25 +25,31 @@ function run_docker() {
       docker build . -t modm:latest -f ./build/package/Dockerfile --quiet
     fi
 
-    echo "starting NGROK"
     # start up ngrok and get address
     ngrok http 8080 > /dev/null &
-    NGROK_ID=$!
-    echo "Pid: $NGROK_ID"
+    export NGROK_ID=$!
+    echo "NGROK started: $NGROK_ID"
     sleep 2
     export PUBLIC_DOMAIN_NAME=$(curl -s localhost:4040/api/tunnels | jq '.tunnels[0].public_url' -r | sed -E 's/^\s*.*:\/\///g')
-    echo "Public Domain: $PUBLIC_DOMAIN_NAME"
+    echo "NGROK domain:  $PUBLIC_DOMAIN_NAME \n"
     
     docker compose -f ./deployments/docker-compose.standalone.yml up 
 }
 
-function kill_ngrok() {
-  kill $NGROK_ID
+function run_docker_cleanup() {
+  echo "Shutdown cleanup..."
+  # make sure ngrok is killed
+  echo "  killing ngrok"
+  kill $NGROK_ID 2>/dev/null
+
+  echo "  removing ready file in ~/tmp"
+  rm ~/tmp/ready 2>/dev/null
+  echo ""
 }
 
 
 process=$1
-echo "Target: $process"
+echo "Run: $process"
 
 case $process in
 
@@ -56,11 +62,10 @@ case $process in
     ;;
 
   docker)
-    trap kill_ngrok EXIT
+    trap run_docker_cleanup EXIT
     run_docker $2
     ;;
   *)
     echo -n "unknown"
     ;;
 esac
-
