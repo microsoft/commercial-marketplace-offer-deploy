@@ -1,14 +1,18 @@
-# Project
+# Commercial Marketplace Offer Deployment Manager (MODM)
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+This marketplace offer deployment manager (MODM) simplifies the deployment of complex managed and packaged applications for the Azure Commercial Marketplace.
 
-As the maintainer of this project, please make a few updates:
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+## How it works
+The 
+
+## Feature Overview
+
+- Deployment Dry Run
+- Simplified interaction
+- Client SDK (Go, C#, Python)
+
+## Contributing
 
 ## Developer Setup
 
