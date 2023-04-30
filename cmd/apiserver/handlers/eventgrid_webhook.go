@@ -38,7 +38,7 @@ type eventGridWebHook struct {
 // HTTP handler is the webook endpoint that receives event grid events
 // the validation middleware will handle validation requests first before this is reached
 func (h *eventGridWebHook) Handle(c echo.Context) error {
-	log.Print("Received event grid webhook request")
+	log.Debug("Received event grid webhook request")
 
 	ctx := c.Request().Context()
 
@@ -51,7 +51,7 @@ func (h *eventGridWebHook) Handle(c echo.Context) error {
 	messages := h.messageFactory.Create(ctx, matchAny, events)
 
 	if len(messages) == 0 {
-		log.Print("No messages were created to process")
+		log.Debug("No messages were created to process")
 		return c.String(http.StatusOK, "OK")
 	}
 
@@ -112,7 +112,7 @@ func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.T
 
 		if len(errors) > 0 {
 			err = utils.NewAggregateError(errors)
-			log.Printf("Failed to create event grid webhook handler: %s", err.Error())
+			log.Error("Failed to create event grid webhook handler: %s", err.Error())
 			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 		}
 

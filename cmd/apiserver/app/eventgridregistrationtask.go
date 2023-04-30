@@ -38,13 +38,13 @@ func create(options eventGridRegistrationTaskOptions) tasks.Task {
 		manager, err := subscriptionmanagement.NewEventGridManager(options.CredentialFunc(), options.ResourceGroupId)
 
 		if err != nil {
-			log.Printf("Error creating event grid manager: %v", err)
+			log.Error("Error creating event grid manager: %v", err)
 			return err
 		}
-		log.Printf("EventGrid manager created for resource group: %s", options.ResourceGroupId)
+		log.Debug("EventGrid manager created for resource group: %s", options.ResourceGroupId)
 		resourceId, err := arm.ParseResourceID(options.ResourceGroupId)
 		if err != nil {
-			log.Printf("Error parsing resource group id: %v", err)
+			log.Error("Error parsing resource group id: %v", err)
 			return err
 		}
 
@@ -52,7 +52,7 @@ func create(options eventGridRegistrationTaskOptions) tasks.Task {
 		if err != nil {
 			return err
 		}
-		log.Printf("System topic created: %s", manager.GetSystemTopicName())
+		log.Debug("System topic created: %s", manager.GetSystemTopicName())
 
 		hostname, err := os.Hostname()
 		if err != nil {
@@ -64,7 +64,7 @@ func create(options eventGridRegistrationTaskOptions) tasks.Task {
 		if err != nil {
 			return err
 		}
-		log.Printf("EventGrid subscription created: %s", *result.Name)
+		log.Debug("EventGrid subscription created: %s", *result.Name)
 
 		return nil
 	}

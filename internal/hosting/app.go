@@ -99,8 +99,8 @@ func (app *App) startServer(options *AppStartOptions) {
 			port = *options.Port
 		}
 		address := ":" + strconv.Itoa(port)
-		log.Printf("Server starting on local port %s", address)
-		log.Printf("Public domain: %s", app.config.Http.DomainName)
+		log.Debug("Server starting on local port %s", address)
+		log.Debug("Public domain: %s", app.config.Http.DomainName)
 
 		if options.ConfigureWebServer != nil {
 			options.ConfigureWebServer(app.server)
@@ -122,7 +122,7 @@ func (app *App) startTasks() {
 
 func (app *App) startServices() {
 	for _, service := range app.services {
-		log.Printf("Starting service: %s", service.GetName())
+		log.Debug("Starting service: %s", service.GetName())
 		go service.Start()
 	}
 }

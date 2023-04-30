@@ -32,12 +32,12 @@ func getResult(c echo.Context) error {
 	result := webhookValidator.Validate()
 
 	if result.Error != nil {
-		log.Printf("Web Hook validation error: %v", result.Error)
+		log.Error("Web Hook validation error: %v", result.Error)
 		return echo.NewHTTPError(http.StatusBadRequest, result.Error.Error())
 	}
 
 	if result.Handled {
-		log.Printf("Web Hook validation handled: %v", result)
+		log.Debug("Web Hook validation handled: %v", result)
 		return c.JSON(http.StatusOK, &result.Response)
 	}
 

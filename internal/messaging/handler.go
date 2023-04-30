@@ -44,7 +44,7 @@ func (h *serviceBusMessageHandler) Handle(ctx context.Context, message *azservic
 	typedMessage := reflect.New(h.messageType)
 
 	if message != nil {
-		log.Printf("unmarshaling mesage body:\n %s", string(message.Body))
+		log.Debug("unmarshaling mesage body:\n %s", string(message.Body))
 		err := json.Unmarshal(message.Body, typedMessage.Interface())
 		if err != nil {
 			return fmt.Errorf("message unmarshal failure: %w", err)

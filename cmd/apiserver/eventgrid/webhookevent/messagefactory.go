@@ -42,12 +42,12 @@ func (f *WebHookEventMessageFactory) Create(ctx context.Context, matchAny d.Look
 	result := f.filter.Filter(ctx, matchAny, eventGridEvents)
 	messages := []*events.EventHookMessage{}
 
-	log.Printf("factory received %d EventGridEvents, filtered to %d messages", len(eventGridEvents), len(result))
+	log.Debug("factory received %d EventGridEvents, filtered to %d messages", len(eventGridEvents), len(result))
 
 	for _, item := range result {
 		message, err := f.convert(item)
 		if err != nil {
-			log.Printf("failed to convert EventGridEventResource to WebHookEventMessage: %s", err.Error())
+			log.Error("failed to convert EventGridEventResource to WebHookEventMessage: %s", err.Error())
 		}
 
 		messages = append(messages, message)

@@ -49,7 +49,7 @@ func TestDeploymentEventsClient(t *testing.T) {
 	require.NoError(t, err)
 
 	result, err := client.CreateSystemTopic(context.TODO())
-	log.Printf("result:\n %v", result)
+	log.Debug("result:\n %v", result)
 
 	require.NoError(t, err)
 	assert.NotNil(t, result)

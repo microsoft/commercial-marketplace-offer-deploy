@@ -44,7 +44,7 @@ func (r *runner) Start() error {
 			err := retriedExecutor(ctx, task)
 
 			if err != nil {
-				log.Printf("task error [%s]: %v", task.Name(), err)
+				log.Errorf("task error [%s]: %v", task.Name(), err)
 			}
 		}(i)
 	}
@@ -55,9 +55,9 @@ func (r *runner) Start() error {
 type Effector func(context.Context, Task) error
 
 func executeTask(ctx context.Context, task Task) error {
-	log.Printf("Executing: %s", task.Name())
+	log.Debugf("Executing: %s", task.Name())
 	err := task.Run(ctx)
-	log.Printf("Task Completed: %s", task.Name())
+	log.Debugf("Task Completed: %s", task.Name())
 	return err
 }
 
@@ -70,7 +70,7 @@ func Retry(effector Effector, retries int, delay time.Duration) Effector {
 				return err
 			}	
 
-			log.Printf("Attempt %d failed, retrying in %v", r + 1, delay)
+			log.Debugf("Attempt %d failed, retrying in %v", r + 1, delay)
 
 			select {
 				case <- time.After(delay):
@@ -84,6 +84,6 @@ func Retry(effector Effector, retries int, delay time.Duration) Effector {
 // create a function that catches panics and logs them
 func recoverPanic() {
 	if r := recover(); r != nil {
-		log.Printf("Recovered from panic: %v", r)
+		log.Debugf("Recovered from panic: %v", r)
 	}
 }

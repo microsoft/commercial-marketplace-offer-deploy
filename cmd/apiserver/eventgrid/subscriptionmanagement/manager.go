@@ -132,7 +132,7 @@ func (c *manager) CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTo
 
 		if responseError, ok := err.(*azcore.ResponseError); ok {
 			if responseError.StatusCode == 400 && strings.Contains(err.Error(), "Only one system topic is allowed per source.") {
-				log.Print("System topic already exists for resource group")
+				log.Error("System topic already exists for resource group")
 				return nil, nil
 			}
 		} else {
@@ -146,7 +146,7 @@ func (c *manager) CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTo
 			return nil, err
 		}
 
-		log.Printf("Created system topic %s in resource group %s", c.Properties.SystemTopicName, c.Properties.ResourceGroupName)
+		log.Debug("Created system topic %s in resource group %s", c.Properties.SystemTopicName, c.Properties.ResourceGroupName)
 		return &resp.SystemTopic, nil
 	}
 	return nil, fmt.Errorf("poller response nil in Event Grid subscription manager")

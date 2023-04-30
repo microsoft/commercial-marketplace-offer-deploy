@@ -69,7 +69,7 @@ type ArmTemplateDeployer struct {
 func (armDeployer *ArmTemplateDeployer) Deploy(ad *AzureDeployment) (*AzureDeploymentResult, error) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		log.Print(err)
+		log.Error(err)
 	}
 	ctx := context.Background()
 	deploymentsClient, err := armresources.NewDeploymentsClient(ad.SubscriptionId, cred, nil)
@@ -77,7 +77,7 @@ func (armDeployer *ArmTemplateDeployer) Deploy(ad *AzureDeployment) (*AzureDeplo
 		return nil, err
 	}
 
-	log.Printf("About to Create a deployment")
+	log.Error("About to Create a deployment")
 
 	params := ad.Params["parameters"].(map[string]interface{})
 
