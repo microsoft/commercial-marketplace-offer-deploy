@@ -63,9 +63,10 @@ type EventHookDryRunMessage struct {
 // all other deployment events
 
 type EventHookDeploymentMessageBody struct {
-	ResourceId string `json:"ResourceId,omitempty"`
-	Status     string `json:"status,omitempty"`
-	Message    string `json:"message,omitempty"`
+	DeploymentId int    `json:"deploymentId,omitempty"`
+	ResourceId   string `json:"resourceId,omitempty"`
+	Status       string `json:"status,omitempty"`
+	Message      string `json:"message,omitempty"`
 }
 
 func (m *EventHookMessage) SetSubject(deploymentId int, stageId *uuid.UUID, resourceName *string) {
