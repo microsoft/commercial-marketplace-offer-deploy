@@ -25,8 +25,8 @@ jobs:
       with:
         go-version: 1.19
 
-    - name: Build API Server & Operator
-      run: make apiserver && make operator
+    - name: Build binaries
+      run: make build
     
     - name: Echo secrets
       run: |

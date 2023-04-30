@@ -8,11 +8,10 @@ clean:
 	rm -rf bin
 	mkdir -p bin
 
-apiserver:
+build:
 	go build -o ./bin/ ./cmd/apiserver
-
-operator:
 	go build -o ./bin/ ./cmd/operator
+	make tools
 
 apiserver-local:
 	./scripts/run-local.sh apiserver
@@ -46,4 +45,4 @@ assemble: apiserver operator
 
 .NOTPARALLEL:
 
-.PHONY: run run-testharness apiserver-local operator-local apiserver sdk operator test-all generate tools
+.PHONY: build run run-testharness apiserver-local operator-local sdk test-all generate tools
