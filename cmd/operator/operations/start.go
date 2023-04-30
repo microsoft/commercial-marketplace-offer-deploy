@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
+	"github.com/avast/retry-go"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
@@ -14,6 +16,19 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"gorm.io/gorm"
 )
+
+// RetriableError is a custom error that contains a positive duration for the next retry
+type RetriableError struct {
+	Err        error
+	RetryAfter time.Duration
+}
+
+// Error returns error message and a Retry-After duration
+func (e *RetriableError) Error() string {
+	return fmt.Sprintf("%s (retry after %v)", e.Err.Error(), e.RetryAfter)
+}
+
+const defaultRetryCount = 3
 
 type startDeployment struct {
 	db *gorm.DB
@@ -26,19 +41,28 @@ func (exe *startDeployment) Execute(ctx context.Context, operation *data.Invoked
 	}
 
 	azureDeployment := exe.mapAzureDeployment(deployment, operation)
-
-	go func() {
-		_, err := exe.deploy(ctx, azureDeployment)
-		if err != nil {
-			log.Error("Error calling deployment.Create: ", err)
-			err = exe.updateToFailed(ctx, operation, err)
-
-			if err != nil {
-				log.Error("Error updating Deployment to failed: ", err)
-			}
-		}
-	}()
+	exe.executeAsync(ctx, operation, azureDeployment)
 	return nil
+}
+
+func (exe *startDeployment) executeAsync(ctx context.Context, operation *data.InvokedOperation, azureDeployment *deployment.AzureDeployment) {
+	go func() {
+		retry.Do(func() error {
+			_, err := exe.deploy(ctx, azureDeployment)
+			if err != nil {
+				log.Error("Error calling deployment.Create: ", err)
+				err = exe.updateToFailed(ctx, operation, err)
+
+				if err != nil {
+					log.Error("Error updating Deployment to failed: ", err)
+				}
+
+			}
+			return &RetriableError{Err: err, RetryAfter: 10 * time.Second}
+		},
+			retry.Attempts(defaultRetryCount),
+			retry.DelayType(backOffRetryHandler))
+	}()
 }
 
 func (exe *startDeployment) updateToRunning(ctx context.Context, operation *data.InvokedOperation) (*data.Deployment, error) {
@@ -99,6 +123,15 @@ func (p *startDeployment) mapAzureDeployment(d *data.Deployment, io *data.Invoke
 
 func (p *startDeployment) deploy(ctx context.Context, azureDeployment *deployment.AzureDeployment) (*deployment.AzureDeploymentResult, error) {
 	return deployment.Create(*azureDeployment)
+}
+
+func backOffRetryHandler(n uint, err error, config *retry.Config) time.Duration {
+	fmt.Println("Deployment failed with: " + err.Error())
+	if retriable, ok := err.(*RetriableError); ok {
+		fmt.Printf("Retry after %v\n", retriable.RetryAfter)
+		return retriable.RetryAfter
+	}
+	return retry.BackOffDelay(n, err, config)
 }
 
 //region factory
