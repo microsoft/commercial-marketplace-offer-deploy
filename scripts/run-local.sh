@@ -35,8 +35,10 @@ function run_testharness() {
 
     # the paths are going to be relative to the ./tools dir but the execution is always from the root of the repo dir
     if [ "$arg_build" = "build" ]  || [ "$arg_build" = "true" ]; then
-      build_image modm ../build/package/Dockerfile
-      build_image testharness ../build/package/Dockerfile.testharness
+      pushd ../
+      build_image modm ./build/package/Dockerfile
+      build_image testharness ./build/package/Dockerfile.testharness
+      popd
     fi
 
     start_ngrok_background
