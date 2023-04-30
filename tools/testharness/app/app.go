@@ -89,7 +89,7 @@ func getCallback() string {
 
 func AddRoutes(e *echo.Echo) {
 	e.GET("/", func(ctx echo.Context) error {
-		return ctx.String(http.StatusOK, "Ingress Agent Up.")
+		return ctx.String(http.StatusOK, "Test Harness Up.")
 	})
 	e.GET("/createdeployment", CreateDeployment)
 	e.GET("/startdeployment/:deploymentId", StartDeployment)
@@ -273,7 +273,7 @@ func loadEnvironmentVariables() *viper.Viper {
 
 	err := env.ReadInConfig()
 	if err != nil {
-		log.Fatal(err)
+		log.Errorf("Error reading config file, %s", err)
 	}
 	return env
 }

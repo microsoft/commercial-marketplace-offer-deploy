@@ -36,4 +36,4 @@ jobs:
       run: cat ./bin/.env
 
     # - name: Run tests
-    # run: make test-all
+    # run: make test

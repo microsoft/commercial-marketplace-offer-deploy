@@ -13,6 +13,9 @@ echo "Ingress Agent built"
 # example usage: ./testharness
 #
 go build -o ./bin/ ./tools/testharness
-cp -n ./test/testdata/taggeddeployment/mainTemplateBicep.json ./bin/mainTemplateBicep.json
-cp -n ./test/testdata/taggeddeployment/parametersBicep.json ./bin/parametersBicep.json
+
+mkdir -p ./bin/template/
+cp -n ./test/testdata/taggeddeployment/mainTemplateBicep.json ./bin/template/mainTemplateBicep.json
+cp -n ./test/testdata/taggeddeployment/parametersBicep.json ./bin/template/parametersBicep.json
+
 echo "Test Harness built"

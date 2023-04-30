@@ -79,7 +79,7 @@ func (b *AppBuilder) Build(configure ConfigureEchoFunc) *App {
 		log.Printf("Body:\n %v\n", string(reqBody))
 	}))
 
-	loggingConfig := b.app.config.GetLoggingOptions()
+	loggingConfig := b.app.config.GetLoggingOptions(b.app.name)
 	logger.ConfigureLogging(loggingConfig)
 
 	if configure != nil {
