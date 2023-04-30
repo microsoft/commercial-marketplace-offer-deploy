@@ -1,4 +1,4 @@
-package events
+package hook
 
 import (
 	"encoding/json"
@@ -40,9 +40,9 @@ func TestPublisherPublish(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func getPublisher(url string) EventHookPublisher {
+func getPublisher(url string) Publisher {
 	provider := newFakProvider(url)
-	publisher := NewWebHookPublisher(provider)
+	publisher := NewEventHookPublisher(provider)
 	return publisher
 }
 

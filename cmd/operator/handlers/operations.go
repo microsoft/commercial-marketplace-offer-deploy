@@ -17,7 +17,7 @@ type operationMessageHandler struct {
 	factory  ops.DeploymentOperationFactory
 }
 
-func (h *operationMessageHandler) Handle(message *messaging.InvokedOperationMessage, context messaging.MessageHandlerContext) error {
+func (h *operationMessageHandler) Handle(message *messaging.ExecuteInvokedOperation, context messaging.MessageHandlerContext) error {
 	db := h.database.Instance()
 	var invokedOperation *data.InvokedOperation
 	db.First(&invokedOperation, uuid.MustParse(message.OperationId))
@@ -42,7 +42,7 @@ func (h *operationMessageHandler) Handle(message *messaging.InvokedOperationMess
 		log.Debug("Pulled the operation - Operation: %v", string(operationJson))
 	}
 
-	return operation.Invoke(invokedOperation)
+	return operation.Execute(context.Context(), invokedOperation)
 }
 
 func NewOperationsMessageHandler(appConfig *config.AppConfig) *operationMessageHandler {

@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/diagnostics"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	logger "github.com/microsoft/commercial-marketplace-offer-deploy/internal/log"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/tasks"
 )
@@ -81,6 +82,9 @@ func (b *AppBuilder) Build(configure ConfigureEchoFunc) *App {
 
 	loggingConfig := b.app.config.GetLoggingOptions(b.app.name)
 	logger.ConfigureLogging(loggingConfig)
+
+	// configure event hook subsystem
+	hook.Configure(b.app.config)
 
 	if configure != nil {
 		configure(b.app.server)

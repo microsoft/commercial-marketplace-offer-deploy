@@ -3,6 +3,7 @@ package operations
 import (
 	"context"
 	"time"
+
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
@@ -10,19 +11,19 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
-	"gorm.io/gorm"
 	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
-type dryRunOperation struct {
-	db      *gorm.DB
-	process DryRunProcessorFunc
-	sender  messaging.MessageSender
+type dryRun struct {
+	db     *gorm.DB
+	dryRun DryRunFunc
+	sender messaging.MessageSender
 }
 
-func (h *dryRunOperation) Invoke(operation *data.InvokedOperation) error {
+func (exe *dryRun) Execute(ctx context.Context, operation *data.InvokedOperation) error {
 	log.Debug("Inside Invoke for DryRun with an operation of %v", *operation)
-	azureDeployment := h.getAzureDeployment(operation)
+	azureDeployment := exe.getAzureDeployment(operation)
 	response := deployment.DryRun(azureDeployment)
 	log.Debug("DryRun response is %v", *response)
 
@@ -30,20 +31,20 @@ func (h *dryRunOperation) Invoke(operation *data.InvokedOperation) error {
 	operation.Result = response.DryRunResult
 	operation.UpdatedAt = time.Now().UTC()
 
-	err := h.save(operation)
+	err := exe.save(operation)
 	if err != nil {
 		return err
 	}
 
-	eventMsg := h.mapWebHookEventMessage(operation, &response.DryRunResult)
-	_ = h.sendEvent(eventMsg)
+	eventMsg := exe.mapToEventHookMessage(operation, &response.DryRunResult)
+	_ = exe.sendEvent(eventMsg)
 
 	return nil
 }
 
-func (o *dryRunOperation) sendEvent(eventMessage *events.EventHookMessage) error {
+func (exe *dryRun) sendEvent(eventMessage *events.EventHookMessage) error {
 	ctx := context.TODO()
-	results, err := o.sender.Send(ctx, string(messaging.QueueNameEvents), *eventMessage)
+	results, err := exe.sender.Send(ctx, string(messaging.QueueNameEvents), *eventMessage)
 	if err != nil {
 		log.Error("Error sending event message: %v", err)
 		return err
@@ -63,7 +64,7 @@ func (o *dryRunOperation) sendEvent(eventMessage *events.EventHookMessage) error
 	return nil
 }
 
-func (h *dryRunOperation) mapWebHookEventMessage(operation *data.InvokedOperation, dryRunResult *deployment.DryRunResult) *events.EventHookMessage {
+func (exe *dryRun) mapToEventHookMessage(operation *data.InvokedOperation, dryRunResult *deployment.DryRunResult) *events.EventHookMessage {
 	eventType := "DryRunResult"
 	return &events.EventHookMessage{
 		Id:        uuid.New(),
@@ -73,9 +74,9 @@ func (h *dryRunOperation) mapWebHookEventMessage(operation *data.InvokedOperatio
 	}
 }
 
-func (h *dryRunOperation) getAzureDeployment(operation *data.InvokedOperation) *deployment.AzureDeployment {
+func (exe *dryRun) getAzureDeployment(operation *data.InvokedOperation) *deployment.AzureDeployment {
 	retrieved := &data.Deployment{}
-	h.db.First(&retrieved, operation.DeploymentId)
+	exe.db.First(&retrieved, operation.DeploymentId)
 
 	return &deployment.AzureDeployment{
 		SubscriptionId:    retrieved.SubscriptionId,
@@ -87,8 +88,8 @@ func (h *dryRunOperation) getAzureDeployment(operation *data.InvokedOperation) *
 	}
 }
 
-func (h *dryRunOperation) save(operation *data.InvokedOperation) error {
-	tx := h.db.Begin()
+func (exe *dryRun) save(operation *data.InvokedOperation) error {
+	tx := exe.db.Begin()
 	tx.Save(&operation)
 
 	if tx.Error != nil {
@@ -102,7 +103,7 @@ func (h *dryRunOperation) save(operation *data.InvokedOperation) error {
 
 //region factory
 
-func NewDryRunProcessor(appConfig *config.AppConfig) DeploymentOperation {
+func NewDryRunExecutor(appConfig *config.AppConfig) Executor {
 	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
 	credential := hosting.GetAzureCredential()
 	sender, _ := messaging.NewServiceBusMessageSender(credential, messaging.MessageSenderOptions{
@@ -112,10 +113,10 @@ func NewDryRunProcessor(appConfig *config.AppConfig) DeploymentOperation {
 		FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
 	})
 
-	dryRunOperation := &dryRunOperation{
-		db:      db,
-		process: deployment.DryRun,
-		sender:  sender,
+	dryRunOperation := &dryRun{
+		db:     db,
+		dryRun: deployment.DryRun,
+		sender: sender,
 	}
 	return dryRunOperation
 }

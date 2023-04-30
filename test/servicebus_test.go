@@ -123,7 +123,7 @@ func (s *serviceBusSuite) TestOperationsSendSuccess() {
 	var invokedOperation data.InvokedOperation
 	s.db.Instance().First(&invokedOperation, s.invokedOperationId)
 
-	message := &messaging.InvokedOperationMessage{
+	message := &messaging.ExecuteInvokedOperation{
 		OperationId: invokedOperation.ID.String(),
 	}
 	s.sendTestMessage(s.operationsQueueName, message)
@@ -220,7 +220,7 @@ func (h *testHandler) Handle(message *testMessage, context messaging.MessageHand
 type testOperationsHandler struct {
 }
 
-func (h *testOperationsHandler) Handle(message *messaging.InvokedOperationMessage, context messaging.MessageHandlerContext) error {
+func (h *testOperationsHandler) Handle(message *messaging.ExecuteInvokedOperation, context messaging.MessageHandlerContext) error {
 	log.Printf("Handling invoked operation message [%s]", message.OperationId)
 	return nil
 }

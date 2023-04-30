@@ -3,14 +3,14 @@ package handlers
 import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	e "github.com/microsoft/commercial-marketplace-offer-deploy/internal/events"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"gorm.io/gorm"
 )
 
 type eventsMessageHandler struct {
-	publisher e.EventHookPublisher
+	publisher hook.Publisher
 }
 
 func (h *eventsMessageHandler) Handle(message *events.EventHookMessage, context messaging.MessageHandlerContext) error {
@@ -28,9 +28,9 @@ func NewEventsMessageHandler(appConfig *config.AppConfig) *eventsMessageHandler 
 	}
 }
 
-func newWebHookPublisher(db *gorm.DB) e.EventHookPublisher {
-	subscriptionsProvider := e.NewEventHooksProvider(db)
-	publisher := e.NewWebHookPublisher(subscriptionsProvider)
+func newWebHookPublisher(db *gorm.DB) hook.Publisher {
+	subscriptionsProvider := hook.NewEventHooksProvider(db)
+	publisher := hook.NewEventHookPublisher(subscriptionsProvider)
 	return publisher
 }
 
