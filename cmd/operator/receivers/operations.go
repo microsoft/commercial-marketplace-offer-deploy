@@ -1,61 +1,16 @@
 package receivers
 
 import (
-	"encoding/json"
-
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
-	"github.com/google/uuid"
-	ops "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/operations"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/handlers"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
 )
 
-type operationMessageHandler struct {
-	database data.Database
-	factory  ops.DeploymentOperationFactory
-}
-
-func (h *operationMessageHandler) Handle(message *messaging.InvokedOperationMessage, context messaging.MessageHandlerContext) error {
-	db := h.database.Instance()
-	var invokedOperation *data.InvokedOperation
-	db.First(&invokedOperation, uuid.MustParse(message.OperationId))
-
-	log.Debug("operation id: %s", message.OperationId)
-	log.Debug("Invoked Operation from DB: %v", invokedOperation)
-
-	operationType, err := operations.Type(invokedOperation.Name)
-	if err != nil {
-		log.Error("Error getting operation type: ", err)
-	}
-
-	operation, err := h.factory.Create(operationType)
-	if err != nil {
-		log.Error("Error creating operation: ", err)
-		return err
-	}
-	operationJson, err := json.Marshal(operation)
-	if err != nil {
-		log.Error("Error marshalling operation: ", err)
-	} else {
-		log.Debug("Pulled the operation - Operation: %v", string(operationJson))
-	}
-	
-	return operation.Invoke(invokedOperation)
-}
-
-//region factory
-
 func NewOperationsMessageReceiver(appConfig *config.AppConfig, credential azcore.TokenCredential) messaging.MessageReceiver {
-	db := data.NewDatabase(appConfig.GetDatabaseOptions())
-
-	handler := &operationMessageHandler{
-		database: db,
-		factory:  ops.NewDeploymentOperationFactory(appConfig),
-	}
+	handler := handlers.NewOperationsMessageHandler(appConfig)
 
 	options := messaging.ServiceBusMessageReceiverOptions{
 		MessageReceiverOptions:  messaging.MessageReceiverOptions{QueueName: string(messaging.QueueNameOperations)},
@@ -67,5 +22,3 @@ func NewOperationsMessageReceiver(appConfig *config.AppConfig, credential azcore
 	}
 	return receiver
 }
-
-//endregion receiver factory
