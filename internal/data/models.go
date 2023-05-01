@@ -31,13 +31,16 @@ type Stage struct {
 
 type Deployment struct {
 	gorm.Model
-	Name           string         `json:"name"`
-	SubscriptionId string         `json:"subscriptionId"`
-	ResourceGroup  string         `json:"resourceGroup"`
-	Location       string         `json:"location"`
-	Status         string         `json:"status"`
-	Template       map[string]any `json:"template" gorm:"json"`
-	Stages         []Stage        `json:"stages" gorm:"json"`
+	Name     string         `json:"name"`
+	Status   string         `json:"status"`
+	Retries  int            `json:"retries"`
+	Template map[string]any `json:"template" gorm:"json"`
+	Stages   []Stage        `json:"stages" gorm:"json"`
+
+	// azure properties
+	SubscriptionId string `json:"subscriptionId"`
+	ResourceGroup  string `json:"resourceGroup"`
+	Location       string `json:"location"`
 }
 
 type EventHook struct {
@@ -51,6 +54,7 @@ type InvokedOperation struct {
 	BaseWithGuidPrimaryKey
 	Name         string         `json:"name"`
 	DeploymentId uint           `json:"deploymentId"`
+	Attempts     int            `json:"attempts"`
 	Parameters   map[string]any `json:"parameters" gorm:"json"`
 	Result       any            `json:"result" gorm:"json"`
 	Status       string         `json:"status"`
