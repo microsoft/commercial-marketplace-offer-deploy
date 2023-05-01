@@ -25,6 +25,10 @@ type DryRunResponse struct {
 	Status  string
 }
 
+type StartOptions struct {
+	Retries int
+}
+
 type StartDeploymentResponse struct {
 	Id     uuid.UUID
 	Status string

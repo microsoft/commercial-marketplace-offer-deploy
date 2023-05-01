@@ -33,7 +33,6 @@ type Deployment struct {
 	gorm.Model
 	Name     string         `json:"name"`
 	Status   string         `json:"status"`
-	Retries  int            `json:"retries"`
 	Template map[string]any `json:"template" gorm:"json"`
 	Stages   []Stage        `json:"stages" gorm:"json"`
 
@@ -54,6 +53,7 @@ type InvokedOperation struct {
 	BaseWithGuidPrimaryKey
 	Name         string         `json:"name"`
 	DeploymentId uint           `json:"deploymentId"`
+	Retries      int            `json:"retries"`
 	Attempts     int            `json:"attempts"`
 	Parameters   map[string]any `json:"parameters" gorm:"json"`
 	Result       any            `json:"result" gorm:"json"`

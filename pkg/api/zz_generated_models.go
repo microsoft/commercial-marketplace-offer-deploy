@@ -148,6 +148,7 @@ type InvokeDeploymentOperationRequest struct {
 
 	// Anything
 	Parameters any `json:"parameters,omitempty"`
+	Retries *int32 `json:"retries,omitempty"`
 
 	// whether the call wants to wait for the operation or if the result of the invocation will be received async from an event
 // susbscription

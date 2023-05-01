@@ -256,7 +256,7 @@ func StartDeployment(c echo.Context) error {
 
 	// TODO: properly construct the startdeployment params
 	// create
-	res, err := client.Start(ctx, deploymentId, paramsMap)
+	res, err := client.Start(ctx, deploymentId, paramsMap, nil)
 	if err != nil {
 		log.Println(err)
 	}

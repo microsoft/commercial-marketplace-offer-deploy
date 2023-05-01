@@ -9,10 +9,15 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
 )
 
+// DefaultRetries is the default number of retries for an operation against a deployment
+// default is 3
+const DefaultRetries = 3
+
 // Performs a dry run of a deployment and returns the verification results
 // returns: verification results
 func (client *Client) DryRun(ctx context.Context, deploymentId int, templateParameters map[string]interface{}) (*DryRunResponse, error) {
-	response, err := client.invokeDeploymentOperation(ctx, true, operations.OperationDryRun, deploymentId, templateParameters)
+	retries := DefaultRetries
+	response, err := client.invokeDeploymentOperation(ctx, true, operations.OperationDryRun, deploymentId, templateParameters, retries)
 	if err != nil {
 		return nil, err
 	}
@@ -29,8 +34,12 @@ func (client *Client) DryRun(ctx context.Context, deploymentId int, templatePara
 //	id: deployment id
 //
 // returns: the unique UUID of the deployment execution instance
-func (client *Client) Start(ctx context.Context, deploymentId int, templateParameters map[string]interface{}) (*StartDeploymentResponse, error) {
-	response, err := client.invokeDeploymentOperation(ctx, false, operations.OperationStartDeployment, deploymentId, templateParameters)
+func (client *Client) Start(ctx context.Context, deploymentId int, templateParameters map[string]interface{}, options *StartOptions) (*StartDeploymentResponse, error) {
+	retries := DefaultRetries
+	if options != nil {
+		retries = options.Retries
+	}
+	response, err := client.invokeDeploymentOperation(ctx, false, operations.OperationStartDeployment, deploymentId, templateParameters, retries)
 	if err != nil {
 		return nil, err
 	}
@@ -45,11 +54,13 @@ func (client *Client) Start(ctx context.Context, deploymentId int, templateParam
 //	id: deployment id
 func (client *Client) Retry(ctx context.Context, deploymentId int, options *RetryOptions) (*RetryResponse, error) {
 	operation := operations.OperationRetryDeployment
+
+	// if we have a stageId set, then we want to retry a stage of the deployment
 	if options != nil && options.StageId != uuid.Nil {
 		operation = operations.OperationRetryStage
 	}
-
-	resp, err := client.invokeDeploymentOperation(ctx, false, operation, deploymentId, nil)
+	retries := 0 // we don't want to retry a retry.
+	resp, err := client.invokeDeploymentOperation(ctx, false, operation, deploymentId, nil, retries)
 	if err != nil {
 		return nil, err
 	}
@@ -102,11 +113,12 @@ func (client *Client) List(ctx context.Context) (*ListResponse, error) {
 
 // invoke a deployment operation with parameters
 func (client *Client) invokeDeploymentOperation(ctx context.Context, wait bool, operationType operations.OperationType,
-	deploymentId int, parameters map[string]interface{}) (*api.InvokedDeploymentOperationResponse, error) {
+	deploymentId int, parameters map[string]interface{}, retries int) (*api.InvokedDeploymentOperationResponse, error) {
 
 	request := api.InvokeDeploymentOperationRequest{
 		Name:       to.Ptr(operationType.String()),
 		Parameters: parameters,
+		Retries:    to.Ptr(int32(retries)),
 		Wait:       &wait,
 	}
 

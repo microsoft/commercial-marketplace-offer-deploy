@@ -8,7 +8,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/avast/retry-go"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
@@ -29,8 +28,6 @@ func (e *RetriableError) Error() string {
 	return fmt.Sprintf("%s (retry after %v)", e.Err.Error(), e.RetryAfter)
 }
 
-const defaultRetryCount = 3
-
 type startDeployment struct {
 	db *gorm.DB
 }
@@ -41,31 +38,15 @@ func (exe *startDeployment) Execute(ctx context.Context, operation *data.Invoked
 		return err
 	}
 
-	// TODO: need to update the invoked operation state
-
 	azureDeployment := exe.mapAzureDeployment(deployment, operation)
-	exe.executeAsync(ctx, operation, azureDeployment)
-	return nil
-}
+	result, err := exe.deploy(ctx, azureDeployment)
 
-func (exe *startDeployment) executeAsync(ctx context.Context, operation *data.InvokedOperation, azureDeployment *deployment.AzureDeployment) {
-	go func() {
-		retry.Do(func() error {
-			_, err := exe.deploy(ctx, azureDeployment)
-			if err != nil {
-				log.Error("Error calling deployment.Create: ", err)
-				err = exe.updateToFailed(ctx, operation, err)
-
-				if err != nil {
-					log.Error("Error updating Deployment to failed: ", err)
-				}
-
-			}
-			return &RetriableError{Err: err, RetryAfter: 10 * time.Second}
-		},
-			retry.Attempts(defaultRetryCount),
-			retry.DelayType(backOffRetryHandler))
-	}()
+	// if we waited this long, then we can assume we have the results, so we'll update the invoked operation results with it
+	if err == nil {
+		operation.Result = result
+		exe.db.Save(operation)
+	}
+	return err
 }
 
 func (exe *startDeployment) updateToRunning(ctx context.Context, operation *data.InvokedOperation) (*data.Deployment, error) {
