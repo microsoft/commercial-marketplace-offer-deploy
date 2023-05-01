@@ -3,26 +3,25 @@ package operations
 import (
 	"context"
 
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"gorm.io/gorm"
 )
 
 type retryStage struct {
-	db            *gorm.DB
-	hookPublisher hook.Publisher
+	db *gorm.DB
 }
 
-func (r *retryStage) Invoke(ctx context.Context, operation *data.InvokedOperation) error {
+func (r *retryStage) Execute(ctx context.Context, operation *data.InvokedOperation) error {
 	return nil
 }
 
 //region factory
 
-func NewRetryStage(db *gorm.DB, hookPublisher hook.Publisher) *retryStage {
+func NewRetryStageExecutor(appConfig *config.AppConfig) Executor {
+	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
 	return &retryStage{
-		db:            db,
-		hookPublisher: hookPublisher,
+		db: db,
 	}
 }
 

@@ -139,12 +139,12 @@ func backOffRetryHandler(n uint, err error, config *retry.Config) time.Duration 
 
 //region factory
 
-func NewStartDeploymentOperation(appConfig *config.AppConfig) Executor {
+func NewStartDeploymentExecutor(appConfig *config.AppConfig) Executor {
 	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
-	dryRunOperation := &startDeployment{
+	executor := &startDeployment{
 		db: db,
 	}
-	return dryRunOperation
+	return executor
 }
 
 //endregion factory

@@ -14,7 +14,7 @@ import (
 
 type operationMessageHandler struct {
 	database data.Database
-	factory  ops.DeploymentOperationFactory
+	factory  ops.ExecutorFactory
 }
 
 func (h *operationMessageHandler) Handle(message *messaging.ExecuteInvokedOperation, context messaging.MessageHandlerContext) error {
@@ -48,6 +48,6 @@ func (h *operationMessageHandler) Handle(message *messaging.ExecuteInvokedOperat
 func NewOperationsMessageHandler(appConfig *config.AppConfig) *operationMessageHandler {
 	return &operationMessageHandler{
 		database: data.NewDatabase(appConfig.GetDatabaseOptions()),
-		factory:  ops.NewDeploymentOperationFactory(appConfig),
+		factory:  ops.NewExecutorFactory(appConfig),
 	}
 }
