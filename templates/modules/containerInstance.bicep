@@ -81,7 +81,7 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
     imageRegistryCredentials: [
       {
         password: '<placeholderRegistryPassword>'
-        server: 'ghcr.io/gpsuscodewith'
+        server: 'ghcr.io'
         username: 'gpsuscodewith'
       }
     ] 
