@@ -78,6 +78,13 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
     type: 'SystemAssigned'
   }
   properties: {
+    imageRegistryCredentials: [
+      {
+        password: '<placeholderRegistryPassword>'
+        server: 'ghcr.io/gpsuscodewith'
+        username: 'gpsuscodewith'
+      }
+    ] 
     volumes: [
       {
         name: sharedVolumeName
