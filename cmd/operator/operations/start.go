@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/avast/retry-go"
 	log "github.com/sirupsen/logrus"
 
@@ -40,6 +41,8 @@ func (exe *startDeployment) Execute(ctx context.Context, operation *data.Invoked
 		return err
 	}
 
+	// TODO: need to update the invoked operation state
+
 	azureDeployment := exe.mapAzureDeployment(deployment, operation)
 	exe.executeAsync(ctx, operation, azureDeployment)
 	return nil
@@ -70,15 +73,14 @@ func (exe *startDeployment) updateToRunning(ctx context.Context, operation *data
 
 	deployment := &data.Deployment{}
 	db.First(&deployment, operation.DeploymentId)
-	deployment.Status = string(events.EventTypeRunning)
+	deployment.Status = events.StatusRunning.String()
 	db.Save(deployment)
 
 	err := hook.Add(&events.EventHookMessage{
-		Subject:   "/deployments/" + strconv.Itoa(int(deployment.ID)),
-		EventType: events.EventTypeRunning.String(),
-		Body: &events.EventHookDeploymentEventMessageBody{
+		Subject: "/deployments/" + strconv.Itoa(int(deployment.ID)),
+		Status:  deployment.Status,
+		Data: &events.DeploymentEventData{
 			DeploymentId: int(deployment.ID),
-			Status:       "Success",
 			Message:      "Deployment started successfully",
 		},
 	})
@@ -93,15 +95,16 @@ func (exe *startDeployment) updateToFailed(ctx context.Context, operation *data.
 
 	deployment := &data.Deployment{}
 	db.First(&deployment, operation.DeploymentId)
-	deployment.Status = string(events.EventTypeFailed)
+	deployment.Status = string(events.StatusFailed)
 	db.Save(deployment)
 
 	err = hook.Add(&events.EventHookMessage{
-		Subject:   "/deployments/" + strconv.Itoa(int(deployment.ID)),
-		EventType: events.EventTypeFailed.String(),
-		Body: &events.EventHookDeploymentEventMessageBody{
+		Subject: "/deployments/" + strconv.Itoa(int(deployment.ID)),
+		Status:  events.StatusFailed.String(),
+		Type:    string(events.EventTypeDeploymentCompleted),
+		Data: &events.DeploymentEventData{
 			DeploymentId: int(deployment.ID),
-			Status:       "Failed",
+			OperationId:  to.Ptr(operation.ID.String()),
 			Message:      fmt.Sprintf("Azure Deployment failed. Result: %s", err.Error()),
 		},
 	})

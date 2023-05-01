@@ -17,9 +17,9 @@ import (
 
 func TestPublisherPublish(t *testing.T) {
 	message := &EventHookMessage{
-		Id:        uuid.New(),
-		EventType: "test.event",
-		Body:      make(map[string]any),
+		Id:   uuid.New(),
+		Type: "test.event",
+		Data: make(map[string]any),
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -65,19 +65,14 @@ func (f *WebHookEventMessageFactory) convert(item *eg.EventGridEventResource) (*
 	}
 
 	messageId, _ := uuid.Parse(*item.Message.ID)
-
 	eventData := eg.ResourceEventData{}
 	mapstructure.Decode(item.Message.Data, &eventData)
 
 	message := &events.EventHookMessage{
-		Id:        messageId,
-		HookId:    [16]byte{},
-		EventType: *item.Message.EventType,
-		Body: events.EventHookDeploymentMessageBody{
-			ResourceId: *item.Resource.ID,
-			Status:     eventData.Status,
-			Message:    eventData.OperationName,
-		},
+		Id:     messageId,
+		Status: events.StatusAccepted.String(),
+		Type:   string(events.EventTypeDeploymentAzureEventReceived),
+		Data:   eventData,
 	}
 
 	var stageId uuid.UUID
@@ -85,7 +80,7 @@ func (f *WebHookEventMessageFactory) convert(item *eg.EventGridEventResource) (*
 		value := *item.Tags[d.LookupTagKeyStageId]
 		stageId, _ = uuid.Parse(value)
 	}
-	message.SetSubject(int(deployment.ID), &stageId, item.Resource.Name)
+	message.SetSubject(int(deployment.ID), &stageId)
 
 	return message, nil
 }

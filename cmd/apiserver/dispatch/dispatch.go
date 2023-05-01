@@ -59,13 +59,15 @@ func (p *dispatcher) save(ctx context.Context, c *DispatchInvokedOperation) (uui
 
 	deployment := &data.Deployment{}
 	tx.First(&deployment, c.DeploymentId)
-	deployment.Status = events.EventTypeAccepted.String()
+
+	// TODO: update deployment status depending on what the operation is
+	deployment.Status = string(events.StatusScheduled)
 	tx.Save(deployment)
 
 	invokedOperation := &data.InvokedOperation{
 		DeploymentId: uint(c.DeploymentId),
 		Name:         *c.Request.Name,
-		Status:       events.EventTypeAccepted.String(),
+		Status:       events.StatusAccepted.String(),
 		Parameters:   c.Request.Parameters.(map[string]interface{}),
 	}
 	tx.Save(invokedOperation)
@@ -99,12 +101,12 @@ func (h *dispatcher) send(ctx context.Context, operationId uuid.UUID) error {
 
 func (h *dispatcher) addEventHook(ctx context.Context, deploymentId int, status string, operationName string) error {
 	return hook.Add(&events.EventHookMessage{
-		Id:        uuid.New(),
-		EventType: status,
-		Subject:   "/deployments/" + strconv.Itoa(deploymentId) + "/operations/" + operationName,
-		Body: &events.EventHookDeploymentMessageBody{
+		Id:      uuid.New(),
+		Status:  status,
+		Type:    string(events.EventTypeDeploymentOperationReceived),
+		Subject: "/deployments/" + strconv.Itoa(deploymentId) + "/operations/" + operationName,
+		Data: &events.DeploymentEventData{
 			DeploymentId: deploymentId,
-			Status:       "Success",
 			Message:      "Operation " + operationName + " accepted",
 		},
 	})

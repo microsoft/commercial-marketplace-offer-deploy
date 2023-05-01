@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
@@ -24,7 +24,7 @@ type dryRun struct {
 func (exe *dryRun) Execute(ctx context.Context, operation *data.InvokedOperation) error {
 	log.Debug("Inside Invoke for DryRun with an operation of %v", *operation)
 	azureDeployment := exe.getAzureDeployment(operation)
-	response := deployment.DryRun(azureDeployment)
+	response := exe.dryRun(azureDeployment)
 	log.Debug("DryRun response is %v", *response)
 
 	operation.Status = *response.Status
@@ -33,44 +33,28 @@ func (exe *dryRun) Execute(ctx context.Context, operation *data.InvokedOperation
 
 	err := exe.save(operation)
 	if err != nil {
-		return err
+		log.Errorf("Error saving dry run operation %v", err)
 	}
 
-	eventMsg := exe.mapToEventHookMessage(operation, &response.DryRunResult)
-	_ = exe.sendEvent(eventMsg)
-
-	return nil
+	hookMessage := exe.mapToEventHookMessage(&response.DryRunResult)
+	hook.Add(hookMessage)
+	return err
 }
 
-func (exe *dryRun) sendEvent(eventMessage *events.EventHookMessage) error {
-	ctx := context.TODO()
-	results, err := exe.sender.Send(ctx, string(messaging.QueueNameEvents), *eventMessage)
-	if err != nil {
-		log.Error("Error sending event message: %v", err)
-		return err
-	} else {
-		log.Debug("Event message sent successfully")
-		log.Debug("Inside sendEvent for DryRun with a results of %v", results)
-	}
+func (exe *dryRun) mapToEventHookMessage(result *deployment.DryRunResult) *events.EventHookMessage {
+	data := &events.DryRunData{Status: *result.Status}
 
-	if len(results) > 0 {
-		for _, result := range results {
-			if result.Error != nil {
-				log.Error("Error sending event message: %v", result.Error)
-				return result.Error
-			}
+	if result.Error != nil {
+		for _, info := range result.Error.AdditionalInfo {
+			data.AdditionalInfo = append(data.AdditionalInfo, events.DryRunAdditionalInfo{
+				Info: info.Info,
+				Type: *info.Type,
+			})
 		}
 	}
-	return nil
-}
-
-func (exe *dryRun) mapToEventHookMessage(operation *data.InvokedOperation, dryRunResult *deployment.DryRunResult) *events.EventHookMessage {
-	eventType := "DryRunResult"
 	return &events.EventHookMessage{
-		Id:        uuid.New(),
-		HookId:    [16]byte{},
-		EventType: eventType,
-		Body:      dryRunResult,
+		Type: string(events.EventTypeDryRunCompleted),
+		Data: data,
 	}
 }
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
@@ -60,6 +61,13 @@ func Add(message *events.EventHookMessage) error {
 		return errors.New("hook queue not configured. call Configure() first")
 	}
 	ctx := context.TODO()
+
+	if message != nil {
+		if message.Id == uuid.Nil {
+			message.Id = uuid.New()
+		}
+	}
+
 	return instance.Add(ctx, message)
 }
 
