@@ -1,39 +1,40 @@
-package operations
+package dispatch
 
 import (
 	"context"
-
-	//"time"
+	"strconv"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
-
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
-type InvokeOperationProcessor interface {
-	Process(ctx context.Context, command *InvokeOperationCommand) (uuid.UUID, error)
+// Dispatch the invoke operation to the appropriate executor implemented in the operator
+type OperatorDispatcher interface {
+	Dispatch(ctx context.Context, command *DispatchInvokedOperation) (uuid.UUID, error)
 }
 
-// start deployment operation processor
-type processor struct {
+// start deployment operation dispatcher
+type dispatcher struct {
 	db     *gorm.DB
 	sender messaging.MessageSender
 }
 
-func (h *processor) Process(ctx context.Context, command *InvokeOperationCommand) (uuid.UUID, error) {
+func (h *dispatcher) Dispatch(ctx context.Context, command *DispatchInvokedOperation) (uuid.UUID, error) {
 	err := validateOperationName(*command.Request.Name)
 	if err != nil {
 		return uuid.Nil, err
 	}
 
-	id, err := h.save(command)
+	id, err := h.save(ctx, command)
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -53,17 +54,20 @@ func validateOperationName(name string) error {
 }
 
 // save changes to the database
-func (h *processor) save(c *InvokeOperationCommand) (uuid.UUID, error) {
-	tx := h.db.Begin()
+func (p *dispatcher) save(ctx context.Context, c *DispatchInvokedOperation) (uuid.UUID, error) {
+	tx := p.db.Begin()
 
 	deployment := &data.Deployment{}
 	tx.First(&deployment, c.DeploymentId)
-	deployment.Status = events.DeploymentPendingEventType.String()
+
+	// TODO: update deployment status depending on what the operation is
+	deployment.Status = string(events.StatusScheduled)
 	tx.Save(deployment)
 
 	invokedOperation := &data.InvokedOperation{
 		DeploymentId: uint(c.DeploymentId),
 		Name:         *c.Request.Name,
+		Status:       events.StatusAccepted.String(),
 		Parameters:   c.Request.Parameters.(map[string]interface{}),
 	}
 	tx.Save(invokedOperation)
@@ -74,13 +78,15 @@ func (h *processor) save(c *InvokeOperationCommand) (uuid.UUID, error) {
 	}
 
 	tx.Commit()
+	p.addEventHook(ctx, c.DeploymentId, invokedOperation.Name, invokedOperation.Status)
 
 	return invokedOperation.ID, nil
 }
 
 // send the message on the queue
-func (h *processor) send(ctx context.Context, operationId uuid.UUID) error {
-	message := messaging.InvokedOperationMessage{OperationId: operationId.String()}
+func (h *dispatcher) send(ctx context.Context, operationId uuid.UUID) error {
+	message := messaging.ExecuteInvokedOperation{OperationId: operationId.String()}
+	log.Debug("sending message from api/operations/processor.go - message: %v", message)
 
 	results, err := h.sender.Send(ctx, string(messaging.QueueNameOperations), message)
 	if err != nil {
@@ -93,18 +99,22 @@ func (h *processor) send(ctx context.Context, operationId uuid.UUID) error {
 	return nil
 }
 
-// func getParametersMap(parameters any) map[string]any {
-// 	bytes := []byte(fmt.Sprintf("%v"))
-// 	var parametersMap map[string]any
-// 	json.Unmarshal(bytes, &parametersMap)
-
-// 	return parametersMap
-
-// }
+func (h *dispatcher) addEventHook(ctx context.Context, deploymentId int, status string, operationName string) error {
+	return hook.Add(&events.EventHookMessage{
+		Id:      uuid.New(),
+		Status:  status,
+		Type:    string(events.EventTypeDeploymentOperationReceived),
+		Subject: "/deployments/" + strconv.Itoa(deploymentId) + "/operations/" + operationName,
+		Data: &events.DeploymentEventData{
+			DeploymentId: deploymentId,
+			Message:      "Operation " + operationName + " accepted",
+		},
+	})
+}
 
 // region factory
 
-func NewInvokeOperationProcessor(appConfig *config.AppConfig, credential azcore.TokenCredential) (InvokeOperationProcessor, error) {
+func NewOperatorDispatcher(appConfig *config.AppConfig, credential azcore.TokenCredential) (OperatorDispatcher, error) {
 	errors := []string{}
 
 	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
@@ -117,7 +127,7 @@ func NewInvokeOperationProcessor(appConfig *config.AppConfig, credential azcore.
 		return nil, utils.NewAggregateError(errors)
 	}
 
-	processor := &processor{
+	processor := &dispatcher{
 		db:     db,
 		sender: sender,
 	}

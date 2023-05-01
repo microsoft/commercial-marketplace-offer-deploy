@@ -40,7 +40,7 @@ type Deployment struct {
 	Stages         []Stage        `json:"stages" gorm:"json"`
 }
 
-type EventSubscription struct {
+type EventHook struct {
 	BaseWithGuidPrimaryKey
 	Callback string `json:"callback"`
 	Name     string `json:"name" gorm:"unique"`

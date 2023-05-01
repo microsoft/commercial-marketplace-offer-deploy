@@ -15,16 +15,16 @@ import (
 func SetupResourceGroup(subscriptionId string, resourceGroupName string, location string) {
 	resp, err := CreateResourceGroup(subscriptionId, resourceGroupName, location)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	} else {
-		log.Printf("%s was created", *resp.Name)
+		log.Debugf("%s was created", *resp.Name)
 	}
 }
 
 func DoesResourceGroupExist(subscriptionId string, resourceGroupName string, location string) (bool, error) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		log.Print(err)
+		log.Error(err)
 	}
 	ctx := context.Background()
 
@@ -44,7 +44,7 @@ func DoesResourceGroupExist(subscriptionId string, resourceGroupName string, loc
 func CreateResourceGroup(subscriptionId string, resourceGroupName string, location string) (*armresources.ResourceGroup, error) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		log.Print(err)
+		log.Error(err)
 	}
 	ctx := context.Background()
 
@@ -67,15 +67,15 @@ func CreateResourceGroup(subscriptionId string, resourceGroupName string, locati
 }
 
 func DeployPolicyDefinition(subscriptionId string) {
-	log.Printf("Inside deployPolicyDefinition()")
+	log.Debug("Inside deployPolicyDefinition()")
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		log.Fatalf("failed to obtain a credential: %v", err)
+		log.Errorf("failed to obtain a credential: %v", err)
 	}
 	ctx := context.Background()
 	client, err := armpolicy.NewDefinitionsClient(subscriptionId, cred, nil)
 	if err != nil {
-		log.Fatalf("failed to create client: %v", err)
+		log.Errorf("failed to create client: %v", err)
 	}
 	_, err = client.CreateOrUpdate(ctx,
 		"ResourceNaming",
@@ -87,22 +87,6 @@ func DeployPolicyDefinition(subscriptionId string) {
 					"category": "Naming",
 				},
 				Mode: to.Ptr("All"),
-				// Parameters: map[string]*armpolicy.ParameterDefinitionsValue{
-				// 	"prefix": {
-				// 		Type: to.Ptr(armpolicy.ParameterTypeString),
-				// 		Metadata: &armpolicy.ParameterDefinitionsValueMetadata{
-				// 			Description: to.Ptr("Resource name prefix"),
-				// 			DisplayName: to.Ptr("Prefix"),
-				// 		},
-				// 	},
-				// 	"suffix": {
-				// 		Type: to.Ptr(armpolicy.ParameterTypeString),
-				// 		Metadata: &armpolicy.ParameterDefinitionsValueMetadata{
-				// 			Description: to.Ptr("Resource name suffix"),
-				// 			DisplayName: to.Ptr("Suffix"),
-				// 		},
-				// 	},
-				// },
 				PolicyRule: map[string]interface{}{
 					"if": map[string]interface{}{
 						"not": map[string]interface{}{
@@ -135,10 +119,10 @@ func DeployPolicy(subscriptionId string, resourceGroupName string) {
 	}
 
 	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", subscriptionId, resourceGroupName)
-	log.Printf("scope is %s", scope)
+	log.Debugf("scope is %s", scope)
 
 	policyDefinitionId := fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Authorization/policyDefinitions/ResourceNaming", subscriptionId)
-	log.Printf("policyDefinitionId is %s", policyDefinitionId)
+	log.Debugf("policyDefinitionId is %s", policyDefinitionId)
 
 	_, err = client.Create(ctx,
 		scope,

@@ -1,4 +1,4 @@
-package events
+package hook
 
 import (
 	"bytes"
@@ -11,11 +11,13 @@ import (
 	"time"
 
 	"github.com/avast/retry-go"
+	log "github.com/sirupsen/logrus"
 )
 
 const contentTypeJson string = "application/json"
 
-type WebHookSender interface {
+// this will do the actual sending of the hook message to the hook url / callback url that was registered
+type hookSender interface {
 	Send(ctx context.Context, data any) error
 }
 
@@ -24,7 +26,7 @@ type httpSender struct {
 	apiKey string
 }
 
-func NewMessageSender(url string, apiKey string) WebHookSender {
+func newHookSender(url string, apiKey string) hookSender {
 	sender := &httpSender{url: url, apiKey: apiKey}
 	return sender
 }
@@ -41,10 +43,18 @@ func (sender *httpSender) Send(ctx context.Context, data any) error {
 			Timeout: 30 * time.Second,
 		}
 
+		log.Debug("Sending request of %v with a sender url of %v", *request, sender.url)
 		response, err := client.Do(request)
 
 		if err != nil {
+			log.Error("Error sending event message: %v", err)
 			return err
+		}
+
+		if response != nil {
+			log.Debug("Sent event with the response of %v", *response)
+		} else {
+			log.Debug("response from client.Do(request) is nil")
 		}
 
 		defer response.Body.Close()
@@ -52,10 +62,12 @@ func (sender *httpSender) Send(ctx context.Context, data any) error {
 		body, err = io.ReadAll(response.Body)
 
 		if err != nil {
+			log.Error("Error reading response body: %v", err)
 			return err
 		}
 
 		if response.StatusCode != http.StatusOK {
+			log.Error("Error sending event message.  The response Status code was: %v", response.StatusCode)
 			return fmt.Errorf("request failed with status [%d] '%s'", response.StatusCode, string(body))
 		}
 

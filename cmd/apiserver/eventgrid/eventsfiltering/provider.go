@@ -37,7 +37,7 @@ func (m *provider) Get(ctx context.Context, events []*eventgrid.Event) eg.EventG
 		resource, err := m.resourceClient.Get(ctx, resourceId)
 
 		if err != nil {
-			log.Printf("error: %v", err)
+			log.Error("error: %v", err)
 			continue
 		}
 		result = append(result, &eg.EventGridEventResource{
@@ -55,7 +55,7 @@ func (m *provider) getResourceId(event *eventgrid.Event) (*arm.ResourceID, error
 	resourceId, err := arm.ParseResourceID(data.ResourceURI)
 
 	if err != nil {
-		log.Printf("failed to parse ResourceURI: [%s], err: %v", data.ResourceURI, err)
+		log.Error("failed to parse ResourceURI: [%s], err: %v", data.ResourceURI, err)
 		return nil, err
 	}
 

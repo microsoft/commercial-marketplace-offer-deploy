@@ -38,16 +38,16 @@ func NewWebHookEventMessageFactory(filter filtering.EventGridEventFilter, client
 }
 
 // Creates a list of WebHookEventMessage from a list of EventGridEventResource
-func (f *WebHookEventMessageFactory) Create(ctx context.Context, matchAny d.LookupTags, eventGridEvents []*eventgrid.Event) []*events.WebHookEventMessage {
+func (f *WebHookEventMessageFactory) Create(ctx context.Context, matchAny d.LookupTags, eventGridEvents []*eventgrid.Event) []*events.EventHookMessage {
 	result := f.filter.Filter(ctx, matchAny, eventGridEvents)
-	messages := []*events.WebHookEventMessage{}
+	messages := []*events.EventHookMessage{}
 
-	log.Printf("factory received %d EventGridEvents, filtered to %d messages", len(eventGridEvents), len(result))
+	log.Debug("factory received %d EventGridEvents, filtered to %d messages", len(eventGridEvents), len(result))
 
 	for _, item := range result {
 		message, err := f.convert(item)
 		if err != nil {
-			log.Printf("failed to convert EventGridEventResource to WebHookEventMessage: %s", err.Error())
+			log.Error("failed to convert EventGridEventResource to WebHookEventMessage: %s", err.Error())
 		}
 
 		messages = append(messages, message)
@@ -58,26 +58,21 @@ func (f *WebHookEventMessageFactory) Create(ctx context.Context, matchAny d.Look
 
 //region private methods
 
-func (f *WebHookEventMessageFactory) convert(item *eg.EventGridEventResource) (*events.WebHookEventMessage, error) {
+func (f *WebHookEventMessageFactory) convert(item *eg.EventGridEventResource) (*events.EventHookMessage, error) {
 	deployment, err := f.getRelatedDeployment(item)
 	if err != nil {
 		return nil, err
 	}
 
 	messageId, _ := uuid.Parse(*item.Message.ID)
-
 	eventData := eg.ResourceEventData{}
 	mapstructure.Decode(item.Message.Data, &eventData)
 
-	message := &events.WebHookEventMessage{
-		Id:             messageId,
-		SubscriptionId: [16]byte{},
-		EventType:      *item.Message.EventType,
-		Body: events.WebHookDeploymentEventMessageBody{
-			ResourceId: *item.Resource.ID,
-			Status:     eventData.Status,
-			Message:    eventData.OperationName,
-		},
+	message := &events.EventHookMessage{
+		Id:     messageId,
+		Status: events.StatusAccepted.String(),
+		Type:   string(events.EventTypeDeploymentAzureEventReceived),
+		Data:   eventData,
 	}
 
 	var stageId uuid.UUID
@@ -85,7 +80,7 @@ func (f *WebHookEventMessageFactory) convert(item *eg.EventGridEventResource) (*
 		value := *item.Tags[d.LookupTagKeyStageId]
 		stageId, _ = uuid.Parse(value)
 	}
-	message.SetSubject(int(deployment.ID), &stageId, item.Resource.Name)
+	message.SetSubject(int(deployment.ID), &stageId)
 
 	return message, nil
 }

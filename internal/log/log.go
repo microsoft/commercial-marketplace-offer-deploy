@@ -30,7 +30,7 @@ type InsightsConfig struct {
 
 func ConfigureLogging(config *LoggingOptions) {
 	logrus.SetOutput(os.Stdout)
-	logrus.SetLevel(logrus.InfoLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 	logrus.SetReportCaller(true)
 
 	formatter := &logrus.TextFormatter{

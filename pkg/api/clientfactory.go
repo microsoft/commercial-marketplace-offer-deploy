@@ -21,7 +21,7 @@ func NewDeploymentManagementClient(endpoint string, credential azcore.TokenCrede
 		return nil, err
 	}
 
-	log.Printf("options is %v", options)
+	log.Debugf("options is %v", options)
 
 	internalClient, err := azcore.NewClient(options.ClientName, options.Version, runtime.PipelineOptions{
 		PerRetry: []policy.Policy{

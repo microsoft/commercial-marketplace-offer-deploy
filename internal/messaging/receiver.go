@@ -54,7 +54,7 @@ type serviceBusReceiver struct {
 
 func (r *serviceBusReceiver) Start() {
 	fmt.Println(banner)
-	log.Printf("starting message receiver: %s", r.queueName)
+	log.Debug("starting message receiver: %s", r.queueName)
 
 	r.stopped = false
 	receiver, err := r.getQueueReceiver()
@@ -81,17 +81,17 @@ func (r *serviceBusReceiver) Start() {
 				var messages []*azservicebus.ReceivedMessage = []*azservicebus.ReceivedMessage{}
 				messages, err = receiver.ReceiveMessages(r.ctx, 1, nil)
 				if err != nil {
-					log.Printf("%s - error receiving: %v", r.queueName, err)
+					log.Errorf("%s - error receiving: %v", r.queueName, err)
 					continue
 				}
 
 				for _, message := range messages {
-					log.Printf("%s - Received message: %s\n", r.queueName, message.MessageID)
+					log.Debugf("%s - Received message: %s\n", r.queueName, message.MessageID)
 
 					err := r.handler.Handle(r.ctx, message)
 
 					if err != nil {
-						log.Println(err)
+						log.Error(err)
 					}
 					err = receiver.CompleteMessage(context.TODO(), message, nil)
 					if err != nil {
@@ -99,13 +99,13 @@ func (r *serviceBusReceiver) Start() {
 						if errors.As(err, &sbErr) && sbErr.Code == azservicebus.CodeLockLost {
 							// The message lock has expired. This isn't fatal for the client, but it does mean
 							// that this message can be received by another Receiver (or potentially this one!).
-							log.Printf("Message lock expired\n")
+							log.Debug("Message lock expired\n")
 							// You can extend the message lock by calling receiver.RenewMessageLock(msg) before the
 							// message lock has expired.
 							continue
 						}
 					}
-					log.Printf("Completed message: %s\n", message.MessageID)
+					log.Debugf("Completed message: %s\n", message.MessageID)
 				}
 			}
 		}
@@ -113,7 +113,7 @@ func (r *serviceBusReceiver) Start() {
 }
 
 func (r *serviceBusReceiver) Stop() {
-	log.Println("Stopping message receiver")
+	log.Debug("Stopping message receiver")
 
 	r.ctx.Done()
 	r.stop <- true
@@ -127,13 +127,13 @@ func (r *serviceBusReceiver) getQueueReceiver() (*azservicebus.Receiver, error) 
 	client, err := azservicebus.NewClient(r.namespace, r.credential, nil)
 	if err != nil {
 		errorMessages = append(errorMessages, err.Error())
-		log.Println("failure creating client")
+		log.Error("failure creating client")
 	}
 
 	receiver, err := client.NewReceiverForQueue(r.queueName, nil)
 	if err != nil {
 		errorMessages = append(errorMessages, err.Error())
-		log.Println("failure creating receiver")
+		log.Error("failure creating receiver")
 	}
 
 	if len(errorMessages) > 0 {

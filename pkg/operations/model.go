@@ -2,18 +2,14 @@ package operations
 
 import "fmt"
 
-type OperationResult string
-
-const (
-	OperationResultAccepted OperationResult = "Accepted"
-)
-
 type OperationType string
 
 const (
-	OperationStartDeployment OperationType = "StartDeployment"
-	OperationDryRun          OperationType = "DryRun"
-	OperationUnknown         OperationType = "Unknown"
+	OperationStartDeployment OperationType = "startDeployment"
+	OperationRetryDeployment OperationType = "retryDeployment"
+	OperationRetryStage      OperationType = "retryStage"
+	OperationDryRun          OperationType = "dryRun"
+	OperationUnknown         OperationType = "unknown"
 )
 
 // Gets the list of operations

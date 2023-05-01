@@ -11,8 +11,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/labstack/echo/v4"
-	// "github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
-	// "github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
+
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
@@ -90,50 +89,14 @@ func getCallback() string {
 
 func AddRoutes(e *echo.Echo) {
 	e.GET("/", func(ctx echo.Context) error {
-		return ctx.String(http.StatusOK, "Ingress Agent Up.")
+		return ctx.String(http.StatusOK, "Test Harness Up.")
 	})
 	e.GET("/createdeployment", CreateDeployment)
 	e.GET("/startdeployment/:deploymentId", StartDeployment)
-	e.GET("/createeventsubscription", CreateEventSubscription)
+	e.GET("/createeventhook", CreateEventHook)
 	e.GET("/dryrun/:deploymentId", DryRun)
 	e.POST("/webhook", ReceiveEventNotification)
 }
-
-// func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
-
-// 	return hosting.Routes{
-// 		hosting.Route{
-// 			Name:        "WebHookResponse",
-// 			Method:      http.MethodPost,
-// 			Path:        "/webhook",
-// 			HandlerFunc: ReceiveEventNotification,
-// 		},
-// 		hosting.Route{
-// 			Name:        "CreateDeployment",
-// 			Method:      http.MethodGet,
-// 			Path:        "/createdeployment",
-// 			HandlerFunc: CreateDeployment,
-// 		},
-// 		hosting.Route{
-// 			Name:        "StartDeployment",
-// 			Method:      http.MethodGet,
-// 			Path:        "/startdeployment/:deploymentId",
-// 			HandlerFunc: StartDeployment,
-// 		},
-// 		hosting.Route{
-// 			Name:        "CreateEventSubscription",
-// 			Method:      http.MethodGet,
-// 			Path:        "/createeventsubscription",
-// 			HandlerFunc: CreateEventSubscription,
-// 		},
-// 		hosting.Route{
-// 			Name:        "ExecuteDryRun",
-// 			Method:      http.MethodGet,
-// 			Path:        "/dryrun/:deploymentId",
-// 			HandlerFunc: DryRun,
-// 		},
-// 	}
-// }
 
 func getJsonAsMap(path string) map[string]interface{} {
 	jsonMap, err := utils.ReadJson(path)
@@ -153,10 +116,7 @@ func ReceiveEventNotification(c echo.Context) error {
 	return json
 }
 
-func CreateEventSubscription(c echo.Context) error {
-	//	templatePath := "./eventsubscription/mainTemplateBicep.json"
-	//templateMap := getJsonAsMap(templatePath)
-
+func CreateEventHook(c echo.Context) error {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		log.Println(err)
@@ -172,19 +132,19 @@ func CreateEventSubscription(c echo.Context) error {
 	apiKey := "1234"
 	callbackclientEndpoint := fmt.Sprintf("%s/webhook", getCallback())
 
-	request := api.CreateEventSubscriptionRequest{
+	request := api.CreateEventHookRequest{
 		APIKey:   &apiKey,
 		Callback: &callbackclientEndpoint,
 		Name:     &subscriptionName,
 	}
 
-	res, err := client.CreateEventSubscription(ctx, request)
+	res, err := client.CreateEventHook(ctx, request)
 	if err != nil {
 		log.Panicln(err)
 	}
 
 	json := c.JSON(http.StatusOK, res)
-	log.Printf("CreateEventSubscription response - %s", json)
+	log.Printf("Create Event Hook response - %s", json)
 	return json
 }
 
@@ -271,7 +231,6 @@ func DryRun(c echo.Context) error {
 	return json
 }
 
-
 func StartDeployment(c echo.Context) error {
 	deploymentId, err := strconv.Atoi(c.Param("deploymentId"))
 
@@ -314,7 +273,7 @@ func loadEnvironmentVariables() *viper.Viper {
 
 	err := env.ReadInConfig()
 	if err != nil {
-		log.Fatal(err)
+		log.Errorf("Error reading config file, %s", err)
 	}
 	return env
 }

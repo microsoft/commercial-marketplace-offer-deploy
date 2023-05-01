@@ -68,7 +68,7 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 			Name:        "CreatEventSubscription",
 			Method:      http.MethodPost,
 			Path:        "/events/subscriptions",
-			HandlerFunc: middleware.AddJwtBearer(hosting.ToHandlerFunc(handlers.CreateEventSubscription, databaseOptions), appConfig),
+			HandlerFunc: middleware.AddJwtBearer(hosting.ToHandlerFunc(handlers.CreateEventHook, databaseOptions), appConfig),
 		},
 
 		hosting.Route{

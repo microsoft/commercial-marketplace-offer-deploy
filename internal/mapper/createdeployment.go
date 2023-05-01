@@ -43,7 +43,7 @@ func (m *CreateDeploymentMapper) validate(from *api.CreateDeployment) error {
 	_, ok := from.Template.(map[string]any)
 	if !ok {
 		err := fmt.Errorf("invalid .Template field value. Could not cast to map[string]any for '%s'", *from.Name)
-		log.Printf("Error: %v", err)
+		log.Error(err)
 		return err
 	}
 	return nil

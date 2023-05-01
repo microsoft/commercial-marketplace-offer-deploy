@@ -38,7 +38,7 @@ func TestEventGridWebHook(t *testing.T) {
 	err = handlerFunc(c)
 	assert.NoError(t, err)
 
-	log.Print(recorder.Body.String())
+	log.Debug(recorder.Body.String())
 	assert.Equal(t, http.StatusOK, recorder.Code)
 }
 
@@ -70,7 +70,7 @@ func getHandler(t *testing.T) echo.HandlerFunc {
 			sender:         sender,
 		}
 
-		log.Print("handler: ", handler)
+		log.Debug("handler: ", handler)
 		return handler.Handle(c)
 	}
 }
@@ -80,7 +80,7 @@ func getAppConfig() *config.AppConfig {
 	name := "test"
 	config.LoadConfiguration("testdata", &name, appConfig)
 
-	log.Printf("appConfig: %+v", appConfig)
+	log.Debug("appConfig: %+v", appConfig)
 	return appConfig
 }
 
