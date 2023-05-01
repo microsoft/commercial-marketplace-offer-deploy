@@ -62,7 +62,7 @@ func TestStartDeployment(t *testing.T) {
 
 	// TODO: properly construct the startdeployment params
 	// create
-	_, err = client.StartDeployment(ctx, 1, templateParameters)
+	_, err = client.Start(ctx, 1, templateParameters, nil)
 
 	// Assertions
 	if err != nil {

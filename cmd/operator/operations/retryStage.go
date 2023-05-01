@@ -8,22 +8,19 @@ import (
 	"gorm.io/gorm"
 )
 
-// deployment retry
-// TODO: implement retry of an entire deployment and also a stage
-
-type retryDeployment struct {
+type retryStage struct {
 	db *gorm.DB
 }
 
-func (r *retryDeployment) Execute(ctx context.Context, operation *data.InvokedOperation) error {
+func (r *retryStage) Execute(ctx context.Context, operation *data.InvokedOperation) error {
 	return nil
 }
 
 //region factory
 
-func NewRetryDeploymentExecutor(appConfig *config.AppConfig) Executor {
+func NewRetryStageExecutor(appConfig *config.AppConfig) Executor {
 	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
-	return &retryDeployment{
+	return &retryStage{
 		db: db,
 	}
 }

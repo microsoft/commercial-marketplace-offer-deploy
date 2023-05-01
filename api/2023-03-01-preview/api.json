@@ -533,6 +533,9 @@
         "name": {
           "type": "string"
         },
+        "retries": {
+          "type": "integer"
+        },
         "parameters": {
           "type": "object"
         },

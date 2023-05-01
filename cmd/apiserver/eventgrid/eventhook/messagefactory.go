@@ -1,4 +1,4 @@
-package webhookevent
+package eventhook
 
 import (
 	"context"
@@ -23,22 +23,22 @@ import (
 
 // this factory is intented to create a list of WebHookEventMessages from a list of EventGridEventResources
 // so the messages can be relayed via queue to be published to MODM consumer webhook subscription
-type WebHookEventMessageFactory struct {
+type EventHookMessageFactory struct {
 	client *armresources.DeploymentsClient
 	filter filtering.EventGridEventFilter
 	db     *gorm.DB
 }
 
-func NewWebHookEventMessageFactory(filter filtering.EventGridEventFilter, client *armresources.DeploymentsClient, db *gorm.DB) *WebHookEventMessageFactory {
-	return &WebHookEventMessageFactory{
+func NewEventHookMessageFactory(filter filtering.EventGridEventFilter, client *armresources.DeploymentsClient, db *gorm.DB) *EventHookMessageFactory {
+	return &EventHookMessageFactory{
 		client: client,
 		filter: filter,
 		db:     db,
 	}
 }
 
-// Creates a list of WebHookEventMessage from a list of EventGridEventResource
-func (f *WebHookEventMessageFactory) Create(ctx context.Context, matchAny d.LookupTags, eventGridEvents []*eventgrid.Event) []*events.EventHookMessage {
+// Creates a list of messages from a list of EventGridEventResource
+func (f *EventHookMessageFactory) Create(ctx context.Context, matchAny d.LookupTags, eventGridEvents []*eventgrid.Event) []*events.EventHookMessage {
 	result := f.filter.Filter(ctx, matchAny, eventGridEvents)
 	messages := []*events.EventHookMessage{}
 
@@ -58,7 +58,7 @@ func (f *WebHookEventMessageFactory) Create(ctx context.Context, matchAny d.Look
 
 //region private methods
 
-func (f *WebHookEventMessageFactory) convert(item *eg.EventGridEventResource) (*events.EventHookMessage, error) {
+func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*events.EventHookMessage, error) {
 	deployment, err := f.getRelatedDeployment(item)
 	if err != nil {
 		return nil, err
@@ -85,7 +85,7 @@ func (f *WebHookEventMessageFactory) convert(item *eg.EventGridEventResource) (*
 	return message, nil
 }
 
-func (f *WebHookEventMessageFactory) getRelatedDeployment(item *eg.EventGridEventResource) (*data.Deployment, error) {
+func (f *EventHookMessageFactory) getRelatedDeployment(item *eg.EventGridEventResource) (*data.Deployment, error) {
 	eventData := eg.ResourceEventData{}
 	mapstructure.Decode(item.Message.Data, &eventData)
 
@@ -110,7 +110,7 @@ func (f *WebHookEventMessageFactory) getRelatedDeployment(item *eg.EventGridEven
 	return deployment, nil
 }
 
-func (f *WebHookEventMessageFactory) lookupDeploymentId(ctx context.Context, correlationId string, pager *runtime.Pager[armresources.DeploymentsClientListByResourceGroupResponse]) (*int, error) {
+func (f *EventHookMessageFactory) lookupDeploymentId(ctx context.Context, correlationId string, pager *runtime.Pager[armresources.DeploymentsClientListByResourceGroupResponse]) (*int, error) {
 	deployment := &data.Deployment{}
 
 	for pager.More() {

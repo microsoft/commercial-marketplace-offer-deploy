@@ -270,6 +270,7 @@ func (i InvokeDeploymentOperationRequest) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]any)
 	populate(objectMap, "name", i.Name)
 	populate(objectMap, "parameters", &i.Parameters)
+	populate(objectMap, "retries", i.Retries)
 	populate(objectMap, "wait", i.Wait)
 	return json.Marshal(objectMap)
 }
@@ -288,6 +289,9 @@ func (i *InvokeDeploymentOperationRequest) UnmarshalJSON(data []byte) error {
 				delete(rawMsg, key)
 		case "parameters":
 				err = unpopulate(val, "Parameters", &i.Parameters)
+				delete(rawMsg, key)
+		case "retries":
+				err = unpopulate(val, "Retries", &i.Retries)
 				delete(rawMsg, key)
 		case "wait":
 				err = unpopulate(val, "Wait", &i.Wait)
