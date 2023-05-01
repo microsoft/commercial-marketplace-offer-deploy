@@ -1,0 +1,35 @@
+services:
+  testharness:
+    env_file: ../bin/.env.testharness.local
+    image: testharness:latest
+    volumes:
+      - "${HOME}/tmp:/tmp"
+    ports:
+      - 8280:8280
+    environment:
+      - GO_ENV=development
+      - CALLBACK_BASE_URL=http://localhost:8280
+      - TEMPLATE_PATH=../bin/template/mainTemplateBicep.json
+      - TEMPLATEPARAMS_PATH=../bin/template/parametersBicep.json
+    networks:
+      - web
+
+  modm:
+    env_file: ../bin/.env.local
+    image: modm:latest
+    volumes:
+      - "${HOME}/.azure:/root/.azure"
+      - "${HOME}/tmp:/tmp"
+    ports:
+      - 8080:8080
+    environment:
+      - GO_ENV=development
+      - PUBLIC_DOMAIN_NAME=${PUBLIC_DOMAIN_NAME}
+      - LOG_FILE_PATH=/tmp
+      - DB_PATH=/tmp
+    networks:
+      - web
+
+networks:
+  web:
+    external: true

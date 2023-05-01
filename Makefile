@@ -8,11 +8,10 @@ clean:
 	rm -rf bin
 	mkdir -p bin
 
-apiserver:
+build:
 	go build -o ./bin/ ./cmd/apiserver
-
-operator:
 	go build -o ./bin/ ./cmd/operator
+	make tools
 
 apiserver-local:
 	./scripts/run-local.sh apiserver
@@ -23,9 +22,12 @@ operator-local:
 # Builds docker container, starts ngrok in the background, and 
 # calls docker compose up with the public NGROK endpoint for MODM to receive event messages from Azure
 run-local:
-	./scripts/run-local.sh docker $(build)
+	./scripts/run-local.sh modm $(build)
 
-test-all:
+run-testharness:
+	make run -C ./tools
+
+test:
 	go test ./...
 
 test-integration:
@@ -43,4 +45,4 @@ assemble: apiserver operator
 
 .NOTPARALLEL:
 
-.PHONY: run apiserver-local operator-local apiserver sdk operator test-all generate tools
+.PHONY: build run run-testharness apiserver-local operator-local sdk test-all generate tools

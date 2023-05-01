@@ -11,7 +11,6 @@ services:
       - GO_ENV=development
       - PUBLIC_DOMAIN_NAME=${PUBLIC_DOMAIN_NAME}
       - LOG_FILE_PATH=/tmp
-      - DB_PATH=/tmp
     networks:
       - web
 

@@ -1,4 +1,4 @@
-package events
+package hook
 
 import (
 	"context"
@@ -11,23 +11,24 @@ import (
 	model "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 )
 
-type EventHookPublisher interface {
+// Publishes event hook messages to all web hooks registered in the system.
+type Publisher interface {
 	// publishes a message to all web hook subscriptions
 	Publish(message *model.EventHookMessage) error
 }
 
-type eventHookPublisher struct {
+type publisher struct {
 	provider EventHooksProvider
-	senders  map[uuid.UUID]WebHookSender
+	senders  map[uuid.UUID]hookSender
 }
 
-func NewWebHookPublisher(subscriptionsProvider EventHooksProvider) EventHookPublisher {
-	publisher := &eventHookPublisher{senders: map[uuid.UUID]WebHookSender{}, provider: subscriptionsProvider}
+func NewEventHookPublisher(subscriptionsProvider EventHooksProvider) Publisher {
+	publisher := &publisher{senders: map[uuid.UUID]hookSender{}, provider: subscriptionsProvider}
 
 	return publisher
 }
 
-func (p *eventHookPublisher) Publish(message *model.EventHookMessage) error {
+func (p *publisher) Publish(message *model.EventHookMessage) error {
 	hooks, err := p.provider.Get()
 
 	if err != nil {
@@ -59,9 +60,9 @@ func (p *eventHookPublisher) Publish(message *model.EventHookMessage) error {
 	return nil
 }
 
-func (p *eventHookPublisher) getSender(subscription data.EventHook) WebHookSender {
+func (p *publisher) getSender(subscription data.EventHook) hookSender {
 	if _, ok := p.senders[subscription.ID]; !ok {
-		p.senders[subscription.ID] = NewMessageSender(subscription.Callback, subscription.ApiKey)
+		p.senders[subscription.ID] = newHookSender(subscription.Callback, subscription.ApiKey)
 	}
 	return p.senders[subscription.ID]
 }

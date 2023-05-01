@@ -23,8 +23,8 @@ jobs:
       with:
         go-version: 1.19
 
-    - name: Build API Server & Operator
-      run: make apiserver && make operator
+    - name: Build binaries
+      run: make build
   
   push:     
     runs-on: ubuntu-latest

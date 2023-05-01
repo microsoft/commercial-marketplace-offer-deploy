@@ -1,4 +1,4 @@
-package events
+package hook
 
 import (
 	"bytes"
@@ -9,13 +9,15 @@ import (
 	"io"
 	"net/http"
 	"time"
+
 	"github.com/avast/retry-go"
 	log "github.com/sirupsen/logrus"
 )
 
 const contentTypeJson string = "application/json"
 
-type WebHookSender interface {
+// this will do the actual sending of the hook message to the hook url / callback url that was registered
+type hookSender interface {
 	Send(ctx context.Context, data any) error
 }
 
@@ -24,7 +26,7 @@ type httpSender struct {
 	apiKey string
 }
 
-func NewMessageSender(url string, apiKey string) WebHookSender {
+func newHookSender(url string, apiKey string) hookSender {
 	sender := &httpSender{url: url, apiKey: apiKey}
 	return sender
 }
@@ -48,13 +50,13 @@ func (sender *httpSender) Send(ctx context.Context, data any) error {
 			log.Error("Error sending event message: %v", err)
 			return err
 		}
-		
+
 		if response != nil {
 			log.Debug("Sent event with the response of %v", *response)
 		} else {
 			log.Debug("response from client.Do(request) is nil")
 		}
-		
+
 		defer response.Body.Close()
 		var body []byte
 		body, err = io.ReadAll(response.Body)

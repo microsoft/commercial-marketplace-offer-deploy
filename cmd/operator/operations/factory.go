@@ -8,7 +8,7 @@ import (
 )
 
 type DeploymentOperationFactory interface {
-	Create(operationType operations.OperationType) (DeploymentOperation, error)
+	Create(operationType operations.OperationType) (Executor, error)
 }
 
 func NewDeploymentOperationFactory(appConfig *config.AppConfig) DeploymentOperationFactory {
@@ -21,12 +21,12 @@ type factory struct {
 	appConfig *config.AppConfig
 }
 
-func (f *factory) Create(operationType operations.OperationType) (DeploymentOperation, error) {
-	var operation DeploymentOperation
+func (f *factory) Create(operationType operations.OperationType) (Executor, error) {
+	var operation Executor
 
 	switch operationType {
 	case operations.OperationDryRun:
-		operation = NewDryRunProcessor(f.appConfig)
+		operation = NewDryRunExecutor(f.appConfig)
 	case operations.OperationStartDeployment:
 		operation = NewStartDeploymentOperation(f.appConfig)
 	}

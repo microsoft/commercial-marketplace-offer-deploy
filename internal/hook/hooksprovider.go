@@ -1,4 +1,4 @@
-package events
+package hook
 
 import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"

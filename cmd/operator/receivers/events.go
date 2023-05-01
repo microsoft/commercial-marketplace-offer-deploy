@@ -4,48 +4,21 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/handlers"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	e "github.com/microsoft/commercial-marketplace-offer-deploy/internal/events"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
-	"gorm.io/gorm"
 )
 
-type eventsMessageHandler struct {
-	publisher e.EventHookPublisher
-}
-
-func (h *eventsMessageHandler) Handle(message *events.EventHookMessage, context messaging.MessageHandlerContext) error {
-	err := h.publisher.Publish(message)
-	return err
-}
-
-//region factory
-
-func newEventsMessageHandler(appConfig *config.AppConfig) *eventsMessageHandler {
-	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
-	publisher := newWebHookPublisher(db)
-	return &eventsMessageHandler{
-		publisher: publisher,
-	}
-}
-
+// creates the new events message receiver, wiring up the events message handler
 func NewEventsMessageReceiver(appConfig *config.AppConfig, credential azcore.TokenCredential) messaging.MessageReceiver {
 	options := getOptions(appConfig)
 
-	handler := newEventsMessageHandler(appConfig)
+	handler := handlers.NewEventsMessageHandler(appConfig)
 	receiver, err := messaging.NewServiceBusReceiver(handler, credential, options)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return receiver
-}
-
-func newWebHookPublisher(db *gorm.DB) e.EventHookPublisher {
-	subscriptionsProvider := e.NewEventHooksProvider(db)
-	publisher := e.NewWebHookPublisher(subscriptionsProvider)
-	return publisher
 }
 
 func getOptions(appConfig *config.AppConfig) messaging.ServiceBusMessageReceiverOptions {
@@ -56,5 +29,3 @@ func getOptions(appConfig *config.AppConfig) messaging.ServiceBusMessageReceiver
 	}
 	return options
 }
-
-//endregion factory

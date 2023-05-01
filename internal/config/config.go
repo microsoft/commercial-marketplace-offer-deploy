@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -9,8 +10,6 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/log"
 )
-
-var logFileName string = ""
 
 // The azure settings
 type AzureSettings struct {
@@ -73,20 +72,18 @@ func (c *AppConfig) GetReadinessFilePath() string {
 	return path
 }
 
-func (c *AppConfig) GetLoggingOptions() *log.LoggingOptions {
+func (c *AppConfig) GetLoggingOptions(label string) *log.LoggingOptions {
 	logfilePath := "/logs"
 	if len(c.Logging.FilePath) > 0 {
 		logfilePath = c.Logging.FilePath
 	}
 
-	if logFileName == "" {
-		name := "log"
-		hostname, err := os.Hostname()
-		if err != nil {
-			hostname = strconv.FormatInt(time.Now().Unix(), 10)
-		}
-		logFileName = name + "-" + hostname + ".txt"
+	logFileName := "log"
+	hostname, err := os.Hostname()
+	if err != nil {
+		hostname = strconv.FormatInt(time.Now().Unix(), 10)
 	}
+	logFileName = fmt.Sprintf("log-%s.%s.txt", hostname, label)
 
 	return &log.LoggingOptions{
 		DefaultLogLevel: c.Logging.DefaultLogLevel,
