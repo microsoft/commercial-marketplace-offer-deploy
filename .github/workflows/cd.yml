@@ -70,7 +70,16 @@ jobs:
               az group delete -n $g --yes --no-wait; 
             done 
             az group create -l eastus -n $RESOURCE_GROUP_NAME
-      
+
+      # Replace the placeholder registry password with secret
+      - name: Find and Replace
+        uses: jacobtomlinson/gha-find-replace@v2
+        with:
+          find: "<placeholderRegistryPassword>"
+          replace: "${{ secrets.CR_PAT2 }}"
+          include: "templates/**"
+          regex: true
+
       - name: Deploy resources
         uses: azure/CLI@v1 
         with: 
