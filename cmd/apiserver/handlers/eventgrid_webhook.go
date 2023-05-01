@@ -11,8 +11,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
 	"github.com/labstack/echo/v4"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventhook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventsfiltering"
-	w "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/webhookevent"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
@@ -31,14 +31,14 @@ var matchAny deployment.LookupTags = deployment.LookupTags{
 
 type eventGridWebHook struct {
 	db             *gorm.DB
-	messageFactory *w.WebHookEventMessageFactory
+	messageFactory *eventhook.EventHookMessageFactory
 	sender         messaging.MessageSender
 }
 
 // HTTP handler is the webook endpoint that receives event grid events
 // the validation middleware will handle validation requests first before this is reached
 func (h *eventGridWebHook) Handle(c echo.Context) error {
-	log.Debug("Received event grid webhook request")
+	log.Debug("Received event grid webhook")
 
 	ctx := c.Request().Context()
 
@@ -120,7 +120,7 @@ func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.T
 	}
 }
 
-func newWebHookEventMessageFactory(subscriptionId string, db *gorm.DB, credential azcore.TokenCredential) (*w.WebHookEventMessageFactory, error) {
+func newWebHookEventMessageFactory(subscriptionId string, db *gorm.DB, credential azcore.TokenCredential) (*eventhook.EventHookMessageFactory, error) {
 	filter, err := newEventsFilter(subscriptionId, credential)
 	if err != nil {
 		return nil, err
@@ -131,7 +131,7 @@ func newWebHookEventMessageFactory(subscriptionId string, db *gorm.DB, credentia
 		return nil, err
 	}
 
-	return w.NewWebHookEventMessageFactory(filter, client, db), nil
+	return eventhook.NewEventHookMessageFactory(filter, client, db), nil
 }
 
 func newMessageSender(appConfig *config.AppConfig, credential azcore.TokenCredential) (messaging.MessageSender, error) {
