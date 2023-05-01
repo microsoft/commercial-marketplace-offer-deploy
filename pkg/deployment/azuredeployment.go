@@ -36,6 +36,13 @@ type AzureDeployment struct {
 	ResumeToken       string         `json:"resumeToken"`
 }
 
+type AzureRedeployment struct {
+	SubscriptionId    string         `json:"subscriptionId"`
+	Location          string         `json:"location"`
+	ResourceGroupName string         `json:"resourceGroupName"`
+	DeploymentName    string         `json:"deploymentName"`
+}
+
 type AzureDeploymentResult struct {
 	ID                string                 `json:"id"`
 	CorrelationID     string                 `json:"correlationId"`
@@ -64,6 +71,95 @@ type Deployer interface {
 
 type ArmTemplateDeployer struct {
 	deployerType DeploymentType
+}
+
+func (armDeployer *ArmTemplateDeployer) getParamsMapFromTemplate(template map[string]interface{}, params map[string]interface{}) map[string]interface{} { 
+	paramValues := make(map[string]interface{})
+	
+	templateParams := template["parameters"].(map[string]interface{})
+	for k := range templateParams {
+		valueMap := make(map[string]interface{})
+		templateValueMap := params[k].(map[string]interface{})
+
+		valueMap["value"] = templateValueMap["value"]
+		paramValues[k] = valueMap
+	}
+
+	return paramValues
+}
+
+
+func (armDeployer *ArmTemplateDeployer) Redeploy(ad *AzureRedeployment) (*AzureDeploymentResult, error) {
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		return nil, err
+	}
+	
+	deploymentsClient, err := armresources.NewDeploymentsClient(ad.SubscriptionId, cred, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	ctx := context.Background()
+	deployment, err := deploymentsClient.Get(ctx, ad.SubscriptionId, ad.DeploymentName, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if deployment.Properties == nil || deployment.Properties.Parameters == nil {
+		return nil, errors.New("deployment.Properties.Parameters  not found")
+	}
+
+	params := (*deployment.DeploymentExtended.Properties).Parameters
+	if params == nil {
+		return nil, errors.New("unable to get the parameters from the deployment")
+	}
+
+	castParams := params.(map[string]interface{})
+	if castParams == nil {
+		return nil, errors.New("unable to cast parameters to map[string]interface{}")
+	}
+
+	template, err := deploymentsClient.ExportTemplate(ctx, ad.ResourceGroupName, ad.DeploymentName, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if template.Template == nil {
+		return nil, errors.New("unable to get the template from the deployment")
+	}
+
+	castTemplate := template.Template.(map[string]interface{})
+	paramValuesMap := armDeployer.getParamsMapFromTemplate(castTemplate, castParams)
+
+	deploymentPollerResp, err := deploymentsClient.BeginCreateOrUpdate(
+		ctx,
+		ad.ResourceGroupName,
+		ad.DeploymentName,
+		armresources.Deployment{
+			Properties: &armresources.DeploymentProperties{
+				Template:   castTemplate,
+				Parameters: paramValuesMap,
+				Mode:       to.Ptr(armresources.DeploymentModeIncremental),
+			},
+		},
+		nil)
+		
+	if err != nil {
+		return nil, errors.New("unable to redeploy the deployment")
+	}
+
+	resp, err := deploymentPollerResp.PollUntilDone(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("cannot get the create deployment future respone: %v", err)
+	}
+
+	mappedResult, err := armDeployer.mapDeploymentResult(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return mappedResult, nil
 }
 
 func (armDeployer *ArmTemplateDeployer) Deploy(ad *AzureDeployment) (*AzureDeploymentResult, error) {

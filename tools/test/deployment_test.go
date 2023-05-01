@@ -3,7 +3,6 @@ package test
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 
@@ -86,45 +85,10 @@ func (s *deploymentSuite) TestExportNestedDeployment() {
 		fmt.Printf("Deployment template not found: %v\n", err)
 	}
 
-
-
-	// convertedTemplate, err := convertForRedeploy(template.Template)
-	// if err != nil {
-	// 	assert.Fail(s.T(), "Failed to convert template")
+	// paramsFromFile := getParmsAsMap(s, "/Users/bobjacobs/work/src/github.com/microsoft/commercial-marketplace-offer-deploy/test/testdata/nameviolation/nestedfailure/parameters.json")
+	// if paramsFromFile == nil {
+	// 	assert.Fail(s.T(), "Failed to get params from file")
 	// }
-
-	// convertedParams, err := convertForRedeploy(params)
-	// if err != nil {
-	// 	assert.Fail(s.T(), "Failed to convert params")
-	// }
-
-	paramsFromFile := getParmsAsMap(s, "/Users/bobjacobs/work/src/github.com/microsoft/commercial-marketplace-offer-deploy/test/testdata/nameviolation/nestedfailure/parameters.json")
-	if paramsFromFile == nil {
-		assert.Fail(s.T(), "Failed to get params from file")
-	}
-
-	var handCraftedParams map[string]interface{}
-	handCraftedParams = make(map[string]interface{})
-
-	kindMap := make(map[string]interface{})
-	kindMap["value"] = "StorageV2"
-
-	handCraftedParams["kind"] = kindMap
-
-	locationMap := make(map[string]interface{})
-	locationMap["value"] = "eastus"
-
-	handCraftedParams["location"] = locationMap
-
-	nameMap := make(map[string]interface{})
-	nameMap["value"] = "bobjacbicepsa"
-
-	handCraftedParams["name"] = nameMap
-
-	skuNameMap := make(map[string]interface{})
-	skuNameMap["value"] = "Standard_LRS"
-
-	handCraftedParams["sku_name"] = skuNameMap
 
 	t := template.Template
 	if t == nil {
@@ -160,13 +124,13 @@ func (s *deploymentSuite) TestExportNestedDeployment() {
 	}
 }
 
-func getParmsAsMap(s *deploymentSuite, paramsFile string) map[string]interface{} {
-	params, err := ReadJson(paramsFile)
-	if err != nil {
-		assert.Fail(s.T(), "Failed to read params file")
-	}
-	return params
-}
+// func getParmsAsMap(s *deploymentSuite, paramsFile string) map[string]interface{} {
+// 	params, err := ReadJson(paramsFile)
+// 	if err != nil {
+// 		assert.Fail(s.T(), "Failed to read params file")
+// 	}
+// 	return params
+// }
 
 func ReadJson(path string) (map[string]interface{}, error) {
 	templateFile, err := ioutil.ReadFile(path)
@@ -186,7 +150,6 @@ func getParamsMapFromTemplate(template map[string]interface{}, params map[string
 	
 	templateParams := template["parameters"].(map[string]interface{})
 	for k := range templateParams {
-		//keys = append(keys, k)
 		valueMap := make(map[string]interface{})
 		templateValueMap := params[k].(map[string]interface{})
 
@@ -194,21 +157,15 @@ func getParamsMapFromTemplate(template map[string]interface{}, params map[string
 		paramValues[k] = valueMap
 	}
 
-	// for _, k := range keys {
-	// 	valueMap := make(map[string]interface{})
-	// 	valueMap["value"] = template[k]["value"]
-	// 	paramValues[k] = valueMap
-	// }
-
 	return paramValues
 }
 
 
 
-func convertForRedeploy(in interface{}) (map[string]interface{}, error) {
-	m, ok := in.(map[string]interface{})
-    if !ok {
-        return nil, errors.New("input is not a map")
-    }
-    return m, nil
-}
+// func convertForRedeploy(in interface{}) (map[string]interface{}, error) {
+// 	m, ok := in.(map[string]interface{})
+//     if !ok {
+//         return nil, errors.New("input is not a map")
+//     }
+//     return m, nil
+// }
