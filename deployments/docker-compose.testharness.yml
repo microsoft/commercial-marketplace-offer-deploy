@@ -4,18 +4,17 @@ services:
     image: testharness:latest
     volumes:
       - "${HOME}/tmp:/tmp"
+      - "${HOME}/.azure:/root/.azure"
     ports:
       - 8280:8280
     environment:
       - GO_ENV=development
-      - CALLBACK_BASE_URL=http://localhost:8280
-      - TEMPLATE_PATH=../bin/template/mainTemplateBicep.json
-      - TEMPLATEPARAMS_PATH=../bin/template/parametersBicep.json
+      - CALLBACK_BASE_URL=http://testharness:8280
     networks:
       - web
 
   modm:
-    env_file: ../bin/.env.local
+    env_file: ../bin/.env
     image: modm:latest
     volumes:
       - "${HOME}/.azure:/root/.azure"

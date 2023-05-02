@@ -6,12 +6,12 @@ import (
 )
 
 type DryRunValidator interface {
-	Validate(input DryRunValidationInput) *DryRunResponse
+	Validate(input DryRunValidationInput) (*DryRunResponse, error)
 }
 
-type WhatIfValidatorFunc func(input DryRunValidationInput) *DryRunResponse
+type WhatIfValidatorFunc func(input DryRunValidationInput) (*DryRunResponse, error)
 
-func (f WhatIfValidatorFunc) Validate(input DryRunValidationInput) *DryRunResponse {
+func (f WhatIfValidatorFunc) Validate(input DryRunValidationInput) (*DryRunResponse, error) {
 	return f(input)
 }
 

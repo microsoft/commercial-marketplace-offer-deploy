@@ -17,9 +17,8 @@ type Executor interface {
 }
 
 // this is so the dry run can be tested, detaching actual dry run implementation
-type DryRunFunc func(azureDeployment *deployment.AzureDeployment) *deployment.DryRunResponse
+type DryRunFunc func(azureDeployment *deployment.AzureDeployment) (*deployment.DryRunResponse, error)
 
-// factory for creating executors
 type ExecutorFactory interface {
 	Create(operationType operations.OperationType) (Executor, error)
 }
@@ -53,3 +52,4 @@ func (f *factory) Create(operationType operations.OperationType) (Executor, erro
 	}
 	return executor, nil
 }
+

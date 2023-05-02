@@ -3,7 +3,7 @@ package operations
 import (
 	"context"
 	"time"
-
+	"github.com/avast/retry-go"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
@@ -23,21 +23,33 @@ type dryRun struct {
 
 func (exe *dryRun) Execute(ctx context.Context, operation *data.InvokedOperation) error {
 	log.Debug("Inside Invoke for DryRun with an operation of %v", *operation)
-	azureDeployment := exe.getAzureDeployment(operation)
-	response := exe.dryRun(azureDeployment)
-	log.Debug("DryRun response is %v", *response)
 
-	operation.Status = *response.Status
-	operation.Result = response.DryRunResult
-	operation.UpdatedAt = time.Now().UTC()
+	err := retry.Do(func() error {
+		azureDeployment := exe.getAzureDeployment(operation)
+		response, err := exe.dryRun(azureDeployment)
+		log.Debug("DryRun response is %v", *response)
 
-	err := exe.save(operation)
-	if err != nil {
-		log.Errorf("Error saving dry run operation %v", err)
-	}
+		if err != nil {
+			return &RetriableError{Err: err, RetryAfter: 10 * time.Second}
+		}
 
-	hookMessage := exe.mapToEventHookMessage(&response.DryRunResult)
-	hook.Add(hookMessage)
+		operation.Status = *response.Status
+		operation.Result = response.DryRunResult
+		operation.UpdatedAt = time.Now().UTC()
+
+		err = exe.save(operation)
+		if err != nil {
+			return &RetriableError{Err: err, RetryAfter: 10 * time.Second}
+		}
+		
+		hookMessage := exe.mapToEventHookMessage(&response.DryRunResult)
+		hook.Add(hookMessage)
+
+		return nil
+	},
+	retry.Attempts(uint(operation.Retries)),
+	retry.DelayType(backOffRetryHandler))
+
 	return err
 }
 
