@@ -43,3 +43,7 @@ type RetryResponse struct {
 type ListResponse struct {
 	Deployments []*api.Deployment
 }
+
+type GetResponse struct {
+	Deployment *api.Deployment
+}
