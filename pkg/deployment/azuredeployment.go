@@ -67,6 +67,7 @@ func (ad *AzureDeployment) GetTemplateParams() map[string]interface{} {
 
 type Deployer interface {
 	Deploy(d *AzureDeployment) (*AzureDeploymentResult, error)
+	Redeploy(d *AzureRedeployment) (*AzureDeploymentResult, error)
 }
 
 type ArmTemplateDeployer struct {
@@ -248,9 +249,9 @@ func (armDeployer *ArmTemplateDeployer) mapDeploymentResult(resp armresources.De
 	return &res, nil
 }
 
-func CreateNewDeployer(deployment AzureDeployment) Deployer {
+func CreateNewDeployer(deploymentType DeploymentType) Deployer {
 	return &ArmTemplateDeployer{
-		deployerType: deployment.DeploymentType,
+		deployerType: deploymentType,
 	}
 }
 

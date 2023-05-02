@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	//"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
@@ -94,6 +95,7 @@ func AddRoutes(e *echo.Echo) {
 	e.GET("/startdeployment/:deploymentId", StartDeployment)
 	e.GET("/createeventhook", CreateEventHook)
 	e.GET("/dryrun/:deploymentId", DryRun)
+	e.GET("/redeploy/:deploymentId/:stageName", Redeploy)
 	e.POST("/webhook", ReceiveEventNotification)
 }
 
@@ -144,6 +146,49 @@ func CreateEventHook(c echo.Context) error {
 
 	json := c.JSON(http.StatusOK, res)
 	log.Printf("Create Event Hook response - %s", json)
+	return json
+}
+
+func Redeploy(c echo.Context) error {
+	deploymentId, err := strconv.Atoi(c.Param("deploymentId"))
+	if err != nil {
+		log.Println(err)
+	}
+	stageName := c.Param("stageName")
+	if err != nil {
+		log.Println(err)
+	}
+
+	location = getLocation()
+	resourceGroup = getResourceGroup()
+	subscription = getSubscription()
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println("Got the credentials")
+
+	log.Printf("Calling NewClient with endpoint %s", getClientEndpoint())
+	client, err := sdk.NewClient(getClientEndpoint(), cred, nil)
+	if err != nil {
+		log.Panicln(err)
+	}
+	log.Println("Got the client")
+	ctx := context.Background()
+
+	retryOptions := &sdk.RetryOptions{
+		StageName: stageName,
+	}
+
+	resp, err := client.Retry(ctx, deploymentId, retryOptions)
+	if err != nil {
+		log.Println(err)
+	}
+
+	json := c.JSON(http.StatusOK, resp)
+	log.Printf("Redeploy response - %s", json)
+
 	return json
 }
 

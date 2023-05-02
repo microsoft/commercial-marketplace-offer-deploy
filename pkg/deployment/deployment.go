@@ -126,8 +126,15 @@ func createResourceGroup(subscriptionId string, resourceGroupName string, locati
 
 func Create(dep AzureDeployment) (*AzureDeploymentResult, error) {
 	log.Debug("Inside Create")
-	deployer := CreateNewDeployer(dep)
+	deployer := CreateNewDeployer(dep.DeploymentType)
 	return deployer.Deploy(&dep)
+}
+
+func Redeploy(dep AzureRedeployment) (*AzureDeploymentResult, error) {
+	log.Debug("Inside Redeploy")
+	deploymentType := 0
+	deployer := CreateNewDeployer(DeploymentType(deploymentType))
+	return deployer.Redeploy(&dep)
 }
 
 func readJson(path string) (map[string]interface{}, error) {
