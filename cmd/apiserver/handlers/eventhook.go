@@ -13,7 +13,3 @@ func DeleteEventHook(c echo.Context) error {
 func GetEventHook(c echo.Context) error {
 	return c.JSON(http.StatusOK, "")
 }
-
-func ListEventHooks(c echo.Context) error {
-	return c.JSON(http.StatusOK, "")
-}

@@ -89,7 +89,7 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 			Name:        "ListEventHooks",
 			Method:      http.MethodGet,
 			Path:        "/events/hooks",
-			HandlerFunc: middleware.AddJwtBearer(handlers.ListEventHooks, appConfig),
+			HandlerFunc: middleware.AddJwtBearer(handlers.NewListEventHooksHandler(appConfig), appConfig),
 		},
 
 		hosting.Route{
