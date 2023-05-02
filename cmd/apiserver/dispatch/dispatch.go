@@ -70,6 +70,14 @@ func (p *dispatcher) save(ctx context.Context, c *DispatchInvokedOperation) (uui
 		Status:       events.StatusAccepted.String(),
 		Parameters:   c.Request.Parameters.(map[string]interface{}),
 	}
+
+	invokedOperation.Retries =int(*c.Request.Retries)
+	log.Debugf("Retries is received to %d", *c.Request.Retries)
+	if *c.Request.Retries <= 0 {
+		log.Debug("Retries is not set, defaulting to 1")
+		invokedOperation.Retries = 1
+	} 
+	log.Debugf("Retries is set to %d", invokedOperation.Retries)
 	tx.Save(invokedOperation)
 
 	if tx.Error != nil {

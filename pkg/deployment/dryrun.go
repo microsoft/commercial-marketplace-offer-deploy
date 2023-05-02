@@ -91,6 +91,7 @@ func aggregateResponses(responses []*DryRunResponse) *DryRunResponse {
 }
 
 func DryRun(azureDeployment *AzureDeployment) (*DryRunResponse, error) {
+	log.Debug("Inside DryRun in pkg/deployment/dryrun.go")
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		return nil, err
@@ -101,10 +102,12 @@ func DryRun(azureDeployment *AzureDeployment) (*DryRunResponse, error) {
 		cred:            cred,
 		azureDeployment: azureDeployment,
 	}
+	log.Debug("About to call DryRun validator")
 	return validate(validators, input)
 }
 
 func whatIfDeployment(input DryRunValidationInput) (*armresources.DeploymentsClientWhatIfResponse, error) {
+	log.Debug("Inside whatIfDeployment in pkg/deployment/dryrun.go")
 	if input.azureDeployment == nil {
 		return nil, errors.New("azureDeployment is nil")
 	}
@@ -126,7 +129,7 @@ func whatIfDeployment(input DryRunValidationInput) (*armresources.DeploymentsCli
 	}
 
 	templateParams := azureDeployment.Params["parameters"]
-	log.Printf("About to call whatIf with templateParams of - %v", templateParams)
+	log.Debug("About to call whatIf with templateParams of - %v", templateParams)
 
 	pollerResp, err := deploymentsClient.BeginWhatIf(
 		ctx,
@@ -145,10 +148,14 @@ func whatIfDeployment(input DryRunValidationInput) (*armresources.DeploymentsCli
 		return nil, err
 	}
 
+	log.Debug("Got the whatIf response")
+
 	resp, err := pollerResp.PollUntilDone(ctx, nil)
+	
 	if err != nil {
 		return nil, err
 	}
+	log.Debugf("whatIf response - %v", resp)
 
 	return &resp, nil
 }
