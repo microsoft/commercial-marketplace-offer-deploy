@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
@@ -35,6 +36,7 @@ type factory struct {
 
 func (f *factory) Create(operationType operations.OperationType) (Executor, error) {
 	var executor Executor
+	log.Debugf("Creating executor for operation type: %s", string(operationType))
 
 	switch operationType {
 	case operations.OperationDryRun:
