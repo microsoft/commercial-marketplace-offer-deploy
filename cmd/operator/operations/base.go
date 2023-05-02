@@ -7,7 +7,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -21,7 +21,7 @@ type Executor interface {
 type DryRunFunc func(azureDeployment *deployment.AzureDeployment) (*deployment.DryRunResponse, error)
 
 type ExecutorFactory interface {
-	Create(operationType operations.OperationType) (Executor, error)
+	Create(operationType operation.OperationType) (Executor, error)
 }
 
 func NewExecutorFactory(appConfig *config.AppConfig) ExecutorFactory {
@@ -34,18 +34,18 @@ type factory struct {
 	appConfig *config.AppConfig
 }
 
-func (f *factory) Create(operationType operations.OperationType) (Executor, error) {
+func (f *factory) Create(operationType operation.OperationType) (Executor, error) {
 	var executor Executor
 	log.Debugf("Creating executor for operation type: %s", string(operationType))
 
 	switch operationType {
-	case operations.TypeDryRun:
+	case operation.TypeDryRun:
 		executor = NewDryRunExecutor(f.appConfig)
-	case operations.TypeStartDeployment:
+	case operation.TypeStartDeployment:
 		executor = NewStartDeploymentExecutor(f.appConfig)
-	case operations.TypeRetryDeployment:
+	case operation.TypeRetryDeployment:
 		executor = NewRetryDeploymentExecutor(f.appConfig)
-	case operations.TypeRetryStage:
+	case operation.TypeRetryStage:
 		executor = NewRetryStageExecutor(f.appConfig)
 	}
 

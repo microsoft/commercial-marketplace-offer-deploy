@@ -1,7 +1,8 @@
-package operations
+package operation
 
 import "fmt"
 
+// OperationType is an enum for the type of operation
 type OperationType string
 
 const (

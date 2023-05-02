@@ -7,7 +7,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -24,7 +24,7 @@ func (h *operationMessageHandler) Handle(message *messaging.ExecuteInvokedOperat
 	log.Debug("operationId: %s", message.OperationId)
 	log.Debug("Invoked Operation from DB: %v", invokedOperation)
 
-	operationType, err := operations.Type(invokedOperation.Name)
+	operationType, err := operation.Type(invokedOperation.Name)
 	if err != nil {
 		log.Error("Error getting operation type: ", err)
 	}
