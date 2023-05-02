@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
+	log "github.com/sirupsen/logrus"
 )
 
 // Executor is the interface for the actual execution of a logically invoked operation from the API
@@ -39,13 +39,13 @@ func (f *factory) Create(operationType operations.OperationType) (Executor, erro
 	log.Debugf("Creating executor for operation type: %s", string(operationType))
 
 	switch operationType {
-	case operations.OperationDryRun:
+	case operations.TypeDryRun:
 		executor = NewDryRunExecutor(f.appConfig)
-	case operations.OperationStartDeployment:
+	case operations.TypeStartDeployment:
 		executor = NewStartDeploymentExecutor(f.appConfig)
-	case operations.OperationRetryDeployment:
+	case operations.TypeRetryDeployment:
 		executor = NewRetryDeploymentExecutor(f.appConfig)
-	case operations.OperationRetryStage:
+	case operations.TypeRetryStage:
 		executor = NewRetryStageExecutor(f.appConfig)
 	}
 
@@ -54,4 +54,3 @@ func (f *factory) Create(operationType operations.OperationType) (Executor, erro
 	}
 	return executor, nil
 }
-

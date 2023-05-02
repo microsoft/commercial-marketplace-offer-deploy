@@ -17,7 +17,7 @@ const DefaultRetries = 3
 // returns: verification results
 func (client *Client) DryRun(ctx context.Context, deploymentId int, templateParameters map[string]interface{}) (*DryRunResponse, error) {
 	retries := DefaultRetries
-	response, err := client.invokeDeploymentOperation(ctx, true, operations.OperationDryRun, deploymentId, templateParameters, retries)
+	response, err := client.invokeDeploymentOperation(ctx, true, operations.TypeDryRun, deploymentId, templateParameters, retries)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func (client *Client) Start(ctx context.Context, deploymentId int, templateParam
 	if options != nil {
 		retries = options.Retries
 	}
-	response, err := client.invokeDeploymentOperation(ctx, false, operations.OperationStartDeployment, deploymentId, templateParameters, retries)
+	response, err := client.invokeDeploymentOperation(ctx, false, operations.TypeStartDeployment, deploymentId, templateParameters, retries)
 	if err != nil {
 		return nil, err
 	}
@@ -53,11 +53,11 @@ func (client *Client) Start(ctx context.Context, deploymentId int, templateParam
 //
 //	id: deployment id
 func (client *Client) Retry(ctx context.Context, deploymentId int, options *RetryOptions) (*RetryResponse, error) {
-	operation := operations.OperationRetryDeployment
+	operation := operations.TypeRetryDeployment
 
 	// if we have a stageId set, then we want to retry a stage of the deployment
 	if options != nil && options.StageId != uuid.Nil {
-		operation = operations.OperationRetryStage
+		operation = operations.TypeRetryStage
 	}
 	retries := 0 // we don't want to retry a retry.
 	resp, err := client.invokeDeploymentOperation(ctx, false, operation, deploymentId, nil, retries)
