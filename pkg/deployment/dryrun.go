@@ -38,26 +38,26 @@ type DryRunErrorResponse struct {
 	Details []*DryRunErrorResponse `json:"details,omitempty" azure:"ro"`
 }
 
-func whatIfValidator(input DryRunValidationInput) *DryRunResponse {
+func whatIfValidator(input DryRunValidationInput) (*DryRunResponse, error) {
 	if input.azureDeployment == nil {
 		log.Error(errors.New("azureDeployment is not set on input struct"))
 	}
 	err := input.azureDeployment.validate()
 	if err != nil {
-		log.Error(err)
+		return nil, err
 	}
 
 	whatIfResult, err := whatIfDeployment(input)
 	if err != nil {
-		log.Error(err)
+		return nil, err
 	}
 
 	dryResponse, err := mapResponse(whatIfResult)
 	if err != nil {
-		log.Error(err)
+		return nil, err
 	}
 
-	return dryResponse
+	return dryResponse, nil
 }
 
 func loadValidators() []DryRunValidator {
@@ -67,16 +67,19 @@ func loadValidators() []DryRunValidator {
 	}
 }
 
-func validate(validators []DryRunValidator, input DryRunValidationInput) *DryRunResponse {
+func validate(validators []DryRunValidator, input DryRunValidationInput) (*DryRunResponse, error) {
 	var responses []*DryRunResponse
 	for _, validator := range validators {
-		res := validator.Validate(input)
+		res, err := validator.Validate(input)
+		if err != nil {
+			return nil, err
+		}
 		if res != nil {
 			responses = append(responses, res)
 		}
 	}
 
-	return aggregateResponses(responses)
+	return aggregateResponses(responses), nil
 }
 
 func aggregateResponses(responses []*DryRunResponse) *DryRunResponse {
@@ -87,10 +90,10 @@ func aggregateResponses(responses []*DryRunResponse) *DryRunResponse {
 	return responses[0]
 }
 
-func DryRun(azureDeployment *AzureDeployment) *DryRunResponse {
+func DryRun(azureDeployment *AzureDeployment) (*DryRunResponse, error) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	validators := loadValidators()
 	input := DryRunValidationInput{
