@@ -101,6 +101,17 @@ func (client *Client) Create(ctx context.Context, request api.CreateDeployment) 
 	return &deployment, nil
 }
 
+func (client *Client) Get(ctx context.Context, deploymentId int) (*GetResponse, error) {
+	resp, err := client.internalClient.GetDeployment(ctx, int32(deploymentId), nil)
+	if err != nil {
+		return nil, err
+	}
+	return &GetResponse{
+		Deployment: &resp.Deployment,
+	}, nil
+}
+
+// list all deployments
 func (client *Client) List(ctx context.Context) (*ListResponse, error) {
 	resp, err := client.internalClient.ListDeployments(ctx, nil)
 	if err != nil {

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
-	"github.com/avast/retry-go"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
@@ -107,15 +106,6 @@ func (p *startDeployment) mapAzureDeployment(d *data.Deployment, io *data.Invoke
 
 func (p *startDeployment) deploy(ctx context.Context, azureDeployment *deployment.AzureDeployment) (*deployment.AzureDeploymentResult, error) {
 	return deployment.Create(*azureDeployment)
-}
-
-func backOffRetryHandler(n uint, err error, config *retry.Config) time.Duration {
-	fmt.Println("Deployment failed with: " + err.Error())
-	if retriable, ok := err.(*RetriableError); ok {
-		fmt.Printf("Retry after %v\n", retriable.RetryAfter)
-		return retriable.RetryAfter
-	}
-	return retry.BackOffDelay(n, err, config)
 }
 
 //region factory

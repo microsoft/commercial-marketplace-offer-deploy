@@ -25,20 +25,25 @@ func (exe *dryRun) Execute(ctx context.Context, operation *data.InvokedOperation
 	log.Debug("Inside Invoke for DryRun with an operation of %v", *operation)
 
 	err := retry.Do(func() error {
+		log.Debug("Inside retry.Do for DryRun with an operation of %v", *operation)
 		azureDeployment := exe.getAzureDeployment(operation)
-		response, err := exe.dryRun(azureDeployment)
-		log.Debug("DryRun response is %v", *response)
+		log.Debug("AzureDeployment is %v", *azureDeployment)
 
+		response, err := exe.dryRun(azureDeployment)
+		
 		if err != nil {
+			log.Error("Error in DryRun: %v", err)
 			return &RetriableError{Err: err, RetryAfter: 10 * time.Second}
 		}
 
+		log.Debug("DryRun response is %v", *response)
 		operation.Status = *response.Status
 		operation.Result = response.DryRunResult
 		operation.UpdatedAt = time.Now().UTC()
 
 		err = exe.save(operation)
 		if err != nil {
+			log.Error("Error in DryRun: %v", err)
 			return &RetriableError{Err: err, RetryAfter: 10 * time.Second}
 		}
 		
@@ -48,7 +53,7 @@ func (exe *dryRun) Execute(ctx context.Context, operation *data.InvokedOperation
 		return nil
 	},
 	retry.Attempts(uint(operation.Retries)),
-	retry.DelayType(backOffRetryHandler))
+	)
 
 	return err
 }
@@ -100,6 +105,7 @@ func (exe *dryRun) save(operation *data.InvokedOperation) error {
 //region factory
 
 func NewDryRunExecutor(appConfig *config.AppConfig) Executor {
+	log.Debug("Inside NewDryRunExecutor")
 	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
 	credential := hosting.GetAzureCredential()
 	sender, _ := messaging.NewServiceBusMessageSender(credential, messaging.MessageSenderOptions{
