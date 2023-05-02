@@ -12,6 +12,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -69,12 +70,12 @@ func (p *dispatcher) save(ctx context.Context, c *DispatchInvokedOperation) (uui
 		Parameters:   c.Request.Parameters.(map[string]interface{}),
 	}
 
-	invokedOperation.Retries =int(*c.Request.Retries)
+	invokedOperation.Retries = int(*c.Request.Retries)
 	log.Debugf("Retries is received to %d", *c.Request.Retries)
 	if *c.Request.Retries <= 0 {
 		log.Debug("Retries is not set, defaulting to 1")
 		invokedOperation.Retries = 1
-	} 
+	}
 	log.Debugf("Retries is set to %d", invokedOperation.Retries)
 	tx.Save(invokedOperation)
 
