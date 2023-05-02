@@ -47,7 +47,7 @@ func (exe *dryRun) Execute(ctx context.Context, operation *data.InvokedOperation
 
 		return nil
 	},
-	retry.Attempts(defaultRetryCount),
+	retry.Attempts(uint(operation.Retries)),
 	retry.DelayType(backOffRetryHandler))
 
 	return err

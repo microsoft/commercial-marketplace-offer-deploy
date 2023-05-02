@@ -2,7 +2,6 @@ package operations
 
 import (
 	"context"
-
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 )

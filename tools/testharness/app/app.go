@@ -180,7 +180,7 @@ func CreateDeployment(c echo.Context) error {
 		SubscriptionID: &subscription,
 	}
 
-	res, err := client.CreateDeployment(ctx, request)
+	res, err := client.Create(ctx, request)
 	log.Printf("%v", res)
 	if err != nil {
 		log.Panicln(err)
@@ -219,7 +219,7 @@ func DryRun(c echo.Context) error {
 	var ctx context.Context = context.Background()
 
 	log.Printf("About to call DryRunDeployment - paramsMap: %s", paramsMap)
-	res, err := client.DryRunDeployment(ctx, int32(deploymentId), paramsMap)
+	res, err := client.DryRun(ctx, deploymentId, paramsMap)
 	if err != nil {
 		log.Println(err)
 	}
@@ -255,7 +255,7 @@ func StartDeployment(c echo.Context) error {
 
 	// TODO: properly construct the startdeployment params
 	// create
-	res, err := client.StartDeployment(ctx, int32(deploymentId), paramsMap)
+	res, err := client.Start(ctx, deploymentId, paramsMap, nil)
 	if err != nil {
 		log.Println(err)
 	}

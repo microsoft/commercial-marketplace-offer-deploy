@@ -5,18 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-
-	//	"strings"
 	"testing"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-
-	//"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2021-04-01/resources"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
-	//	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/stretchr/testify/assert"
-	//	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -85,11 +78,6 @@ func (s *deploymentSuite) TestExportNestedDeployment() {
 		fmt.Printf("Deployment template not found: %v\n", err)
 	}
 
-	// paramsFromFile := getParmsAsMap(s, "/Users/bobjacobs/work/src/github.com/microsoft/commercial-marketplace-offer-deploy/test/testdata/nameviolation/nestedfailure/parameters.json")
-	// if paramsFromFile == nil {
-	// 	assert.Fail(s.T(), "Failed to get params from file")
-	// }
-
 	t := template.Template
 	if t == nil {
 		assert.Fail(s.T(), "Failed to get template")
@@ -97,7 +85,6 @@ func (s *deploymentSuite) TestExportNestedDeployment() {
 
 	paramValuesMap := getParamsMapFromTemplate(template.Template.(map[string]interface{}), castParams)
 	
-
 	deploymentPollerResp, err := deploymentsClient.BeginCreateOrUpdate(
 		ctx,
 		s.resourceGroupName,
@@ -123,14 +110,6 @@ func (s *deploymentSuite) TestExportNestedDeployment() {
 		assert.Fail(s.T(), "Failed to get response")
 	}
 }
-
-// func getParmsAsMap(s *deploymentSuite, paramsFile string) map[string]interface{} {
-// 	params, err := ReadJson(paramsFile)
-// 	if err != nil {
-// 		assert.Fail(s.T(), "Failed to read params file")
-// 	}
-// 	return params
-// }
 
 func ReadJson(path string) (map[string]interface{}, error) {
 	templateFile, err := ioutil.ReadFile(path)
@@ -161,11 +140,3 @@ func getParamsMapFromTemplate(template map[string]interface{}, params map[string
 }
 
 
-
-// func convertForRedeploy(in interface{}) (map[string]interface{}, error) {
-// 	m, ok := in.(map[string]interface{})
-//     if !ok {
-//         return nil, errors.New("input is not a map")
-//     }
-//     return m, nil
-// }
