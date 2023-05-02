@@ -60,13 +60,13 @@ func (p *dispatcher) save(ctx context.Context, c *DispatchInvokedOperation) (uui
 	tx.First(&deployment, c.DeploymentId)
 
 	// TODO: update deployment status depending on what the operation is
-	deployment.Status = string(events.StatusScheduled)
+	deployment.Status = string(operation.StatusScheduled)
 	tx.Save(deployment)
 
 	invokedOperation := &data.InvokedOperation{
 		DeploymentId: uint(c.DeploymentId),
 		Name:         *c.Request.Name,
-		Status:       events.StatusAccepted.String(),
+		Status:       string(operation.StatusScheduled),
 		Parameters:   c.Request.Parameters.(map[string]interface{}),
 	}
 
