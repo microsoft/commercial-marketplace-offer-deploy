@@ -17,17 +17,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var (
-	db             = data.NewDatabase(&data.DatabaseOptions{UseInMemory: true}).Instance()
-	deploymentJson = `{
-		"name":"test-deployment", 
-		"subscriptionId":"test-id",
-		"resourceGroup":"test-rg",
-		"location":"testus",
-		"template": {}
-	}`
-)
-
 func TestCreateDeployment(t *testing.T) {
 	// Setup
 	deploymentJson := getFakeCreateDeploymentJson(t)

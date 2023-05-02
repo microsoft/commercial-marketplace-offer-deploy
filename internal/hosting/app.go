@@ -99,8 +99,8 @@ func (app *App) startServer(options *AppStartOptions) {
 			port = *options.Port
 		}
 		address := ":" + strconv.Itoa(port)
-		log.Debug("Server starting on local port %s", address)
-		log.Debug("Public domain: %s", app.config.Http.DomainName)
+		log.Debugf("Server starting on local port %s", address)
+		log.Debugf("Public domain: %s", app.config.Http.DomainName)
 
 		if options.ConfigureWebServer != nil {
 			options.ConfigureWebServer(app.server)

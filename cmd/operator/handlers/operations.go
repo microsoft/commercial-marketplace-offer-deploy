@@ -3,13 +3,12 @@ package handlers
 import (
 	"encoding/json"
 
-	"github.com/google/uuid"
-	"github.com/labstack/gommon/log"
 	ops "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/operations"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
+	log "github.com/sirupsen/logrus"
 )
 
 type operationMessageHandler struct {
@@ -20,9 +19,9 @@ type operationMessageHandler struct {
 func (h *operationMessageHandler) Handle(message *messaging.ExecuteInvokedOperation, context messaging.MessageHandlerContext) error {
 	db := h.database.Instance()
 	var invokedOperation *data.InvokedOperation
-	db.First(&invokedOperation, uuid.MustParse(message.OperationId))
+	db.First(&invokedOperation, message.OperationId)
 
-	log.Debug("operation id: %s", message.OperationId)
+	log.Debug("operationId: %s", message.OperationId)
 	log.Debug("Invoked Operation from DB: %v", invokedOperation)
 
 	operationType, err := operations.Type(invokedOperation.Name)
