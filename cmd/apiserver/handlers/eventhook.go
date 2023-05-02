@@ -6,14 +6,14 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func DeleteEventSubscription(c echo.Context) error {
+func DeleteEventHook(c echo.Context) error {
 	return c.JSON(http.StatusOK, "")
 }
 
-func GetEventSubscription(c echo.Context) error {
+func GetEventHook(c echo.Context) error {
 	return c.JSON(http.StatusOK, "")
 }
 
-func ListEventSubscriptions(c echo.Context) error {
+func ListEventHooks(c echo.Context) error {
 	return c.JSON(http.StatusOK, "")
 }

@@ -10,10 +10,8 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
-	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -85,8 +83,7 @@ func (p *dispatcher) save(ctx context.Context, c *DispatchInvokedOperation) (uui
 
 // send the message on the queue
 func (h *dispatcher) send(ctx context.Context, operationId uuid.UUID) error {
-	message := messaging.ExecuteInvokedOperation{OperationId: operationId.String()}
-	log.Debug("sending message from api/operations/processor.go - message: %v", message)
+	message := messaging.ExecuteInvokedOperation{OperationId: operationId}
 
 	results, err := h.sender.Send(ctx, string(messaging.QueueNameOperations), message)
 	if err != nil {
@@ -115,23 +112,16 @@ func (h *dispatcher) addEventHook(ctx context.Context, deploymentId int, status 
 // region factory
 
 func NewOperatorDispatcher(appConfig *config.AppConfig, credential azcore.TokenCredential) (OperatorDispatcher, error) {
-	errors := []string{}
-
 	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
 	sender, err := newMessageSender(appConfig, credential)
 	if err != nil {
-		errors = append(errors, err.Error())
+		return nil, err
 	}
 
-	if len(errors) > 0 {
-		return nil, utils.NewAggregateError(errors)
-	}
-
-	processor := &dispatcher{
+	return &dispatcher{
 		db:     db,
 		sender: sender,
-	}
-	return processor, nil
+	}, nil
 }
 
 func newMessageSender(appConfig *config.AppConfig, credential azcore.TokenCredential) (messaging.MessageSender, error) {

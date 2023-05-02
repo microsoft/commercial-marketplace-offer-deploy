@@ -52,7 +52,7 @@ func create(options eventGridRegistrationTaskOptions) tasks.Task {
 		if err != nil {
 			return err
 		}
-		log.Debug("System topic created: %s", manager.GetSystemTopicName())
+		log.Debugf("System topic created: %s", manager.GetSystemTopicName())
 
 		hostname, err := os.Hostname()
 		if err != nil {

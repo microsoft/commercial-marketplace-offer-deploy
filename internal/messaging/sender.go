@@ -80,6 +80,7 @@ func (s *serviceBusMessageSender) Send(ctx context.Context, queueName string, me
 			continue
 		}
 
+		log.Debug("sending message: %v", message)
 		err = sender.SendMessage(ctx, &azservicebus.Message{
 			Body: body,
 		}, nil)

@@ -65,31 +65,31 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 		},
 
 		hosting.Route{
-			Name:        "CreatEventSubscription",
+			Name:        "CreatEventHook",
 			Method:      http.MethodPost,
 			Path:        "/events/hooks",
 			HandlerFunc: middleware.AddJwtBearer(hosting.ToHandlerFunc(handlers.CreateEventHook, databaseOptions), appConfig),
 		},
 
 		hosting.Route{
-			Name:        "DeleteEventSubscription",
+			Name:        "DeleteEventHook",
 			Method:      strings.ToUpper("Delete"),
-			Path:        "/events/hooks/:subscriptionId",
-			HandlerFunc: middleware.AddJwtBearer(handlers.DeleteEventSubscription, appConfig),
+			Path:        "/events/hooks/:hookId",
+			HandlerFunc: middleware.AddJwtBearer(handlers.DeleteEventHook, appConfig),
 		},
 
 		hosting.Route{
-			Name:        "GetEventSubscription",
+			Name:        "GetEventHook",
 			Method:      http.MethodGet,
-			Path:        "/events/hooks/:subscriptionId",
-			HandlerFunc: middleware.AddJwtBearer(handlers.GetEventSubscription, appConfig),
+			Path:        "/events/hooks/:hookId",
+			HandlerFunc: middleware.AddJwtBearer(handlers.GetEventHook, appConfig),
 		},
 
 		hosting.Route{
-			Name:        "ListEventSubscriptions",
+			Name:        "ListEventHooks",
 			Method:      http.MethodGet,
 			Path:        "/events/hooks",
-			HandlerFunc: middleware.AddJwtBearer(handlers.ListEventSubscriptions, appConfig),
+			HandlerFunc: middleware.AddJwtBearer(handlers.ListEventHooks, appConfig),
 		},
 
 		hosting.Route{
