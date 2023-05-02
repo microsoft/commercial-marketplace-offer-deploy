@@ -59,17 +59,17 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
     
-      - name: Clean up resource groups
-        uses: azure/CLI@v1 
-        with: 
-          azcliversion: 2.30.0 
-          inlineScript: | 
-            filter="[?starts_with(name,'development')].[name]" 
-            groups=$(az group list --query $filter -o tsv) 
-            for g in $groups; do 
-              az group delete -n $g --yes --no-wait; 
-            done 
-            az group create -l eastus -n $RESOURCE_GROUP_NAME
+#       - name: Clean up resource groups
+#         uses: azure/CLI@v1 
+#         with: 
+#           azcliversion: 2.30.0 
+#           inlineScript: | 
+#             filter="[?starts_with(name,'development')].[name]" 
+#             groups=$(az group list --query $filter -o tsv) 
+#             for g in $groups; do 
+#               az group delete -n $g --yes --no-wait; 
+#             done 
+#             az group create -l eastus -n $RESOURCE_GROUP_NAME
 
       # Replace the placeholder registry password with secret
       - name: Find and Replace
