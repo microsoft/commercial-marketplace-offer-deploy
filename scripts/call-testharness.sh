@@ -1,6 +1,8 @@
 #!/bin/bash
 
 
+make run-testharness build=true
+
 testharness=http://localhost:8280
 curl -s $testharness/
 sleep 5
