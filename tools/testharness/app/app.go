@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-
+	json "encoding/json"
 	//"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -112,9 +112,14 @@ func ReceiveEventNotification(c echo.Context) error {
 	var bodyJson any
 	c.Bind(&bodyJson)
 
-	json := c.JSON(http.StatusOK, bodyJson)
-	log.Printf("ReceiveEventNotification response - %s", json)
-	return json
+	j := c.JSON(http.StatusOK, bodyJson)
+	b, err := json.MarshalIndent(bodyJson, "", "  ")
+    if err != nil {
+        log.Error(err)
+    }
+
+	log.Printf("ReceiveEventNotification response - %s", string(b))
+	return j
 }
 
 func CreateEventHook(c echo.Context) error {

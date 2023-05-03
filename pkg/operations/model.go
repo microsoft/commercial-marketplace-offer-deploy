@@ -1,6 +1,10 @@
 package operations
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/labstack/gommon/log"
+)
 
 type OperationType string
 
@@ -29,6 +33,10 @@ func Type(o string) (OperationType, error) {
 		return OperationDryRun, nil
 	case OperationStartDeployment.String():
 		return OperationStartDeployment, nil
+	case OperationRetryDeployment.String():
+		return OperationRetryDeployment, nil
+	case OperationRetryStage.String():
+		return OperationRetryStage, nil
 	default:
 		return OperationUnknown, fmt.Errorf("unknown operation type %s", o)
 	}

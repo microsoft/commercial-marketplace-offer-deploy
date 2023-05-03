@@ -2,15 +2,21 @@ package operations
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
-	//	"github.com/google/uuid"
+
 	"github.com/labstack/gommon/log"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
+
 	//"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	deployment "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
+
 	//	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"gorm.io/gorm"
 )
@@ -26,8 +32,9 @@ func (exe *retryStage) Execute(ctx context.Context, operation *data.InvokedOpera
 	db.First(&dep, operation.DeploymentId)
 
 	stageName := operation.Parameters["stageName"].(string)
-	foundStage := exe.findStage(dep, stageName)
+	log.Debugf("retryStage.Execute: stageName: %s", stageName)
 
+	foundStage := exe.findStage(dep, stageName)
 	if foundStage == nil {
 		errMsg := fmt.Sprintf("stage not found for deployment %v and stageId %v", dep.ID, stageName)
 		return errors.New(errMsg)
@@ -40,6 +47,7 @@ func (exe *retryStage) Execute(ctx context.Context, operation *data.InvokedOpera
 
 	res, err := deployment.Redeploy(*redeployment)
 	if err != nil {
+		log.Errorf("error redeploying deployment: %s", err)
 		return err
 	}
 
@@ -47,15 +55,61 @@ func (exe *retryStage) Execute(ctx context.Context, operation *data.InvokedOpera
 		log.Debugf("Redeployment response is nil")
 	}
 
-	// err := exe.updateToRunning(ctx, operation, dep)
-	// if err != nil {
-	// 	log.Errorf("error updating deployment to running: %s", err)
-	// 	return err
-	// }
+	//operation.Status = events.StatusRunning.String()
+	//exe.save(operation)
+	//log.Debug("retryStage.updateToRunning: operation saved")
+	err = exe.sendHook(dep, foundStage)
+	if err != nil {
+		log.Errorf("error adding hook: %s", err)
+		return err
+	}
+
+	return nil
+}
+
+func (exe *retryStage) sendHook(deployment *data.Deployment, stage *data.Stage ) error {
+	subject := fmt.Sprintf("/deployments/%v/%v", strconv.Itoa(int(deployment.ID)), stage.Name)
+	log.Debugf("retryStage.updateToRunning: subject: %s", subject)
+
+	stageName := stage.ID.String()
+	log.Debugf("retryStage.updateToRunning: stageName: %s", stageName)
+
+	err := hook.Add(&events.EventHookMessage{
+		Subject: subject,
+		Status:  deployment.Status,
+		Data: &events.DeploymentEventData{
+			DeploymentId: int(deployment.ID),
+			StageId: &stageName,
+			Message:      "Deployment started successfully",
+		},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (exe *retryStage) save(operation *data.InvokedOperation) error {
+	tx := exe.db.Begin()
+	tx.Save(&operation)
+
+	if tx.Error != nil {
+		tx.Rollback()
+		return tx.Error
+	}
+	tx.Commit()
+
 	return nil
 }
 
 func (exe *retryStage) mapToAzureRedeployment(dep *data.Deployment, stage *data.Stage, operation *data.InvokedOperation) *deployment.AzureRedeployment {
+	b, err := json.MarshalIndent(dep, "", "  ")
+    if err != nil {
+        log.Error(err)
+    }
+	log.Debugf("retryStage.mapToAzureRedeployment: dep: %v, stage: %v, operation: %v", string(b), stage, operation)
 	azureRedeployment := &deployment.AzureRedeployment {
 		SubscriptionId: dep.SubscriptionId,
 		Location: dep.Location,
@@ -75,27 +129,41 @@ func (exe *retryStage) findStage(deployment *data.Deployment, stageName string) 
 	return nil
 }
 
-func (exe *retryStage) updateToRunning(ctx context.Context, operation *data.InvokedOperation, deployment *data.Deployment) error {
-	// db := exe.db
+// func (exe *retryStage) updateToRunning(ctx context.Context, operation *data.InvokedOperation, deployment *data.Deployment, stage *data.Stage) error {
+// 	log.Debugf("retryStage.updateToRunning: operation: %v, deployment: %v, stage: %v", operation, deployment, stage)
+// 	db := exe.db
 
-	// operation.Status = events.StatusRunning.String()
-	// db.Save(operation)
+// 	if operation == nil {
+// 		log.Error("retryStage.updateToRunning: operation is nil")
+// 		return errors.New("operation is nil")
+// 	}
 
-	// subject := fmt.Sprintf("/deployments")
-	// err := hook.Add(&events.EventHookMessage{
-	// 	Subject: "/deployments/" + strconv.Itoa(int(deployment.ID)),
-	// 	Status:  deployment.Status,
-	// 	Data: &events.DeploymentEventData{
-	// 		DeploymentId: int(deployment.ID),
-	// 		Message:      "Deployment started successfully",
-	// 	},
-	// })
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// return deployment, err
-	return nil
-}
+// 	operation.Status = events.StatusRunning.String()
+// 	db.Save(operation)
+// 	log.Debug("retryStage.updateToRunning: operation saved")
+
+// 	subject := fmt.Sprintf("/deployments/%v/%v", strconv.Itoa(int(deployment.ID)), stage.Name)
+// 	log.Debugf("retryStage.updateToRunning: subject: %s", subject)
+
+// 	stageName := stage.ID.String()
+// 	log.Debugf("retryStage.updateToRunning: stageName: %s", stageName)
+
+// 	err := hook.Add(&events.EventHookMessage{
+// 		Subject: subject,
+// 		Status:  deployment.Status,
+// 		Data: &events.DeploymentEventData{
+// 			DeploymentId: int(deployment.ID),
+// 			StageId: &stageName,
+// 			Message:      "Deployment started successfully",
+// 		},
+// 	})
+
+// 	if err != nil {
+// 		return err
+// 	}
+	
+// 	return nil
+// }
 
 //region factory
 
