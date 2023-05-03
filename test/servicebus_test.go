@@ -88,7 +88,6 @@ func (s *serviceBusSuite) createDeploymentForTests() {
 
 	deployment := &data.Deployment{
 		Name:           s.deploymentName,
-		Status:         "New",
 		SubscriptionId: s.subscriptionId,
 		ResourceGroup:  s.resourceGroupName,
 		Location:       s.location,

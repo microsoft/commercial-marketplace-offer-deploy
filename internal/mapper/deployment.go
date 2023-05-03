@@ -26,7 +26,6 @@ func (m *DeploymentMapper) Map(deployment *data.Deployment) api.Deployment {
 	result := api.Deployment{
 		ID:     to.Ptr(int32(deployment.ID)),
 		Name:   &deployment.Name,
-		Status: &deployment.Status,
 	}
 
 	for _, stage := range deployment.Stages {

@@ -69,7 +69,7 @@ func getTemplatePath() string {
 	if len(path) > 0 {
 		return path
 	}
-	return "./mainTemplateBicep.json"
+	return "./templates/mainTemplateBicep.json"
 }
 
 func getParamsPath() string {
@@ -78,7 +78,7 @@ func getParamsPath() string {
 		log.Printf("Found TEMPLATEPARAMS_PATH - %s", templateParams)
 		return templateParams
 	}
-	return "./parametersBicep.json"
+	return "./templates/parametersBicep.json"
 }
 
 func getCallback() string {
@@ -216,6 +216,7 @@ func CreateDeployment(c echo.Context) error {
 
 	log.Println("Inside CreateDeployment")
 	templatePath := getTemplatePath()
+	
 	templateMap := getJsonAsMap(templatePath)
 	log.Printf("The templateMap is %s", templateMap)
 

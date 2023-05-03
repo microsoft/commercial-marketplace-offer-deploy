@@ -54,12 +54,12 @@ func (exe *startDeployment) updateToRunning(ctx context.Context, invokedOperatio
 
 	deployment := &data.Deployment{}
 	db.First(&deployment, invokedOperation.DeploymentId)
-	deployment.Status = operation.StatusRunning.String()
-	db.Save(deployment)
+	invokedOperation.Status = operation.StatusRunning.String()
+	db.Save(invokedOperation)
 
 	err := hook.Add(&events.EventHookMessage{
 		Subject: "/deployments/" + strconv.Itoa(int(deployment.ID)),
-		Status:  deployment.Status,
+		Status:  invokedOperation.Status,
 		Data: &events.DeploymentEventData{
 			DeploymentId: int(deployment.ID),
 			Message:      "Deployment started successfully",
@@ -76,8 +76,8 @@ func (exe *startDeployment) updateToFailed(ctx context.Context, invokedOperation
 
 	deployment := &data.Deployment{}
 	db.First(&deployment, invokedOperation.DeploymentId)
-	deployment.Status = string(operation.StatusFailed)
-	db.Save(deployment)
+	invokedOperation.Status = string(operation.StatusFailed)
+	db.Save(invokedOperation)
 
 	err = hook.Add(&events.EventHookMessage{
 		Subject: "/deployments/" + strconv.Itoa(int(deployment.ID)),

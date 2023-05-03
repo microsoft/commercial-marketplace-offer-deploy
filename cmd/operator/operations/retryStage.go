@@ -54,7 +54,7 @@ func (exe *retryStage) Execute(ctx context.Context, invokedOperation *data.Invok
 		log.Debugf("Redeployment response is nil")
 	}
 
-	err = exe.sendHook(dep, foundStage)
+	err = exe.sendHook(dep, invokedOperation, foundStage)
 	if err != nil {
 		log.Errorf("error adding hook: %s", err)
 		return err
@@ -63,7 +63,7 @@ func (exe *retryStage) Execute(ctx context.Context, invokedOperation *data.Invok
 	return nil
 }
 
-func (exe *retryStage) sendHook(deployment *data.Deployment, stage *data.Stage) error {
+func (exe *retryStage) sendHook(deployment *data.Deployment, invokedOperation *data.InvokedOperation, stage *data.Stage) error {
 	subject := fmt.Sprintf("/deployments/%v/%v", strconv.Itoa(int(deployment.ID)), stage.Name)
 	log.Debugf("retryStage.updateToRunning: subject: %s", subject)
 
@@ -72,7 +72,7 @@ func (exe *retryStage) sendHook(deployment *data.Deployment, stage *data.Stage) 
 
 	err := hook.Add(&events.EventHookMessage{
 		Subject: subject,
-		Status:  deployment.Status,
+		Status:  invokedOperation.Status,
 		Data: &events.DeploymentEventData{
 			DeploymentId: int(deployment.ID),
 			StageId:      &stageName,
@@ -125,49 +125,9 @@ func (exe *retryStage) findStage(deployment *data.Deployment, stageId uuid.UUID)
 	return nil
 }
 
-// func (exe *retryStage) updateToRunning(ctx context.Context, operation *data.InvokedOperation, deployment *data.Deployment, stage *data.Stage) error {
-// 	log.Debugf("retryStage.updateToRunning: operation: %v, deployment: %v, stage: %v", operation, deployment, stage)
-// 	db := exe.db
-
-// 	if operation == nil {
-// 		log.Error("retryStage.updateToRunning: operation is nil")
-// 		return errors.New("operation is nil")
-// 	}
-
-// 	operation.Status = events.StatusRunning.String()
-// 	db.Save(operation)
-// 	log.Debug("retryStage.updateToRunning: operation saved")
-
-// 	subject := fmt.Sprintf("/deployments/%v/%v", strconv.Itoa(int(deployment.ID)), stage.Name)
-// 	log.Debugf("retryStage.updateToRunning: subject: %s", subject)
-
-// 	stageName := stage.ID.String()
-// 	log.Debugf("retryStage.updateToRunning: stageName: %s", stageName)
-
-// 	err := hook.Add(&events.EventHookMessage{
-// 		Subject: subject,
-// 		Status:  deployment.Status,
-// 		Data: &events.DeploymentEventData{
-// 			DeploymentId: int(deployment.ID),
-// 			StageId: &stageName,
-// 			Message:      "Deployment started successfully",
-// 		},
-// 	})
-
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
-
-//region factory
-
 func NewRetryStageExecutor(appConfig *config.AppConfig) Executor {
 	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
 	return &retryStage{
 		db: db,
 	}
 }
-
-//endregion factory
