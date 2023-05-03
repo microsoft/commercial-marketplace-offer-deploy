@@ -25,6 +25,10 @@ func Type(o string) (OperationType, error) {
 		return TypeDryRun, nil
 	case TypeStartDeployment.String():
 		return TypeStartDeployment, nil
+	case TypeRetryDeployment.String():
+		return TypeRetryDeployment, nil
+	case TypeRetryStage.String():
+		return TypeRetryStage, nil
 	default:
 		return TypeUnknown, fmt.Errorf("unknown operation type %s", o)
 	}
