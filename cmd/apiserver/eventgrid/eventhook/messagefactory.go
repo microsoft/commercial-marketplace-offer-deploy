@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/iancoleman/strcase"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
@@ -70,7 +71,7 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*eve
 
 	message := &events.EventHookMessage{
 		Id:     messageId,
-		Status: events.StatusAccepted.String(),
+		Status: strcase.ToLowerCamel(eventData.Status),
 		Type:   string(events.EventTypeDeploymentAzureEventReceived),
 		Data:   eventData,
 	}

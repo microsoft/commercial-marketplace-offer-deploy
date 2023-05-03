@@ -12,7 +12,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/dispatch"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
 )
 
 const deploymenIdParameterName = "deploymentId"
@@ -41,7 +41,7 @@ func (h *invokeDeploymentOperation) Handle(c echo.Context) error {
 		Name:       request.Name,
 		Parameters: request.Parameters,
 		Result:     nil,
-		Status:     to.Ptr(events.StatusAccepted.String()),
+		Status:     to.Ptr(operation.StatusScheduled.String()),
 	}
 
 	return c.JSON(http.StatusOK, response)

@@ -1,4 +1,4 @@
-package events
+package operation
 
 // Defines an event that occurs in MODM
 type Status string
@@ -7,7 +7,6 @@ type Status string
 const (
 	StatusCreated   Status = "created"
 	StatusDeleted   Status = "deleted"
-	StatusAccepted  Status = "accepted"
 	StatusScheduled Status = "scheduled"
 	StatusRunning   Status = "running"
 	StatusSuccess   Status = "success"
@@ -19,7 +18,6 @@ const (
 func GetStatuses() []string {
 	return []string{
 		StatusCreated.String(),
-		StatusAccepted.String(),
 		StatusScheduled.String(),
 		StatusRunning.String(),
 		StatusSuccess.String(),

@@ -11,7 +11,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operations"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -48,7 +48,7 @@ func (h *dispatcher) Dispatch(ctx context.Context, command *DispatchInvokedOpera
 }
 
 func validateOperationName(name string) error {
-	_, err := operations.Type(name)
+	_, err := operation.Type(name)
 	return err
 }
 
@@ -60,13 +60,13 @@ func (p *dispatcher) save(ctx context.Context, c *DispatchInvokedOperation) (uui
 	tx.First(&deployment, c.DeploymentId)
 
 	// TODO: update deployment status depending on what the operation is
-	deployment.Status = string(events.StatusScheduled)
+	deployment.Status = string(operation.StatusScheduled)
 	tx.Save(deployment)
 
 	invokedOperation := &data.InvokedOperation{
 		DeploymentId: uint(c.DeploymentId),
 		Name:         *c.Request.Name,
-		Status:       events.StatusAccepted.String(),
+		Status:       string(operation.StatusScheduled),
 		Parameters:   c.Request.Parameters.(map[string]interface{}),
 	}
 

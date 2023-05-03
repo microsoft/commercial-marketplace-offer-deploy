@@ -6,34 +6,40 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+
 	"github.com/google/uuid"
-	"github.com/labstack/gommon/log"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
-	deployment "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
 type retryStage struct {
 	db *gorm.DB
-}     
+}
 
-func (exe *retryStage) Execute(ctx context.Context, operation *data.InvokedOperation) error {
+func (exe *retryStage) Execute(ctx context.Context, invokedOperation *data.InvokedOperation) error {
 	db := exe.db
 
 	dep := &data.Deployment{}
-	db.First(&dep, operation.DeploymentId)
+	db.First(&dep, invokedOperation.DeploymentId)
 
-	stageId := uuid.MustParse(operation.Parameters["stageId"].(string))
+	db.Save(dep)
+	invokedOperation.Status = string(operation.StatusRunning)
+	exe.save(invokedOperation)
+
+	stageId := uuid.MustParse(invokedOperation.Parameters["stageId"].(string))
 	foundStage := exe.findStage(dep, stageId)
 	if foundStage == nil {
 		errMsg := fmt.Sprintf("stage not found for deployment %v and stageId %v", dep.ID, stageId)
 		return errors.New(errMsg)
 	}
 
-	redeployment := exe.mapToAzureRedeployment(dep, foundStage, operation)
+	redeployment := exe.mapToAzureRedeployment(dep, foundStage, invokedOperation)
 	if redeployment == nil {
 		return errors.New("unable to map to AzureRedeployment")
 	}
@@ -47,7 +53,7 @@ func (exe *retryStage) Execute(ctx context.Context, operation *data.InvokedOpera
 	if res == nil {
 		log.Debugf("Redeployment response is nil")
 	}
-	
+
 	err = exe.sendHook(dep, foundStage)
 	if err != nil {
 		log.Errorf("error adding hook: %s", err)
@@ -57,7 +63,7 @@ func (exe *retryStage) Execute(ctx context.Context, operation *data.InvokedOpera
 	return nil
 }
 
-func (exe *retryStage) sendHook(deployment *data.Deployment, stage *data.Stage ) error {
+func (exe *retryStage) sendHook(deployment *data.Deployment, stage *data.Stage) error {
 	subject := fmt.Sprintf("/deployments/%v/%v", strconv.Itoa(int(deployment.ID)), stage.Name)
 	log.Debugf("retryStage.updateToRunning: subject: %s", subject)
 
@@ -69,7 +75,7 @@ func (exe *retryStage) sendHook(deployment *data.Deployment, stage *data.Stage )
 		Status:  deployment.Status,
 		Data: &events.DeploymentEventData{
 			DeploymentId: int(deployment.ID),
-			StageId: &stageName,
+			StageId:      &stageName,
 			Message:      "Deployment started successfully",
 		},
 	})
@@ -83,7 +89,7 @@ func (exe *retryStage) sendHook(deployment *data.Deployment, stage *data.Stage )
 
 func (exe *retryStage) save(operation *data.InvokedOperation) error {
 	tx := exe.db.Begin()
-	tx.Save(&operation)
+	tx.Save(operation)
 
 	if tx.Error != nil {
 		tx.Rollback()
@@ -96,15 +102,15 @@ func (exe *retryStage) save(operation *data.InvokedOperation) error {
 
 func (exe *retryStage) mapToAzureRedeployment(dep *data.Deployment, stage *data.Stage, operation *data.InvokedOperation) *deployment.AzureRedeployment {
 	b, err := json.MarshalIndent(dep, "", "  ")
-    if err != nil {
-        log.Error(err)
-    }
+	if err != nil {
+		log.Error(err)
+	}
 	log.Debugf("retryStage.mapToAzureRedeployment: dep: %v, stage: %v, operation: %v", string(b), stage, operation)
-	azureRedeployment := &deployment.AzureRedeployment {
-		SubscriptionId: dep.SubscriptionId,
-		Location: dep.Location,
+	azureRedeployment := &deployment.AzureRedeployment{
+		SubscriptionId:    dep.SubscriptionId,
+		Location:          dep.Location,
 		ResourceGroupName: dep.ResourceGroup,
-		DeploymentName: stage.DeploymentName,
+		DeploymentName:    stage.DeploymentName,
 	}
 
 	return azureRedeployment
@@ -151,7 +157,7 @@ func (exe *retryStage) findStage(deployment *data.Deployment, stageId uuid.UUID)
 // 	if err != nil {
 // 		return err
 // 	}
-	
+
 // 	return nil
 // }
 
