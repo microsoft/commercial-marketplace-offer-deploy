@@ -35,7 +35,7 @@
         "mode": "Incremental",
         "parameters": {
           "name": {
-            "value": "bobjacbicepsa"
+            "value": "modmtestharness0stor"
           },
           "location": {
             "value": "[resourceGroup().location]"

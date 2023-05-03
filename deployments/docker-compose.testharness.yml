@@ -5,6 +5,7 @@ services:
     volumes:
       - "${HOME}/tmp:/tmp"
       - "${HOME}/.azure:/root/.azure"
+      - "../tools/testharness/templates:/templates"
     ports:
       - 8280:8280
     environment:
@@ -14,7 +15,7 @@ services:
       - web
 
   modm:
-    env_file: ../bin/.env
+    env_file: ../bin/.env.local
     image: modm:latest
     volumes:
       - "${HOME}/.azure:/root/.azure"

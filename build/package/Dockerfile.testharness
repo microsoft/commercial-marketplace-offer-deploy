@@ -35,16 +35,7 @@ RUN apt-get clean && apt-get update
 RUN apt install curl -y
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
-ENV LANG en_US.utf8
-
-# Copy the binary to the production image from the builder stage.
 COPY --from=builder /app/bin/testharness /testharness
-COPY --from=builder /app/bin/mainTemplateBicep.json /mainTemplateBicep.json
-COPY --from=builder /app/bin/parametersBicep.json /parametersBicep.json
 COPY --from=builder /app/bin/entrypoint.testharness.sh /entrypoint.testharness.sh
 
-RUN chmod +x /testharness
-RUN chmod +x /entrypoint.testharness.sh
-
-# Run the web service on container startup.
 ENTRYPOINT ["/entrypoint.testharness.sh"]
