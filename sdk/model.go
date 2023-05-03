@@ -7,6 +7,7 @@ import (
 
 type RetryOptions struct {
 	StageId uuid.UUID
+	StageName string
 }
 
 type StatusResponse struct {

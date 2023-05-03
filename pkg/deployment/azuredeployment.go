@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"time"
-
+	"encoding/json"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
@@ -67,6 +67,7 @@ func (ad *AzureDeployment) GetTemplateParams() map[string]interface{} {
 
 type Deployer interface {
 	Deploy(d *AzureDeployment) (*AzureDeploymentResult, error)
+	Redeploy(d *AzureRedeployment) (*AzureDeploymentResult, error)
 }
 
 type ArmTemplateDeployer struct {
@@ -90,6 +91,11 @@ func (armDeployer *ArmTemplateDeployer) getParamsMapFromTemplate(template map[st
 
 
 func (armDeployer *ArmTemplateDeployer) Redeploy(ad *AzureRedeployment) (*AzureDeploymentResult, error) {
+	b, err := json.MarshalIndent(ad, "", "  ")
+    if err != nil {
+        log.Error(err)
+    }
+	log.Debugf("Inside Redeploy in deployment package with a value of %s", string(b))
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		return nil, err
@@ -101,7 +107,7 @@ func (armDeployer *ArmTemplateDeployer) Redeploy(ad *AzureRedeployment) (*AzureD
 	}
 
 	ctx := context.Background()
-	deployment, err := deploymentsClient.Get(ctx, ad.SubscriptionId, ad.DeploymentName, nil)
+	deployment, err := deploymentsClient.Get(ctx, ad.ResourceGroupName, ad.DeploymentName, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -132,6 +138,8 @@ func (armDeployer *ArmTemplateDeployer) Redeploy(ad *AzureRedeployment) (*AzureD
 	castTemplate := template.Template.(map[string]interface{})
 	paramValuesMap := armDeployer.getParamsMapFromTemplate(castTemplate, castParams)
 
+
+	log.Debugf("About to call BeginCreateOrUpdate in Redeploy in deployment package with a resourceGroupName of %s and a deploymentName of %s", ad.ResourceGroupName, ad.DeploymentName)
 	deploymentPollerResp, err := deploymentsClient.BeginCreateOrUpdate(
 		ctx,
 		ad.ResourceGroupName,
@@ -248,9 +256,9 @@ func (armDeployer *ArmTemplateDeployer) mapDeploymentResult(resp armresources.De
 	return &res, nil
 }
 
-func CreateNewDeployer(deployment AzureDeployment) Deployer {
+func CreateNewDeployer(deploymentType DeploymentType) Deployer {
 	return &ArmTemplateDeployer{
-		deployerType: deployment.DeploymentType,
+		deployerType: deploymentType,
 	}
 }
 

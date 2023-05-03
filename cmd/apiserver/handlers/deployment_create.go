@@ -60,6 +60,8 @@ func createResult(deployment *data.Deployment) *api.Deployment {
 		result.Stages = append(result.Stages, &api.DeploymentStage{
 			Name: to.Ptr(stage.Name),
 			ID:   to.Ptr(stage.ID.String()),
+			Status: &stage.Status,
+			DeploymentName: &stage.DeploymentName,
 		})
 	}
 	return result

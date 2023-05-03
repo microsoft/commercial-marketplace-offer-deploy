@@ -2,10 +2,14 @@ package app
 
 import (
 	"context"
+	json "encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
+	//"github.com/google/uuid"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
@@ -24,6 +28,7 @@ var (
 	subscription  = "31e9f9a0-9fd2-4294-a0a3-0101246d9700"
 	clientEndpoint = "http://localhost:8080"
 	env            = loadEnvironmentVariables()
+	deployment      *api.Deployment
 )
 
 func getClientEndpoint() string {
@@ -94,6 +99,7 @@ func AddRoutes(e *echo.Echo) {
 	e.GET("/startdeployment/:deploymentId", StartDeployment)
 	e.GET("/createeventhook", CreateEventHook)
 	e.GET("/dryrun/:deploymentId", DryRun)
+	e.GET("/redeploy/:deploymentId/:stageName", Redeploy)
 	e.POST("/webhook", ReceiveEventNotification)
 }
 
@@ -110,9 +116,14 @@ func ReceiveEventNotification(c echo.Context) error {
 	var bodyJson any
 	c.Bind(&bodyJson)
 
-	json := c.JSON(http.StatusOK, bodyJson)
-	log.Printf("ReceiveEventNotification response - %s", json)
-	return json
+	j := c.JSON(http.StatusOK, bodyJson)
+	b, err := json.MarshalIndent(bodyJson, "", "  ")
+    if err != nil {
+        log.Error(err)
+    }
+
+	log.Printf("ReceiveEventNotification response - %s", string(b))
+	return j
 }
 
 func CreateEventHook(c echo.Context) error {
@@ -144,6 +155,57 @@ func CreateEventHook(c echo.Context) error {
 
 	json := c.JSON(http.StatusOK, res)
 	log.Printf("Create Event Hook response - %s", json)
+	return json
+}
+
+func Redeploy(c echo.Context) error {
+	deploymentId, err := strconv.Atoi(c.Param("deploymentId"))
+	if err != nil {
+		log.Println(err)
+	}
+	stageName := c.Param("stageName")
+	var stageId = uuid.Nil
+	
+	for _, v := range deployment.Stages {
+		if strings.EqualFold(*v.DeploymentName, stageName) {
+			stageId = uuid.MustParse(*v.ID)
+		}
+	}
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	location = getLocation()
+	resourceGroup = getResourceGroup()
+	subscription = getSubscription()
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println("Got the credentials")
+
+	log.Printf("Calling NewClient with endpoint %s", getClientEndpoint())
+	client, err := sdk.NewClient(getClientEndpoint(), cred, nil)
+	if err != nil {
+		log.Panicln(err)
+	}
+	log.Println("Got the client")
+	ctx := context.Background()
+
+	retryOptions := &sdk.RetryOptions{
+		StageId: stageId,
+	}
+
+	resp, err := client.Retry(ctx, deploymentId, retryOptions)
+	if err != nil {
+		log.Println(err)
+	}
+
+	json := c.JSON(http.StatusOK, resp)
+	log.Printf("Redeploy response - %s", json)
+
 	return json
 }
 
@@ -181,6 +243,7 @@ func CreateDeployment(c echo.Context) error {
 	}
 
 	res, err := client.Create(ctx, request)
+	deployment = res
 	log.Printf("%v", res)
 	if err != nil {
 		log.Panicln(err)

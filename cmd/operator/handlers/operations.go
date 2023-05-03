@@ -28,6 +28,7 @@ func (h *operationMessageHandler) Handle(message *messaging.ExecuteInvokedOperat
 	if err != nil {
 		log.Error("Error getting operation type: ", err)
 	}
+	log.Debug("Invoked Operation Name: %v", invokedOperation.Name)
 
 	operation, err := h.factory.Create(operationType)
 	if err != nil {
