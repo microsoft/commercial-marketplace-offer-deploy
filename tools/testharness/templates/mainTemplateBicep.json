@@ -25,8 +25,9 @@
       "tags": {
         "modm.id": "31e9f9a0-9fd2-4294-a0a3-0101246d9700",
         "modm.stage.id": "31e9f9a0-9fd2-4294-a0a3-0101246d9700",
-        "modm.name": "Example Title",
-        "modm.events": "true"
+        "modm.name": "storageAccounts",
+        "modm.events": "true",
+        "modm.retry": "0"
       },
       "properties": {
         "expressionEvaluationOptions": {

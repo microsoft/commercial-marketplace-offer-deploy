@@ -483,6 +483,9 @@
         },
         "status": {
           "type": "string"
+        },
+        "deploymentName": {
+          "type": "string"
         }
       }
     },

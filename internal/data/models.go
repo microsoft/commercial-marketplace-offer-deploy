@@ -27,6 +27,7 @@ type Stage struct {
 	BaseWithGuidPrimaryKey
 	Name   string `json:"name"`
 	Status string `json:"status"`
+	DeploymentName string `json:"deploymentName"`
 }
 
 type Deployment struct {
