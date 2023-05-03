@@ -2,8 +2,6 @@ package operations
 
 import (
 	"fmt"
-
-	"github.com/labstack/gommon/log"
 )
 
 type OperationType string

@@ -2,11 +2,14 @@ package app
 
 import (
 	"context"
+	json "encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
-	json "encoding/json"
+	"strings"
+
 	//"github.com/google/uuid"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
@@ -25,6 +28,7 @@ var (
 	subscription  = "31e9f9a0-9fd2-4294-a0a3-0101246d9700"
 	clientEndpoint = "http://localhost:8080"
 	env            = loadEnvironmentVariables()
+	deployment      *api.Deployment
 )
 
 func getClientEndpoint() string {
@@ -160,6 +164,14 @@ func Redeploy(c echo.Context) error {
 		log.Println(err)
 	}
 	stageName := c.Param("stageName")
+	var stageId = uuid.Nil
+	
+	for _, v := range deployment.Stages {
+		if strings.EqualFold(*v.DeploymentName, stageName) {
+			stageId = uuid.MustParse(*v.ID)
+		}
+	}
+
 	if err != nil {
 		log.Println(err)
 	}
@@ -183,7 +195,7 @@ func Redeploy(c echo.Context) error {
 	ctx := context.Background()
 
 	retryOptions := &sdk.RetryOptions{
-		StageName: stageName,
+		StageId: stageId,
 	}
 
 	resp, err := client.Retry(ctx, deploymentId, retryOptions)
@@ -231,6 +243,7 @@ func CreateDeployment(c echo.Context) error {
 	}
 
 	res, err := client.Create(ctx, request)
+	deployment = res
 	log.Printf("%v", res)
 	if err != nil {
 		log.Panicln(err)

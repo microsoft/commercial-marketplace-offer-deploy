@@ -59,13 +59,13 @@ func (client *Client) Retry(ctx context.Context, deploymentId int, options *Retr
 
 	// if we have a stageId set, then we want to retry a stage of the deployment
 	if options != nil {
-		if options.StageId != uuid.Nil || options.StageName != "" {
+		if options.StageId != uuid.Nil {
 			operation = operations.OperationRetryStage
 		} 
 	}
 
 	params := make(map[string]interface{})
-	params["stageName"] = options.StageName
+	params["stageId"] = options.StageId
 
 	retries := 0 // we don't want to retry a retry.
 	resp, err := client.invokeDeploymentOperation(ctx, false, operation, deploymentId, params, retries)

@@ -6,18 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"strings"
-
+	"github.com/google/uuid"
 	"github.com/labstack/gommon/log"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
-
-	//"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	deployment "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
-
-	//	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"gorm.io/gorm"
 )
 
@@ -31,12 +26,10 @@ func (exe *retryStage) Execute(ctx context.Context, operation *data.InvokedOpera
 	dep := &data.Deployment{}
 	db.First(&dep, operation.DeploymentId)
 
-	stageName := operation.Parameters["stageName"].(string)
-	log.Debugf("retryStage.Execute: stageName: %s", stageName)
-
-	foundStage := exe.findStage(dep, stageName)
+	stageId := uuid.MustParse(operation.Parameters["stageId"].(string))
+	foundStage := exe.findStage(dep, stageId)
 	if foundStage == nil {
-		errMsg := fmt.Sprintf("stage not found for deployment %v and stageId %v", dep.ID, stageName)
+		errMsg := fmt.Sprintf("stage not found for deployment %v and stageId %v", dep.ID, stageId)
 		return errors.New(errMsg)
 	}
 
@@ -54,10 +47,7 @@ func (exe *retryStage) Execute(ctx context.Context, operation *data.InvokedOpera
 	if res == nil {
 		log.Debugf("Redeployment response is nil")
 	}
-
-	//operation.Status = events.StatusRunning.String()
-	//exe.save(operation)
-	//log.Debug("retryStage.updateToRunning: operation saved")
+	
 	err = exe.sendHook(dep, foundStage)
 	if err != nil {
 		log.Errorf("error adding hook: %s", err)
@@ -120,9 +110,9 @@ func (exe *retryStage) mapToAzureRedeployment(dep *data.Deployment, stage *data.
 	return azureRedeployment
 }
 
-func (exe *retryStage) findStage(deployment *data.Deployment, stageName string) *data.Stage {
+func (exe *retryStage) findStage(deployment *data.Deployment, stageId uuid.UUID) *data.Stage {
 	for _, stage := range deployment.Stages {
-		if strings.EqualFold(stage.Name, stageName) {
+		if stage.ID == stageId {
 			return &stage
 		}
 	}
