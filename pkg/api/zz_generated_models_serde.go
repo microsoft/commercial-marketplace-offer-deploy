@@ -171,6 +171,7 @@ func (d *Deployment) UnmarshalJSON(data []byte) error {
 // MarshalJSON implements the json.Marshaller interface for type DeploymentStage.
 func (d DeploymentStage) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]any)
+	populate(objectMap, "deploymentName", d.DeploymentName)
 	populate(objectMap, "id", d.ID)
 	populate(objectMap, "name", d.Name)
 	populate(objectMap, "status", d.Status)
@@ -186,6 +187,9 @@ func (d *DeploymentStage) UnmarshalJSON(data []byte) error {
 	for key, val := range rawMsg {
 		var err error
 		switch key {
+		case "deploymentName":
+				err = unpopulate(val, "DeploymentName", &d.DeploymentName)
+				delete(rawMsg, key)
 		case "id":
 				err = unpopulate(val, "ID", &d.ID)
 				delete(rawMsg, key)

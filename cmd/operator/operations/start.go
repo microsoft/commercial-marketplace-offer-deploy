@@ -13,6 +13,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
 	"gorm.io/gorm"
 )
 
@@ -48,12 +49,12 @@ func (exe *startDeployment) Execute(ctx context.Context, operation *data.Invoked
 	return err
 }
 
-func (exe *startDeployment) updateToRunning(ctx context.Context, operation *data.InvokedOperation) (*data.Deployment, error) {
+func (exe *startDeployment) updateToRunning(ctx context.Context, invokedOperation *data.InvokedOperation) (*data.Deployment, error) {
 	db := exe.db
 
 	deployment := &data.Deployment{}
-	db.First(&deployment, operation.DeploymentId)
-	deployment.Status = events.StatusRunning.String()
+	db.First(&deployment, invokedOperation.DeploymentId)
+	deployment.Status = operation.StatusRunning.String()
 	db.Save(deployment)
 
 	err := hook.Add(&events.EventHookMessage{
@@ -70,21 +71,21 @@ func (exe *startDeployment) updateToRunning(ctx context.Context, operation *data
 	return deployment, err
 }
 
-func (exe *startDeployment) updateToFailed(ctx context.Context, operation *data.InvokedOperation, err error) error {
+func (exe *startDeployment) updateToFailed(ctx context.Context, invokedOperation *data.InvokedOperation, err error) error {
 	db := exe.db
 
 	deployment := &data.Deployment{}
-	db.First(&deployment, operation.DeploymentId)
-	deployment.Status = string(events.StatusFailed)
+	db.First(&deployment, invokedOperation.DeploymentId)
+	deployment.Status = string(operation.StatusFailed)
 	db.Save(deployment)
 
 	err = hook.Add(&events.EventHookMessage{
 		Subject: "/deployments/" + strconv.Itoa(int(deployment.ID)),
-		Status:  events.StatusFailed.String(),
+		Status:  operation.StatusFailed.String(),
 		Type:    string(events.EventTypeDeploymentCompleted),
 		Data: &events.DeploymentEventData{
 			DeploymentId: int(deployment.ID),
-			OperationId:  to.Ptr(operation.ID.String()),
+			OperationId:  to.Ptr(invokedOperation.ID.String()),
 			Message:      fmt.Sprintf("Azure Deployment failed. Result: %s", err.Error()),
 		},
 	})

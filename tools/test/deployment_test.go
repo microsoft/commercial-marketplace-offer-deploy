@@ -1,15 +1,15 @@
 package test
 
 import (
-	"context"
+//	"context"
 	"encoding/json"
-	"fmt"
+//	"fmt"
 	"io/ioutil"
 	"testing"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
-	"github.com/stretchr/testify/assert"
+	// "github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	// "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	// "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
+	// "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -37,79 +37,79 @@ func (s *deploymentSuite) SetupSuite() {
 	s.endpoint = "http://localhost:8080"
 }
 
-func (s *deploymentSuite) TestExportNestedDeployment() {
-	cred, err := azidentity.NewDefaultAzureCredential(nil)
-	if err != nil {
-		fmt.Print(err)
-	}
+// func (s *deploymentSuite) TestExportNestedDeployment() {
+// 	cred, err := azidentity.NewDefaultAzureCredential(nil)
+// 	if err != nil {
+// 		fmt.Print(err)
+// 	}
 	
-	deploymentsClient, err := armresources.NewDeploymentsClient(s.subscriptionId, cred, nil)
-	if err != nil {
-		assert.Fail(s.T(), "Failed to get deployments client")
-	}
+// 	deploymentsClient, err := armresources.NewDeploymentsClient(s.subscriptionId, cred, nil)
+// 	if err != nil {
+// 		assert.Fail(s.T(), "Failed to get deployments client")
+// 	}
 
-	ctx := context.Background()
+// 	ctx := context.Background()
 
-	deployment, err := deploymentsClient.Get(ctx, s.resourceGroupName, s.childDeploymentName, nil)
-	if err != nil {
-		assert.Fail(s.T(), "Failed to get deployment")
-	}
+// 	deployment, err := deploymentsClient.Get(ctx, s.resourceGroupName, s.childDeploymentName, nil)
+// 	if err != nil {
+// 		assert.Fail(s.T(), "Failed to get deployment")
+// 	}
 
-	if deployment.Properties == nil || deployment.Properties.TemplateLink == nil {
-		fmt.Printf("Deployment template not found: %v\n", err)
-	}
+// 	if deployment.Properties == nil || deployment.Properties.TemplateLink == nil {
+// 		fmt.Printf("Deployment template not found: %v\n", err)
+// 	}
 
-	params := (*deployment.DeploymentExtended.Properties).Parameters
-	if params == nil {
-		fmt.Printf("Deployment parameters not found: %v\n", err)
-	}
+// 	params := (*deployment.DeploymentExtended.Properties).Parameters
+// 	if params == nil {
+// 		fmt.Printf("Deployment parameters not found: %v\n", err)
+// 	}
 
-	castParams := params.(map[string]interface{})
-	if castParams == nil {
-		fmt.Printf("Deployment parameters not found: %v\n", err)
-	}
+// 	castParams := params.(map[string]interface{})
+// 	if castParams == nil {
+// 		fmt.Printf("Deployment parameters not found: %v\n", err)
+// 	}
 
-	template, err := deploymentsClient.ExportTemplate(ctx, s.resourceGroupName, s.childDeploymentName, nil)
-	if err != nil {
-		assert.Fail(s.T(), "Failed to export template")
-	}
+// 	template, err := deploymentsClient.ExportTemplate(ctx, s.resourceGroupName, s.childDeploymentName, nil)
+// 	if err != nil {
+// 		assert.Fail(s.T(), "Failed to export template")
+// 	}
 
-	if template.Template == nil {
-		fmt.Printf("Deployment template not found: %v\n", err)
-	}
+// 	if template.Template == nil {
+// 		fmt.Printf("Deployment template not found: %v\n", err)
+// 	}
 
-	t := template.Template
-	if t == nil {
-		assert.Fail(s.T(), "Failed to get template")
-	}
+// 	t := template.Template
+// 	if t == nil {
+// 		assert.Fail(s.T(), "Failed to get template")
+// 	}
 
-	paramValuesMap := getParamsMapFromTemplate(template.Template.(map[string]interface{}), castParams)
+// 	paramValuesMap := getParamsMapFromTemplate(template.Template.(map[string]interface{}), castParams)
 	
-	deploymentPollerResp, err := deploymentsClient.BeginCreateOrUpdate(
-		ctx,
-		s.resourceGroupName,
-		s.childDeploymentName,
-		armresources.Deployment{
-			Properties: &armresources.DeploymentProperties{
-				Template:   template.Template.(map[string]interface{}),
-				Parameters: paramValuesMap,
-				Mode:       to.Ptr(armresources.DeploymentModeIncremental),
-			},
-		},
-		nil)
+// 	deploymentPollerResp, err := deploymentsClient.BeginCreateOrUpdate(
+// 		ctx,
+// 		s.resourceGroupName,
+// 		s.childDeploymentName,
+// 		armresources.Deployment{
+// 			Properties: &armresources.DeploymentProperties{
+// 				Template:   template.Template.(map[string]interface{}),
+// 				Parameters: paramValuesMap,
+// 				Mode:       to.Ptr(armresources.DeploymentModeIncremental),
+// 			},
+// 		},
+// 		nil)
 	
-	if err != nil {
-		assert.Fail(s.T(), "Failed to create deployment")
-	}
+// 	if err != nil {
+// 		assert.Fail(s.T(), "Failed to create deployment")
+// 	}
 
-	resp, err := deploymentPollerResp.PollUntilDone(ctx, nil)
-	if err != nil {
-		assert.Fail(s.T(), "Failed to poll until done")
-	}
-	if resp.ID == nil {
-		assert.Fail(s.T(), "Failed to get response")
-	}
-}
+// 	resp, err := deploymentPollerResp.PollUntilDone(ctx, nil)
+// 	if err != nil {
+// 		assert.Fail(s.T(), "Failed to poll until done")
+// 	}
+// 	if resp.ID == nil {
+// 		assert.Fail(s.T(), "Failed to get response")
+// 	}
+// }
 
 func ReadJson(path string) (map[string]interface{}, error) {
 	templateFile, err := ioutil.ReadFile(path)

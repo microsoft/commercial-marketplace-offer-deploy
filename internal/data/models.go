@@ -25,8 +25,9 @@ func (base *BaseWithGuidPrimaryKey) BeforeCreate(tx *gorm.DB) error {
 
 type Stage struct {
 	BaseWithGuidPrimaryKey
-	Name   string `json:"name"`
-	Status string `json:"status"`
+	Name           string `json:"name"`
+	Status         string `json:"status"`
+	DeploymentName string `json:"deploymentName"`
 }
 
 type Deployment struct {
@@ -58,4 +59,23 @@ type InvokedOperation struct {
 	Parameters   map[string]any `json:"parameters" gorm:"json"`
 	Result       any            `json:"result" gorm:"json"`
 	Status       string         `json:"status"`
+}
+
+func (o *InvokedOperation) BeforeCreate(tx *gorm.DB) error {
+	if o.Result == nil {
+		o.Result = ""
+	}
+	err := o.BaseWithGuidPrimaryKey.BeforeCreate(tx)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (o *InvokedOperation) BeforeUpdate(tx *gorm.DB) error {
+	if o.Result == nil {
+		o.Result = ""
+	}
+	return nil
 }
