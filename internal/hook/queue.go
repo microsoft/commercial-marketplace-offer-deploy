@@ -39,15 +39,15 @@ type queue struct {
 func (q *queue) Add(ctx context.Context, message *events.EventHookMessage) error {
 	results, err := q.sender.Send(ctx, q.queueName, message)
 	if err != nil {
-		log.Error("Error attempting toadd event message to queue [%s]: %v", q.queueName, err)
+		log.Errorf("Error attempting toadd event message to queue [%s]: %v", q.queueName, err)
 		return err
 	} else {
-		log.Debug("EventHook message sent successfully")
+		log.Debugf("EventHook message sent [%s]", message.Id)
 	}
 	if len(results) > 0 {
 		for _, result := range results {
 			if result.Error != nil {
-				log.Error("Error sending event message: %v", result.Error)
+				log.Errorf("Error sending event message: %v", result.Error)
 				return result.Error
 			}
 		}
@@ -56,7 +56,7 @@ func (q *queue) Add(ctx context.Context, message *events.EventHookMessage) error
 }
 
 // enqueues a message to the event hooks service
-func Add(ctx context.Context,message *events.EventHookMessage) error {
+func Add(ctx context.Context, message *events.EventHookMessage) error {
 	if instance == nil {
 		return errors.New("hook queue not configured. call Configure() first")
 	}

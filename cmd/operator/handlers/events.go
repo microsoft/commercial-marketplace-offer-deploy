@@ -22,6 +22,7 @@ type eventsMessageHandler struct {
 }
 
 func (h *eventsMessageHandler) Handle(message *events.EventHookMessage, context messaging.MessageHandlerContext) error {
+	log.Debugf("Handling EventHookMessage [%s]", message.Id)
 
 	if h.shouldRetryIfDeployment(message) {
 		h.retryDeployment(context.Context(), message)
