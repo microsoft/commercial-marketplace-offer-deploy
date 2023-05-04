@@ -38,7 +38,7 @@ func NewJwtTokenVerifier(rawToken *string, parameters *JwtTokenValidationParamet
 
 // Verifies issuer and audience
 func verifyClaims(token *jwt.Token, parameters *JwtTokenValidationParameters) error {
-	modmAudience := "api://modm"
+	modmAudience := "https://management.azure.com"
 	claims, ok := token.Claims.(jwt.MapClaims)
 	required := true
 	errorMessages := []string{}

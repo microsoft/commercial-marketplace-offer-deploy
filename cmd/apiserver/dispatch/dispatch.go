@@ -102,7 +102,7 @@ func (h *dispatcher) send(ctx context.Context, operationId uuid.UUID) error {
 }
 
 func (h *dispatcher) addEventHook(ctx context.Context, deploymentId int, status string, operationName string) error {
-	return hook.Add(&events.EventHookMessage{
+	return hook.Add(ctx, &events.EventHookMessage{
 		Id:      uuid.New(),
 		Status:  status,
 		Type:    string(events.EventTypeDeploymentOperationReceived),

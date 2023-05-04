@@ -44,7 +44,7 @@ func (exe *retryStage) Execute(ctx context.Context, invokedOperation *data.Invok
 		return errors.New("unable to map to AzureRedeployment")
 	}
 
-	res, err := deployment.Redeploy(*redeployment)
+	res, err := deployment.Redeploy(ctx, *redeployment)
 	if err != nil {
 		log.Errorf("error redeploying deployment: %s", err)
 		return err
@@ -54,7 +54,7 @@ func (exe *retryStage) Execute(ctx context.Context, invokedOperation *data.Invok
 		log.Debugf("Redeployment response is nil")
 	}
 
-	err = exe.sendHook(dep, invokedOperation, foundStage)
+	err = exe.sendHook(ctx, dep, invokedOperation, foundStage)
 	if err != nil {
 		log.Errorf("error adding hook: %s", err)
 		return err
@@ -63,14 +63,14 @@ func (exe *retryStage) Execute(ctx context.Context, invokedOperation *data.Invok
 	return nil
 }
 
-func (exe *retryStage) sendHook(deployment *data.Deployment, invokedOperation *data.InvokedOperation, stage *data.Stage) error {
+func (exe *retryStage) sendHook(ctx context.Context, deployment *data.Deployment, invokedOperation *data.InvokedOperation, stage *data.Stage) error {
 	subject := fmt.Sprintf("/deployments/%v/%v", strconv.Itoa(int(deployment.ID)), stage.Name)
 	log.Debugf("retryStage.updateToRunning: subject: %s", subject)
 
 	stageName := stage.ID.String()
 	log.Debugf("retryStage.updateToRunning: stageName: %s", stageName)
 
-	err := hook.Add(&events.EventHookMessage{
+	err := hook.Add(ctx, &events.EventHookMessage{
 		Subject: subject,
 		Status:  invokedOperation.Status,
 		Data: &events.DeploymentEventData{

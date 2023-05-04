@@ -35,7 +35,7 @@ func (c *manager) GetSystemTopicName() string {
 // Creates an event grid manager to create system topic and event subscription for the purpose of receiving deployment events
 // It will use the resource group id to create the system topic in the resource group's location and subscription
 func NewEventGridManager(credential azcore.TokenCredential, resourceGroupId string) (EventGridManager, error) {
-	properties, err := getProperties(context.TODO(), credential, resourceGroupId)
+	properties, err := getProperties(context.Background(), credential, resourceGroupId)
 	if err != nil {
 		return nil, err
 	}

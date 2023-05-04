@@ -57,7 +57,7 @@ func (exe *startDeployment) updateToRunning(ctx context.Context, invokedOperatio
 	invokedOperation.Status = operation.StatusRunning.String()
 	db.Save(invokedOperation)
 
-	err := hook.Add(&events.EventHookMessage{
+	err := hook.Add(ctx, &events.EventHookMessage{
 		Subject: "/deployments/" + strconv.Itoa(int(deployment.ID)),
 		Status:  invokedOperation.Status,
 		Data: &events.DeploymentEventData{
@@ -79,7 +79,7 @@ func (exe *startDeployment) updateToFailed(ctx context.Context, invokedOperation
 	invokedOperation.Status = string(operation.StatusFailed)
 	db.Save(invokedOperation)
 
-	err = hook.Add(&events.EventHookMessage{
+	err = hook.Add(ctx, &events.EventHookMessage{
 		Subject: "/deployments/" + strconv.Itoa(int(deployment.ID)),
 		Status:  operation.StatusFailed.String(),
 		Type:    string(events.EventTypeDeploymentCompleted),
@@ -106,7 +106,7 @@ func (p *startDeployment) mapAzureDeployment(d *data.Deployment, io *data.Invoke
 }
 
 func (p *startDeployment) deploy(ctx context.Context, azureDeployment *deployment.AzureDeployment) (*deployment.AzureDeploymentResult, error) {
-	return deployment.Create(*azureDeployment)
+	return deployment.Create(ctx, *azureDeployment)
 }
 
 //region factory

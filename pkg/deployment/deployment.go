@@ -76,12 +76,12 @@ func mapError(armResourceResponse *armresources.ErrorResponse) (*DryRunErrorResp
 	return &dryRunErrorResponse, nil
 }
 
-func DeleteResourceGroup(subscriptionId string, resourceGroupName string) error {
+func DeleteResourceGroup(ctx context.Context, subscriptionId string, resourceGroupName string) error {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		log.Error(err)
 	}
-	ctx := context.Background()
+
 	resourceGroupClient, err := armresources.NewResourceGroupsClient(subscriptionId, cred, nil)
 	if err != nil {
 		return err
@@ -124,17 +124,17 @@ func createResourceGroup(subscriptionId string, resourceGroupName string, locati
 	return &resourceGroupResp.ResourceGroup, nil
 }
 
-func Create(dep AzureDeployment) (*AzureDeploymentResult, error) {
+func Create(ctx context.Context, dep AzureDeployment) (*AzureDeploymentResult, error) {
 	log.Debug("Inside Create")
 	deployer := CreateNewDeployer(dep.DeploymentType)
-	return deployer.Deploy(&dep)
+	return deployer.Deploy(ctx, &dep)
 }
 
-func Redeploy(dep AzureRedeployment) (*AzureDeploymentResult, error) {
+func Redeploy(ctx context.Context, dep AzureRedeployment) (*AzureDeploymentResult, error) {
 	log.Debug("Inside Redeploy")
 	deploymentType := 0
 	deployer := CreateNewDeployer(DeploymentType(deploymentType))
-	return deployer.Redeploy(&dep)
+	return deployer.Redeploy(ctx, &dep)
 }
 
 func readJson(path string) (map[string]interface{}, error) {

@@ -93,7 +93,7 @@ func (r *serviceBusReceiver) Start() {
 					if err != nil {
 						log.Error(err)
 					}
-					err = receiver.CompleteMessage(context.TODO(), message, nil)
+					err = receiver.CompleteMessage(r.ctx, message, nil)
 					if err != nil {
 						var sbErr *azservicebus.Error
 						if errors.As(err, &sbErr) && sbErr.Code == azservicebus.CodeLockLost {
@@ -158,7 +158,7 @@ func NewServiceBusReceiver(handler any, credential azcore.TokenCredential, optio
 		stopped:    true,
 		queueName:  options.QueueName,
 		namespace:  options.FullyQualifiedNamespace,
-		ctx:        context.TODO(),
+		ctx:        context.Background(),
 		credential: credential,
 		handler:    serviceBusMessageHandler,
 	}

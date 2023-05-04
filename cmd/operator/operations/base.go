@@ -20,7 +20,7 @@ type Executor interface {
 type Execute func(ctx context.Context, operation *data.InvokedOperation) error
 
 // this is so the dry run can be tested, detaching actual dry run implementation
-type DryRunFunc func(azureDeployment *deployment.AzureDeployment) (*deployment.DryRunResponse, error)
+type DryRunFunc func(context.Context, *deployment.AzureDeployment) (*deployment.DryRunResponse, error)
 
 type ExecutorFactory interface {
 	Create(operationType operation.OperationType) (Executor, error)

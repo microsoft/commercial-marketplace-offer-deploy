@@ -66,8 +66,8 @@ func (ad *AzureDeployment) GetTemplateParams() map[string]interface{} {
 }
 
 type Deployer interface {
-	Deploy(d *AzureDeployment) (*AzureDeploymentResult, error)
-	Redeploy(d *AzureRedeployment) (*AzureDeploymentResult, error)
+	Deploy(ctx context.Context, d *AzureDeployment) (*AzureDeploymentResult, error)
+	Redeploy(ctx context.Context, d *AzureRedeployment) (*AzureDeploymentResult, error)
 }
 
 type ArmTemplateDeployer struct {
@@ -90,7 +90,7 @@ func (armDeployer *ArmTemplateDeployer) getParamsMapFromTemplate(template map[st
 }
 
 
-func (armDeployer *ArmTemplateDeployer) Redeploy(ad *AzureRedeployment) (*AzureDeploymentResult, error) {
+func (armDeployer *ArmTemplateDeployer) Redeploy(ctx context.Context, ad *AzureRedeployment) (*AzureDeploymentResult, error) {
 	b, err := json.MarshalIndent(ad, "", "  ")
     if err != nil {
         log.Error(err)
@@ -106,7 +106,6 @@ func (armDeployer *ArmTemplateDeployer) Redeploy(ad *AzureRedeployment) (*AzureD
 		return nil, err
 	}
 
-	ctx := context.Background()
 	deployment, err := deploymentsClient.Get(ctx, ad.ResourceGroupName, ad.DeploymentName, nil)
 	if err != nil {
 		return nil, err
@@ -170,12 +169,12 @@ func (armDeployer *ArmTemplateDeployer) Redeploy(ad *AzureRedeployment) (*AzureD
 	return mappedResult, nil
 }
 
-func (armDeployer *ArmTemplateDeployer) Deploy(ad *AzureDeployment) (*AzureDeploymentResult, error) {
+func (armDeployer *ArmTemplateDeployer) Deploy(ctx context.Context, ad *AzureDeployment) (*AzureDeploymentResult, error) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		log.Error(err)
 	}
-	ctx := context.Background()
+
 	deploymentsClient, err := armresources.NewDeploymentsClient(ad.SubscriptionId, cred, nil)
 	if err != nil {
 		return nil, err

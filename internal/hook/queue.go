@@ -56,11 +56,10 @@ func (q *queue) Add(ctx context.Context, message *events.EventHookMessage) error
 }
 
 // enqueues a message to the event hooks service
-func Add(message *events.EventHookMessage) error {
+func Add(ctx context.Context,message *events.EventHookMessage) error {
 	if instance == nil {
 		return errors.New("hook queue not configured. call Configure() first")
 	}
-	ctx := context.TODO()
 
 	if message != nil {
 		if message.Id == uuid.Nil {

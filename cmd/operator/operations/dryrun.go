@@ -30,7 +30,7 @@ func (exe *dryRun) Execute(ctx context.Context, operation *data.InvokedOperation
 		azureDeployment := exe.getAzureDeployment(operation)
 		log.Debug("AzureDeployment is %v", *azureDeployment)
 
-		response, err := exe.dryRun(azureDeployment)
+		response, err := exe.dryRun(ctx, azureDeployment)
 		
 		if err != nil {
 			log.Error("Error in DryRun: %v", err)
@@ -54,7 +54,7 @@ func (exe *dryRun) Execute(ctx context.Context, operation *data.InvokedOperation
 		}
 		
 		hookMessage := exe.mapToEventHookMessage(&response.DryRunResult)
-		hook.Add(hookMessage)
+		hook.Add(ctx, hookMessage)
 
 		return nil
 	},
