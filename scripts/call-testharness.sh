@@ -1,7 +1,14 @@
 #!/bin/bash
 
+case_name=$1
+
 testharness=http://localhost:8280
 curl -s $testharness/
+sleep 5
+echo ""
+
+echo "setting case"
+curl -s $testharness/setcase/$case_name | jq .
 sleep 5
 echo ""
 
