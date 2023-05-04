@@ -2,94 +2,30 @@ package app
 
 import (
 	"context"
-	json "encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
-	//"github.com/google/uuid"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/labstack/echo/v4"
 
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
 // TODO: this needs to go and pull from .env
 var (
-	location      = "eastus"
-	resourceGroup = "demo2"
-	subscription  = "31e9f9a0-9fd2-4294-a0a3-0101246d9700"
+	location       string
+	resourceGroup  string
+	subscription   string
 	clientEndpoint = "http://localhost:8080"
 	env            = loadEnvironmentVariables()
-	deployment      *api.Deployment
+	deployment     *api.Deployment
 )
-
-func getClientEndpoint() string {
-	// no real need for viper here as we are just pulling 1 environment variable for the test harness
-	endpoint := env.GetString("MODM_API_ENDPOINT")
-	if len(endpoint) > 0 {
-		return endpoint
-	}
-	return clientEndpoint
-}
-
-func getLocation() string {
-	loc := env.GetString("MODM_DEPLOYMENT_LOCATION")
-	if len(loc) > 0 {
-		return loc
-	}
-	return location
-}
-
-func getSubscription() string {
-	sub := env.GetString("MODM_SUBSCRIPTION")
-	if len(sub) > 0 {
-		return sub
-	}
-	return subscription
-}
-
-func getResourceGroup() string {
-	rg := env.GetString("MODM_RESOURCE_GROUP")
-	if len(rg) > 0 {
-		return rg
-	}
-	return resourceGroup
-}
-
-func getTemplatePath() string {
-	path := env.GetString("TEMPLATE_PATH")
-	if len(path) > 0 {
-		return path
-	}
-	return "./templates/mainTemplateBicep.json"
-}
-
-func getParamsPath() string {
-	templateParams := env.GetString("TEMPLATEPARAMS_PATH")
-	if len(templateParams) > 0 {
-		log.Printf("Found TEMPLATEPARAMS_PATH - %s", templateParams)
-		return templateParams
-	}
-	return "./templates/parametersBicep.json"
-}
-
-func getCallback() string {
-	callback := env.GetString("CALLBACK_BASE_URL")
-	if len(callback) > 0 {
-		return callback
-	}
-
-	//TODO: use the value that's set on echo
-	return "http://localhost:" + strconv.Itoa(8280)
-}
 
 func AddRoutes(e *echo.Echo) {
 	e.GET("/", func(ctx echo.Context) error {
@@ -100,30 +36,13 @@ func AddRoutes(e *echo.Echo) {
 	e.GET("/createeventhook", CreateEventHook)
 	e.GET("/dryrun/:deploymentId", DryRun)
 	e.GET("/redeploy/:deploymentId/:stageName", Redeploy)
-	e.POST("/webhook", ReceiveEventNotification)
+	e.POST("/webhook", ReceiveEventHook)
 }
 
-func getJsonAsMap(path string) map[string]interface{} {
-	jsonMap, err := utils.ReadJson(path)
-	if err != nil {
-		log.Println(err)
-	}
-	return jsonMap
-}
-
-func ReceiveEventNotification(c echo.Context) error {
-	log.Println("Event Web Hook received")
-	var bodyJson any
-	c.Bind(&bodyJson)
-
-	j := c.JSON(http.StatusOK, bodyJson)
-	b, err := json.MarshalIndent(bodyJson, "", "  ")
-    if err != nil {
-        log.Error(err)
-    }
-
-	log.Printf("ReceiveEventNotification response - %s", string(b))
-	return j
+func ReceiveEventHook(c echo.Context) error {
+	log.Print("Event Hook Recieved")
+	reader := c.Request().Body
+	return c.Stream(http.StatusOK, "application/json", reader)
 }
 
 func CreateEventHook(c echo.Context) error {
@@ -138,14 +57,14 @@ func CreateEventHook(c echo.Context) error {
 	}
 	ctx := context.Background()
 
-	subscriptionName := "webhook-1"
+	hookName := "webhook-1"
 	apiKey := "1234"
 	callbackclientEndpoint := fmt.Sprintf("%s/webhook", getCallback())
 
 	request := api.CreateEventHookRequest{
 		APIKey:   &apiKey,
 		Callback: &callbackclientEndpoint,
-		Name:     &subscriptionName,
+		Name:     &hookName,
 	}
 
 	res, err := client.CreateEventHook(ctx, request)
@@ -165,7 +84,7 @@ func Redeploy(c echo.Context) error {
 	}
 	stageName := c.Param("stageName")
 	var stageId = uuid.Nil
-	
+
 	for _, v := range deployment.Stages {
 		if strings.EqualFold(*v.DeploymentName, stageName) {
 			stageId = uuid.MustParse(*v.ID)
@@ -216,7 +135,7 @@ func CreateDeployment(c echo.Context) error {
 
 	log.Println("Inside CreateDeployment")
 	templatePath := getTemplatePath()
-	
+
 	templateMap := getJsonAsMap(templatePath)
 	log.Printf("The templateMap is %s", templateMap)
 
@@ -325,18 +244,4 @@ func StartDeployment(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, res)
-}
-
-func loadEnvironmentVariables() *viper.Viper {
-	env := viper.New()
-	env.AddConfigPath("./")
-	env.SetConfigName(".env")
-	env.SetConfigType("env")
-	env.AutomaticEnv()
-
-	err := env.ReadInConfig()
-	if err != nil {
-		log.Errorf("Error reading config file, %s", err)
-	}
-	return env
 }

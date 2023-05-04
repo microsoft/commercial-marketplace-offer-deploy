@@ -1,6 +1,8 @@
 package hosting
 
 import (
+	"encoding/json"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/labstack/echo/v4"
@@ -77,7 +79,12 @@ func (b *AppBuilder) Build(configure ConfigureEchoFunc) *App {
 	//add middleware
 	b.app.server.Use(middleware.Logger())
 	b.app.server.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
-		log.Debug("Body:\n %v\n", string(reqBody))
+		var body any
+		err := json.Unmarshal(reqBody, &body)
+		if err != nil {
+			return
+		}
+		log.WithField("request", body).Debug("Body")
 	}))
 
 	loggingConfig := b.app.config.GetLoggingOptions(b.app.name)

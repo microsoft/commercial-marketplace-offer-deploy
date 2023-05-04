@@ -1,7 +1,9 @@
 package events
 
 import (
+	"errors"
 	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -45,6 +47,28 @@ type DeploymentEventData struct {
 	StageId      *string `json:"stageId,omitempty"`
 	OperationId  *string `json:"operationId,omitempty"`
 	Message      string  `json:"message,omitempty"`
+}
+
+type RetryDeploymentEventData struct {
+	DeploymentEventData
+	Attempts int `json:"attempt,omitempty"`
+}
+
+func (m *EventHookMessage) DeploymentId() (uint, error) {
+	if data, ok := m.Data.(DeploymentEventData); ok {
+		return uint(data.DeploymentId), nil
+	}
+
+	if m.Subject != "" && strings.HasPrefix(m.Subject, "/deployments/") {
+		values := strings.Split(strings.TrimPrefix(m.Subject, "/"), "/")
+
+		deploymentId, err := strconv.Atoi(values[1])
+		if err != nil {
+			return 0, err
+		}
+		return uint(deploymentId), nil
+	}
+	return 0, errors.New("unable to get deployment id using data or the subject")
 }
 
 func (m *EventHookMessage) SetSubject(deploymentId int, stageId *uuid.UUID) {

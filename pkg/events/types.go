@@ -10,14 +10,16 @@ const (
 	EventTypeDeploymentDeleted   EventType = "deploymentDeleted"
 	EventTypeDeploymentStarted   EventType = "deploymentStarted"
 	EventTypeDeploymentCompleted EventType = "deploymentCompleted"
-	EventTypeDeploymentRetrying  EventType = "deploymentRetrying"
-	EventTypeDeploymentRetried   EventType = "deploymentRetried"
-	EventTypeDryRunCompleted     EventType = "dryRunCompleted"
-	EventTypeDryRunRetrying      EventType = "dryRunRetrying"
-	EventTypeDryRunRetried       EventType = "dryRunRetried"
+	EventTypeStageCompleted      EventType = "stageCompleted"
 
-	EventTypeDeploymentOperationReceived  EventType = "deploymentOperationReceived"
-	EventTypeDeploymentAzureEventReceived EventType = "deploymentAzureEventReceived"
+	EventTypeDeploymentRetrying EventType = "deploymentRetrying"
+	EventTypeDeploymentRetried  EventType = "deploymentRetried"
+	EventTypeDryRunCompleted    EventType = "dryRunCompleted"
+	EventTypeDryRunRetrying     EventType = "dryRunRetrying"
+	EventTypeDryRunRetried      EventType = "dryRunRetried"
+
+	EventTypeDeploymentOperationReceived EventType = "deploymentOperationReceived"
+	EventTypeDeploymentEventReceived     EventType = "deploymentEventReceived"
 )
 
 func (e EventType) String() string {
@@ -38,6 +40,6 @@ func GetEventTypes() []string {
 		EventTypeDryRunRetrying.String(),
 		EventTypeDryRunRetried.String(),
 		EventTypeDeploymentOperationReceived.String(),
-		EventTypeDeploymentAzureEventReceived.String(),
+		EventTypeDeploymentEventReceived.String(),
 	}
 }

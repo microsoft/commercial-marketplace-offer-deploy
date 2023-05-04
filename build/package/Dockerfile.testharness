@@ -21,8 +21,6 @@ COPY . ./
 #RUN go build -o ./bin/ ./tools/testharness/main.go
 RUN go build -o ./bin/ ./tools/testharness
 COPY ./build/scripts/entrypoint.testharness.sh ./bin/
-COPY ./test/testdata/taggeddeployment/mainTemplateBicep.json ./bin
-COPY ./test/testdata/taggeddeployment/parametersBicep.json ./bin
 
 # Use the official Debian slim image for a lean production container.
 # https://hub.docker.com/_/debian

@@ -5,6 +5,7 @@ import (
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -16,6 +17,7 @@ type retryDeployment struct {
 }
 
 func (r *retryDeployment) Execute(ctx context.Context, operation *data.InvokedOperation) error {
+	log.Infof("RetryDeploymentExecutor [%s]. enqueing to retry deployment", operation.ID)
 	return nil
 }
 

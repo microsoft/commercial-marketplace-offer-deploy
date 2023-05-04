@@ -105,7 +105,7 @@ func (r *serviceBusReceiver) Start() {
 							continue
 						}
 					}
-					log.Debugf("Completed message: %s\n", message.MessageID)
+					log.Debugf("Completed message [%s]", message.MessageID)
 				}
 			}
 		}
