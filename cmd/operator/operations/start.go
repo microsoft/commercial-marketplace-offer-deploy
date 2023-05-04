@@ -41,6 +41,9 @@ func (exe *startDeployment) Execute(ctx context.Context, operation *data.Invoked
 	azureDeployment := exe.mapAzureDeployment(deployment, operation)
 	result, err := exe.deploy(ctx, azureDeployment)
 
+	if err != nil {
+		exe.updateToFailed(ctx, operation, err)
+	}
 	// if we waited this long, then we can assume we have the results, so we'll update the invoked operation results with it
 	if err == nil {
 		operation.Result = result
