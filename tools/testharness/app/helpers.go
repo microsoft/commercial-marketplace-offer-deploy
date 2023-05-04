@@ -2,7 +2,7 @@ package app
 
 import (
 	"strconv"
-
+	"path/filepath"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -49,21 +49,24 @@ func getResourceGroup() string {
 	return resourceGroup
 }
 
-func getTemplatePath() string {
+func getTemplatePath(caseName string) string {
 	path := env.GetString("TEMPLATE_PATH")
 	if len(path) > 0 {
-		return path
+		log.Printf("Found TEMPLATE_PATH - %s", path)
+	} else {
+		path = "./templates"
 	}
-	return "./templates/mainTemplateBicep.json"
+	return filepath.Join(path, caseName, "mainTemplate.json")
 }
 
-func getParamsPath() string {
+func getParamsPath(caseName string) string {
 	templateParams := env.GetString("TEMPLATEPARAMS_PATH")
 	if len(templateParams) > 0 {
 		log.Printf("Found TEMPLATEPARAMS_PATH - %s", templateParams)
-		return templateParams
+	} else {
+		templateParams = "./templates"
 	}
-	return "./templates/parametersBicep.json"
+	return filepath.Join(templateParams, caseName, "parameters.json")
 }
 
 func getCallback() string {
