@@ -65,7 +65,7 @@ func (h *eventsMessageHandler) retryDeployment(ctx context.Context, message *eve
 		return results[0].Error
 	}
 
-	err = hook.Add(&events.EventHookMessage{
+	err = hook.Add(ctx, &events.EventHookMessage{
 		Status: invokedOperation.Status,
 		Type:   string(events.EventTypeDeploymentRetrying),
 		Data: events.RetryDeploymentEventData{
