@@ -42,7 +42,7 @@ type serviceBusMessageHandler struct {
 func (h *serviceBusMessageHandler) Handle(ctx context.Context, message *azservicebus.ReceivedMessage) error {
 	typedMessage := reflect.New(h.messageType)
 
-	log.WithField("message", message).Debug("received message")
+	log.Debug("received message")
 	context := MessageHandlerContext{
 		context:         ctx,
 		ReceivedMessage: message,

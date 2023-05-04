@@ -73,22 +73,31 @@ func (s *serviceBusMessageSender) Send(ctx context.Context, queueName string, me
 
 	for index, message := range messages {
 		body, err := json.Marshal(message)
-		log.Debugf("marshaling message %d:\n %s", index, string(body))
-
 		if err != nil {
 			results = append(results, SendMessageResult{Success: false, Error: fmt.Errorf("failed to marshal message %d: %w", index, err)})
 			continue
 		}
 
-		log.Debug("sending message: %v", message)
+		logger := log.WithFields(log.Fields{
+			"messageBody": string(body),
+		})
+		logger.Debug("sending message")
+
 		err = sender.SendMessage(ctx, &azservicebus.Message{
 			Body: body,
 		}, nil)
-		log.Debug("sent message")
+
+		if err != nil {
+			logger.WithError(err).Error("failed to send message")
+		} else {
+			log.Debug("message sent")
+		}
 
 		results = append(results, SendMessageResult{Success: err == nil, Error: err})
 	}
-	log.Debugf("finished sending messages with results of %v", results)
+
+	log.WithField("results", results).Debug("send message(s) complete")
+
 	return results, nil
 }
 

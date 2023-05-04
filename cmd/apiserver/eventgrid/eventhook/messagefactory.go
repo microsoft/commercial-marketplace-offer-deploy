@@ -91,7 +91,7 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*eve
 	}
 
 	message := &events.EventHookMessage{
-		Id:     messageId,
+		Id:     messageId.String(),
 		Status: f.getStatus(*item.Message.EventType),
 		Type:   f.getEventHookType(*item.Resource.Name, deployment),
 		Data:   data,

@@ -32,7 +32,12 @@ func (exe *retryStage) Execute(ctx context.Context, invokedOperation *data.Invok
 	invokedOperation.Status = string(operation.StatusRunning)
 	exe.save(invokedOperation)
 
-	stageId := uuid.MustParse(invokedOperation.Parameters["stageId"].(string))
+	stageId, err := uuid.Parse(invokedOperation.Parameters["stageId"].(string))
+	if err != nil {
+		log.Errorf("error parsing stageId: %s", err)
+		return err
+	}
+
 	foundStage := exe.findStage(dep, stageId)
 	if foundStage == nil {
 		errMsg := fmt.Sprintf("stage not found for deployment %v and stageId %v", dep.ID, stageId)

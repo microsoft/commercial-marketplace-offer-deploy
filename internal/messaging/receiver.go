@@ -50,11 +50,12 @@ type serviceBusReceiver struct {
 	namespace  string
 	handler    ServiceBusMessageHandler
 	credential azcore.TokenCredential
+	logger     *log.Entry
 }
 
 func (r *serviceBusReceiver) Start() {
 	fmt.Println(banner)
-	log.Debug("starting message receiver: %s", r.queueName)
+	r.logger.Debug("Starting")
 
 	r.stopped = false
 	receiver, err := r.getQueueReceiver()
@@ -161,6 +162,7 @@ func NewServiceBusReceiver(handler any, credential azcore.TokenCredential, optio
 		ctx:        context.Background(),
 		credential: credential,
 		handler:    serviceBusMessageHandler,
+		logger:     log.WithField("queue", options.QueueName),
 	}
 	return &receiver, nil
 }

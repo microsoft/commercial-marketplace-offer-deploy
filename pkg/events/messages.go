@@ -11,10 +11,10 @@ import (
 // subscription model for MODM webhook events
 type EventHookMessage struct {
 	// the ID of the message
-	Id uuid.UUID `json:"id,omitempty"`
+	Id string `json:"id,omitempty"`
 
 	// the ID of the hook
-	HookId uuid.UUID `json:"hookId,omitempty"`
+	HookId string `json:"hookId,omitempty"`
 
 	// the type of the event, .e.g. "dryRunCompleted"
 	Type string `json:"type,omitempty"`

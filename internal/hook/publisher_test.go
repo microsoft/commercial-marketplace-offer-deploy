@@ -17,7 +17,7 @@ import (
 
 func TestPublisherPublish(t *testing.T) {
 	message := &EventHookMessage{
-		Id:   uuid.New(),
+		Id:   uuid.New().String(),
 		Type: "test.event",
 		Data: make(map[string]any),
 	}

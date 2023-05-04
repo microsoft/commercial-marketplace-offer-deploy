@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
@@ -12,7 +13,6 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
-	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -33,18 +33,20 @@ func (h *dispatcher) Dispatch(ctx context.Context, command *DispatchInvokedOpera
 		return uuid.Nil, err
 	}
 
-	id, err := h.save(ctx, command)
+	invokedOperation, err := h.save(ctx, command)
 	if err != nil {
 		return uuid.Nil, err
 	}
 
-	err = h.send(ctx, id)
+	err = h.send(ctx, invokedOperation.ID)
 
 	if err != nil {
 		return uuid.Nil, err
 	}
 
-	return id, nil
+	h.addEventHook(ctx, invokedOperation)
+
+	return invokedOperation.ID, nil
 }
 
 func validateOperationName(name string) error {
@@ -53,11 +55,8 @@ func validateOperationName(name string) error {
 }
 
 // save changes to the database
-func (p *dispatcher) save(ctx context.Context, c *DispatchInvokedOperation) (uuid.UUID, error) {
+func (p *dispatcher) save(ctx context.Context, c *DispatchInvokedOperation) (*data.InvokedOperation, error) {
 	tx := p.db.Begin()
-
-	deployment := &data.Deployment{}
-	tx.First(&deployment, c.DeploymentId)
 
 	invokedOperation := &data.InvokedOperation{
 		DeploymentId: uint(c.DeploymentId),
@@ -67,28 +66,25 @@ func (p *dispatcher) save(ctx context.Context, c *DispatchInvokedOperation) (uui
 	}
 
 	invokedOperation.Retries = int(*c.Request.Retries)
-	log.Debugf("Retries is received to %d", *c.Request.Retries)
 	if *c.Request.Retries <= 0 {
-		log.Debug("Retries is not set, defaulting to 1")
 		invokedOperation.Retries = 1
 	}
-	log.Debugf("Retries is set to %d", invokedOperation.Retries)
+
 	tx.Save(invokedOperation)
 
 	if tx.Error != nil {
 		tx.Rollback()
-		return uuid.Nil, tx.Error
+		return nil, tx.Error
 	}
 
 	tx.Commit()
-	p.addEventHook(ctx, c.DeploymentId, invokedOperation.Name, invokedOperation.Status)
 
-	return invokedOperation.ID, nil
+	return invokedOperation, nil
 }
 
 // send the message on the queue
 func (h *dispatcher) send(ctx context.Context, operationId uuid.UUID) error {
-	message := messaging.ExecuteInvokedOperation{OperationId: operationId}
+	message := messaging.ExecuteInvokedOperation{OperationId: operationId.String()}
 
 	results, err := h.sender.Send(ctx, string(messaging.QueueNameOperations), message)
 	if err != nil {
@@ -101,15 +97,16 @@ func (h *dispatcher) send(ctx context.Context, operationId uuid.UUID) error {
 	return nil
 }
 
-func (h *dispatcher) addEventHook(ctx context.Context, deploymentId int, status string, operationName string) error {
+func (h *dispatcher) addEventHook(ctx context.Context, invokedOperation *data.InvokedOperation) error {
 	return hook.Add(ctx, &events.EventHookMessage{
-		Id:      uuid.New(),
-		Status:  status,
+		Id:      uuid.New().String(),
+		Status:  invokedOperation.Status,
 		Type:    string(events.EventTypeDeploymentOperationReceived),
-		Subject: "/deployments/" + strconv.Itoa(deploymentId) + "/operations/" + operationName,
+		Subject: "/deployments/" + strconv.Itoa(int(invokedOperation.DeploymentId)),
 		Data: &events.DeploymentEventData{
-			DeploymentId: deploymentId,
-			Message:      "Operation " + operationName + " accepted",
+			DeploymentId: int(invokedOperation.DeploymentId),
+			OperationId:  to.Ptr(invokedOperation.ID.String()),
+			Message:      "Operation " + invokedOperation.Name + " accepted",
 		},
 	})
 }

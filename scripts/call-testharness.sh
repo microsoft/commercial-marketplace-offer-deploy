@@ -25,7 +25,7 @@ curl -s $testharness/startdeployment/1 | jq .
 sleep 20
 echo ""
 
-# echo "retry for stage"
-# curl -s $testharness/redeploy/1/storageAccounts | jq .
-# sleep 10
-# echo ""
+echo "retry for stage"
+curl -s $testharness/redeploy/1/storageAccounts | jq .
+sleep 10
+echo ""
