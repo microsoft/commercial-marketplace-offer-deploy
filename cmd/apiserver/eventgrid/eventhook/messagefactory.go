@@ -43,7 +43,7 @@ func (f *EventHookMessageFactory) Create(ctx context.Context, matchAny d.LookupT
 	result := f.filter.Filter(ctx, matchAny, eventGridEvents)
 	messages := []*events.EventHookMessage{}
 
-	log.Debug("factory received %d EventGridEvents, filtered to %d messages", len(eventGridEvents), len(result))
+	log.Debugf("factory received %d EventGridEvents, filtered to %d messages", len(eventGridEvents), len(result))
 
 	for _, item := range result {
 		message, err := f.convert(item)
