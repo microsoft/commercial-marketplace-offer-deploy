@@ -2,10 +2,9 @@ package messaging
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"reflect"
-
-	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
 )
@@ -42,7 +41,13 @@ type serviceBusMessageHandler struct {
 func (h *serviceBusMessageHandler) Handle(ctx context.Context, message *azservicebus.ReceivedMessage) error {
 	typedMessage := reflect.New(h.messageType)
 
-	log.Debug("received message")
+	if message != nil {
+		err := json.Unmarshal(message.Body, typedMessage.Interface())
+		if err != nil {
+			return fmt.Errorf("message unmarshal failure: %w", err)
+		}
+	}
+
 	context := MessageHandlerContext{
 		context:         ctx,
 		ReceivedMessage: message,
