@@ -29,11 +29,21 @@ func main() {
 	app.AddRoutes(e)
 
 	e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
-		log.WithFields(log.Fields{
-			"method": c.Request().Method,
-			"url":    c.Request().URL,
-			"body":   string(reqBody),
-		}).Debug("Received")
+		receivedBody := string(reqBody)
+		if len(receivedBody) > 0 {
+			log.WithFields(log.Fields{
+				"method": c.Request().Method,
+				"url":    c.Request().URL,
+				"body":   string(receivedBody),
+			}).Print("Received")
+		}
+
+		responseBody := string(resBody)
+		if len(responseBody) > 0 {
+			log.WithFields(log.Fields{
+				"body": string(responseBody),
+			}).Print("Returned")
+		}
 	}))
 
 	if err := e.Start(formattedPort); err != http.ErrServerClosed {
