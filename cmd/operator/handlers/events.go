@@ -32,7 +32,10 @@ func (h *eventsMessageHandler) Handle(message *events.EventHookMessage, context 
 }
 
 func (h *eventsMessageHandler) shouldRetryIfDeployment(message *events.EventHookMessage) bool {
-	return message != nil && message.Status == operation.StatusFailed.String() && message.Type == string(events.EventTypeDeploymentCompleted)
+	failedStatus := message != nil && message.Status == operation.StatusFailed.String()
+	deploymentTypes := message.Type == string(events.EventTypeDeploymentCompleted) || message.Type == string(events.EventTypeDeploymentRetried)
+
+	return failedStatus && deploymentTypes
 }
 
 func (h *eventsMessageHandler) retryDeployment(ctx context.Context, message *events.EventHookMessage) error {
@@ -68,7 +71,7 @@ func (h *eventsMessageHandler) retryDeployment(ctx context.Context, message *eve
 
 	err = hook.Add(ctx, &events.EventHookMessage{
 		Status: invokedOperation.Status,
-		Type:   string(events.EventTypeDeploymentRetrying),
+		Type:   string(events.EventTypeDeploymentRetried),
 		Data: events.RetryDeploymentEventData{
 			DeploymentEventData: events.DeploymentEventData{
 				DeploymentId: int(deploymentId),

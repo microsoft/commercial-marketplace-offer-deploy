@@ -12,11 +12,10 @@ const (
 	EventTypeDeploymentCompleted EventType = "deploymentCompleted"
 	EventTypeStageCompleted      EventType = "stageCompleted"
 
-	EventTypeDeploymentRetrying EventType = "deploymentRetrying"
-	EventTypeDeploymentRetried  EventType = "deploymentRetried"
-	EventTypeDryRunCompleted    EventType = "dryRunCompleted"
-	EventTypeDryRunRetrying     EventType = "dryRunRetrying"
-	EventTypeDryRunRetried      EventType = "dryRunRetried"
+	EventTypeDeploymentRetried EventType = "deploymentRetried"
+	EventTypeDryRunCompleted   EventType = "dryRunCompleted"
+	EventTypeDryRunRetrying    EventType = "dryRunRetrying"
+	EventTypeDryRunRetried     EventType = "dryRunRetried"
 
 	EventTypeDeploymentOperationReceived EventType = "deploymentOperationReceived"
 	EventTypeDeploymentEventReceived     EventType = "deploymentEventReceived"
@@ -34,7 +33,6 @@ func GetEventTypes() []string {
 		EventTypeDeploymentDeleted.String(),
 		EventTypeDeploymentStarted.String(),
 		EventTypeDeploymentCompleted.String(),
-		EventTypeDeploymentRetrying.String(),
 		EventTypeDeploymentRetried.String(),
 		EventTypeDryRunCompleted.String(),
 		EventTypeDryRunRetrying.String(),
