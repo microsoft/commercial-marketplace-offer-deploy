@@ -73,7 +73,7 @@ func (exe *retryStage) sendHook(ctx context.Context, deployment *data.Deployment
 		Status: invokedOperation.Status,
 		Data: &events.DeploymentEventData{
 			DeploymentId: int(deployment.ID),
-			StageId:      to.Ptr(stage.ID.String()),
+			StageId:      to.Ptr(stage.ID),
 			Message:      "Retry stage started successfully",
 		},
 	}

@@ -11,10 +11,10 @@ import (
 // subscription model for MODM webhook events
 type EventHookMessage struct {
 	// the ID of the message
-	Id string `json:"id,omitempty"`
+	Id uuid.UUID `json:"id,omitempty"`
 
 	// the ID of the hook
-	HookId string `json:"hookId,omitempty"`
+	HookId uuid.UUID `json:"hookId,omitempty"`
 
 	// the type of the event, .e.g. "dryRunCompleted"
 	Type string `json:"type,omitempty"`
@@ -43,10 +43,10 @@ type DryRunAdditionalInfo struct {
 // all other deployment events
 
 type DeploymentEventData struct {
-	DeploymentId int     `json:"deploymentId,omitempty"`
-	StageId      *string `json:"stageId,omitempty"`
-	OperationId  *string `json:"operationId,omitempty"`
-	Message      string  `json:"message,omitempty"`
+	DeploymentId int        `json:"deploymentId,omitempty"`
+	StageId      *uuid.UUID `json:"stageId,omitempty"`
+	OperationId  *string    `json:"operationId,omitempty"`
+	Message      string     `json:"message,omitempty"`
 }
 
 type RetryDeploymentEventData struct {

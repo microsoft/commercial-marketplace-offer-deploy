@@ -91,7 +91,7 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*eve
 	}
 
 	message := &events.EventHookMessage{
-		Id:     messageId.String(),
+		Id:     messageId,
 		Status: f.getStatus(*item.Message.EventType),
 		Type:   f.getEventHookType(*item.Resource.Name, deployment),
 		Data:   data,
@@ -101,7 +101,7 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*eve
 	if message.Type == string(events.EventTypeStageCompleted) {
 		for _, stage := range deployment.Stages {
 			if *item.Resource.Name == stage.DeploymentName {
-				data.StageId = to.Ptr(stage.ID.String())
+				data.StageId = to.Ptr(stage.ID)
 			}
 		}
 	}

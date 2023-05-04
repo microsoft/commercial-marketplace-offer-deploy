@@ -123,7 +123,7 @@ func (s *serviceBusSuite) TestOperationsSendSuccess() {
 	s.db.Instance().First(&invokedOperation, s.invokedOperationId)
 
 	message := &messaging.ExecuteInvokedOperation{
-		OperationId: invokedOperation.ID.String(),
+		OperationId: invokedOperation.ID,
 	}
 	s.sendTestMessage(s.operationsQueueName, message)
 }

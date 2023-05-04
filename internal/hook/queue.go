@@ -62,8 +62,8 @@ func Add(ctx context.Context, message *events.EventHookMessage) error {
 	}
 
 	if message != nil {
-		if message.Id == uuid.Nil.String() {
-			message.Id = uuid.New().String()
+		if message.Id == uuid.Nil {
+			message.Id = uuid.New()
 		}
 	}
 

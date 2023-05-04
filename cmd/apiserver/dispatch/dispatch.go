@@ -84,7 +84,7 @@ func (p *dispatcher) save(ctx context.Context, c *DispatchInvokedOperation) (*da
 
 // send the message on the queue
 func (h *dispatcher) send(ctx context.Context, operationId uuid.UUID) error {
-	message := messaging.ExecuteInvokedOperation{OperationId: operationId.String()}
+	message := messaging.ExecuteInvokedOperation{OperationId: operationId}
 
 	results, err := h.sender.Send(ctx, string(messaging.QueueNameOperations), message)
 	if err != nil {
@@ -99,7 +99,7 @@ func (h *dispatcher) send(ctx context.Context, operationId uuid.UUID) error {
 
 func (h *dispatcher) addEventHook(ctx context.Context, invokedOperation *data.InvokedOperation) error {
 	return hook.Add(ctx, &events.EventHookMessage{
-		Id:      uuid.New().String(),
+		Id:      uuid.New(),
 		Status:  invokedOperation.Status,
 		Type:    string(events.EventTypeDeploymentOperationReceived),
 		Subject: "/deployments/" + strconv.Itoa(int(invokedOperation.DeploymentId)),

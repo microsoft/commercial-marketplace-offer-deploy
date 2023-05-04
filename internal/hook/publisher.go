@@ -46,8 +46,8 @@ func (p *publisher) Publish(message *model.EventHookMessage) error {
 		go func(i int) {
 			defer waitGroup.Done()
 			hook := hooks[i]
-			message.Id = uuid.New().String()
-			message.HookId = hook.ID.String()
+			message.Id = uuid.New()
+			message.HookId = hook.ID
 
 			sender := p.getSender(*hook)
 

@@ -19,12 +19,7 @@ type operationMessageHandler struct {
 }
 
 func (h *operationMessageHandler) Handle(message *messaging.ExecuteInvokedOperation, context messaging.MessageHandlerContext) error {
-	id, err := uuid.Parse(message.OperationId)
-	if err != nil {
-		return err
-	}
-
-	invokedOperation, err := h.getInvokedOperation(id)
+	invokedOperation, err := h.getInvokedOperation(message.OperationId)
 	if err != nil {
 		return err
 	}

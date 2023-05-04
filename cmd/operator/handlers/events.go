@@ -57,7 +57,7 @@ func (h *eventsMessageHandler) retryDeployment(ctx context.Context, message *eve
 	invokedOperation.Attempts = invokedOperation.Attempts + 1
 	h.db.Save(&invokedOperation)
 
-	results, err := h.sender.Send(ctx, string(messaging.QueueNameOperations), messaging.ExecuteInvokedOperation{OperationId: invokedOperation.ID.String()})
+	results, err := h.sender.Send(ctx, string(messaging.QueueNameOperations), messaging.ExecuteInvokedOperation{OperationId: invokedOperation.ID})
 	if err != nil {
 		return err
 	}
