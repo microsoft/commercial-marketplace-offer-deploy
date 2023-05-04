@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/mapper"
@@ -18,31 +18,40 @@ type getDeploymentHandler struct {
 }
 
 func (h *getDeploymentHandler) Handle(c echo.Context) error {
-	//TODO: Get dep ID from echo param, query db for deployment (type data.deployment)
-	//Get Deployment ID from echo param
-	deploymentId, err := strconv.Atoi(c.Param(deploymenIdParameterName))
+	id, err := h.getDeploymentId(c)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("%s invalid", deploymenIdParameterName))
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
-	//get deployment by id
-	data := &data.Deployment{}
-	deployment := h.db.First(data, deploymentId)
-	if deployment.Error != nil {
-		return err
+	deployment, err := h.getDeployment(id)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, err.Error())
 	}
 
-	//map data.deployment to api.deployment
-	h.mapper.Map(deployment)
-	result := createResult(deployment)
-	//return JSON as api.deployment type
-	return c.JSON(http.StatusOK, result)
+	return c.JSON(http.StatusOK, h.mapper.Map(deployment))
+}
+
+func (h *getDeploymentHandler) getDeploymentId(c echo.Context) (uint, error) {
+	id, err := strconv.ParseUint(c.Param(deploymenIdParameterName), 10, 32)
+	if err != nil {
+		return 0, fmt.Errorf("%s invalid", deploymenIdParameterName)
+	}
+	return uint(id), nil
+}
+
+// method that gets a deployment struct by id
+func (h *getDeploymentHandler) getDeployment(id uint) (*data.Deployment, error) {
+	deployment := &data.Deployment{}
+	result := h.db.First(deployment, id)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return deployment, nil
 }
 
 // Get deployment factory function
 func NewGetDeploymentHandler(appConfig *config.AppConfig) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		//construct gorm.db instance using appconfig
 		db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
 		handler := getDeploymentHandler{
 			db:     db,
