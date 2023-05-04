@@ -31,15 +31,6 @@ type ServiceBusMessageReceiverOptions struct {
 	FullyQualifiedNamespace string
 }
 
-type amqpError struct {
-	Condition   string
-	Description string
-}
-
-func (e *amqpError) Error() string {
-	return fmt.Sprintf("amqp error: %s - %s", e.Condition, e.Description)
-}
-
 //region servicebus receiver
 
 type serviceBusReceiver struct {
