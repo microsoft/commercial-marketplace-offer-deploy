@@ -78,7 +78,11 @@ func (r *serviceBusReceiver) Start() {
 				}
 
 				for _, message := range messages {
-					log.Debugf("%s - Received message: %s\n", r.queueName, message.MessageID)
+					log.WithFields(log.Fields{
+						"queueName": r.queueName,
+						"messageId": message.MessageID,
+						"body":      string(message.Body),
+					}).Debug("Received message")
 
 					err := r.handler.Handle(r.ctx, message)
 
