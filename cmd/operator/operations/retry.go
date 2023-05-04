@@ -44,12 +44,16 @@ func (exe *retryDeployment) Execute(ctx context.Context, invokedOperation *data.
 func (exe *retryDeployment) updateWithResults(ctx context.Context, results *deployments.AzureDeploymentResult, invokedOperation *data.InvokedOperation) error {
 	db := exe.db
 
-	invokedOperation.Result = results
+	if results != nil {
+		invokedOperation.Result = results
 
-	if results.Status == deployments.Failed {
+		if results.Status == deployments.Failed {
+			invokedOperation.Status = operation.StatusFailed.String()
+		} else if results.Status == deployments.Succeeded {
+			invokedOperation.Status = operation.StatusSuccess.String()
+		}
+	} else {
 		invokedOperation.Status = operation.StatusFailed.String()
-	} else if results.Status == deployments.Succeeded {
-		invokedOperation.Status = operation.StatusSuccess.String()
 	}
 
 	db.Save(invokedOperation)
