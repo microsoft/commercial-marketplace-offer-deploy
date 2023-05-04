@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
-
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
@@ -41,9 +39,6 @@ func (exe *startDeployment) Execute(ctx context.Context, operation *data.Invoked
 	azureDeployment := exe.mapAzureDeployment(deployment, operation)
 	result, err := exe.deploy(ctx, azureDeployment)
 
-	if err != nil {
-		exe.updateToFailed(ctx, operation, err)
-	}
 	// if we waited this long, then we can assume we have the results, so we'll update the invoked operation results with it
 	if err == nil {
 		operation.Result = result
@@ -74,29 +69,29 @@ func (exe *startDeployment) updateToRunning(ctx context.Context, invokedOperatio
 	return deployment, err
 }
 
-func (exe *startDeployment) updateToFailed(ctx context.Context, invokedOperation *data.InvokedOperation, err error) error {
-	db := exe.db
+// func (exe *startDeployment) updateToFailed(ctx context.Context, invokedOperation *data.InvokedOperation, err error) error {
+// 	db := exe.db
 
-	deployment := &data.Deployment{}
-	db.First(&deployment, invokedOperation.DeploymentId)
-	invokedOperation.Status = string(operation.StatusFailed)
-	db.Save(invokedOperation)
+// 	deployment := &data.Deployment{}
+// 	db.First(&deployment, invokedOperation.DeploymentId)
+// 	invokedOperation.Status = string(operation.StatusFailed)
+// 	db.Save(invokedOperation)
 
-	err = hook.Add(ctx, &events.EventHookMessage{
-		Subject: "/deployments/" + strconv.Itoa(int(deployment.ID)),
-		Status:  operation.StatusFailed.String(),
-		Type:    string(events.EventTypeDeploymentCompleted),
-		Data: &events.DeploymentEventData{
-			DeploymentId: int(deployment.ID),
-			OperationId:  to.Ptr(invokedOperation.ID.String()),
-			Message:      fmt.Sprintf("Azure Deployment failed. Result: %s", err.Error()),
-		},
-	})
-	if err != nil {
-		return err
-	}
-	return nil
-}
+// 	err = hook.Add(ctx, &events.EventHookMessage{
+// 		Subject: "/deployments/" + strconv.Itoa(int(deployment.ID)),
+// 		Status:  operation.StatusFailed.String(),
+// 		Type:    string(events.EventTypeDeploymentCompleted),
+// 		Data: &events.DeploymentEventData{
+// 			DeploymentId: int(deployment.ID),
+// 			OperationId:  to.Ptr(invokedOperation.ID.String()),
+// 			Message:      fmt.Sprintf("Azure Deployment failed. Result: %s", err.Error()),
+// 		},
+// 	})
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
 
 func (p *startDeployment) mapAzureDeployment(d *data.Deployment, io *data.InvokedOperation) *deployment.AzureDeployment {
 	return &deployment.AzureDeployment{
