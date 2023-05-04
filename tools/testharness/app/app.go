@@ -20,6 +20,7 @@ import (
 // TODO: this needs to go and pull from .env
 var (
 	location       = "eastus"
+	caseName       = "success"
 	resourceGroup  string
 	subscription   string
 	clientEndpoint = "http://localhost:8080"
@@ -31,12 +32,18 @@ func AddRoutes(e *echo.Echo) {
 	e.GET("/", func(ctx echo.Context) error {
 		return ctx.String(http.StatusOK, "Test Harness Up.")
 	})
-	e.GET("/createdeployment/:caseName", CreateDeployment)
-	e.GET("/startdeployment/:deploymentId/:caseName", StartDeployment)
+	e.GET("/setcase/:caseName", SetCase)
+	e.GET("/createdeployment", CreateDeployment)
+	e.GET("/startdeployment/:deploymentId", StartDeployment)
 	e.GET("/createeventhook", CreateEventHook)
-	e.GET("/dryrun/:deploymentId/:caseName", DryRun)
+	e.GET("/dryrun/:deploymentId", DryRun)
 	e.GET("/redeploy/:deploymentId/:stageName", Redeploy)
 	e.POST("/webhook", ReceiveEventHook)
+}
+
+func SetCase(c echo.Context) error {
+	caseName = c.Param("caseName")
+	return c.String(http.StatusOK, fmt.Sprintf("Case set to %s", caseName))
 }
 
 func ReceiveEventHook(c echo.Context) error {
@@ -129,7 +136,6 @@ func Redeploy(c echo.Context) error {
 }
 
 func CreateDeployment(c echo.Context) error {
-	caseName := c.Param("caseName")
 	location = getLocation()
 	resourceGroup = getResourceGroup()
 	subscription = getSubscription()
@@ -177,7 +183,6 @@ func CreateDeployment(c echo.Context) error {
 }
 
 func DryRun(c echo.Context) error {
-	caseName := c.Param("caseName")
 	log.Println("Inside DryRun in the test harness")
 	deploymentId, err := strconv.Atoi(c.Param("deploymentId"))
 
@@ -217,7 +222,6 @@ func DryRun(c echo.Context) error {
 
 func StartDeployment(c echo.Context) error {
 	deploymentId, err := strconv.Atoi(c.Param("deploymentId"))
-	caseName := c.Param("caseName")
 
 	if err != nil {
 		log.Println(err)
