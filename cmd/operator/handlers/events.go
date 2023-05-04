@@ -5,13 +5,13 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
-	"github.com/labstack/gommon/log"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -22,7 +22,7 @@ type eventsMessageHandler struct {
 }
 
 func (h *eventsMessageHandler) Handle(message *events.EventHookMessage, context messaging.MessageHandlerContext) error {
-	log.Debugf("Handling EventHookMessage [%s]", message.Id)
+	log.WithField("eventHookMessage", message).Debug("Received event hook message")
 
 	if h.shouldRetryIfDeployment(message) {
 		h.retryDeployment(context.Context(), message)

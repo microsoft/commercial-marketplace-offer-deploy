@@ -2,7 +2,6 @@ package messaging
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"reflect"
 
@@ -43,14 +42,7 @@ type serviceBusMessageHandler struct {
 func (h *serviceBusMessageHandler) Handle(ctx context.Context, message *azservicebus.ReceivedMessage) error {
 	typedMessage := reflect.New(h.messageType)
 
-	if message != nil {
-		log.Debug("unmarshaling mesage body:\n %s", string(message.Body))
-		err := json.Unmarshal(message.Body, typedMessage.Interface())
-		if err != nil {
-			return fmt.Errorf("message unmarshal failure: %w", err)
-		}
-	}
-
+	log.WithField("message", message).Debug("received message")
 	context := MessageHandlerContext{
 		context:         ctx,
 		ReceivedMessage: message,

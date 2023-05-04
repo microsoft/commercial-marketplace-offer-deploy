@@ -59,14 +59,17 @@ func (f *factory) Create(operationType operation.OperationType) (Executor, error
 
 func Trace(execute Execute) Execute {
 	return func(ctx context.Context, invokedOperation *data.InvokedOperation) error {
-		log.Debugf("executing '%s' [%s]", invokedOperation.Name, invokedOperation.ID.String())
-
+		logger := log.WithFields(
+			log.Fields{
+				"name": invokedOperation.Name,
+				"id":   invokedOperation.ID.String(),
+			})
+		logger.Debug("execution started")
 		err := execute(ctx, invokedOperation)
-
-		log.Debugf("execution done '%v' [%v]", invokedOperation.Name, invokedOperation.ID.String())
+		logger.Debug("execution done")
 
 		if err != nil {
-			log.Errorf("error executing %v [%v]: %v", invokedOperation.Name, invokedOperation.ID.String(), err)
+			log.WithError(err).Error("execution failed")
 		}
 		return err
 	}

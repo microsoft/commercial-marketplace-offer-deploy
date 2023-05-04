@@ -71,8 +71,8 @@ func (m *EventHookMessage) DeploymentId() (uint, error) {
 	return 0, errors.New("unable to get deployment id using data or the subject")
 }
 
-func (m *EventHookMessage) SetSubject(deploymentId int, stageId *uuid.UUID) {
-	m.Subject = "/deployments/" + strconv.Itoa(deploymentId)
+func (m *EventHookMessage) SetSubject(deploymentId uint, stageId *uuid.UUID) {
+	m.Subject = "/deployments/" + strconv.Itoa(int(deploymentId))
 	if stageId != nil {
 		m.Subject += "/stages/" + stageId.String()
 	}

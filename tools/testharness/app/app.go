@@ -40,7 +40,7 @@ func AddRoutes(e *echo.Echo) {
 }
 
 func ReceiveEventHook(c echo.Context) error {
-	log.Print("Event Hook Recieved")
+	log.Print("Event Hook Received")
 	reader := c.Request().Body
 	return c.Stream(http.StatusOK, "application/json", reader)
 }

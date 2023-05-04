@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strconv"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
@@ -64,21 +64,16 @@ func (exe *retryStage) Execute(ctx context.Context, invokedOperation *data.Invok
 }
 
 func (exe *retryStage) sendHook(ctx context.Context, deployment *data.Deployment, invokedOperation *data.InvokedOperation, stage *data.Stage) error {
-	subject := fmt.Sprintf("/deployments/%v/%v", strconv.Itoa(int(deployment.ID)), stage.Name)
-	log.Debugf("retryStage.updateToRunning: subject: %s", subject)
-
-	stageName := stage.ID.String()
-	log.Debugf("retryStage.updateToRunning: stageName: %s", stageName)
-
-	err := hook.Add(ctx, &events.EventHookMessage{
-		Subject: subject,
-		Status:  invokedOperation.Status,
+	message := &events.EventHookMessage{
+		Status: invokedOperation.Status,
 		Data: &events.DeploymentEventData{
 			DeploymentId: int(deployment.ID),
-			StageId:      &stageName,
-			Message:      "Deployment started successfully",
+			StageId:      to.Ptr(stage.ID.String()),
+			Message:      "Retry stage started successfully",
 		},
-	})
+	}
+	message.SetSubject(deployment.ID, &stage.ID)
+	err := hook.Add(ctx, message)
 
 	if err != nil {
 		return err

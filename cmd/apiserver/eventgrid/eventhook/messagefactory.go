@@ -111,7 +111,7 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*eve
 		value := *item.Tags[d.LookupTagKeyStageId]
 		stageId, _ = uuid.Parse(value)
 	}
-	message.SetSubject(int(deployment.ID), &stageId)
+	message.SetSubject(deployment.ID, &stageId)
 
 	return message, nil
 }
