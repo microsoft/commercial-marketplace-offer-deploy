@@ -89,7 +89,7 @@ func (exe *dryRun) getFailedEventHookMessage(err error, invokedOperation *data.I
 		}
 	}
 	return &events.EventHookMessage{
-		Type: string(invokedOperation.Name),
+		Type: string(events.EventTypeDryRunCompleted),
 		Data: data,
 		Status: operation.StatusFailed.String(),
 	}
