@@ -25,7 +25,7 @@ type EventHookMessage struct {
 	// subject is in format like /deployments/{deploymentId}/stages/{stageId}/operations/{operationName}
 	// /deployments/{deploymentId}/operations/{operationName}
 	Subject string `json:"subject,omitempty"`
-	Data    any    `json:"body,omitempty"`
+	Data    any    `json:"data,omitempty"`
 }
 
 // Dry run data
