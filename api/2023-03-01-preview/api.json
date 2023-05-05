@@ -481,11 +481,12 @@
         "name": {
           "type": "string"
         },
-        "status": {
-          "type": "string"
-        },
         "deploymentName": {
           "type": "string"
+        },
+        "retries": {
+          "type": "integer",
+          "description": "the default number of retries. can be set with tag modm.retry. defaults to 0."
         }
       }
     },
