@@ -18,6 +18,9 @@ const (
 
 	// the stage id reference. Use is on a resource that's a child of a 1-level parent deployment
 	LookupTagKeyStageId LookupTagKey = "modm.stage.id"
+
+	// the stage id reference. Use is on a resource that's a child of a 1-level parent deployment
+	LookupTagKeyRetry LookupTagKey = "modm.retry"
 )
 
 type LookupTags map[LookupTagKey]*string

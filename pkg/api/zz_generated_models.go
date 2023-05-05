@@ -127,7 +127,9 @@ type DeploymentStage struct {
 	DeploymentName *string `json:"deploymentName,omitempty"`
 	ID *string `json:"id,omitempty"`
 	Name *string `json:"name,omitempty"`
-	Status *string `json:"status,omitempty"`
+
+	// the default number of retries. can be set with tag modm.retry. defaults to 0.
+	Retries *int32 `json:"retries,omitempty"`
 }
 
 type EventHookResponse struct {

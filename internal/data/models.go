@@ -26,8 +26,10 @@ func (base *BaseWithGuidPrimaryKey) BeforeCreate(tx *gorm.DB) error {
 type Stage struct {
 	BaseWithGuidPrimaryKey
 	Name           string `json:"name"`
-	Status         string `json:"status"`
 	DeploymentName string `json:"deploymentName"`
+
+	// the default number of retries
+	Retries uint `json:"retries"`
 }
 
 type Deployment struct {

@@ -51,16 +51,16 @@ func (h *createDeploymentHandler) Handle(c echo.Context) error {
 
 func createResult(deployment *data.Deployment) *api.Deployment {
 	result := &api.Deployment{
-		ID:     to.Ptr(int32(deployment.ID)),
-		Name:   &deployment.Name,
+		ID:   to.Ptr(int32(deployment.ID)),
+		Name: &deployment.Name,
 	}
 
 	for _, stage := range deployment.Stages {
 		result.Stages = append(result.Stages, &api.DeploymentStage{
-			Name: to.Ptr(stage.Name),
-			ID:   to.Ptr(stage.ID.String()),
-			Status: &stage.Status,
+			Name:           to.Ptr(stage.Name),
+			ID:             to.Ptr(stage.ID.String()),
 			DeploymentName: &stage.DeploymentName,
+			Retries:        to.Ptr(int32(stage.Retries)),
 		})
 	}
 	return result

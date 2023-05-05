@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"time"
+
 	"github.com/avast/retry-go"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
@@ -12,6 +13,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -22,18 +24,25 @@ type dryRun struct {
 	sender messaging.MessageSender
 }
 
-func (exe *dryRun) Execute(ctx context.Context, operation *data.InvokedOperation) error {
-	log.Debug("Inside Invoke for DryRun with an operation of %v", *operation)
+func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOperation) error {
+	log.Debug("Inside Invoke for DryRun with an operation of %v", *invokedOperation)
 
 	err := retry.Do(func() error {
-		log.Debug("Inside retry.Do for DryRun with an operation of %v", *operation)
-		azureDeployment := exe.getAzureDeployment(operation)
+		status := invokedOperation.Status
+
+		log.Debug("Inside retry.Do for DryRun with an operation of %v", *invokedOperation)
+		azureDeployment := exe.getAzureDeployment(invokedOperation)
 		log.Debug("AzureDeployment is %v", *azureDeployment)
 
 		response, err := exe.dryRun(ctx, azureDeployment)
 		
 		if err != nil {
 			log.Error("Error in DryRun: %v", err)
+			
+			invokedOperation.Status = operation.StatusFailed.String()
+			invokedOperation.Retries = invokedOperation.Retries + 1
+			exe.save(invokedOperation)
+
 			return &RetriableError{Err: err, RetryAfter: 10 * time.Second}
 		}
 
@@ -43,28 +52,50 @@ func (exe *dryRun) Execute(ctx context.Context, operation *data.InvokedOperation
 			log.Error(err)
 		}
 		log.Debugf("unmarshaled DryRunResponse: %v", string(b))
-		operation.Status = *response.Status
-		operation.Result = response.DryRunResult
-		operation.UpdatedAt = time.Now().UTC()
+		invokedOperation.Status = *response.Status
+		invokedOperation.Result = response.DryRunResult
+		invokedOperation.UpdatedAt = time.Now().UTC()
 
-		err = exe.save(operation)
+		err = exe.save(invokedOperation)
 		if err != nil {
 			log.Error("Error in DryRun: %v", err)
 			return &RetriableError{Err: err, RetryAfter: 10 * time.Second}
 		}
 		
-		hookMessage := exe.mapToEventHookMessage(&response.DryRunResult)
+		hookMessage := exe.mapToEventHookMessage(status, &response.DryRunResult)
 		hook.Add(ctx, hookMessage)
 
 		return nil
 	},
-	retry.Attempts(uint(operation.Retries)),
+	retry.Attempts(uint(invokedOperation.Retries)),
 	)
+
+	if err != nil {
+		log.Errorf("Error in DryRun - Outside of retry loop: %v", err)
+		hookMessage := exe.getFailedEventHookMessage(err, invokedOperation)
+		hook.Add(ctx, hookMessage)
+	}
 
 	return err
 }
 
-func (exe *dryRun) mapToEventHookMessage(result *deployment.DryRunResult) *events.EventHookMessage {
+func (exe *dryRun) getFailedEventHookMessage(err error, invokedOperation *data.InvokedOperation) *events.EventHookMessage {
+	var data interface{}
+	if err != nil && len(err.Error()) > 0{
+		data = err.Error()
+	} else {
+		if invokedOperation != nil && invokedOperation.Result != nil {
+			data = invokedOperation.Result
+		}
+	}
+	return &events.EventHookMessage{
+		Type: string(events.EventTypeDryRunCompleted),
+		Data: data,
+		Status: operation.StatusFailed.String(),
+	}
+}
+
+func (exe *dryRun) mapToEventHookMessage(status string, result *deployment.DryRunResult) *events.EventHookMessage {
 	return &events.EventHookMessage{
 		Type: string(events.EventTypeDryRunCompleted),
 		Data: result,
@@ -101,7 +132,6 @@ func (exe *dryRun) save(operation *data.InvokedOperation) error {
 //region factory
 
 func NewDryRunExecutor(appConfig *config.AppConfig) Executor {
-	log.Debug("Inside NewDryRunExecutor")
 	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
 	credential := hosting.GetAzureCredential()
 	sender, _ := messaging.NewServiceBusMessageSender(credential, messaging.MessageSenderOptions{

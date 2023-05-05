@@ -174,7 +174,7 @@ func (d DeploymentStage) MarshalJSON() ([]byte, error) {
 	populate(objectMap, "deploymentName", d.DeploymentName)
 	populate(objectMap, "id", d.ID)
 	populate(objectMap, "name", d.Name)
-	populate(objectMap, "status", d.Status)
+	populate(objectMap, "retries", d.Retries)
 	return json.Marshal(objectMap)
 }
 
@@ -196,8 +196,8 @@ func (d *DeploymentStage) UnmarshalJSON(data []byte) error {
 		case "name":
 				err = unpopulate(val, "Name", &d.Name)
 				delete(rawMsg, key)
-		case "status":
-				err = unpopulate(val, "Status", &d.Status)
+		case "retries":
+				err = unpopulate(val, "Retries", &d.Retries)
 				delete(rawMsg, key)
 		}
 		if err != nil {

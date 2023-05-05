@@ -1,11 +1,14 @@
 package mapper
 
 import (
+	"strconv"
+
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 )
 
 const deploymentResourceTypeName = "Microsoft.Resources/deployments"
+const DefaultNoRetries = 0
 
 type armTemplateResource struct {
 	Name string            `mapstructure:"name"`
@@ -30,6 +33,19 @@ func (resource *armTemplateResource) getId() uuid.UUID {
 func (resource *armTemplateResource) getName() string {
 	defaultValue := resource.Name
 	return resource.getTagValue(deployment.LookupTagKeyName, defaultValue)
+}
+
+// gets a stage's default retry value via modm tag. If the value is not an integer, the default is used.
+//
+//	default: DefaultNoRetries
+func (resource *armTemplateResource) getRetries() uint {
+	defaultValue := DefaultNoRetries
+	value := resource.getTagValue(deployment.LookupTagKeyRetry, strconv.Itoa(defaultValue))
+
+	if intValue, err := strconv.ParseInt(value, 10, 32); err == nil {
+		return uint(intValue)
+	}
+	return uint(defaultValue)
 }
 
 func (resource *armTemplateResource) getTagValue(key deployment.LookupTagKey, defaultValue string) string {
