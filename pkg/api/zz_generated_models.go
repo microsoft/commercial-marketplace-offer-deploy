@@ -23,8 +23,8 @@ type CreateDeployment struct {
 }
 
 type CreateEventHookRequest struct {
-	// API key to be used in the Authorization header, e.g. 'ApiKey =234dfsdf324234', to call the webhook callback URL.
-	APIKey *string `json:"ApiKey,omitempty"`
+	// API key to be used in the Authorization header, e.g. 'apiKey =234dfsdf324234', to call the webhook callback URL.
+	APIKey *string `json:"apiKey,omitempty"`
 
 	// The webhook callback
 	Callback *string `json:"callback,omitempty"`

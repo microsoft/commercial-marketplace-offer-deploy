@@ -62,7 +62,7 @@ func (c *CreateDeployment) UnmarshalJSON(data []byte) error {
 // MarshalJSON implements the json.Marshaller interface for type CreateEventHookRequest.
 func (c CreateEventHookRequest) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]any)
-	populate(objectMap, "ApiKey", c.APIKey)
+	populate(objectMap, "apiKey", c.APIKey)
 	populate(objectMap, "callback", c.Callback)
 	populate(objectMap, "name", c.Name)
 	return json.Marshal(objectMap)
@@ -77,7 +77,7 @@ func (c *CreateEventHookRequest) UnmarshalJSON(data []byte) error {
 	for key, val := range rawMsg {
 		var err error
 		switch key {
-		case "ApiKey":
+		case "apiKey":
 				err = unpopulate(val, "APIKey", &c.APIKey)
 				delete(rawMsg, key)
 		case "callback":

@@ -112,7 +112,7 @@ func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.T
 
 		if len(errors) > 0 {
 			err = utils.NewAggregateError(errors)
-			log.Error("Failed to create event grid webhook handler: %s", err.Error())
+			log.Errorf("Failed to create event grid webhook handler: %s", err.Error())
 			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 		}
 

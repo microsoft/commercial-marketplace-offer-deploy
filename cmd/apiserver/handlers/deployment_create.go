@@ -35,7 +35,7 @@ func (h *createDeploymentHandler) Handle(c echo.Context) error {
 	}
 
 	tx := h.db.Create(&deployment)
-	log.Debug("Deployment [%d] created.", deployment.ID)
+	log.Debugf("Deployment [%d] created.", deployment.ID)
 
 	if tx.Error != nil {
 		return err
