@@ -93,10 +93,11 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*eve
 	).First(&invokedOperation)
 
 	data := events.DeploymentEventData{
-		DeploymentId: int(deployment.ID),
-		OperationId:  invokedOperation.ID,
-		Attempts:     invokedOperation.Attempts,
-		Message:      *item.Message.Subject,
+		DeploymentId:  int(deployment.ID),
+		OperationId:   invokedOperation.ID,
+		CorrelationId: to.Ptr(uuid.MustParse(eventData.CorrelationID)),
+		Attempts:      invokedOperation.Attempts,
+		Message:       *item.Message.Subject,
 	}
 
 	message := &events.EventHookMessage{
