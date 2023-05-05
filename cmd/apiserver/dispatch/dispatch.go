@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
@@ -99,14 +98,13 @@ func (h *dispatcher) send(ctx context.Context, operationId uuid.UUID) error {
 
 func (h *dispatcher) addEventHook(ctx context.Context, invokedOperation *data.InvokedOperation) error {
 	return hook.Add(ctx, &events.EventHookMessage{
-		Id:      uuid.New(),
 		Status:  invokedOperation.Status,
 		Type:    string(events.EventTypeDeploymentOperationReceived),
 		Subject: "/deployments/" + strconv.Itoa(int(invokedOperation.DeploymentId)),
 		Data: &events.DeploymentEventData{
 			DeploymentId: int(invokedOperation.DeploymentId),
-			OperationId:  to.Ptr(invokedOperation.ID.String()),
-			Message:      "Operation " + invokedOperation.Name + " accepted",
+			OperationId:  invokedOperation.ID,
+			Message:      "",
 		},
 	})
 }

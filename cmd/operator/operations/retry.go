@@ -68,7 +68,7 @@ func (exe *retryDeployment) updateWithResults(ctx context.Context, results *depl
 	}
 	message.SetSubject(invokedOperation.DeploymentId, nil)
 
-	// by sending this message, it will be caught and the retry will get executed again
+	// by sending this message, it will be caught (in operator/handlers/events.go) and the retry will get executed again
 	// as long as the Attempts haven't exceeded the max set on Retries
 	err := hook.Add(ctx, message)
 	if err != nil {

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
@@ -41,23 +40,13 @@ func (h *eventsMessageHandler) shouldRetryIfDeployment(message *events.EventHook
 func (h *eventsMessageHandler) retryDeployment(ctx context.Context, message *events.EventHookMessage) error {
 	log.Infof("EventHookMessage [%s]. enqueing to retry deployment", message.Id)
 
-	// get by deployment id
-	deploymentId, err := message.DeploymentId()
-	if err != nil {
-		log.Errorf("EventHookMessage [%s]. Failed to retry deployment. Error: %v", message.Id, err)
-		return err
-	}
+	id := message.Data.(events.DeploymentEventData).OperationId
 
 	invokedOperation := &data.InvokedOperation{}
-	h.db.Model(&data.InvokedOperation{
-		DeploymentId: deploymentId,
-		Name:         string(operation.StatusFailed),
-	}).First(&invokedOperation)
+	h.db.First(&invokedOperation, id)
 
 	//update the status to scheduled
-	invokedOperation.Name = string(operation.TypeRetryDeployment)
 	invokedOperation.Status = string(operation.StatusScheduled)
-	invokedOperation.Attempts = invokedOperation.Attempts + 1
 	h.db.Save(&invokedOperation)
 
 	results, err := h.sender.Send(ctx, string(messaging.QueueNameOperations), messaging.ExecuteInvokedOperation{OperationId: invokedOperation.ID})
@@ -71,14 +60,12 @@ func (h *eventsMessageHandler) retryDeployment(ctx context.Context, message *eve
 
 	err = hook.Add(ctx, &events.EventHookMessage{
 		Status: invokedOperation.Status,
-		Type:   string(events.EventTypeDeploymentRetried),
-		Data: events.RetryDeploymentEventData{
-			DeploymentEventData: events.DeploymentEventData{
-				DeploymentId: int(deploymentId),
-				OperationId:  to.Ptr(invokedOperation.ID.String()),
-				Message:      "Deployment is being retried",
-			},
-			Attempts: invokedOperation.Attempts,
+		Type:   string(events.EventTypeDeploymentCompleted),
+		Data: events.DeploymentEventData{
+			DeploymentId: int(invokedOperation.DeploymentId),
+			OperationId:  invokedOperation.ID,
+			Message:      "Deployment is being retried",
+			Attempts:     invokedOperation.Attempts,
 		},
 	})
 

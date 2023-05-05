@@ -85,8 +85,17 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*eve
 	eventData := eg.ResourceEventData{}
 	mapstructure.Decode(item.Message.Data, &eventData)
 
+	// get related operation
+	invokedOperation := data.InvokedOperation{}
+	f.db.Where("deployment_id = ? AND name = ?",
+		deployment.ID,
+		operation.TypeStartDeployment,
+	).First(&invokedOperation)
+
 	data := events.DeploymentEventData{
 		DeploymentId: int(deployment.ID),
+		OperationId:  invokedOperation.ID,
+		Attempts:     invokedOperation.Attempts,
 		Message:      *item.Message.Subject,
 	}
 

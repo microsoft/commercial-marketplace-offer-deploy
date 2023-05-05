@@ -45,13 +45,9 @@ type DryRunAdditionalInfo struct {
 type DeploymentEventData struct {
 	DeploymentId int        `json:"deploymentId,omitempty"`
 	StageId      *uuid.UUID `json:"stageId,omitempty"`
-	OperationId  *string    `json:"operationId,omitempty"`
+	OperationId  uuid.UUID  `json:"operationId,omitempty"`
+	Attempts     int        `json:"attempt,omitempty"`
 	Message      string     `json:"message,omitempty"`
-}
-
-type RetryDeploymentEventData struct {
-	DeploymentEventData
-	Attempts int `json:"attempt,omitempty"`
 }
 
 func (m *EventHookMessage) DeploymentId() (uint, error) {
