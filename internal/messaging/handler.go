@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"reflect"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
 )
 
@@ -44,7 +42,6 @@ func (h *serviceBusMessageHandler) Handle(ctx context.Context, message *azservic
 	typedMessage := reflect.New(h.messageType)
 
 	if message != nil {
-		log.Debug("unmarshaling mesage body:\n %s", string(message.Body))
 		err := json.Unmarshal(message.Body, typedMessage.Interface())
 		if err != nil {
 			return fmt.Errorf("message unmarshal failure: %w", err)

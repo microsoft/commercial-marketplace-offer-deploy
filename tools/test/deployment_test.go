@@ -24,7 +24,7 @@ type deploymentSuite struct {
 
 }
 
-func TestDryRunSuite(t *testing.T) {
+func TestDeploymentSuite(t *testing.T) {
 	suite.Run(t, &deploymentSuite{})
 }
 

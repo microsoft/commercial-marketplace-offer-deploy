@@ -28,7 +28,6 @@ func (m *CreateDeploymentMapper) Map(from *api.CreateDeployment) (*data.Deployme
 
 	deployment := &data.Deployment{
 		Name:           *from.Name,
-		Status:         "New",
 		SubscriptionId: *from.SubscriptionID,
 		ResourceGroup:  *from.ResourceGroup,
 		Location:       *from.Location,

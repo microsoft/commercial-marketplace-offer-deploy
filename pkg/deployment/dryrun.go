@@ -90,7 +90,7 @@ func aggregateResponses(responses []*DryRunResponse) *DryRunResponse {
 	return responses[0]
 }
 
-func DryRun(azureDeployment *AzureDeployment) (*DryRunResponse, error) {
+func DryRun(ctx context.Context, azureDeployment *AzureDeployment) (*DryRunResponse, error) {
 	log.Debug("Inside DryRun in pkg/deployment/dryrun.go")
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
@@ -98,7 +98,7 @@ func DryRun(azureDeployment *AzureDeployment) (*DryRunResponse, error) {
 	}
 	validators := loadValidators()
 	input := DryRunValidationInput{
-		ctx:             context.Background(),
+		ctx:             ctx,
 		cred:            cred,
 		azureDeployment: azureDeployment,
 	}

@@ -122,7 +122,7 @@ func (app *App) startTasks() {
 
 func (app *App) startServices() {
 	for _, service := range app.services {
-		log.Debug("Starting service: %s", service.GetName())
+		log.Debugf("Starting service: %s", service.GetName())
 		go service.Start()
 	}
 }

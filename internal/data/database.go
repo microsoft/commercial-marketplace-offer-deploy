@@ -55,6 +55,10 @@ func NewDatabase(options *DatabaseOptions) Database {
 		db = newDatabase(options.Dsn)
 	}
 
+	if log.GetLevel() == log.DebugLevel {
+		db = db.Debug()
+	}
+
 	return &database{db}
 }
 

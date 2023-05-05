@@ -2,6 +2,7 @@ package operations
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 	"github.com/avast/retry-go"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
@@ -29,7 +30,7 @@ func (exe *dryRun) Execute(ctx context.Context, operation *data.InvokedOperation
 		azureDeployment := exe.getAzureDeployment(operation)
 		log.Debug("AzureDeployment is %v", *azureDeployment)
 
-		response, err := exe.dryRun(azureDeployment)
+		response, err := exe.dryRun(ctx, azureDeployment)
 		
 		if err != nil {
 			log.Error("Error in DryRun: %v", err)
@@ -37,6 +38,11 @@ func (exe *dryRun) Execute(ctx context.Context, operation *data.InvokedOperation
 		}
 
 		log.Debug("DryRun response is %v", *response)
+		b, err := json.MarshalIndent(*response, "", "  ")
+		if err != nil {
+			log.Error(err)
+		}
+		log.Debugf("unmarshaled DryRunResponse: %v", string(b))
 		operation.Status = *response.Status
 		operation.Result = response.DryRunResult
 		operation.UpdatedAt = time.Now().UTC()
@@ -48,7 +54,7 @@ func (exe *dryRun) Execute(ctx context.Context, operation *data.InvokedOperation
 		}
 		
 		hookMessage := exe.mapToEventHookMessage(&response.DryRunResult)
-		hook.Add(hookMessage)
+		hook.Add(ctx, hookMessage)
 
 		return nil
 	},
@@ -59,19 +65,9 @@ func (exe *dryRun) Execute(ctx context.Context, operation *data.InvokedOperation
 }
 
 func (exe *dryRun) mapToEventHookMessage(result *deployment.DryRunResult) *events.EventHookMessage {
-	data := &events.DryRunData{Status: *result.Status}
-
-	if result.Error != nil {
-		for _, info := range result.Error.AdditionalInfo {
-			data.AdditionalInfo = append(data.AdditionalInfo, events.DryRunAdditionalInfo{
-				Info: info.Info,
-				Type: *info.Type,
-			})
-		}
-	}
 	return &events.EventHookMessage{
 		Type: string(events.EventTypeDryRunCompleted),
-		Data: data,
+		Data: result,
 	}
 }
 

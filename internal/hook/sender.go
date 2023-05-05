@@ -43,16 +43,16 @@ func (sender *httpSender) Send(ctx context.Context, data any) error {
 			Timeout: 30 * time.Second,
 		}
 
-		log.Debug("Sending request of %v with a sender url of %v", *request, sender.url)
+		log.Debugf("Sending request of %v with a sender url of %v", *request, sender.url)
 		response, err := client.Do(request)
 
 		if err != nil {
-			log.Error("Error sending event message: %v", err)
+			log.Errorf("Error sending event message: %v", err)
 			return err
 		}
 
 		if response != nil {
-			log.Debug("Sent event with the response of %v", *response)
+			log.Debugf("Sent event with the response of %v", *response)
 		} else {
 			log.Debug("response from client.Do(request) is nil")
 		}

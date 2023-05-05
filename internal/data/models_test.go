@@ -65,7 +65,6 @@ func TestDeploymentUpdate(t *testing.T) {
 
 	model := &Deployment{
 		Name:     "test",
-		Status:   "test",
 		Template: params,
 	}
 
@@ -78,6 +77,6 @@ func TestDeploymentUpdate(t *testing.T) {
 	db.First(&result, model.ID)
 
 	// update
-	result.Status = "updated"
+	result.Name = result.Name + "updated"
 	db.Save(result)
 }

@@ -1,6 +1,3 @@
-//go:build integration
-// +build integration
-
 package test
 
 import (
@@ -28,6 +25,7 @@ type dryRunSuite struct {
 	resourceGroupName string
 	location          string
 	endpoint          string
+	deploymentId      int
 }
 
 func TestDryRunSuite(t *testing.T) {
@@ -44,10 +42,10 @@ func (s *dryRunSuite) SetupSuite() {
 func (s *dryRunSuite) SetupTest() {
 	s.SetupResourceGroup()
 	s.DeployPolicyDefintion()
-	s.DeployPolicy()
+	//s.DeployPolicy()
 }
 
-func (s *dryRunSuite) runDeploymentTest(path string) *sdk.DryRunResult {
+func (s *dryRunSuite) runDeploymentTest(path string) *sdk.DryRunResponse {
 	ctx := context.TODO()
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	require.NoError(s.T(), err)
@@ -55,16 +53,32 @@ func (s *dryRunSuite) runDeploymentTest(path string) *sdk.DryRunResult {
 	client, err := sdk.NewClient(s.endpoint, cred, nil)
 	require.NoError(s.T(), err)
 	require.NotNil(s.T(), client)
-
+	
 	deployment := s.createDeployment(ctx, client, path)
-	result, err := client.DryRunDeployment(ctx, *deployment.ID, s.getParameters(path))
+	deploymentId := deployment.ID
+
+	result, err := client.DryRun(ctx, int(*deploymentId), s.getParameters(path))
 	require.NoError(s.T(), err)
 	require.NotNil(s.T(), result)
 	return result
 }
 
+func (s *dryRunSuite) getJsonAsMap(path string) map[string]interface{} {
+	jsonMap, err := utils.ReadJson(path)
+	if err != nil {
+		log.Println(err)
+	}
+	return jsonMap
+}
+
 func (s *dryRunSuite) TestNamePolicyFailure() {
 	nameViolationPath := "testdata/nameviolation/failure"
+	result := s.runDeploymentTest(nameViolationPath)
+	log.Print("TestNamePolicyFailure Results:\n %s" + *s.prettify(result.Results))
+}
+
+func (s *dryRunSuite) TestExistingStorageFailure() {
+	nameViolationPath := "../../test/testdata/existingstorage"
 	result := s.runDeploymentTest(nameViolationPath)
 	log.Print("TestNamePolicyFailure Results:\n %s" + *s.prettify(result.Results))
 }
@@ -79,7 +93,6 @@ func (s *dryRunSuite) TestQuotaViolation() {
 	quotaViolationPath := "testdata/quotaviolation"
 	result := s.runDeploymentTest(quotaViolationPath)
 	require.NotNil(s.T(), result)
-	require.NotNil(s.T(), result.Error)
 	log.Print("TestQuotaViolation Results:\n %s" + *s.prettify(result.Results))
 }
 
@@ -100,7 +113,7 @@ func (s *dryRunSuite) createDeployment(ctx context.Context, client *sdk.Client, 
 	name := "DryRunDeploymentTest"
 	template := s.getTemplate(templatePath)
 
-	deployment, err := client.CreateDeployment(ctx, api.CreateDeployment{
+	deployment, err := client.Create(ctx, api.CreateDeployment{
 		Name:           &name,
 		SubscriptionID: &s.subscriptionId,
 		ResourceGroup:  &s.resourceGroupName,

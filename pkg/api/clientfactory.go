@@ -42,5 +42,5 @@ func NewDeploymentManagementClient(endpoint string, credential azcore.TokenCrede
 }
 
 func getDefaultScope(endpoint string) (string, error) {
-	return "api://modm/.default", nil
+	return "https://management.azure.com/.default", nil
 }

@@ -35,7 +35,7 @@ func (h *operationMessageHandler) Handle(message *messaging.ExecuteInvokedOperat
 
 func (h *operationMessageHandler) getInvokedOperation(operationId uuid.UUID) (*data.InvokedOperation, error) {
 	db := h.database.Instance()
-	var invokedOperation *data.InvokedOperation
+	invokedOperation := &data.InvokedOperation{}
 	db.First(&invokedOperation, operationId)
 
 	if db.Error != nil {
@@ -43,12 +43,7 @@ func (h *operationMessageHandler) getInvokedOperation(operationId uuid.UUID) (*d
 		return nil, db.Error
 	}
 
-	log.Debugf("InvokedOperation: %v", invokedOperation)
-
-	// ensure that the operation type is valid
-	if _, err := operation.Type(invokedOperation.Name); err != nil {
-		return nil, err
-	}
+	log.WithField("invokedOperationId", operationId).Infof("Retrieved invoked operation")
 
 	return invokedOperation, nil
 }

@@ -1,7 +1,9 @@
 package events
 
 import (
+	"errors"
 	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -23,7 +25,7 @@ type EventHookMessage struct {
 	// subject is in format like /deployments/{deploymentId}/stages/{stageId}/operations/{operationName}
 	// /deployments/{deploymentId}/operations/{operationName}
 	Subject string `json:"subject,omitempty"`
-	Data    any    `json:"body,omitempty"`
+	Data    any    `json:"data,omitempty"`
 }
 
 // Dry run data
@@ -41,14 +43,32 @@ type DryRunAdditionalInfo struct {
 // all other deployment events
 
 type DeploymentEventData struct {
-	DeploymentId int     `json:"deploymentId,omitempty"`
-	StageId      *string `json:"stageId,omitempty"`
-	OperationId  *string `json:"operationId,omitempty"`
-	Message      string  `json:"message,omitempty"`
+	DeploymentId int        `json:"deploymentId,omitempty" mapstructure:"deploymentId"`
+	StageId      *uuid.UUID `json:"stageId,omitempty" mapstructure:"stageId"`
+	OperationId  uuid.UUID  `json:"operationId,omitempty" mapstructure:"operationId"`
+	Attempts     int        `json:"attempts,omitempty" mapstructure:"attempts"`
+	Message      string     `json:"message,omitempty" mapstructure:"message"`
 }
 
-func (m *EventHookMessage) SetSubject(deploymentId int, stageId *uuid.UUID) {
-	m.Subject = "/deployments/" + strconv.Itoa(deploymentId)
+func (m *EventHookMessage) DeploymentId() (uint, error) {
+	if data, ok := m.Data.(DeploymentEventData); ok {
+		return uint(data.DeploymentId), nil
+	}
+
+	if m.Subject != "" && strings.HasPrefix(m.Subject, "/deployments/") {
+		values := strings.Split(strings.TrimPrefix(m.Subject, "/"), "/")
+
+		deploymentId, err := strconv.Atoi(values[1])
+		if err != nil {
+			return 0, err
+		}
+		return uint(deploymentId), nil
+	}
+	return 0, errors.New("unable to get deployment id using data or the subject")
+}
+
+func (m *EventHookMessage) SetSubject(deploymentId uint, stageId *uuid.UUID) {
+	m.Subject = "/deployments/" + strconv.Itoa(int(deploymentId))
 	if stageId != nil {
 		m.Subject += "/stages/" + stageId.String()
 	}

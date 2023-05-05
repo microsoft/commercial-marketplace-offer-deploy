@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strconv"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
@@ -32,7 +32,12 @@ func (exe *retryStage) Execute(ctx context.Context, invokedOperation *data.Invok
 	invokedOperation.Status = string(operation.StatusRunning)
 	exe.save(invokedOperation)
 
-	stageId := uuid.MustParse(invokedOperation.Parameters["stageId"].(string))
+	stageId, err := uuid.Parse(invokedOperation.Parameters["stageId"].(string))
+	if err != nil {
+		log.Errorf("error parsing stageId: %s", err)
+		return err
+	}
+
 	foundStage := exe.findStage(dep, stageId)
 	if foundStage == nil {
 		errMsg := fmt.Sprintf("stage not found for deployment %v and stageId %v", dep.ID, stageId)
@@ -44,7 +49,7 @@ func (exe *retryStage) Execute(ctx context.Context, invokedOperation *data.Invok
 		return errors.New("unable to map to AzureRedeployment")
 	}
 
-	res, err := deployment.Redeploy(*redeployment)
+	res, err := deployment.Redeploy(ctx, *redeployment)
 	if err != nil {
 		log.Errorf("error redeploying deployment: %s", err)
 		return err
@@ -54,7 +59,7 @@ func (exe *retryStage) Execute(ctx context.Context, invokedOperation *data.Invok
 		log.Debugf("Redeployment response is nil")
 	}
 
-	err = exe.sendHook(dep, foundStage)
+	err = exe.sendHook(ctx, dep, invokedOperation, foundStage)
 	if err != nil {
 		log.Errorf("error adding hook: %s", err)
 		return err
@@ -63,22 +68,17 @@ func (exe *retryStage) Execute(ctx context.Context, invokedOperation *data.Invok
 	return nil
 }
 
-func (exe *retryStage) sendHook(deployment *data.Deployment, stage *data.Stage) error {
-	subject := fmt.Sprintf("/deployments/%v/%v", strconv.Itoa(int(deployment.ID)), stage.Name)
-	log.Debugf("retryStage.updateToRunning: subject: %s", subject)
-
-	stageName := stage.ID.String()
-	log.Debugf("retryStage.updateToRunning: stageName: %s", stageName)
-
-	err := hook.Add(&events.EventHookMessage{
-		Subject: subject,
-		Status:  deployment.Status,
+func (exe *retryStage) sendHook(ctx context.Context, deployment *data.Deployment, invokedOperation *data.InvokedOperation, stage *data.Stage) error {
+	message := &events.EventHookMessage{
+		Status: invokedOperation.Status,
 		Data: &events.DeploymentEventData{
 			DeploymentId: int(deployment.ID),
-			StageId:      &stageName,
-			Message:      "Deployment started successfully",
+			StageId:      to.Ptr(stage.ID),
+			Message:      "Retry stage started successfully",
 		},
-	})
+	}
+	message.SetSubject(deployment.ID, &stage.ID)
+	err := hook.Add(ctx, message)
 
 	if err != nil {
 		return err
@@ -125,49 +125,9 @@ func (exe *retryStage) findStage(deployment *data.Deployment, stageId uuid.UUID)
 	return nil
 }
 
-// func (exe *retryStage) updateToRunning(ctx context.Context, operation *data.InvokedOperation, deployment *data.Deployment, stage *data.Stage) error {
-// 	log.Debugf("retryStage.updateToRunning: operation: %v, deployment: %v, stage: %v", operation, deployment, stage)
-// 	db := exe.db
-
-// 	if operation == nil {
-// 		log.Error("retryStage.updateToRunning: operation is nil")
-// 		return errors.New("operation is nil")
-// 	}
-
-// 	operation.Status = events.StatusRunning.String()
-// 	db.Save(operation)
-// 	log.Debug("retryStage.updateToRunning: operation saved")
-
-// 	subject := fmt.Sprintf("/deployments/%v/%v", strconv.Itoa(int(deployment.ID)), stage.Name)
-// 	log.Debugf("retryStage.updateToRunning: subject: %s", subject)
-
-// 	stageName := stage.ID.String()
-// 	log.Debugf("retryStage.updateToRunning: stageName: %s", stageName)
-
-// 	err := hook.Add(&events.EventHookMessage{
-// 		Subject: subject,
-// 		Status:  deployment.Status,
-// 		Data: &events.DeploymentEventData{
-// 			DeploymentId: int(deployment.ID),
-// 			StageId: &stageName,
-// 			Message:      "Deployment started successfully",
-// 		},
-// 	})
-
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
-
-//region factory
-
 func NewRetryStageExecutor(appConfig *config.AppConfig) Executor {
 	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
 	return &retryStage{
 		db: db,
 	}
 }
-
-//endregion factory

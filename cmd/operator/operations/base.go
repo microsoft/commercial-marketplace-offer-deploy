@@ -20,7 +20,7 @@ type Executor interface {
 type Execute func(ctx context.Context, operation *data.InvokedOperation) error
 
 // this is so the dry run can be tested, detaching actual dry run implementation
-type DryRunFunc func(azureDeployment *deployment.AzureDeployment) (*deployment.DryRunResponse, error)
+type DryRunFunc func(context.Context, *deployment.AzureDeployment) (*deployment.DryRunResponse, error)
 
 type ExecutorFactory interface {
 	Create(operationType operation.OperationType) (Executor, error)
@@ -59,14 +59,17 @@ func (f *factory) Create(operationType operation.OperationType) (Executor, error
 
 func Trace(execute Execute) Execute {
 	return func(ctx context.Context, invokedOperation *data.InvokedOperation) error {
-		log.Debugf("executing '%s' [%s]", invokedOperation.Name, invokedOperation.ID.String())
-
+		logger := log.WithFields(
+			log.Fields{
+				"name": invokedOperation.Name,
+				"id":   invokedOperation.ID.String(),
+			})
+		logger.Debug("execution started")
 		err := execute(ctx, invokedOperation)
-
-		log.Debugf("execution done '%v' [%v]", invokedOperation.Name, invokedOperation.ID.String())
+		logger.Debug("execution done")
 
 		if err != nil {
-			log.Errorf("error executing %v [%v]: %v", invokedOperation.Name, invokedOperation.ID.String(), err)
+			log.WithError(err).Error("execution failed")
 		}
 		return err
 	}

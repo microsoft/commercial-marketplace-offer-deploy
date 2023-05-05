@@ -45,13 +45,17 @@ func (p *publisher) Publish(message *model.EventHookMessage) error {
 	for i := 0; i < hookCount; i++ {
 		go func(i int) {
 			defer waitGroup.Done()
-			subscription := hooks[i]
-			message.HookId = subscription.ID
-			sender := p.getSender(*subscription)
+			hook := hooks[i]
+			message.Id = uuid.New()
+			message.HookId = hook.ID
+
+			sender := p.getSender(*hook)
+
+			log.Debugf("sending message [%s] to %s - '%s'", message.Id, message.HookId, hook.Callback)
 			err := sender.Send(ctx, &message)
 
 			if err != nil {
-				log.Error("error sending message to subscription [%s]", subscription.Name)
+				log.Error("error posting to callback '%s' [%s]", hook.Callback, hook.Name)
 			}
 		}(i)
 	}

@@ -10,6 +10,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
 	"github.com/google/uuid"
@@ -18,8 +19,18 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	d "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
 	"github.com/mitchellh/mapstructure"
 	"gorm.io/gorm"
+)
+
+const (
+	// we want to identify the write failure and success
+	azureEventTypeResourceWriteFailure = "Microsoft.Resources.ResourceWriteFailure"
+	azureEventTypeResourceWriteSuccess = "Microsoft.Resources.ResourceWriteSuccess"
+
+	// identifies that we're dealing with an azure deployment resource, not just a resource being deployed as part of a deployment
+	azureDeploymentResourceOperationName = "Microsoft.Resources/deployments/write"
 )
 
 // this factory is intented to create a list of WebHookEventMessages from a list of EventGridEventResources
@@ -43,7 +54,7 @@ func (f *EventHookMessageFactory) Create(ctx context.Context, matchAny d.LookupT
 	result := f.filter.Filter(ctx, matchAny, eventGridEvents)
 	messages := []*events.EventHookMessage{}
 
-	log.Debug("factory received %d EventGridEvents, filtered to %d messages", len(eventGridEvents), len(result))
+	log.Debugf("factory received %d EventGridEvents, filtered to %d messages", len(eventGridEvents), len(result))
 
 	for _, item := range result {
 		message, err := f.convert(item)
@@ -59,21 +70,49 @@ func (f *EventHookMessageFactory) Create(ctx context.Context, matchAny d.LookupT
 
 //region private methods
 
+// converts an EventGridEventResource to a WebHookEventMessage so it can be relayed via queue to be published to MODM consumer hook registration
 func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*events.EventHookMessage, error) {
 	deployment, err := f.getRelatedDeployment(item)
 	if err != nil {
 		return nil, err
 	}
 
-	messageId, _ := uuid.Parse(*item.Message.ID)
+	messageId, err := uuid.Parse(*item.Message.ID)
+	if err != nil {
+		return nil, err
+	}
+
 	eventData := eg.ResourceEventData{}
 	mapstructure.Decode(item.Message.Data, &eventData)
 
+	// get related operation
+	invokedOperation := data.InvokedOperation{}
+	f.db.Where("deployment_id = ? AND name = ?",
+		deployment.ID,
+		operation.TypeStartDeployment,
+	).First(&invokedOperation)
+
+	data := events.DeploymentEventData{
+		DeploymentId: int(deployment.ID),
+		OperationId:  invokedOperation.ID,
+		Attempts:     invokedOperation.Attempts,
+		Message:      *item.Message.Subject,
+	}
+
 	message := &events.EventHookMessage{
 		Id:     messageId,
-		Status: strcase.ToLowerCamel(eventData.Status),
-		Type:   string(events.EventTypeDeploymentAzureEventReceived),
-		Data:   eventData,
+		Status: f.getStatus(*item.Message.EventType),
+		Type:   f.getEventHookType(*item.Resource.Name, deployment),
+		Data:   data,
+	}
+
+	// if this is a stage completed event, we need to set the stageId
+	if message.Type == string(events.EventTypeStageCompleted) {
+		for _, stage := range deployment.Stages {
+			if *item.Resource.Name == stage.DeploymentName {
+				data.StageId = to.Ptr(stage.ID)
+			}
+		}
 	}
 
 	var stageId uuid.UUID
@@ -81,11 +120,15 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*eve
 		value := *item.Tags[d.LookupTagKeyStageId]
 		stageId, _ = uuid.Parse(value)
 	}
-	message.SetSubject(int(deployment.ID), &stageId)
+	message.SetSubject(deployment.ID, &stageId)
 
 	return message, nil
 }
 
+// finds the deployment using the correlationId of the event which is ALWAYS 1-1 with the deployment.
+//
+//	remarks: the correlationId cannot be used to lookup the stage, since the stage will be a child deployment of the parent, and its correlationId still related to the parent
+//			 that started the deployment
 func (f *EventHookMessageFactory) getRelatedDeployment(item *eg.EventGridEventResource) (*data.Deployment, error) {
 	eventData := eg.ResourceEventData{}
 	mapstructure.Decode(item.Message.Data, &eventData)
@@ -139,6 +182,30 @@ func (f *EventHookMessageFactory) lookupDeploymentId(ctx context.Context, correl
 		}
 	}
 	return nil, fmt.Errorf("deployment not found for correlationId: %s", correlationId)
+}
+
+func (f *EventHookMessageFactory) getStatus(eventType string) string {
+	switch eventType {
+	case azureEventTypeResourceWriteFailure:
+		return operation.StatusFailed.String()
+	case azureEventTypeResourceWriteSuccess:
+		return operation.StatusSuccess.String()
+	default:
+		return strcase.ToCamel(eventType)
+	}
+}
+
+func (f *EventHookMessageFactory) getEventHookType(resourceName string, deployment *data.Deployment) string {
+	if resourceName == deployment.GetAzureDeploymentName() {
+		return string(events.EventTypeDeploymentCompleted)
+	} else {
+		for _, stage := range deployment.Stages {
+			if resourceName == stage.DeploymentName {
+				return string(events.EventTypeStageCompleted)
+			}
+		}
+	}
+	return string(events.EventTypeDeploymentEventReceived)
 }
 
 //endregion private methods
