@@ -80,7 +80,7 @@ func getAppConfig() *config.AppConfig {
 	name := "test"
 	config.LoadConfiguration("testdata", &name, appConfig)
 
-	log.Debug("appConfig: %+v", appConfig)
+	log.Debugf("appConfig: %+v", appConfig)
 	return appConfig
 }
 

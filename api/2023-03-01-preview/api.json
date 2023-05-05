@@ -611,9 +611,9 @@
           "type": "string",
           "description": "the name of the subscription"
         },
-        "ApiKey":{
+        "apiKey":{
           "type": "string",
-          "description": "API key to be used in the Authorization header, e.g. 'ApiKey =234dfsdf324234', to call the webhook callback URL."
+          "description": "API key to be used in the Authorization header, e.g. 'apiKey =234dfsdf324234', to call the webhook callback URL."
         },
         "callback": {
           "type": "string",
