@@ -46,8 +46,12 @@ type DeploymentEventData struct {
 	DeploymentId int        `json:"deploymentId,omitempty" mapstructure:"deploymentId"`
 	StageId      *uuid.UUID `json:"stageId,omitempty" mapstructure:"stageId"`
 	OperationId  uuid.UUID  `json:"operationId,omitempty" mapstructure:"operationId"`
-	Attempts     int        `json:"attempts,omitempty" mapstructure:"attempts"`
-	Message      string     `json:"message,omitempty" mapstructure:"message"`
+
+	// the correlation ID used to track azure deployments. This may be nil if the particular event data is about something that
+	// happened inside MODM and not azure.
+	CorrelationId *uuid.UUID `json:"correlationId,omitempty" mapstructure:"correlationId"`
+	Attempts      int        `json:"attempts,omitempty" mapstructure:"attempts"`
+	Message       string     `json:"message,omitempty" mapstructure:"message"`
 }
 
 func (m *EventHookMessage) DeploymentId() (uint, error) {
