@@ -10,6 +10,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
+	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -40,10 +41,11 @@ func (h *eventsMessageHandler) shouldRetryIfDeployment(message *events.EventHook
 func (h *eventsMessageHandler) retryDeployment(ctx context.Context, message *events.EventHookMessage) error {
 	log.Infof("EventHookMessage [%s]. enqueing to retry deployment", message.Id)
 
-	id := message.Data.(events.DeploymentEventData).OperationId
+	eventData := events.DeploymentEventData{}
+	mapstructure.Decode(message, &eventData)
 
 	invokedOperation := &data.InvokedOperation{}
-	h.db.First(&invokedOperation, id)
+	h.db.First(&invokedOperation, eventData.OperationId)
 
 	//update the status to scheduled
 	invokedOperation.Status = string(operation.StatusScheduled)
