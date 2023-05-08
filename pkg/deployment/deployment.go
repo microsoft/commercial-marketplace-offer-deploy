@@ -14,6 +14,9 @@ type DeploymentType int64
 type Template map[string]interface{}
 type TemplateParams map[string]interface{}
 
+// create deployment function
+type CreateDeployment func(ctx context.Context, dep AzureDeployment) (*AzureDeploymentResult, error)
+
 const (
 	AzureResourceManager DeploymentType = iota
 	Terraform

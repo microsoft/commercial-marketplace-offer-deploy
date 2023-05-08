@@ -25,20 +25,20 @@ type dryRun struct {
 }
 
 func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOperation) error {
-	log.Debug("Inside Invoke for DryRun with an operation of %v", *invokedOperation)
+	log.Debugf("Inside Invoke for DryRun with an operation of %v", *invokedOperation)
 
 	err := retry.Do(func() error {
 		status := invokedOperation.Status
 
-		log.Debug("Inside retry.Do for DryRun with an operation of %v", *invokedOperation)
+		log.Debugf("Inside retry.Do for DryRun with an operation of %v", *invokedOperation)
 		azureDeployment := exe.getAzureDeployment(invokedOperation)
-		log.Debug("AzureDeployment is %v", *azureDeployment)
+		log.Debugf("AzureDeployment is %v", *azureDeployment)
 
 		response, err := exe.dryRun(ctx, azureDeployment)
-		
+
 		if err != nil {
-			log.Error("Error in DryRun: %v", err)
-			
+			log.Errorf("Error in DryRun: %v", err)
+
 			invokedOperation.Status = operation.StatusFailed.String()
 			invokedOperation.Retries = invokedOperation.Retries + 1
 			exe.save(invokedOperation)
@@ -46,7 +46,7 @@ func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOp
 			return &RetriableError{Err: err, RetryAfter: 10 * time.Second}
 		}
 
-		log.Debug("DryRun response is %v", *response)
+		log.Debugf("DryRun response is %v", *response)
 		b, err := json.MarshalIndent(*response, "", "  ")
 		if err != nil {
 			log.Error(err)
@@ -58,16 +58,16 @@ func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOp
 
 		err = exe.save(invokedOperation)
 		if err != nil {
-			log.Error("Error in DryRun: %v", err)
+			log.Errorf("Error in DryRun: %v", err)
 			return &RetriableError{Err: err, RetryAfter: 10 * time.Second}
 		}
-		
+
 		hookMessage := exe.mapToEventHookMessage(status, &response.DryRunResult)
 		hook.Add(ctx, hookMessage)
 
 		return nil
 	},
-	retry.Attempts(uint(invokedOperation.Retries)),
+		retry.Attempts(uint(invokedOperation.Retries)),
 	)
 
 	if err != nil {
@@ -81,7 +81,7 @@ func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOp
 
 func (exe *dryRun) getFailedEventHookMessage(err error, invokedOperation *data.InvokedOperation) *events.EventHookMessage {
 	var data interface{}
-	if err != nil && len(err.Error()) > 0{
+	if err != nil && len(err.Error()) > 0 {
 		data = err.Error()
 	} else {
 		if invokedOperation != nil && invokedOperation.Result != nil {
@@ -89,8 +89,8 @@ func (exe *dryRun) getFailedEventHookMessage(err error, invokedOperation *data.I
 		}
 	}
 	return &events.EventHookMessage{
-		Type: string(events.EventTypeDryRunCompleted),
-		Data: data,
+		Type:   string(events.EventTypeDryRunCompleted),
+		Data:   data,
 		Status: operation.StatusFailed.String(),
 	}
 }

@@ -27,8 +27,9 @@ func (e *RetriableError) Error() string {
 }
 
 type startDeployment struct {
-	db      *gorm.DB
-	factory ExecutorFactory
+	db                    *gorm.DB
+	factory               ExecutorFactory
+	createAzureDeployment deployment.CreateDeployment
 }
 
 func (exe *startDeployment) Execute(ctx context.Context, invokedOperation *data.InvokedOperation) error {
@@ -57,13 +58,16 @@ func (exe *startDeployment) Execute(ctx context.Context, invokedOperation *data.
 }
 
 func (exe *startDeployment) start(ctx context.Context, invokedOperation *data.InvokedOperation) error {
-	deployment, err := exe.updateToRunning(ctx, invokedOperation)
+	err := exe.updateToRunning(ctx, invokedOperation)
 	if err != nil {
 		return err
 	}
 
+	deployment := &data.Deployment{}
+	exe.db.First(&deployment, invokedOperation.DeploymentId)
+
 	azureDeployment := exe.mapAzureDeployment(deployment, invokedOperation)
-	result, err := exe.deploy(ctx, azureDeployment)
+	result, err := exe.createAzureDeployment(ctx, azureDeployment)
 
 	// if we waited this long, then we can assume we have the results, so we'll update the invoked operation results with it
 	if err == nil {
@@ -73,11 +77,9 @@ func (exe *startDeployment) start(ctx context.Context, invokedOperation *data.In
 	return err
 }
 
-func (exe *startDeployment) updateToRunning(ctx context.Context, invokedOperation *data.InvokedOperation) (*data.Deployment, error) {
+func (exe *startDeployment) updateToRunning(ctx context.Context, invokedOperation *data.InvokedOperation) error {
 	db := exe.db
 
-	deployment := &data.Deployment{}
-	db.First(&deployment, invokedOperation.DeploymentId)
 	invokedOperation.Status = operation.StatusRunning.String()
 	db.Save(&invokedOperation)
 
@@ -86,18 +88,15 @@ func (exe *startDeployment) updateToRunning(ctx context.Context, invokedOperatio
 		message = "Deployment retry started successfully"
 	}
 	err := hook.Add(ctx, &events.EventHookMessage{
-		Subject: "/deployments/" + strconv.Itoa(int(deployment.ID)),
+		Subject: "/deployments/" + strconv.Itoa(int(invokedOperation.DeploymentId)),
 		Status:  invokedOperation.Status,
 		Data: &events.DeploymentEventData{
-			DeploymentId: int(deployment.ID),
+			DeploymentId: int(invokedOperation.DeploymentId),
 			OperationId:  invokedOperation.ID,
 			Message:      message,
 		},
 	})
-	if err != nil {
-		return nil, err
-	}
-	return deployment, err
+	return err
 }
 
 func (exe *startDeployment) updateToFailed(ctx context.Context, invokedOperation *data.InvokedOperation, err error) error {
@@ -131,18 +130,14 @@ func (exe *startDeployment) updateToFailed(ctx context.Context, invokedOperation
 	return nil
 }
 
-func (p *startDeployment) mapAzureDeployment(d *data.Deployment, io *data.InvokedOperation) *deployment.AzureDeployment {
-	return &deployment.AzureDeployment{
+func (p *startDeployment) mapAzureDeployment(d *data.Deployment, io *data.InvokedOperation) deployment.AzureDeployment {
+	return deployment.AzureDeployment{
 		SubscriptionId:    d.SubscriptionId,
 		ResourceGroupName: d.ResourceGroup,
 		DeploymentName:    d.GetAzureDeploymentName(),
 		Template:          d.Template,
 		Params:            io.Parameters,
 	}
-}
-
-func (p *startDeployment) deploy(ctx context.Context, azureDeployment *deployment.AzureDeployment) (*deployment.AzureDeploymentResult, error) {
-	return deployment.Create(ctx, *azureDeployment)
 }
 
 //region factory
