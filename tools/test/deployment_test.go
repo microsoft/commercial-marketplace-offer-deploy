@@ -127,7 +127,15 @@ func ReadJson(path string) (map[string]interface{}, error) {
 func getParamsMapFromTemplate(template map[string]interface{}, params map[string]interface{}) map[string]interface{} { 
 	paramValues := make(map[string]interface{})
 	
-	templateParams := template["parameters"].(map[string]interface{})
+	var templateParams map[string]interface{}
+	if template != nil {
+		if p, ok := template["parameters"]; ok {
+			templateParams = p.(map[string]interface{})
+		} else {
+			templateParams = template
+		}
+	}
+
 	for k := range templateParams {
 		valueMap := make(map[string]interface{})
 		templateValueMap := params[k].(map[string]interface{})
