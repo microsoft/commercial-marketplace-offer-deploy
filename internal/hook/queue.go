@@ -94,6 +94,10 @@ func Configure(appConfig *config.AppConfig) error {
 	return instanceErr
 }
 
+func SetInstance(i Queue) {
+	instance = i
+}
+
 func NewEventHookQueue(messageSender messaging.MessageSender) Queue {
 	return &queue{
 		queueName: eventsQueueName,
