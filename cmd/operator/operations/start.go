@@ -90,6 +90,7 @@ func (exe *startDeployment) updateToRunning(ctx context.Context, invokedOperatio
 		Status:  invokedOperation.Status,
 		Data: &events.DeploymentEventData{
 			DeploymentId: int(deployment.ID),
+			OperationId:  invokedOperation.ID,
 			Message:      message,
 		},
 	})
