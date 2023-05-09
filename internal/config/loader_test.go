@@ -20,26 +20,6 @@ type TestConfig struct {
 	Section    TestConfigSection
 }
 
-func TestMain(m *testing.M) {
-	path := "./testdata"
-	var _, err = os.Stat(path)
-	if os.IsNotExist(err) {
-		var file, err = os.Create(path)
-		if isError(err) {
-			return
-		}
-		file.Close()
-	}
-
-	file, err := os.OpenFile(path, os.O_RDWR, 0644)
-	if isError(err) {
-		return
-	}
-	defer file.Close()
-
-	file.WriteString("TEST_CONFIG_ENTRY=filevalue \n")
-}
-
 func isError(err error) bool {
 	return (err != nil)
 }
@@ -123,4 +103,20 @@ func TestConfigArrayValue(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 3, len(config.ArrayEntry))
 	assert.Equal(t, "item1", config.ArrayEntry[0])
+}
+
+func TestEnvPrefix(t *testing.T) {
+	os.Clearenv()
+
+	os.Setenv(EnvironmentVariablePrefix+"TEST_CONFIG_ARRAY_ENTRY", "envvarprefix1")
+
+	config := &TestConfig{
+		Section: TestConfigSection{},
+	}
+
+	err := LoadConfiguration("./testdata", to.Ptr("test"), config)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(config.ArrayEntry))
+	assert.Equal(t, "envvarprefix1", config.ArrayEntry[0])
 }

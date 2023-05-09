@@ -24,9 +24,7 @@ services:
       - 8080:8080
     environment:
       - GO_ENV=development
-      - PUBLIC_DOMAIN_NAME=${PUBLIC_DOMAIN_NAME}
-      - LOG_FILE_PATH=/tmp
-      - DB_PATH=/tmp
+      - MODM_PUBLIC_DOMAIN_NAME=${PUBLIC_DOMAIN_NAME}
     networks:
       - web
 
