@@ -18,7 +18,6 @@ const EnvironmentVariablePrefix = "MODM"
 func LoadConfiguration(path string, name *string, root any) error {
 	builder := viper.New()
 	builder.AddConfigPath(path)
-	builder.SetEnvPrefix(EnvironmentVariablePrefix)
 
 	if name != nil {
 		builder.SetConfigName(*name)
@@ -27,6 +26,8 @@ func LoadConfiguration(path string, name *string, root any) error {
 	}
 
 	builder.SetConfigType("env")
+	builder.SetEnvPrefix(EnvironmentVariablePrefix)
+	builder.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	builder.AutomaticEnv()
 
 	errors := []string{}
@@ -88,11 +89,9 @@ func unmarshal(builder *viper.Viper, root any) error {
 func automaticEnvs(builder *viper.Viper) {
 	envKeys := getEnvironmentVariableKeys()
 	for _, key := range envKeys {
-		if !builder.InConfig(key) {
-			err := builder.BindEnv(key)
-			if err != nil {
-				log.Error(err)
-			}
+		err := builder.BindEnv(strings.Replace(key, EnvironmentVariablePrefix+"_", "", 1))
+		if err != nil {
+			log.Error(err)
 		}
 	}
 }

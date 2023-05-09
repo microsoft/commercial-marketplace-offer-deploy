@@ -20,15 +20,11 @@ type TestConfig struct {
 	Section    TestConfigSection
 }
 
-func isError(err error) bool {
-	return (err != nil)
-}
-
-func TestEnvironmentVariablesLoad(t *testing.T) {
+func TestEnvironmentVariablesLoadAndOverrideEnvFile(t *testing.T) {
 	os.Clearenv()
 
-	value := "testvalue"
-	os.Setenv("TEST_CONFIG_ENTRY", value)
+	value := "envvalue"
+	os.Setenv(EnvironmentVariablePrefix+"_TEST_CONFIG_ENTRY", value)
 
 	config := &TestConfig{}
 	err := LoadConfiguration("./testdata", to.Ptr("test"), config)
@@ -40,21 +36,8 @@ func TestEnvironmentVariablesLoad(t *testing.T) {
 	assert.Equal(t, value, config.Entry)
 }
 
-func TestFileValuesLoadAndOverrideByEnvVar(t *testing.T) {
-	os.Clearenv()
-
-	value := "envvalue"
-	os.Setenv("TEST_CONFIG_ENTRY", value)
-
-	config := &TestConfig{}
-	err := LoadConfiguration("./testdata", to.Ptr("test"), config)
-	assert.NoError(t, err)
-	assert.Equal(t, value, config.Entry)
-}
-
 func TestFileValuesLoad(t *testing.T) {
 	os.Clearenv()
-	// needs test.env
 	config := &TestConfig{}
 	err := LoadConfiguration("./testdata", to.Ptr("test"), config)
 	assert.NoError(t, err)
@@ -64,7 +47,7 @@ func TestFileValuesLoad(t *testing.T) {
 func TestLoadWithValueMissingFromEnvFile(t *testing.T) {
 	os.Clearenv()
 
-	os.Setenv("TEST_CONFIGSECTION_ENTRY", "configsectionvalue")
+	os.Setenv(EnvironmentVariablePrefix+"_TEST_CONFIGSECTION_ENTRY", "configsectionvalue")
 
 	configSection := &TestConfigSection{}
 
@@ -77,7 +60,7 @@ func TestLoadWithValueMissingFromEnvFile(t *testing.T) {
 func TestConfigSectionsLoad(t *testing.T) {
 	os.Clearenv()
 
-	os.Setenv("TEST_CONFIGSECTION_ENTRY", "configsectionvalue")
+	os.Setenv(EnvironmentVariablePrefix+"_TEST_CONFIGSECTION_ENTRY", "configsectionvalue")
 
 	config := &TestConfig{
 		Section: TestConfigSection{},
@@ -92,7 +75,7 @@ func TestConfigSectionsLoad(t *testing.T) {
 func TestConfigArrayValue(t *testing.T) {
 	os.Clearenv()
 
-	os.Setenv("TEST_CONFIG_ARRAY_ENTRY", "item1,item2,item3")
+	os.Setenv(EnvironmentVariablePrefix+"_TEST_CONFIG_ARRAY_ENTRY", "item1,item2,item3")
 
 	config := &TestConfig{
 		Section: TestConfigSection{},
@@ -107,8 +90,7 @@ func TestConfigArrayValue(t *testing.T) {
 
 func TestEnvPrefix(t *testing.T) {
 	os.Clearenv()
-
-	os.Setenv(EnvironmentVariablePrefix+"TEST_CONFIG_ARRAY_ENTRY", "envvarprefix1")
+	os.Setenv(EnvironmentVariablePrefix+"_TEST_CONFIG_ARRAY_ENTRY", "envvarprefix1")
 
 	config := &TestConfig{
 		Section: TestConfigSection{},

@@ -12,14 +12,14 @@ func TestMain(m *testing.M) {
 	var _, err = os.Stat(path)
 	if os.IsNotExist(err) {
 		var file, err = os.Create(path)
-		if isError(err) {
-			return
+		if err != nil {
+			log.Fatal(err)
 		}
 		file.Close()
 	}
 
 	file, err := os.OpenFile(path, os.O_RDWR, 0644)
-	if isError(err) {
+	if err != nil {
 		log.Fatal(err)
 	}
 	defer file.Close()
