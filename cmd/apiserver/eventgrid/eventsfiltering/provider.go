@@ -2,10 +2,11 @@ package eventsfiltering
 
 import (
 	"context"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
 	eg "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid"
-	"github.com/mitchellh/mapstructure"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/structure"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -50,7 +51,7 @@ func (m *provider) Get(ctx context.Context, events []*eventgrid.Event) eg.EventG
 
 func (m *provider) getResourceId(event *eventgrid.Event) (*arm.ResourceID, error) {
 	data := eg.ResourceEventData{}
-	mapstructure.Decode(event.Data, &data)
+	structure.Decode(event.Data, &data)
 
 	resourceId, err := arm.ParseResourceID(data.ResourceURI)
 
