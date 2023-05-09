@@ -64,7 +64,7 @@ func (exe *startDeployment) start(ctx context.Context, invokedOperation *data.In
 	}
 
 	deployment := &data.Deployment{}
-	exe.db.First(&deployment, invokedOperation.DeploymentId)
+	exe.db.First(deployment, invokedOperation.DeploymentId)
 
 	azureDeployment := exe.mapAzureDeployment(deployment, invokedOperation)
 	result, err := exe.createAzureDeployment(ctx, azureDeployment)
@@ -72,7 +72,7 @@ func (exe *startDeployment) start(ctx context.Context, invokedOperation *data.In
 	// if we waited this long, then we can assume we have the results, so we'll update the invoked operation results with it
 	if err == nil {
 		invokedOperation.Result = result
-		exe.db.Save(&invokedOperation)
+		exe.db.Save(invokedOperation)
 	}
 	return err
 }
@@ -146,8 +146,9 @@ func NewStartDeploymentExecutor(appConfig *config.AppConfig) Executor {
 	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
 	factory := NewExecutorFactory(appConfig)
 	executor := &startDeployment{
-		db:      db,
-		factory: factory,
+		db:                    db,
+		factory:               factory,
+		createAzureDeployment: deployment.Create,
 	}
 	return executor
 }

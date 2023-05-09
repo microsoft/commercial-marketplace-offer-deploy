@@ -6,8 +6,8 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/structure"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
-	"github.com/mitchellh/mapstructure"
 )
 
 type CreateDeploymentMapper struct {
@@ -52,7 +52,7 @@ func (m *CreateDeploymentMapper) validate(from *api.CreateDeployment) error {
 // then extract the values from the tags if they exist, otherwise use defaults to set the stage's fields
 func (m *CreateDeploymentMapper) getStages(template map[string]any) []data.Stage {
 	armTemplate := &armTemplate{}
-	mapstructure.Decode(template, &armTemplate)
+	structure.Decode(template, &armTemplate)
 
 	stages := []data.Stage{}
 

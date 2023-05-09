@@ -2,15 +2,17 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/structure"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
-	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -22,11 +24,13 @@ type eventsMessageHandler struct {
 }
 
 func (h *eventsMessageHandler) Handle(message *events.EventHookMessage, context messaging.MessageHandlerContext) error {
-	log.WithField("eventHookMessage", message).Debug("Received event hook message")
+	bytes, _ := json.Marshal(message)
+	log.WithField("eventHookMessage", string(bytes)).Debug("Events Handler excuting")
 
 	if h.shouldRetryIfDeployment(message) {
 		h.retryDeployment(context.Context(), message)
 	}
+
 	err := h.publisher.Publish(message)
 	return err
 }
@@ -41,15 +45,10 @@ func (h *eventsMessageHandler) shouldRetryIfDeployment(message *events.EventHook
 func (h *eventsMessageHandler) retryDeployment(ctx context.Context, message *events.EventHookMessage) error {
 	log.Infof("EventHookMessage [%s]. enqueing to retry deployment", message.Id)
 
-	eventData := events.DeploymentEventData{}
-	mapstructure.Decode(message, &eventData)
-
-	invokedOperation := &data.InvokedOperation{}
-	h.db.First(&invokedOperation, eventData.OperationId)
-
-	//update the status to scheduled
-	invokedOperation.Status = string(operation.StatusScheduled)
-	h.db.Save(&invokedOperation)
+	invokedOperation, err := h.update(message)
+	if err != nil {
+		return err
+	}
 
 	results, err := h.sender.Send(ctx, string(messaging.QueueNameOperations), messaging.ExecuteInvokedOperation{OperationId: invokedOperation.ID})
 	if err != nil {
@@ -76,6 +75,30 @@ func (h *eventsMessageHandler) retryDeployment(ctx context.Context, message *eve
 		return err
 	}
 	return nil
+}
+
+// updates the invoked operation
+func (h *eventsMessageHandler) update(message *events.EventHookMessage) (*data.InvokedOperation, error) {
+	eventData := &events.DeploymentEventData{}
+	structure.Decode(message.Data, &eventData)
+
+	invokedOperation := &data.InvokedOperation{}
+	h.db.First(&invokedOperation, eventData.OperationId)
+
+	//update the status to scheduled
+	if invokedOperation.IsRetriable() {
+		invokedOperation.Status = string(operation.StatusScheduled)
+	} else {
+		invokedOperation.Status = message.Status
+	}
+
+	if eventData.CorrelationId != nil && *eventData.CorrelationId != uuid.Nil {
+		invokedOperation.CorrelationId = eventData.CorrelationId
+	}
+
+	h.db.Save(invokedOperation)
+
+	return invokedOperation, h.db.Error
 }
 
 //region factory
