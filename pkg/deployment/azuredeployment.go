@@ -77,7 +77,16 @@ type ArmTemplateDeployer struct {
 func (armDeployer *ArmTemplateDeployer) getParamsMapFromTemplate(template map[string]interface{}, params map[string]interface{}) map[string]interface{} { 
 	paramValues := make(map[string]interface{})
 	
-	templateParams := template["parameters"].(map[string]interface{})
+
+	var templateParams map[string]interface{}
+	if template != nil {
+		if p, ok := template["parameters"]; ok {
+			templateParams = p.(map[string]interface{})
+		} else {
+			templateParams = template
+		}
+	}
+
 	for k := range templateParams {
 		valueMap := make(map[string]interface{})
 		templateValueMap := params[k].(map[string]interface{})
@@ -182,7 +191,14 @@ func (armDeployer *ArmTemplateDeployer) Deploy(ctx context.Context, ad *AzureDep
 
 	log.Error("About to Create a deployment")
 
-	params := ad.Params["parameters"].(map[string]interface{})
+	var templateParams map[string]interface{}
+	if ad.Params != nil {
+		if p, ok := ad.Params["parameters"]; ok {
+			templateParams = p.(map[string]interface{})
+		} else {
+			templateParams = ad.Params
+		}
+	}
 
 	deploymentPollerResp, err := deploymentsClient.BeginCreateOrUpdate(
 		ctx,
@@ -191,7 +207,7 @@ func (armDeployer *ArmTemplateDeployer) Deploy(ctx context.Context, ad *AzureDep
 		armresources.Deployment{
 			Properties: &armresources.DeploymentProperties{
 				Template:   ad.Template,
-				Parameters: params,
+				Parameters: templateParams,
 				Mode:       to.Ptr(armresources.DeploymentModeIncremental),
 			},
 		},
