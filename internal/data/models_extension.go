@@ -32,3 +32,11 @@ func (d *Deployment) ParseAzureDeploymentName(azureDeploymentName string) (*int,
 	}
 	return nil, fmt.Errorf("[%s] is not a managed deployment", azureDeploymentName)
 }
+
+//region InvokedOperation
+
+func (io *InvokedOperation) IsRetriable() bool {
+	return io.Retries > io.Attempts
+}
+
+//endregion InvokedOperation

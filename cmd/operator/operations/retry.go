@@ -63,7 +63,8 @@ func (exe *retryDeployment) updateWithResults(ctx context.Context, results *depl
 		Type:   string(events.EventTypeDeploymentRetried),
 		Data: &events.DeploymentEventData{
 			DeploymentId: int(invokedOperation.DeploymentId),
-			Message:      fmt.Sprintf("Retry deployment completed %s", invokedOperation.Status),
+			OperationId:  invokedOperation.ID,
+			Message:      fmt.Sprintf("Retry deployment %s", invokedOperation.Status),
 		},
 	}
 	message.SetSubject(invokedOperation.DeploymentId, nil)

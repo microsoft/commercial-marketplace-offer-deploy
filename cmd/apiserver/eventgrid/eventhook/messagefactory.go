@@ -17,10 +17,10 @@ import (
 	eg "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid"
 	filtering "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventsfiltering"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/structure"
 	d "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
-	"github.com/mitchellh/mapstructure"
 	"gorm.io/gorm"
 )
 
@@ -83,14 +83,14 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*eve
 	}
 
 	eventData := eg.ResourceEventData{}
-	mapstructure.Decode(item.Message.Data, &eventData)
+	structure.Decode(item.Message.Data, &eventData)
 
 	// get related operation
-	invokedOperation := data.InvokedOperation{}
+	invokedOperation := &data.InvokedOperation{}
 	f.db.Where("deployment_id = ? AND name = ?",
 		deployment.ID,
 		operation.TypeStartDeployment,
-	).First(&invokedOperation)
+	).First(invokedOperation)
 
 	data := events.DeploymentEventData{
 		DeploymentId:  int(deployment.ID),
@@ -132,7 +132,7 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*eve
 //			 that started the deployment
 func (f *EventHookMessageFactory) getRelatedDeployment(item *eg.EventGridEventResource) (*data.Deployment, error) {
 	eventData := eg.ResourceEventData{}
-	mapstructure.Decode(item.Message.Data, &eventData)
+	structure.Decode(item.Message.Data, &eventData)
 
 	correlationId := eventData.CorrelationID
 	resourceId, err := arm.ParseResourceID(*item.Resource.ID)

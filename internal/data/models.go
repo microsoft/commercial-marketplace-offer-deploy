@@ -53,13 +53,15 @@ type EventHook struct {
 
 type InvokedOperation struct {
 	BaseWithGuidPrimaryKey
-	Name         string         `json:"name"`
-	DeploymentId uint           `json:"deploymentId"`
-	Retries      int            `json:"retries"`
-	Attempts     int            `json:"attempts"`
-	Parameters   map[string]any `json:"parameters" gorm:"json"`
-	Result       any            `json:"result" gorm:"json"`
-	Status       string         `json:"status"`
+	Name         string `json:"name"`
+	DeploymentId uint   `json:"deploymentId"`
+	// the correlation id used to track the operation (the correlation id will be set by default to the value on the azure deployment)
+	CorrelationId *uuid.UUID     `json:"correlationId" gorm:"type:uuid"`
+	Retries       int            `json:"retries"`
+	Attempts      int            `json:"attempts"`
+	Parameters    map[string]any `json:"parameters" gorm:"json"`
+	Result        any            `json:"result" gorm:"json"`
+	Status        string         `json:"status"`
 }
 
 func (o *InvokedOperation) BeforeCreate(tx *gorm.DB) error {
