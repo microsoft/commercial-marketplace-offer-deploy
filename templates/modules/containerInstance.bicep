@@ -170,27 +170,27 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
           ]
           environmentVariables: [
             {
-              name: 'DB_PATH'
+              name: 'MODM_DB_PATH'
               value: fileShareMountPath
             }
             {
-              name: 'AZURE_TENANT_ID'
+              name: 'MODM_AZURE_TENANT_ID'
               value: tenantId
             }
             {
-              name: 'AZURE_SUBSCRIPTION_ID'
+              name: 'MODM_AZURE_SUBSCRIPTION_ID'
               value: subscriptionId
             }
             {
-              name: 'AZURE_RESOURCE_GROUP'
+              name: 'MODM_AZURE_RESOURCE_GROUP'
               value: resourceGroupName
             }
             {
-              name: 'AZURE_LOCATION'
+              name: 'MODM_AZURE_LOCATION'
               value: location
             }
             {
-              name: 'AZURE_SERVICEBUS_NAMESPACE'
+              name: 'MODM_AZURE_SERVICEBUS_NAMESPACE'
               value: serviceBusNamespace
             }
             {
@@ -198,23 +198,15 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
               value: acmeEmail
             }
             {
-              name: 'PUBLIC_DOMAIN_NAME'
+              name: 'MODM_PUBLIC_DOMAIN_NAME'
               value: '${containerName}.${location}.azurecontainer.io'
             }
             {
-              name: 'PUBLIC_HTTP_PORT'
-              value: string(publicHttpPort)
-            }
-            {
-              name: 'PUBLIC_HTTPS_PORT'
-              value: string(publicHttpsPort)
-            }
-            {
-              name: 'LOG_FILE_PATH'
+              name: 'MODM_LOG_FILE_PATH'
               value: fileShareMountPath
             }
             {
-              name: 'READINESS_FILE_PATH'
+              name: 'MODM_READINESS_FILE_PATH'
               value: readinessFilePath
             }
           ]
