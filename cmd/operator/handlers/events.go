@@ -30,6 +30,7 @@ func (h *eventsMessageHandler) Handle(message *events.EventHookMessage, context 
 	if h.shouldRetryIfDeployment(message) {
 		h.retryDeployment(context.Context(), message)
 	}
+
 	err := h.publisher.Publish(message)
 	return err
 }
@@ -45,6 +46,9 @@ func (h *eventsMessageHandler) retryDeployment(ctx context.Context, message *eve
 	log.Infof("EventHookMessage [%s]. enqueing to retry deployment", message.Id)
 
 	invokedOperation, err := h.update(message)
+	if err != nil {
+		return err
+	}
 
 	results, err := h.sender.Send(ctx, string(messaging.QueueNameOperations), messaging.ExecuteInvokedOperation{OperationId: invokedOperation.ID})
 	if err != nil {
@@ -82,12 +86,17 @@ func (h *eventsMessageHandler) update(message *events.EventHookMessage) (*data.I
 	h.db.First(&invokedOperation, eventData.OperationId)
 
 	//update the status to scheduled
-	invokedOperation.Status = string(operation.StatusScheduled)
+	if invokedOperation.IsRetriable() {
+		invokedOperation.Status = string(operation.StatusScheduled)
+	} else {
+		invokedOperation.Status = message.Status
+	}
 
 	if eventData.CorrelationId != nil && *eventData.CorrelationId != uuid.Nil {
 		invokedOperation.CorrelationId = eventData.CorrelationId
 	}
-	h.db.Save(&invokedOperation)
+
+	h.db.Save(invokedOperation)
 
 	return invokedOperation, h.db.Error
 }

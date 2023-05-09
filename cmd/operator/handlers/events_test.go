@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"strconv"
 	"testing"
 
@@ -16,6 +15,18 @@ type testEventsMessageHandler struct {
 	db               *gorm.DB
 	deployment       *data.Deployment
 	invokedOperation *data.InvokedOperation
+	message          *events.EventHookMessage
+}
+
+func (h *testEventsMessageHandler) maxOutRetries() {
+	h.invokedOperation.Retries = 0
+	h.db.Save(h.invokedOperation)
+}
+
+func (h *testEventsMessageHandler) makeRetriable() {
+	h.invokedOperation.Retries = 10
+	h.invokedOperation.Attempts = 0
+	h.db.Save(h.invokedOperation)
 }
 
 func newTestEventsMessageHandler() *testEventsMessageHandler {
@@ -31,40 +42,66 @@ func newTestEventsMessageHandler() *testEventsMessageHandler {
 	}
 	db.Save(invokedOperation)
 
+	message := &events.EventHookMessage{
+		Id:      uuid.MustParse("22ed40f3-196a-43f8-9b5d-5459ce02ee45"),
+		HookId:  uuid.MustParse("00000000-0000-0000-0000-000000000000"),
+		Type:    "deploymentCompleted",
+		Status:  "failed",
+		Subject: "/deployments/" + strconv.Itoa(int(deployment.ID)),
+		Data: events.DeploymentEventData{
+			Attempts:      1,
+			DeploymentId:  1,
+			OperationId:   invokedOperation.ID,
+			CorrelationId: nil,
+			StageId:       nil,
+			Message:       "",
+		},
+	}
+
 	return &testEventsMessageHandler{
 		db:               db,
 		deployment:       deployment,
 		invokedOperation: invokedOperation,
+		message:          message,
 	}
 }
 
 func TestEventsHandlerUpdate(t *testing.T) {
 	test := newTestEventsMessageHandler()
 
-	originalMessage := &events.EventHookMessage{
-		Id:      uuid.MustParse("22ed40f3-196a-43f8-9b5d-5459ce02ee45"),
-		HookId:  uuid.MustParse("00000000-0000-0000-0000-000000000000"),
-		Type:    "deploymentCompleted",
-		Status:  "failed",
-		Subject: "/deployments/" + strconv.Itoa(int(test.deployment.ID)),
-		Data: events.DeploymentEventData{
-			Attempts:      1,
-			DeploymentId:  1,
-			OperationId:   test.invokedOperation.ID,
-			CorrelationId: nil,
-			StageId:       nil,
-			Message:       "",
-		},
-	}
-	bytes, _ := json.Marshal(originalMessage)
-	message := &events.EventHookMessage{}
-	json.Unmarshal(bytes, message)
-
 	handler := eventsMessageHandler{db: test.db}
 
-	result, err := handler.update(message)
+	result, err := handler.update(test.message)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 
-	assert.EqualValues(t, originalMessage.Data.(events.DeploymentEventData).OperationId, result.ID)
+	assert.EqualValues(t, test.message.Data.(events.DeploymentEventData).OperationId, result.ID)
+}
+
+func TestEventsHandlerShouldNotRetryIfRetriesExceeded(t *testing.T) {
+	test := newTestEventsMessageHandler()
+	test.maxOutRetries()
+
+	handler := eventsMessageHandler{db: test.db}
+	test.maxOutRetries()
+
+	result, err := handler.update(test.message)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+
+	assert.EqualValues(t, test.message.Status, result.Status)
+}
+
+func TestEventsHandlerMessageStatusScheduledIfRetriable(t *testing.T) {
+	test := newTestEventsMessageHandler()
+	test.maxOutRetries()
+
+	handler := eventsMessageHandler{db: test.db}
+
+	test.makeRetriable()
+	result, err := handler.update(test.message)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+
+	assert.EqualValues(t, "scheduled", result.Status)
 }
