@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+const EnvironmentVariablePrefix = "MODM"
+
 // Loads a configuration instance using values from .env and from environment variables
 func LoadConfiguration(path string, name *string, root any) error {
 	builder := viper.New()
@@ -24,6 +26,8 @@ func LoadConfiguration(path string, name *string, root any) error {
 	}
 
 	builder.SetConfigType("env")
+	builder.SetEnvPrefix(EnvironmentVariablePrefix)
+	builder.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	builder.AutomaticEnv()
 
 	errors := []string{}
@@ -84,14 +88,10 @@ func unmarshal(builder *viper.Viper, root any) error {
 // we still want the env file to take precedence, so we'll load the env variables into the config if they aren't already present
 func automaticEnvs(builder *viper.Viper) {
 	envKeys := getEnvironmentVariableKeys()
-
 	for _, key := range envKeys {
-		if !builder.InConfig(key) {
-			//builder.Set(key, os.Getenv(key))
-			err := builder.BindEnv(key)
-			if err != nil {
-				log.Error(err)
-			}
+		err := builder.BindEnv(strings.Replace(key, EnvironmentVariablePrefix+"_", "", 1))
+		if err != nil {
+			log.Error(err)
 		}
 	}
 }
