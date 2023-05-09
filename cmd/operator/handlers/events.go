@@ -50,29 +50,31 @@ func (h *eventsMessageHandler) retryDeployment(ctx context.Context, message *eve
 		return err
 	}
 
-	results, err := h.sender.Send(ctx, string(messaging.QueueNameOperations), messaging.ExecuteInvokedOperation{OperationId: invokedOperation.ID})
-	if err != nil {
-		return err
-	}
+	if invokedOperation.IsRetriable() {
+		results, err := h.sender.Send(ctx, string(messaging.QueueNameOperations), messaging.ExecuteInvokedOperation{OperationId: invokedOperation.ID})
+		if err != nil {
+			return err
+		}
 
-	if len(results) == 1 && results[0].Error != nil {
-		return results[0].Error
-	}
+		if len(results) == 1 && results[0].Error != nil {
+			return results[0].Error
+		}
 
-	err = hook.Add(ctx, &events.EventHookMessage{
-		Status: invokedOperation.Status,
-		Type:   string(events.EventTypeDeploymentCompleted),
-		Data: events.DeploymentEventData{
-			DeploymentId: int(invokedOperation.DeploymentId),
-			OperationId:  invokedOperation.ID,
-			Message:      "Deployment is being retried",
-			Attempts:     invokedOperation.Attempts,
-		},
-	})
+		err = hook.Add(ctx, &events.EventHookMessage{
+			Status: invokedOperation.Status,
+			Type:   string(events.EventTypeDeploymentCompleted),
+			Data: events.DeploymentEventData{
+				DeploymentId: int(invokedOperation.DeploymentId),
+				OperationId:  invokedOperation.ID,
+				Message:      "Deployment is being retried",
+				Attempts:     invokedOperation.Attempts,
+			},
+		})
 
-	if err != nil {
-		log.Errorf("Failed to add event hook message. Error: %v", err)
-		return err
+		if err != nil {
+			log.Errorf("Failed to add event hook message. Error: %v", err)
+			return err
+		}
 	}
 	return nil
 }
