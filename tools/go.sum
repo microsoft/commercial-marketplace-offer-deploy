@@ -167,10 +167,10 @@ github.com/mattn/go-isatty v0.0.14/go.mod h1:7GGIvUiUoEMVVmxf/4nioHXj79iQHKdU27k
 github.com/mattn/go-isatty v0.0.16/go.mod h1:kYGgaQfpe5nmfYZH+SKPsOc2e4SrIfOl2e/yFXSvRLM=
 github.com/mattn/go-isatty v0.0.17 h1:BTarxUcIeDqL27Mc+vyvdWYSL28zpIhv3RoTdsLMPng=
 github.com/mattn/go-isatty v0.0.17/go.mod h1:kYGgaQfpe5nmfYZH+SKPsOc2e4SrIfOl2e/yFXSvRLM=
-github.com/microsoft/commercial-marketplace-offer-deploy v0.2.2-0.20230505135448-fbc35575ebc4 h1:8dfDAYh+f4JHe4/lMgoxiSbJKAqnCvgnrovOttMztz4=
-github.com/microsoft/commercial-marketplace-offer-deploy v0.2.2-0.20230505135448-fbc35575ebc4/go.mod h1:9bCYRrkkjqX84AklLIBCM4gbho0kfDp8cPx3L2T/KPM=
-github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.2.1 h1:5C04ph6ZS8qQaO5Ga+XnJbp8KyDsbrJFftlZJA8RM64=
-github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.2.1/go.mod h1:/nu7QXOCkVInp6tNXwT0g32maHmCDWY252khD944eKI=
+github.com/microsoft/commercial-marketplace-offer-deploy v0.2.2 h1:TEx+8B8Zyv1asjse9e1cbr/+B0yc40PI8JaYNh/TC8o=
+github.com/microsoft/commercial-marketplace-offer-deploy v0.2.2/go.mod h1:9bCYRrkkjqX84AklLIBCM4gbho0kfDp8cPx3L2T/KPM=
+github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.2.2 h1:ImUqlVG/UFzNP+RanrTZ+gopObUDZrP7mpcS87pgQUc=
+github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.2.2/go.mod h1:c0zgDGiheRkd8pkzhqIf80JXcCUv/zFSFk8Gn/AG4cY=
 github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyuac5Z2hdY=
 github.com/mitchellh/mapstructure v1.5.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/pelletier/go-toml/v2 v2.0.6 h1:nrzqCb7j9cDFj2coyLNLaZuJTLjWjlaz6nvTvIwycIU=

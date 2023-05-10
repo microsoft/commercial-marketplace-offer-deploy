@@ -8,8 +8,8 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armpolicy v0.6.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources v1.0.0
 	github.com/labstack/echo/v4 v4.10.2
-	github.com/microsoft/commercial-marketplace-offer-deploy v0.2.2-0.20230505135448-fbc35575ebc4
-	github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.2.1
+	github.com/microsoft/commercial-marketplace-offer-deploy v0.2.2
+	github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.2.2
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.8.2
