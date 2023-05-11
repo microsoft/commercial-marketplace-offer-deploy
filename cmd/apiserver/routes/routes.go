@@ -103,7 +103,7 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 			Name:        "GetDeploymentOperation",
 			Method:      http.MethodGet,
 			Path:        "/deployments/operations/:operationId",
-			HandlerFunc: middleware.AddJwtBearer(handlers.GetDeploymentOperation, appConfig),
+			HandlerFunc: middleware.AddJwtBearer(handlers.NewGetInvokedOperationHandler(appConfig), appConfig),
 		},
 
 		hosting.Route{
