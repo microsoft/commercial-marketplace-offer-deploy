@@ -2,14 +2,15 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/log"
+	"github.com/sirupsen/logrus"
 )
 
 // The azure settings
@@ -46,10 +47,11 @@ type HttpSettings struct {
 	Port    string `mapstructure:"PUBLIC_PORT"`
 }
 
-func (s *AppConfig) GetPublicBaseUrl() string {
-	baseUrl := s.Http.BaseUrl
-	if !strings.HasSuffix(baseUrl, "/") {
-		baseUrl += "/"
+func (s *AppConfig) GetPublicBaseUrl() *url.URL {
+	baseUrl, err := url.Parse(s.Http.BaseUrl)
+	if err != nil {
+		logrus.Errorf("Failed to parse base url: %s", err)
+		return baseUrl
 	}
 	return baseUrl
 }

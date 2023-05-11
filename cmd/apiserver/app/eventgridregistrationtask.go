@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"net/url"
 	"os"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -15,14 +16,19 @@ import (
 
 // constructor for creating task that registers event grid system topic for the resource group deployment events
 func newEventGridRegistrationTask(appConfig *config.AppConfig) tasks.Task {
-	taskOptions := eventGridRegistrationTaskOptions{
-		CredentialFunc:  hosting.GetAzureCredentialFunc(),
-		ResourceGroupId: appConfig.Azure.GetResourceGroupId(),
-		EndpointUrl:     appConfig.GetPublicBaseUrl() + "eventgrid",
-	}
+	taskOptions := createOptions(appConfig)
 	task := create(taskOptions)
 
 	return task
+}
+
+func createOptions(appConfig *config.AppConfig) eventGridRegistrationTaskOptions {
+	route, _ := url.Parse("eventgrid")
+	return eventGridRegistrationTaskOptions{
+		CredentialFunc:  hosting.GetAzureCredentialFunc(),
+		ResourceGroupId: appConfig.Azure.GetResourceGroupId(),
+		EndpointUrl:     appConfig.GetPublicBaseUrl().ResolveReference(route).String(),
+	}
 }
 
 type eventGridRegistrationTaskOptions struct {
@@ -38,13 +44,13 @@ func create(options eventGridRegistrationTaskOptions) tasks.Task {
 		manager, err := subscriptionmanagement.NewEventGridManager(options.CredentialFunc(), options.ResourceGroupId)
 
 		if err != nil {
-			log.Error("Error creating event grid manager: %v", err)
+			log.Errorf("Error creating event grid manager: %v", err)
 			return err
 		}
-		log.Debug("EventGrid manager created for resource group: %s", options.ResourceGroupId)
+		log.Debugf("EventGrid manager created for resource group: %s", options.ResourceGroupId)
 		resourceId, err := arm.ParseResourceID(options.ResourceGroupId)
 		if err != nil {
-			log.Error("Error parsing resource group id: %v", err)
+			log.Errorf("Error parsing resource group id: %v", err)
 			return err
 		}
 
@@ -64,7 +70,7 @@ func create(options eventGridRegistrationTaskOptions) tasks.Task {
 		if err != nil {
 			return err
 		}
-		log.Debug("EventGrid subscription created: %s", *result.Name)
+		log.Debugf("EventGrid subscription created: %s", *result.Name)
 
 		return nil
 	}
