@@ -198,8 +198,8 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
               value: acmeEmail
             }
             {
-              name: 'MODM_PUBLIC_DOMAIN_NAME'
-              value: '${containerName}.${location}.azurecontainer.io'
+              name: 'MODM_PUBLIC_BASE_URL'
+              value: 'https://${containerName}.${location}.azurecontainer.io/'
             }
             {
               name: 'MODM_LOG_FILE_PATH'

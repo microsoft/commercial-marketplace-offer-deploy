@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
@@ -41,12 +42,16 @@ type LoggingSettings struct {
 }
 
 type HttpSettings struct {
-	DomainName string `mapstructure:"PUBLIC_DOMAIN_NAME"`
-	Port       string `mapstructure:"PUBLIC_PORT"`
+	BaseUrl string `mapstructure:"PUBLIC_BASE_URL"`
+	Port    string `mapstructure:"PUBLIC_PORT"`
 }
 
 func (s *AppConfig) GetPublicBaseUrl() string {
-	return "https://" + s.Http.DomainName + "/"
+	baseUrl := s.Http.BaseUrl
+	if !strings.HasSuffix(baseUrl, "/") {
+		baseUrl += "/"
+	}
+	return baseUrl
 }
 
 type AppConfig struct {

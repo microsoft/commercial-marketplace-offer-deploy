@@ -24,7 +24,7 @@ services:
       - 8080:8080
     environment:
       - GO_ENV=development
-      - MODM_PUBLIC_DOMAIN_NAME=${PUBLIC_DOMAIN_NAME}
+      - MODM_PUBLIC_BASE_URL=${MODM_PUBLIC_BASE_URL}
     networks:
       - web
 
