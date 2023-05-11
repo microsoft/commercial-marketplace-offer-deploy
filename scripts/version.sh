@@ -2,10 +2,14 @@
 
 version=$1
 
+echo "versioning: $version"
+
+echo "- root"
 # parent mod
 go mod tidy
 git commit -m "$version"  
 git tag -a $version -m "$version"  
+git push origin main
 git push origin $version
 
 # sdk
@@ -22,19 +26,20 @@ git push origin main -f
 git tag -a $sdk_version -m "$sdk_version" 
 git push origin $sdk_version
 
-# tools
-cd ../tools
-go mod tidy
+# # tools
+# cd ../tools
+# go mod tidy
 
-tools_version=tools/$version
-go get github.com/microsoft/commercial-marketplace-offer-deploy@none
-go get github.com/microsoft/commercial-marketplace-offer-deploy@$version
-go get github.com/microsoft/commercial-marketplace-offer-deploy/sdk@$version
+# tools_version=tools/$version
+# go get github.com/microsoft/commercial-marketplace-offer-deploy@none
+# go get github.com/microsoft/commercial-marketplace-offer-deploy/sdk@none
+# go get github.com/microsoft/commercial-marketplace-offer-deploy@$version
+# go get github.com/microsoft/commercial-marketplace-offer-deploy/sdk@$version
 
-go mod tidy
-git add ./go.mod ./go.sum
-git commit -m "$tools_version"  
-git push origin main -f
+# go mod tidy
+# git add ./go.mod ./go.sum
+# git commit -m "$tools_version"  
+# git push origin main -f
 
-git tag -a $tools_version -m "$tools_version" 
-git push origin $tools_version
+# git tag -a $tools_version -m "$tools_version" 
+# git push origin $tools_version
