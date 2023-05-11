@@ -10,10 +10,10 @@ services:
       - ../deployments/caddy/Caddyfile:/etc/caddy/Caddyfile
     restart: unless-stopped
     environment:
-      - SITE_ADDRESS=http://localhost
+      - MODM_SITE_URL=http://localhost
       - ACME_ACCOUNT_EMAIL=nowhere@nowhere.com
-      - HOSTNAME=modm
-      - PORT=8080
+      - MODM_LOCAL_HOSTNAME=modm
+      - MODM_LOCAL_PORT=8080
   modm:
     env_file: ../bin/.env
     image: gpsuscodewith/modm:latest

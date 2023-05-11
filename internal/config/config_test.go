@@ -22,3 +22,16 @@ func TestAppConfigWithEnvPrefix(t *testing.T) {
 	assert.Equal(t, logfilePath, appConfig.Logging.FilePath)
 	assert.Equal(t, dbPath, appConfig.Database.Path)
 }
+
+func Test_AppConfig_GetPublicBaseUrl(t *testing.T) {
+	// without trailing slash
+	appConfig := &AppConfig{
+		Http: HttpSettings{
+			BaseUrl: "https://test.com",
+		},
+	}
+	assert.Equal(t, "https://test.com/", appConfig.GetPublicBaseUrl())
+
+	appConfig.Http.BaseUrl = "https://test.com/"
+	assert.Equal(t, appConfig.Http.BaseUrl, appConfig.GetPublicBaseUrl())
+}

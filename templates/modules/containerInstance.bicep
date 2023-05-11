@@ -130,16 +130,16 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
               value: acmeEmail
             }
             {
-              name: 'SITE_ADDRESS'
+              name: 'MODM_SITE_ADDRESS'
               value: '${containerName}.${location}.azurecontainer.io'
             }
             // the hostname and port will be used to configure caddy and point to modm
             {
-              name: 'HOSTNAME'
+              name: 'MODM_LOCAL_HOSTNAME'
               value: 'localhost'
             }
             {
-              name: 'PORT'
+              name: 'MODM_LOCAL_PORT'
               value: '${port}'
             }
           ]
@@ -198,8 +198,8 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2022-10-01-
               value: acmeEmail
             }
             {
-              name: 'MODM_PUBLIC_DOMAIN_NAME'
-              value: '${containerName}.${location}.azurecontainer.io'
+              name: 'MODM_PUBLIC_BASE_URL'
+              value: 'https://${containerName}.${location}.azurecontainer.io/'
             }
             {
               name: 'MODM_LOG_FILE_PATH'

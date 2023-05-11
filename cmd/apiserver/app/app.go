@@ -51,7 +51,7 @@ func addReadinessChecks(builder *hosting.AppBuilder, appConfig *config.AppConfig
 
 	publicUrlHealthCheck := diagnostics.NewUrlHealthCheck(diagnostics.UrlHealthCheckOptions{
 		ReadinessFilePath: appConfig.GetReadinessFilePath(),
-		Url:               appConfig.GetPublicBaseUrl(),
+		Url:               appConfig.GetPublicBaseUrl().String(),
 		Timeout:           defaultTimeout,
 	})
 

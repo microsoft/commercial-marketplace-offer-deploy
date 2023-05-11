@@ -1,7 +1,7 @@
 # Setup
 
 - Fork the https://github.com/microsoft/commercial-marketplace-offer-deploy repo and clone to your local machine
-- Update `configs/.env.development.local` with your environmental settings
+- Copy `configs/.env.development.local` to `./bin` and rename it to `.env.local`
 
 # Starting the API Server
 

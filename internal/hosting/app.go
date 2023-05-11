@@ -100,7 +100,7 @@ func (app *App) startServer(options *AppStartOptions) {
 		}
 		address := ":" + strconv.Itoa(port)
 		log.Debugf("Server starting on local port %s", address)
-		log.Debugf("Public domain: %s", app.config.Http.DomainName)
+		log.Debugf("Public URL: %s", app.config.GetPublicBaseUrl())
 
 		if options.ConfigureWebServer != nil {
 			options.ConfigureWebServer(app.server)

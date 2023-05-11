@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/log"
+	"github.com/sirupsen/logrus"
 )
 
 // The azure settings
@@ -41,12 +43,17 @@ type LoggingSettings struct {
 }
 
 type HttpSettings struct {
-	DomainName string `mapstructure:"PUBLIC_DOMAIN_NAME"`
-	Port       string `mapstructure:"PUBLIC_PORT"`
+	BaseUrl string `mapstructure:"PUBLIC_BASE_URL"`
+	Port    string `mapstructure:"PUBLIC_PORT"`
 }
 
-func (s *AppConfig) GetPublicBaseUrl() string {
-	return "https://" + s.Http.DomainName + "/"
+func (s *AppConfig) GetPublicBaseUrl() *url.URL {
+	baseUrl, err := url.Parse(s.Http.BaseUrl)
+	if err != nil {
+		logrus.Errorf("Failed to parse base url: %s", err)
+		return baseUrl
+	}
+	return baseUrl
 }
 
 type AppConfig struct {
