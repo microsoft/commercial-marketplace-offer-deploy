@@ -1,3 +1,5 @@
+// +build integration
+
 package subscriptionmanagement
 
 import (
@@ -39,11 +41,7 @@ func ToMove_TestCreateEventSubscription(t *testing.T) {
 func TestDeploymentEventsClient(t *testing.T) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 
-	if err != nil {
-		log.Fatalf("Authentication failure: %+v", err)
-	}
-
-	resourceGroupId := "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/sandbox1"
+	resourceGroupId := "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/test"
 	client, err := NewEventGridManager(cred, resourceGroupId)
 
 	require.NoError(t, err)
