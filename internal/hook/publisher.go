@@ -55,7 +55,7 @@ func (p *publisher) Publish(message *model.EventHookMessage) error {
 			err := sender.Send(ctx, &message)
 
 			if err != nil {
-				log.Error("error posting to callback '%s' [%s]", hook.Callback, hook.Name)
+				log.Errorf("error posting to callback '%s' [%s]", hook.Callback, hook.Name)
 			}
 		}(i)
 	}
