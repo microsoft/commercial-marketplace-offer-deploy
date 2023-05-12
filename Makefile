@@ -45,4 +45,4 @@ assemble: apiserver operator
 
 .NOTPARALLEL:
 
-.PHONY: build run run-testharness apiserver-local operator-local sdk test-all generate tools
+.PHONY: build test run run-testharness apiserver-local operator-local sdk generate tools

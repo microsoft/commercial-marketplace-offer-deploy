@@ -65,15 +65,15 @@ func (client *Client) Retry(ctx context.Context, deploymentId int, options *Retr
 	params["stageId"] = options.StageId
 
 	retries := 0 // we don't want to retry a retry.
-	resp, err := client.invokeDeploymentOperation(ctx, false, operationType, deploymentId, params, retries)
+	invokedOperation, err := client.invokeDeploymentOperation(ctx, false, operationType, deploymentId, params, retries)
 	if err != nil {
 		return nil, err
 	}
 
 	return &RetryResponse{
-		Id:         uuid.MustParse(*resp.ID),
-		Status:     *resp.Status,
-		Parameters: resp.Parameters.(map[string]any),
+		Id:         uuid.MustParse(*invokedOperation.ID),
+		Status:     *invokedOperation.Status,
+		Parameters: invokedOperation.Parameters.(map[string]any),
 	}, nil
 }
 
