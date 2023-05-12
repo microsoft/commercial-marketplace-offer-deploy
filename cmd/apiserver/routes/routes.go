@@ -11,8 +11,6 @@ import (
 )
 
 func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
-	databaseOptions := appConfig.GetDatabaseOptions()
-
 	return hosting.Routes{
 
 		hosting.Route{
@@ -68,7 +66,7 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 			Name:        "CreatEventHook",
 			Method:      http.MethodPost,
 			Path:        "/events/hooks",
-			HandlerFunc: middleware.AddJwtBearer(hosting.ToHandlerFunc(handlers.CreateEventHook, databaseOptions), appConfig),
+			HandlerFunc: middleware.AddJwtBearer(handlers.NewCreateEventHookHandler(appConfig), appConfig),
 		},
 
 		hosting.Route{

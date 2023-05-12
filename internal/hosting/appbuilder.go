@@ -66,7 +66,7 @@ func (b *AppBuilder) AddRoutes(configure ConfigureRoutesFunc) *AppBuilder {
 	configure(&options)
 
 	for _, route := range *options.Routes {
-		log.Debug("registering route: { %s %s %s }", route.Name, route.Method, route.Path)
+		log.Debugf("registering route: { %s %s %s }", route.Name, route.Method, route.Path)
 		router.Add(route.Method, route.Path, route.HandlerFunc)
 	}
 
