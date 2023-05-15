@@ -1,12 +1,31 @@
 package app
 
 import (
-	"strconv"
+	"context"
 	"path/filepath"
+	"strconv"
+
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
+
+func getClient(ctx context.Context) (*sdk.Client, error) {
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		log.Errorf("Error creating credential - %s", err)
+		return nil, err
+	}
+
+	client, err := sdk.NewClient(getClientEndpoint(), cred, nil)
+	if err != nil {
+		log.Errorf("Error creating SDK client - %s", err)
+		return nil, err
+	}
+	return client, nil
+}
 
 func getJsonAsMap(path string) map[string]interface{} {
 	jsonMap, err := utils.ReadJson(path)
