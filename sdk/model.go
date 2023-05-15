@@ -7,10 +7,10 @@ import (
 
 type RetryOptions struct {
 	StageId uuid.UUID
-	StageName string
 }
 
 type StatusResponse struct {
+	// the instance id of the operation
 	Id           uuid.UUID
 	Name         string
 	Status       string

@@ -3,7 +3,6 @@ package sdk
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
@@ -66,33 +65,15 @@ func (client *Client) Retry(ctx context.Context, deploymentId int, options *Retr
 	params["stageId"] = options.StageId
 
 	retries := 0 // we don't want to retry a retry.
-	resp, err := client.invokeDeploymentOperation(ctx, false, operationType, deploymentId, params, retries)
+	invokedOperation, err := client.invokeDeploymentOperation(ctx, false, operationType, deploymentId, params, retries)
 	if err != nil {
 		return nil, err
 	}
 
 	return &RetryResponse{
-		Id:         uuid.MustParse(*resp.ID),
-		Status:     *resp.Status,
-		Parameters: resp.Parameters.(map[string]any),
-	}, nil
-}
-
-// Gets the status of a deployment operation, e,g. a dry run or a start deployment operation
-//
-//	id: the instance id of the deployment operation
-func (client *Client) GetStatus(ctx context.Context, instanceId uuid.UUID) (*StatusResponse, error) {
-	resp, err := client.internalClient.GetInvokedDeploymentOperation(ctx, instanceId.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-	response := resp.InvokedDeploymentOperationResponse
-	return &StatusResponse{
-		Id:           uuid.MustParse(*response.ID),
-		Name:         *response.Name,
-		Status:       *response.Status,
-		Result:       response.Result,
-		DeploymentId: int(*response.DeploymentID),
+		Id:         uuid.MustParse(*invokedOperation.ID),
+		Status:     *invokedOperation.Status,
+		Parameters: invokedOperation.Parameters.(map[string]any),
 	}, nil
 }
 
@@ -126,23 +107,4 @@ func (client *Client) List(ctx context.Context) (*ListResponse, error) {
 	return &ListResponse{
 		Deployments: resp.DeploymentArray,
 	}, nil
-}
-
-// invoke a deployment operation with parameters
-func (client *Client) invokeDeploymentOperation(ctx context.Context, wait bool, operationType operation.OperationType,
-	deploymentId int, parameters map[string]interface{}, retries int) (*api.InvokedDeploymentOperationResponse, error) {
-
-	request := api.InvokeDeploymentOperationRequest{
-		Name:       to.Ptr(operationType.String()),
-		Parameters: parameters,
-		Retries:    to.Ptr(int32(retries)),
-		Wait:       &wait,
-	}
-
-	response, err := client.internalClient.InvokeDeploymentOperation(ctx, int32(deploymentId), request, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return &response.InvokedDeploymentOperationResponse, nil
 }

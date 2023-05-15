@@ -136,8 +136,8 @@ func whatIfDeployment(input DryRunValidationInput) (*armresources.DeploymentsCli
 			templateParams = azureDeployment.Params
 		}
 	}
-	
-	log.Debug("About to call whatIf with templateParams of - %v", templateParams)
+
+	log.Debugf("About to call whatIf with templateParams of - %v", templateParams)
 
 	pollerResp, err := deploymentsClient.BeginWhatIf(
 		ctx,
@@ -159,7 +159,7 @@ func whatIfDeployment(input DryRunValidationInput) (*armresources.DeploymentsCli
 	log.Debug("Got the whatIf response")
 
 	resp, err := pollerResp.PollUntilDone(ctx, nil)
-	
+
 	if err != nil {
 		return nil, err
 	}

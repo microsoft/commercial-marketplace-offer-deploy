@@ -59,7 +59,7 @@ func (f *EventHookMessageFactory) Create(ctx context.Context, matchAny d.LookupT
 	for _, item := range result {
 		message, err := f.convert(item)
 		if err != nil {
-			log.Error("failed to convert EventGridEventResource to WebHookEventMessage: %s", err.Error())
+			log.Errorf("failed to convert EventGridEventResource to WebHookEventMessage: %s", err.Error())
 		}
 
 		messages = append(messages, message)

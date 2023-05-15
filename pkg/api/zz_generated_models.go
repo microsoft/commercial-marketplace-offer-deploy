@@ -111,9 +111,9 @@ type DeploymentManagementClientListEventHooksOptions struct {
 	// placeholder for future optional parameters
 }
 
-// DeploymentManagementClientListOperationsOptions contains the optional parameters for the DeploymentManagementClient.ListOperations
+// DeploymentManagementClientListInvokedOperationsOptions contains the optional parameters for the DeploymentManagementClient.ListInvokedOperations
 // method.
-type DeploymentManagementClientListOperationsOptions struct {
+type DeploymentManagementClientListInvokedOperationsOptions struct {
 	// placeholder for future optional parameters
 }
 
@@ -146,6 +146,11 @@ type EventType struct {
 	Name *string `json:"name,omitempty"`
 }
 
+type GetInvokedOperationResponse struct {
+	// An invoked operation
+	InvokedOperation *InvokedOperation `json:"invokedOperation,omitempty"`
+}
+
 type InvokeDeploymentOperationRequest struct {
 	Name *string `json:"name,omitempty"`
 
@@ -159,6 +164,15 @@ type InvokeDeploymentOperationRequest struct {
 }
 
 type InvokedDeploymentOperationResponse struct {
+	// An invoked operation
+	InvokedOperation *InvokedOperation `json:"invokedOperation,omitempty"`
+}
+
+// InvokedOperation - An invoked operation
+type InvokedOperation struct {
+	Attempts *int32 `json:"attempts,omitempty"`
+
+	// the associated deployment ID if the operation was invoked against a deployment
 	DeploymentID *int32 `json:"deploymentId,omitempty"`
 	ID *string `json:"id,omitempty"`
 	InvokedOn *time.Time `json:"invokedOn,omitempty"`
@@ -169,24 +183,12 @@ type InvokedDeploymentOperationResponse struct {
 
 	// Anything
 	Result any `json:"result,omitempty"`
+	Retries *int32 `json:"retries,omitempty"`
 	Status *string `json:"status,omitempty"`
 }
 
-// Operation - Defines an available operation
-type Operation struct {
-	Name *string `json:"name,omitempty"`
-	Parameters []*OperationParameterType `json:"parameters,omitempty"`
-	Target *OperationTargetType `json:"target,omitempty"`
-}
-
-// OperationParameterType - The parameter type information for a parameter of an operation
-type OperationParameterType struct {
-	Name *string `json:"name,omitempty"`
-	Type *string `json:"type,omitempty"`
-}
-
-type OperationTargetType struct {
-	IDType *string `json:"idType,omitempty"`
-	ObjectType *string `json:"objectType,omitempty"`
+// ListInvokedOperationResponse - List response of invoked operations
+type ListInvokedOperationResponse struct {
+	Items []*InvokedOperation `json:"items,omitempty"`
 }
 

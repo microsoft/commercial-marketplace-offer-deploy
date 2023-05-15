@@ -233,7 +233,7 @@
         }
       }
     },
-    "/deployments/operations/{operationId}": {
+    "/operations/{operationId}": {
       "get": {
         "tags": [
           "Operation"
@@ -255,7 +255,7 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/InvokedDeploymentOperationResponse"
+              "$ref": "#/definitions/GetInvokedOperationResponse"
             }
           }
         }
@@ -266,18 +266,15 @@
         "tags": [
           "Operation"
         ],
-        "summary": "Returns the list of available operations",
-        "description": "Returns a list of available operations that can be performed on a deployment",
-        "operationId": "ListOperations",
+        "summary": "Returns the list of all invoked operations",
+        "description": "Returns a list of invoked operations",
+        "operationId": "ListInvokedOperations",
         "parameters": [],
         "responses": {
           "200": {
             "description": "successful operation",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Operation"
-              }
+              "$ref": "#/definitions/ListInvokedOperationResponse"
             }
           }
         }
@@ -490,47 +487,63 @@
         }
       }
     },
-    "Operation": {
+    "InvokedOperation": {
       "type": "object",
-      "description": "Defines an available operation",
+      "description": "An invoked operation",
       "properties": {
-        "target": {
-          "$ref": "#/definitions/OperationTargetType"
+        "id": {
+          "type": "string",
+          "format": "uuid"
         },
         "name": {
           "type": "string"
         },
+        "deploymentId": {
+          "type": "integer",
+          "description": "the associated deployment ID if the operation was invoked against a deployment"
+        },
+        "retries": {
+          "type": "integer"
+        },
+        "attempts": {
+          "type": "integer"
+        },
         "parameters": {
+          "type": "object"
+        },
+        "result": {
+          "type": "object"
+        },
+        "status": {
+          "type": "string"
+        },
+        "invokedOn": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "GetInvokedOperationResponse": {
+      "type": "object",
+      "properties": {
+        "invokedOperation": {
+         "$ref": "#/definitions/InvokedOperation"
+        }
+      }
+    },
+    "ListInvokedOperationResponse": {
+      "type": "object",
+      "description": "List response of invoked operations",
+      "properties": {
+        "items": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/OperationParameterType"
+            "$ref": "#/definitions/InvokedOperation"
           }
         }
       }
     },
-    "OperationTargetType": {
-      "type": "object",
-      "properties": {
-        "objectType": {
-          "type": "string"
-        },
-        "idType": {
-          "type": "string"
-        }
-      }
-    },
-    "OperationParameterType": {
-      "type": "object",
-      "description": "The parameter type information for a parameter of an operation",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        }
-      }
-    },
+
     "InvokeDeploymentOperationRequest": {
       "type": "object",
       "properties": {
@@ -552,28 +565,8 @@
     "InvokedDeploymentOperationResponse": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "name": {
-          "type": "string"
-        },
-        "deploymentId": {
-          "type": "integer"
-        },
-        "parameters": {
-          "type": "object"
-        },
-        "invokedOn": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string"
-        },
-        "result": {
-          "type": "object"
+        "invokedOperation": {
+         "$ref": "#/definitions/InvokedOperation"
         }
       }
     },

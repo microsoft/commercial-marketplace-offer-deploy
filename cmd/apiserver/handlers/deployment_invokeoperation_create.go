@@ -35,13 +35,15 @@ func (h *invokeDeploymentOperation) Handle(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	response := &api.InvokedDeploymentOperationResponse{
-		ID:         to.Ptr(operationId.String()),
-		InvokedOn:  to.Ptr(time.Now().UTC()),
-		Name:       request.Name,
-		Parameters: request.Parameters,
-		Result:     nil,
-		Status:     to.Ptr(operation.StatusScheduled.String()),
+	response := api.InvokedDeploymentOperationResponse{
+		InvokedOperation: &api.InvokedOperation{
+			ID:         to.Ptr(operationId.String()),
+			InvokedOn:  to.Ptr(time.Now().UTC()),
+			Name:       request.Name,
+			Parameters: request.Parameters,
+			Result:     nil,
+			Status:     to.Ptr(operation.StatusScheduled.String()),
+		},
 	}
 
 	return c.JSON(http.StatusOK, response)

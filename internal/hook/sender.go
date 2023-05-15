@@ -62,12 +62,12 @@ func (sender *httpSender) Send(ctx context.Context, data any) error {
 		body, err = io.ReadAll(response.Body)
 
 		if err != nil {
-			log.Error("Error reading response body: %v", err)
+			log.Errorf("Error reading response body: %v", err)
 			return err
 		}
 
 		if response.StatusCode != http.StatusOK {
-			log.Error("Error sending event message.  The response Status code was: %v", response.StatusCode)
+			log.Errorf("Error sending event message.  The response Status code was: %v", response.StatusCode)
 			return fmt.Errorf("request failed with status [%d] '%s'", response.StatusCode, string(body))
 		}
 

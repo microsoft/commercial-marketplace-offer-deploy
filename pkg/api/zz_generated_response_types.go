@@ -42,7 +42,7 @@ type DeploymentManagementClientGetEventTypesResponse struct {
 
 // DeploymentManagementClientGetInvokedDeploymentOperationResponse contains the response from method DeploymentManagementClient.GetInvokedDeploymentOperation.
 type DeploymentManagementClientGetInvokedDeploymentOperationResponse struct {
-	InvokedDeploymentOperationResponse
+	GetInvokedOperationResponse
 }
 
 // DeploymentManagementClientInvokeDeploymentOperationResponse contains the response from method DeploymentManagementClient.InvokeDeploymentOperation.
@@ -62,10 +62,9 @@ type DeploymentManagementClientListEventHooksResponse struct {
 	EventHookResponseArray []*EventHookResponse
 }
 
-// DeploymentManagementClientListOperationsResponse contains the response from method DeploymentManagementClient.ListOperations.
-type DeploymentManagementClientListOperationsResponse struct {
-	// Array of Operation
-	OperationArray []*Operation
+// DeploymentManagementClientListInvokedOperationsResponse contains the response from method DeploymentManagementClient.ListInvokedOperations.
+type DeploymentManagementClientListInvokedOperationsResponse struct {
+	ListInvokedOperationResponse
 }
 
 // DeploymentManagementClientUpdateDeploymentResponse contains the response from method DeploymentManagementClient.UpdateDeployment.

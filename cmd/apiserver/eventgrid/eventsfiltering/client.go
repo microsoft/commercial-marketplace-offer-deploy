@@ -40,13 +40,13 @@ func NewAzureResourceClient(subscriptionId string, credential azcore.TokenCreden
 func (c *azureResourceClient) Get(ctx context.Context, resourceId *arm.ResourceID) (*armresources.GenericResource, error) {
 	apiVersion, err := c.resolveApiVersion(ctx, resourceId)
 	if err != nil {
-		log.Error("err: %v", err)
+		log.Errorf("err: %v", err)
 		return nil, err
 	}
 
 	response, err := c.resourcesClient.GetByID(ctx, resourceId.String(), apiVersion, nil)
 	if err != nil {
-		log.Error("failed to get associated resource: %s, err: %v", resourceId.String(), err)
+		log.Errorf("failed to get associated resource: %s, err: %v", resourceId.String(), err)
 		return nil, err
 	}
 

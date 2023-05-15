@@ -146,7 +146,7 @@ func (c *manager) CreateSystemTopic(ctx context.Context) (*armeventgrid.SystemTo
 			return nil, err
 		}
 
-		log.Debug("Created system topic %s in resource group %s", c.Properties.SystemTopicName, c.Properties.ResourceGroupName)
+		log.Debugf("Created system topic %s in resource group %s", c.Properties.SystemTopicName, c.Properties.ResourceGroupName)
 		return &resp.SystemTopic, nil
 	}
 	return nil, fmt.Errorf("poller response nil in Event Grid subscription manager")

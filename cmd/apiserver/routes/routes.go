@@ -11,8 +11,6 @@ import (
 )
 
 func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
-	databaseOptions := appConfig.GetDatabaseOptions()
-
 	return hosting.Routes{
 
 		hosting.Route{
@@ -68,7 +66,7 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 			Name:        "CreatEventHook",
 			Method:      http.MethodPost,
 			Path:        "/events/hooks",
-			HandlerFunc: middleware.AddJwtBearer(hosting.ToHandlerFunc(handlers.CreateEventHook, databaseOptions), appConfig),
+			HandlerFunc: middleware.AddJwtBearer(handlers.NewCreateEventHookHandler(appConfig), appConfig),
 		},
 
 		hosting.Route{
@@ -100,17 +98,17 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 		},
 
 		hosting.Route{
-			Name:        "GetDeploymentOperation",
+			Name:        "GetInvokedOperation",
 			Method:      http.MethodGet,
-			Path:        "/deployments/operations/:operationId",
-			HandlerFunc: middleware.AddJwtBearer(handlers.GetDeploymentOperation, appConfig),
+			Path:        "/operations/:operationId",
+			HandlerFunc: middleware.AddJwtBearer(handlers.NewGetInvokedOperationHandler(appConfig), appConfig),
 		},
 
 		hosting.Route{
-			Name:        "ListOperations",
+			Name:        "ListInvokedOperations",
 			Method:      http.MethodGet,
 			Path:        "/operations",
-			HandlerFunc: middleware.AddJwtBearer(handlers.ListOperations, appConfig),
+			HandlerFunc: middleware.AddJwtBearer(handlers.NewListInvokedOperationHandler(appConfig), appConfig),
 		},
 	}
 

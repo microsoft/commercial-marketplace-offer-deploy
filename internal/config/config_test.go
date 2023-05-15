@@ -1,6 +1,7 @@
 package config
 
 import (
+	"net/url"
 	"os"
 	"testing"
 
@@ -25,13 +26,16 @@ func TestAppConfigWithEnvPrefix(t *testing.T) {
 
 func Test_AppConfig_GetPublicBaseUrl(t *testing.T) {
 	// without trailing slash
+	url, _ := url.Parse("https://test.com")
 	appConfig := &AppConfig{
 		Http: HttpSettings{
-			BaseUrl: "https://test.com",
+			BaseUrl: url.String(),
 		},
 	}
-	assert.Equal(t, "https://test.com/", appConfig.GetPublicBaseUrl())
+	assert.Equal(t, url, appConfig.GetPublicBaseUrl())
 
 	appConfig.Http.BaseUrl = "https://test.com/"
-	assert.Equal(t, appConfig.Http.BaseUrl, appConfig.GetPublicBaseUrl())
+	url, _ = url.Parse(appConfig.Http.BaseUrl)
+
+	assert.Equal(t, url, appConfig.GetPublicBaseUrl())
 }

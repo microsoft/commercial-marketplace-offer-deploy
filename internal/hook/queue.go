@@ -74,7 +74,7 @@ func Configure(appConfig *config.AppConfig) error {
 	instanceOnce.Do(func() {
 		credential, err := getAzureCredential()
 		if err != nil {
-			log.Error("Error creating Azure credential for hook.Queue: %v", err)
+			log.Errorf("Error creating Azure credential for hook.Queue: %v", err)
 		}
 
 		sender, err := messaging.NewServiceBusMessageSender(credential, messaging.MessageSenderOptions{
@@ -84,7 +84,7 @@ func Configure(appConfig *config.AppConfig) error {
 			FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
 		})
 		if err != nil {
-			log.Error("Error creating message sender for hook.Queue: %v", err)
+			log.Errorf("Error creating message sender for hook.Queue: %v", err)
 			instanceErr = err
 			return
 		}

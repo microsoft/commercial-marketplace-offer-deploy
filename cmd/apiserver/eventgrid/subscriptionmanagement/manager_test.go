@@ -1,3 +1,5 @@
+// +build integration
+
 package subscriptionmanagement
 
 import (
@@ -5,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	log "github.com/sirupsen/logrus"
 )
 
 // TODO: convert these test to integration tests that use https://github.com/ngrok/ngrok-go to tunnel to localhost
@@ -39,17 +41,13 @@ func ToMove_TestCreateEventSubscription(t *testing.T) {
 func TestDeploymentEventsClient(t *testing.T) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 
-	if err != nil {
-		log.Fatalf("Authentication failure: %+v", err)
-	}
-
-	resourceGroupId := "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/sandbox1"
+	resourceGroupId := "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/test"
 	client, err := NewEventGridManager(cred, resourceGroupId)
 
 	require.NoError(t, err)
 
 	result, err := client.CreateSystemTopic(context.TODO())
-	log.Debug("result:\n %v", result)
+	log.Debugf("result:\n %v", result)
 
 	require.NoError(t, err)
 	assert.NotNil(t, result)

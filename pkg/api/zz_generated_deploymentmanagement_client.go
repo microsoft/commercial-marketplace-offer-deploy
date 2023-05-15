@@ -295,7 +295,7 @@ func (client *DeploymentManagementClient) GetInvokedDeploymentOperation(ctx cont
 
 // getInvokedDeploymentOperationCreateRequest creates the GetInvokedDeploymentOperation request.
 func (client *DeploymentManagementClient) getInvokedDeploymentOperationCreateRequest(ctx context.Context, operationID string, options *DeploymentManagementClientGetInvokedDeploymentOperationOptions) (*policy.Request, error) {
-	urlPath := "/deployments/operations/{operationId}"
+	urlPath := "/operations/{operationId}"
 	urlPath = strings.ReplaceAll(urlPath, "{operationId}", url.PathEscape(operationID))
 	req, err := runtime.NewRequest(ctx, http.MethodGet, runtime.JoinPaths(client.endpoint, urlPath))
 	if err != nil {
@@ -308,7 +308,7 @@ func (client *DeploymentManagementClient) getInvokedDeploymentOperationCreateReq
 // getInvokedDeploymentOperationHandleResponse handles the GetInvokedDeploymentOperation response.
 func (client *DeploymentManagementClient) getInvokedDeploymentOperationHandleResponse(resp *http.Response) (DeploymentManagementClientGetInvokedDeploymentOperationResponse, error) {
 	result := DeploymentManagementClientGetInvokedDeploymentOperationResponse{}
-	if err := runtime.UnmarshalAsJSON(resp, &result.InvokedDeploymentOperationResponse); err != nil {
+	if err := runtime.UnmarshalAsJSON(resp, &result.GetInvokedOperationResponse); err != nil {
 		return DeploymentManagementClientGetInvokedDeploymentOperationResponse{}, err
 	}
 	return result, nil
@@ -447,29 +447,29 @@ func (client *DeploymentManagementClient) listEventHooksHandleResponse(resp *htt
 	return result, nil
 }
 
-// ListOperations - Returns a list of available operations that can be performed on a deployment
+// ListInvokedOperations - Returns a list of invoked operations
 // If the operation fails it returns an *azcore.ResponseError type.
 //
 // Generated from API version 0.1.0
-//   - options - DeploymentManagementClientListOperationsOptions contains the optional parameters for the DeploymentManagementClient.ListOperations
+//   - options - DeploymentManagementClientListInvokedOperationsOptions contains the optional parameters for the DeploymentManagementClient.ListInvokedOperations
 //     method.
-func (client *DeploymentManagementClient) ListOperations(ctx context.Context, options *DeploymentManagementClientListOperationsOptions) (DeploymentManagementClientListOperationsResponse, error) {
-	req, err := client.listOperationsCreateRequest(ctx, options)
+func (client *DeploymentManagementClient) ListInvokedOperations(ctx context.Context, options *DeploymentManagementClientListInvokedOperationsOptions) (DeploymentManagementClientListInvokedOperationsResponse, error) {
+	req, err := client.listInvokedOperationsCreateRequest(ctx, options)
 	if err != nil {
-		return DeploymentManagementClientListOperationsResponse{}, err
+		return DeploymentManagementClientListInvokedOperationsResponse{}, err
 	}
 	resp, err := client.internal.Pipeline().Do(req)
 	if err != nil {
-		return DeploymentManagementClientListOperationsResponse{}, err
+		return DeploymentManagementClientListInvokedOperationsResponse{}, err
 	}
 	if !runtime.HasStatusCode(resp, http.StatusOK) {
-		return DeploymentManagementClientListOperationsResponse{}, runtime.NewResponseError(resp)
+		return DeploymentManagementClientListInvokedOperationsResponse{}, runtime.NewResponseError(resp)
 	}
-	return client.listOperationsHandleResponse(resp)
+	return client.listInvokedOperationsHandleResponse(resp)
 }
 
-// listOperationsCreateRequest creates the ListOperations request.
-func (client *DeploymentManagementClient) listOperationsCreateRequest(ctx context.Context, options *DeploymentManagementClientListOperationsOptions) (*policy.Request, error) {
+// listInvokedOperationsCreateRequest creates the ListInvokedOperations request.
+func (client *DeploymentManagementClient) listInvokedOperationsCreateRequest(ctx context.Context, options *DeploymentManagementClientListInvokedOperationsOptions) (*policy.Request, error) {
 	urlPath := "/operations"
 	req, err := runtime.NewRequest(ctx, http.MethodGet, runtime.JoinPaths(client.endpoint, urlPath))
 	if err != nil {
@@ -479,11 +479,11 @@ func (client *DeploymentManagementClient) listOperationsCreateRequest(ctx contex
 	return req, nil
 }
 
-// listOperationsHandleResponse handles the ListOperations response.
-func (client *DeploymentManagementClient) listOperationsHandleResponse(resp *http.Response) (DeploymentManagementClientListOperationsResponse, error) {
-	result := DeploymentManagementClientListOperationsResponse{}
-	if err := runtime.UnmarshalAsJSON(resp, &result.OperationArray); err != nil {
-		return DeploymentManagementClientListOperationsResponse{}, err
+// listInvokedOperationsHandleResponse handles the ListInvokedOperations response.
+func (client *DeploymentManagementClient) listInvokedOperationsHandleResponse(resp *http.Response) (DeploymentManagementClientListInvokedOperationsResponse, error) {
+	result := DeploymentManagementClientListInvokedOperationsResponse{}
+	if err := runtime.UnmarshalAsJSON(resp, &result.ListInvokedOperationResponse); err != nil {
+		return DeploymentManagementClientListInvokedOperationsResponse{}, err
 	}
 	return result, nil
 }

@@ -27,7 +27,8 @@ func TestCreateEventHookIsIdempotentByName(t *testing.T) {
 	c := e.NewContext(request, recorder)
 
 	//act
-	err = CreateEventHook(c, db)
+	handler := createEventHookHandler{db: db}
+	err = handler.Handle(c)
 	assert.NoError(t, err)
 
 	t.Log(recorder.Body.String())
@@ -39,7 +40,7 @@ func TestCreateEventHookIsIdempotentByName(t *testing.T) {
 	recorder = httptest.NewRecorder()
 	c = e.NewContext(request, recorder)
 
-	err = CreateEventHook(c, db)
+	err = handler.Handle(c)
 	assert.NoError(t, err)
 	t.Log(recorder.Body.String())
 
