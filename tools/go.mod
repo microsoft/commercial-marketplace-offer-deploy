@@ -8,14 +8,16 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armpolicy v0.6.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources v1.0.0
 	github.com/labstack/echo/v4 v4.10.2
-	github.com/microsoft/commercial-marketplace-offer-deploy v0.2.3
-	github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.2.3
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.8.2
 )
 
-require github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/internal v1.1.2 // indirect
+require (
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/internal v1.1.2 // indirect
+	github.com/microsoft/commercial-marketplace-offer-deploy v0.3.1 // indirect
+	github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.3.1 // indirect
+)
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.3.0 // indirect

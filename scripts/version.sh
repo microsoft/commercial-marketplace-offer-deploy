@@ -31,15 +31,15 @@ git push origin $sdk_version
 # go mod tidy
 
 # tools_version=tools/$version
-# go get github.com/microsoft/commercial-marketplace-offer-deploy@none
-# go get github.com/microsoft/commercial-marketplace-offer-deploy/sdk@none
-# go get github.com/microsoft/commercial-marketplace-offer-deploy@$version
-# go get github.com/microsoft/commercial-marketplace-offer-deploy/sdk@$version
+go get github.com/microsoft/commercial-marketplace-offer-deploy@none
+go get github.com/microsoft/commercial-marketplace-offer-deploy/sdk@none
+go get github.com/microsoft/commercial-marketplace-offer-deploy@$version
+go get github.com/microsoft/commercial-marketplace-offer-deploy/sdk@$version
 
-# go mod tidy
-# git add ./go.mod ./go.sum
-# git commit -m "$tools_version"  
-# git push origin main -f
+go mod tidy
+git add ./go.mod ./go.sum
+git commit -m "updating tools to consume $version"  
+git push origin main -f
 
 # git tag -a $tools_version -m "$tools_version" 
 # git push origin $tools_version
