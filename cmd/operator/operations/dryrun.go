@@ -28,7 +28,6 @@ func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOp
 	log.Debugf("Inside Invoke for DryRun with an operation of %v", *invokedOperation)
 
 	err := retry.Do(func() error {
-		status := invokedOperation.Status
 
 		log.Debugf("Inside retry.Do for DryRun with an operation of %v", *invokedOperation)
 		azureDeployment := exe.getAzureDeployment(invokedOperation)
@@ -62,7 +61,7 @@ func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOp
 			return &RetriableError{Err: err, RetryAfter: 10 * time.Second}
 		}
 
-		hookMessage := exe.mapToEventHookMessage(status, &response.DryRunResult)
+		hookMessage := exe.mapToEventHookMessage(invokedOperation, &response.DryRunResult)
 		hook.Add(ctx, hookMessage)
 
 		return nil
@@ -95,11 +94,23 @@ func (exe *dryRun) getFailedEventHookMessage(err error, invokedOperation *data.I
 	}
 }
 
-func (exe *dryRun) mapToEventHookMessage(status string, result *deployment.DryRunResult) *events.EventHookMessage {
-	return &events.EventHookMessage{
-		Type: string(events.EventTypeDryRunCompleted),
-		Data: result,
+func (exe *dryRun) mapToEventHookMessage(invokedOperation *data.InvokedOperation, result *deployment.DryRunResult) *events.EventHookMessage {
+	data := events.DryRunEventData{
+		DeploymentId: int(invokedOperation.DeploymentId),
+		OperationId:  invokedOperation.ID,
+		Status:       result.Status,
+		Attempts:     invokedOperation.Attempts,
+		Error:        result.Error,
 	}
+
+	message := &events.EventHookMessage{
+		Type:   string(events.EventTypeDryRunCompleted),
+		Status: operation.StatusSuccess.String(),
+		Data:   data,
+	}
+	message.SetSubject(uint(invokedOperation.DeploymentId), nil)
+
+	return message
 }
 
 func (exe *dryRun) getAzureDeployment(operation *data.InvokedOperation) *deployment.AzureDeployment {

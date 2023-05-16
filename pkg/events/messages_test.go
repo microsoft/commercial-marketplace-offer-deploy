@@ -6,6 +6,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -38,12 +39,10 @@ func Test_EventHookMessage_DryRunEventData_Marshaling(t *testing.T) {
 			DeploymentId: 1,
 			OperationId:  uuid.New(),
 			Attempts:     1,
-			Result: DryRunEventDataResult{
-				Status: to.Ptr("failed"),
-				Error: &DryRunEventDataError{
-					Code:           to.Ptr("code"),
-					AdditionalInfo: []*DryRunEventDataErrorAdditionalInfo{},
-				},
+			Status:       to.Ptr("failed"),
+			Error: &deployment.DryRunErrorResponse{
+				Code:           to.Ptr("code"),
+				AdditionalInfo: []*deployment.ErrorAdditionalInfo{},
 			},
 		},
 	}
@@ -59,7 +58,7 @@ func Test_EventHookMessage_DryRunEventData_Marshaling(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, 1, data.DeploymentId)
-	assert.Equal(t, "code", *data.Result.Error.Code)
+	assert.Equal(t, "code", *data.Error.Code)
 }
 
 func Test_EventHookMessage_DryRunEventData_Fails_With_WrongType(t *testing.T) {
@@ -70,11 +69,9 @@ func Test_EventHookMessage_DryRunEventData_Fails_With_WrongType(t *testing.T) {
 			DeploymentId: 1,
 			OperationId:  uuid.New(),
 			Attempts:     1,
-			Result: DryRunEventDataResult{
-				Status: to.Ptr("failed"),
-				Error: &DryRunEventDataError{
-					AdditionalInfo: []*DryRunEventDataErrorAdditionalInfo{},
-				},
+			Status:       to.Ptr("failed"),
+			Error: &deployment.DryRunErrorResponse{
+				AdditionalInfo: []*deployment.ErrorAdditionalInfo{},
 			},
 		},
 	}

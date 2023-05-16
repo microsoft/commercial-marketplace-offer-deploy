@@ -23,19 +23,19 @@ type DryRunResult struct {
 
 type DryRunErrorResponse struct {
 	// READ-ONLY; The error additional info.
-	AdditionalInfo []*ErrorAdditionalInfo `json:"additionalInfo,omitempty" azure:"ro"`
+	AdditionalInfo []*ErrorAdditionalInfo `json:"additionalInfo,omitempty" azure:"ro" mapstructure:"additionalInfo"`
 
 	// READ-ONLY; The error code.
-	Code *string `json:"code,omitempty" azure:"ro"`
+	Code *string `json:"code,omitempty" azure:"ro" mapstructure:"code"`
 
 	// READ-ONLY; The error message.
-	Message *string `json:"message,omitempty" azure:"ro"`
+	Message *string `json:"message,omitempty" azure:"ro" mapstructure:"message"`
 
 	// READ-ONLY; The error target.
-	Target *string `json:"target,omitempty" azure:"ro"`
+	Target *string `json:"target,omitempty" azure:"ro" mapstructure:"target"`
 
 	// READ-ONLY; The error details.
-	Details []*DryRunErrorResponse `json:"details,omitempty" azure:"ro"`
+	Details []*DryRunErrorResponse `json:"details,omitempty" azure:"ro" mapstructure:"details"`
 }
 
 func whatIfValidator(input DryRunValidationInput) (*DryRunResponse, error) {
