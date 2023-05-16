@@ -2,7 +2,6 @@ package operations
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	"github.com/avast/retry-go"
@@ -22,55 +21,51 @@ type dryRun struct {
 	db     *gorm.DB
 	dryRun DryRunFunc
 	sender messaging.MessageSender
+	log    *log.Entry
 }
 
 func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOperation) error {
-	log.Debugf("Inside Invoke for DryRun with an operation of %v", *invokedOperation)
+	retries := uint(invokedOperation.Retries)
+	exe.log = log.WithFields(log.Fields{
+		"operationId":  invokedOperation.ID,
+		"deploymentId": invokedOperation.DeploymentId,
+		"retries":      retries,
+	})
 
 	err := retry.Do(func() error {
-
-		log.Debugf("Inside retry.Do for DryRun with an operation of %v", *invokedOperation)
+		exe.log.WithField("attempt", invokedOperation.Attempts).Debug("attempting dry run")
 		azureDeployment := exe.getAzureDeployment(invokedOperation)
-		log.Debugf("AzureDeployment is %v", *azureDeployment)
 
 		response, err := exe.dryRun(ctx, azureDeployment)
 
 		if err != nil {
-			log.Errorf("Error in DryRun: %v", err)
-
-			invokedOperation.Status = operation.StatusFailed.String()
-			invokedOperation.Retries = invokedOperation.Retries + 1
+			exe.log.Errorf("Error: %v", err)
+			invokedOperation.Status = operation.StatusRunning.String()
+			invokedOperation.Attempts = invokedOperation.Attempts + 1
 			exe.save(invokedOperation)
 
 			return &RetriableError{Err: err, RetryAfter: 10 * time.Second}
 		}
 
-		log.Debugf("DryRun response is %v", *response)
-		b, err := json.MarshalIndent(*response, "", "  ")
-		if err != nil {
-			log.Error(err)
-		}
-		log.Debugf("unmarshaled DryRunResponse: %v", string(b))
-		invokedOperation.Status = *response.Status
-		invokedOperation.Result = response.DryRunResult
-		invokedOperation.UpdatedAt = time.Now().UTC()
+		exe.log.WithField("response", response).Debug("Received dry run response from Azure")
 
-		err = exe.save(invokedOperation)
-		if err != nil {
-			log.Errorf("Error in DryRun: %v", err)
-			return &RetriableError{Err: err, RetryAfter: 10 * time.Second}
-		}
+		invokedOperation.Status = operation.StatusSuccess.String()
+		invokedOperation.Result = response.DryRunResult
+		exe.save(invokedOperation)
 
 		hookMessage := exe.mapToEventHookMessage(invokedOperation, &response.DryRunResult)
 		hook.Add(ctx, hookMessage)
 
 		return nil
 	},
-		retry.Attempts(uint(invokedOperation.Retries)),
+		retry.Attempts(retries),
 	)
 
 	if err != nil {
-		log.Errorf("Error in DryRun - Outside of retry loop: %v", err)
+		exe.log.Errorf("Attempts to retry exceeded. Error: %v", err)
+		invokedOperation.Status = operation.StatusFailed.String()
+		exe.save(invokedOperation)
+
 		hookMessage := exe.getFailedEventHookMessage(err, invokedOperation)
 		hook.Add(ctx, hookMessage)
 	}
@@ -117,7 +112,7 @@ func (exe *dryRun) getAzureDeployment(operation *data.InvokedOperation) *deploym
 	retrieved := &data.Deployment{}
 	exe.db.First(&retrieved, operation.DeploymentId)
 
-	return &deployment.AzureDeployment{
+	deployment := &deployment.AzureDeployment{
 		SubscriptionId:    retrieved.SubscriptionId,
 		Location:          retrieved.Location,
 		ResourceGroupName: retrieved.ResourceGroup,
@@ -125,6 +120,8 @@ func (exe *dryRun) getAzureDeployment(operation *data.InvokedOperation) *deploym
 		Template:          retrieved.Template,
 		Params:            operation.Parameters,
 	}
+	exe.log.Debugf("AzureDeployment: %v", deployment)
+	return deployment
 }
 
 func (exe *dryRun) save(operation *data.InvokedOperation) error {
