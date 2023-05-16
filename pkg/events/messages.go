@@ -28,18 +28,6 @@ type EventHookMessage struct {
 	Data    any    `json:"data,omitempty"`
 }
 
-// Dry run data
-type DryRunData struct {
-	Status         string                 `json:"status,omitempty"`
-	AdditionalInfo []DryRunAdditionalInfo `json:"additionalInfo,omitempty"`
-}
-
-// Dry run message that's part of the dry run data, containing details of the specific dry run results
-type DryRunAdditionalInfo struct {
-	Info interface{} `json:"info,omitempty"`
-	Type string      `json:"type,omitempty"`
-}
-
 // all other deployment events
 
 type DeploymentEventData struct {
