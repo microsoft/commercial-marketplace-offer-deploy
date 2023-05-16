@@ -35,5 +35,5 @@ jobs:
     - name: Show configs
       run: cat ./bin/.env
 
-    # - name: Run tests
-    # run: make test
+    - name: Run tests
+      run: make test
