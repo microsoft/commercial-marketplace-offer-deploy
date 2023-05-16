@@ -15,7 +15,7 @@ type DryRunResponse struct {
 }
 
 type DryRunResult struct {
-	Status *string `json:"code,omitempty" azure:"ro"`
+	Status *string `json:"status,omitempty" azure:"ro"`
 	//Message *string `json:"message,omitempty" azure:"ro"`
 	//Target *string `json:"target,omitempty" azure:"ro"`
 	Error *DryRunErrorResponse
