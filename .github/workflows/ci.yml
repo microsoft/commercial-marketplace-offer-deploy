@@ -12,6 +12,9 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - '**.go'
+      - '**.mod'
   workflow_dispatch:
 
 jobs:
