@@ -12,6 +12,9 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - '**.go'
+      - '**.mod'
   workflow_dispatch:
 
 jobs:
@@ -35,5 +38,5 @@ jobs:
     - name: Show configs
       run: cat ./bin/.env
 
-    # - name: Run tests
-    # run: make test
+    - name: Run tests
+      run: make test
