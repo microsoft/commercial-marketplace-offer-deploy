@@ -27,7 +27,7 @@ const (
 	DataDatabasePath = "./"
 	DatabaseName     = "modm"
 	DatabaseFileName = DatabaseName + ".db"
-	InMemoryDsn      = "file::memory:?cache=shared"
+	InMemoryDsn      = "file::memory:"
 )
 
 // The default db path for the database if nothing is set. Default value is DataDatabasePath
