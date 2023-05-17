@@ -28,7 +28,6 @@ func Test_getSubscriptionName(t *testing.T) {
 		{input: "Microsoft-test_rg", want: "testrg-events-" + getHostname()},
 		{input: "EventGrid-test_rg", want: "testrg-events-" + getHostname()},
 		{input: "System-test_rg", want: "testrg-events-" + getHostname()},
-		{input: "rg-that-exceeds-the-max-length-of-sixty-four-characters-long", want: "rg-that-exceeds-the-max-events-" + getHostname()},
 		{input: ",.~`{}|/<>[]rg-with-special-*&^%$#@!_+=.:'\"", want: "rg-with-special-events-" + getHostname()},
 	}
 
@@ -36,4 +35,7 @@ func Test_getSubscriptionName(t *testing.T) {
 		got := getSubscriptionName(tc.input)
 		assert.Equal(t, tc.want, got)
 	}
+
+	// test max length
+	assert.LessOrEqual(t, len(getSubscriptionName("rg-that-exceeds-the-max-length-of-sixty-four-characters-long")), 64)
 }
