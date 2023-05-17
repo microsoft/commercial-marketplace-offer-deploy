@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/url"
 	"os"
+	"regexp"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
@@ -60,12 +62,7 @@ func create(options eventGridRegistrationTaskOptions) tasks.Task {
 		}
 		log.Debugf("System topic created: %s", manager.GetSystemTopicName())
 
-		hostname, err := os.Hostname()
-		if err != nil {
-			hostname = "unknownhost"
-		}
-
-		subscriptionName := resourceId.ResourceGroupName + "-deployment-events-" + hostname
+		subscriptionName := getSubscriptionName(resourceId.ResourceGroupName)
 		result, err := manager.CreateEventSubscription(ctx, subscriptionName, options.EndpointUrl)
 		if err != nil {
 			return err
@@ -75,4 +72,37 @@ func create(options eventGridRegistrationTaskOptions) tasks.Task {
 		return nil
 	}
 	return tasks.NewTask("EventGrid Subscription Registration", action)
+}
+
+func getSubscriptionName(resourceGroupName string) string {
+	reservedPrefixes := []string{
+		"Microsoft-", "",
+		"EventGrid-", "",
+		"System-", "",
+	}
+	replacer := strings.NewReplacer(reservedPrefixes...)
+	prefix := replacer.Replace(resourceGroupName)
+
+	r := regexp.MustCompile("[^a-zA-Z0-9 -]")
+	prefix = r.ReplaceAllString(prefix, "")
+
+	suffix := "-events-" + getHostname()
+
+	//https://learn.microsoft.com/en-us/azure/event-grid/subscription-creation-schema
+	maxLength := 64
+	lengthCheck := len(prefix + suffix)
+
+	if lengthCheck > maxLength {
+		prefix = prefix[:maxLength-len(suffix)]
+	}
+	prefix = strings.TrimSuffix(prefix, "-")
+	return prefix + suffix
+}
+
+func getHostname() string {
+	hostname, err := os.Hostname()
+	if err != nil {
+		hostname = "unknownhost"
+	}
+	return hostname
 }
