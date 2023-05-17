@@ -8,13 +8,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	model "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
 // Publishes event hook messages to all web hooks registered in the system.
 type Publisher interface {
 	// publishes a message to all web hook subscriptions
-	Publish(message *model.EventHookMessage) error
+	Publish(message *sdk.EventHookMessage) error
 }
 
 type publisher struct {
@@ -28,7 +28,7 @@ func NewEventHookPublisher(subscriptionsProvider EventHooksProvider) Publisher {
 	return publisher
 }
 
-func (p *publisher) Publish(message *model.EventHookMessage) error {
+func (p *publisher) Publish(message *sdk.EventHookMessage) error {
 	hooks, err := p.provider.Get()
 
 	if err != nil {

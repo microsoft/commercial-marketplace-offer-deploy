@@ -10,7 +10,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/mapper"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -48,7 +48,7 @@ func TestGetDeployment(t *testing.T) {
 	}
 
 	//deployment
-	var jsonResponse api.Deployment
+	var jsonResponse sdk.Deployment
 	json.Unmarshal(recorder.Body.Bytes(), &jsonResponse)
 
 	assert.Equal(t, data.Name, *jsonResponse.Name)

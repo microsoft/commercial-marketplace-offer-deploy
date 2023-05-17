@@ -8,7 +8,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -60,7 +60,7 @@ func (h *operationMessageHandler) shouldExecute(invokedOperation *data.InvokedOp
 }
 
 func (h *operationMessageHandler) executeOperation(ctx context.Context, invokedOperation *data.InvokedOperation) error {
-	executor, err := h.factory.Create(operation.OperationType(invokedOperation.Name))
+	executor, err := h.factory.Create(sdk.OperationType(invokedOperation.Name))
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func (e *invokedOperationEvaluator) IsExecutable(invokedOperation *data.InvokedO
 }
 
 func (e *invokedOperationEvaluator) isRunning() bool {
-	isRunning := operation.Status(e.invokedOperation.Status) == operation.StatusRunning
+	isRunning := sdk.Status(e.invokedOperation.Status) == sdk.StatusRunning
 	if isRunning {
 		e.reasons = append(e.reasons, "'%s' is already running [%s]", e.invokedOperation.Name, e.invokedOperation.ID.String())
 	}

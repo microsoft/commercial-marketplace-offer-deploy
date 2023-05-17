@@ -2,37 +2,38 @@ package deployment
 
 import (
 	"context"
+
 	"errors"
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 )
 
 type DryRunValidator interface {
-	Validate(input DryRunValidationInput) (*DryRunResponse, error)
+	Validate(input DryRunValidationInput) (*sdk.DryRunResponse, error)
 }
 type DryRunValidationInput struct {
-	ctx context.Context
-	cred azcore.TokenCredential
+	ctx             context.Context
+	cred            azcore.TokenCredential
 	azureDeployment *AzureDeployment
 }
 
+type ValidatorFunc func(input DryRunValidationInput) (*sdk.DryRunResponse, error)
 
-type ValidatorFunc func(input DryRunValidationInput) (*DryRunResponse, error)
-
-func (f ValidatorFunc) Validate(input DryRunValidationInput) (*DryRunResponse, error) {
+func (f ValidatorFunc) Validate(input DryRunValidationInput) (*sdk.DryRunResponse, error) {
 	return f(input)
 }
 
-func validateParams(input DryRunValidationInput) (*DryRunResponse, error) {
-	response := &DryRunResponse{
-		DryRunResult: DryRunResult{
+func validateParams(input DryRunValidationInput) (*sdk.DryRunResponse, error) {
+	response := &sdk.DryRunResponse{
+		DryRunResult: sdk.DryRunResult{
 			Status: to.Ptr("ValidateParams - Succeeded"),
 		},
 	}
-	
+
 	template := input.azureDeployment.Template
 	requiredParams := getRequiredParams(template["parameters"].(map[string]interface{}))
 	params := input.azureDeployment.Params
@@ -45,10 +46,10 @@ func validateParams(input DryRunValidationInput) (*DryRunResponse, error) {
 	}
 
 	if len(missingRequiredParams) > 0 {
-		var addInfo []*ErrorAdditionalInfo
+		var addInfo []*sdk.ErrorAdditionalInfo
 		for _, v := range missingRequiredParams {
-			addInfo = append(addInfo, &ErrorAdditionalInfo{
-				Type:    to.Ptr("TemplateViolation"),
+			addInfo = append(addInfo, &sdk.ErrorAdditionalInfo{
+				Type: to.Ptr("TemplateViolation"),
 				Info: to.Ptr(v + " is missing"),
 			})
 		}
@@ -56,10 +57,10 @@ func validateParams(input DryRunValidationInput) (*DryRunResponse, error) {
 		response.DryRunResult.Status = to.Ptr("Failed")
 		log.Debugf("Missing required parameters: %v", missingRequiredParams)
 		errorMesg := fmt.Sprintf("Missing required parameters: %v", missingRequiredParams)
-		response.DryRunResult.Error = &DryRunErrorResponse{
-			Code:    to.Ptr("Invalid Template"),
-			Message: to.Ptr(errorMesg),
-			Target:  nil,
+		response.DryRunResult.Error = &sdk.DryRunErrorResponse{
+			Code:           to.Ptr("Invalid Template"),
+			Message:        to.Ptr(errorMesg),
+			Target:         nil,
 			AdditionalInfo: addInfo,
 		}
 		return response, errors.New(errorMesg)
@@ -82,4 +83,3 @@ func getRequiredParams(params map[string]interface{}) []string {
 
 	return requiredParams
 }
-

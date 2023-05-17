@@ -10,8 +10,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"gorm.io/gorm"
 )
 
@@ -42,7 +41,7 @@ func (exe *startDeployment) Execute(ctx context.Context, invokedOperation *data.
 	execute := exe.start
 
 	if invokedOperation.Attempts > 1 { // this is a retry if so
-		executor, err := exe.factory.Create(operation.TypeRetryDeployment)
+		executor, err := exe.factory.Create(sdk.OperationRetryDeployment)
 		if err != nil {
 			exe.updateToFailed(ctx, invokedOperation, err)
 			return err
@@ -80,17 +79,17 @@ func (exe *startDeployment) start(ctx context.Context, invokedOperation *data.In
 func (exe *startDeployment) updateToRunning(ctx context.Context, invokedOperation *data.InvokedOperation) error {
 	db := exe.db
 
-	invokedOperation.Status = operation.StatusRunning.String()
+	invokedOperation.Status = sdk.StatusRunning.String()
 	db.Save(&invokedOperation)
 
 	message := "Deployment started successfully"
 	if invokedOperation.Attempts > 1 {
 		message = "Deployment retry started successfully"
 	}
-	err := hook.Add(ctx, &events.EventHookMessage{
+	err := hook.Add(ctx, &sdk.EventHookMessage{
 		Subject: "/deployments/" + strconv.Itoa(int(invokedOperation.DeploymentId)),
 		Status:  invokedOperation.Status,
-		Data: &events.DeploymentEventData{
+		Data: &sdk.DeploymentEventData{
 			DeploymentId: int(invokedOperation.DeploymentId),
 			OperationId:  invokedOperation.ID,
 			Message:      message,
@@ -102,19 +101,19 @@ func (exe *startDeployment) updateToRunning(ctx context.Context, invokedOperatio
 func (exe *startDeployment) updateToFailed(ctx context.Context, invokedOperation *data.InvokedOperation, err error) error {
 	db := exe.db
 
-	invokedOperation.Status = string(operation.StatusFailed)
+	invokedOperation.Status = string(sdk.StatusFailed)
 	db.Save(&invokedOperation)
 
-	eventType := string(events.EventTypeDeploymentCompleted)
+	eventType := string(sdk.EventTypeDeploymentCompleted)
 	if invokedOperation.Attempts > 1 {
-		eventType = string(events.EventTypeDeploymentRetried)
+		eventType = string(sdk.EventTypeDeploymentRetried)
 	}
 
-	message := &events.EventHookMessage{
+	message := &sdk.EventHookMessage{
 		Subject: "/deployments/" + strconv.Itoa(int(invokedOperation.DeploymentId)),
-		Status:  operation.StatusFailed.String(),
+		Status:  sdk.StatusFailed.String(),
 		Type:    eventType,
-		Data: &events.DeploymentEventData{
+		Data: &sdk.DeploymentEventData{
 			DeploymentId: int(invokedOperation.DeploymentId),
 			OperationId:  invokedOperation.ID,
 			Attempts:     invokedOperation.Attempts,

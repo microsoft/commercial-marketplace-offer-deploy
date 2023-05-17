@@ -80,7 +80,9 @@
                 "none",
                 "scheduled",
                 "running",
-                "success"
+                "success",
+                "failed",
+                "error"
               ],
               "default": "none",
               "x-ms-enum": {

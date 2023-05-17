@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	testutils "github.com/microsoft/commercial-marketplace-offer-deploy/test/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -26,13 +26,13 @@ func TestCreateDeploymentMapper(t *testing.T) {
 	assert.EqualValues(t, "Test Stage", result.Stages[0].Name)
 }
 
-func getFakeCreateDeployment(t *testing.T) *api.CreateDeployment {
+func getFakeCreateDeployment(t *testing.T) *sdk.CreateDeployment {
 	template, err := testutils.NewFromJsonFile[map[string]any]("testdata/azuredeploy.json")
 	if err != nil {
 		t.Fatalf("Error: %v", err)
 	}
 
-	item := &api.CreateDeployment{
+	item := &sdk.CreateDeployment{
 		Name:           to.Ptr("test name"),
 		SubscriptionID: to.Ptr("test"),
 		ResourceGroup:  to.Ptr("test"),

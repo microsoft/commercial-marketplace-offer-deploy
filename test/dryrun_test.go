@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package test
@@ -6,20 +7,21 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armpolicy"
-	
+
+	"path/filepath"
+	"testing"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"path/filepath"
-	"testing"
 )
 
 type dryRunSuite struct {
@@ -48,14 +50,14 @@ func (s *dryRunSuite) SetupTest() {
 }
 
 func (s *dryRunSuite) runDeploymentTest(path string, errorExpected bool) *deployment.DryRunResponse {
-	azureDeployment := &deployment.AzureDeployment {
-		SubscriptionId: s.subscriptionId,
-		Location: s.location,
+	azureDeployment := &deployment.AzureDeployment{
+		SubscriptionId:    s.subscriptionId,
+		Location:          s.location,
 		ResourceGroupName: s.resourceGroupName,
-		DeploymentName: "DryRunDeploymentTest",
-		DeploymentType: deployment.AzureResourceManager,
-		Template: s.getTemplate(path),
-		Params: s.getParameters(path),
+		DeploymentName:    "DryRunDeploymentTest",
+		DeploymentType:    deployment.AzureResourceManager,
+		Template:          s.getTemplate(path),
+		Params:            s.getParameters(path),
 	}
 
 	s.Assert().NotNil(azureDeployment)
@@ -65,7 +67,7 @@ func (s *dryRunSuite) runDeploymentTest(path string, errorExpected bool) *deploy
 	if errorExpected {
 		s.Assert().NoError(err)
 	}
-	
+
 	s.Assert().NotNil(resp)
 	return resp
 }
@@ -128,11 +130,11 @@ func (s *dryRunSuite) getParameters(path string) map[string]interface{} {
 	return parameters
 }
 
-func (s *dryRunSuite) createDeployment(ctx context.Context, client *sdk.Client, templatePath string) *api.Deployment {
+func (s *dryRunSuite) createDeployment(ctx context.Context, client *sdk.Client, templatePath string) *sdk.Deployment {
 	name := "DryRunDeploymentTest"
 	template := s.getTemplate(templatePath)
 
-	deployment, err := client.Create(ctx, api.CreateDeployment{
+	deployment, err := client.Create(ctx, sdk.CreateDeployment{
 		Name:           &name,
 		SubscriptionID: &s.subscriptionId,
 		ResourceGroup:  &s.resourceGroupName,

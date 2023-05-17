@@ -7,7 +7,7 @@ import (
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/structure"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
 type CreateDeploymentMapper struct {
@@ -17,7 +17,7 @@ func NewCreateDeploymentMapper() *CreateDeploymentMapper {
 	return &CreateDeploymentMapper{}
 }
 
-func (m *CreateDeploymentMapper) Map(from *api.CreateDeployment) (*data.Deployment, error) {
+func (m *CreateDeploymentMapper) Map(from *sdk.CreateDeployment) (*data.Deployment, error) {
 	err := m.validate(from)
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func (m *CreateDeploymentMapper) Map(from *api.CreateDeployment) (*data.Deployme
 }
 
 // create a method that validates the input
-func (m *CreateDeploymentMapper) validate(from *api.CreateDeployment) error {
+func (m *CreateDeploymentMapper) validate(from *sdk.CreateDeployment) error {
 	_, ok := from.Template.(map[string]any)
 	if !ok {
 		err := fmt.Errorf("invalid .Template field value. Could not cast to map[string]any for '%s'", *from.Name)

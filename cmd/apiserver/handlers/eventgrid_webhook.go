@@ -18,7 +18,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"gorm.io/gorm"
 )
 
@@ -66,7 +66,7 @@ func (h *eventGridWebHook) Handle(c echo.Context) error {
 
 // send these event grid events through our message bus to be processed and published
 // to the web hook endpoints that are subscribed to our MODM events
-func (h *eventGridWebHook) enqueueResultForProcessing(ctx context.Context, messages []*events.EventHookMessage) error {
+func (h *eventGridWebHook) enqueueResultForProcessing(ctx context.Context, messages []*sdk.EventHookMessage) error {
 	errors := []string{}
 	for _, message := range messages {
 		sendResult, err := h.sender.Send(ctx, string(messaging.QueueNameEvents), message)

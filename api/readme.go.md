@@ -6,12 +6,11 @@ These settings apply only when `--go` is specified on the command line.
 go:
     license-header: MICROSOFT_MIT_NO_VERSION
     clear-output-folder: false
-    module-version: 0.2.0
     export-clients: true
     output-folder: $(go-sdk-folder)
     use: "@autorest.go@4.0.0-preview.46"
     file-prefix: zz_generated_
-verbose: true
+    verbose: true
 ```
 
 ### Tag: preview-2023-03-01 and go

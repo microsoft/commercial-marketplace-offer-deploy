@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"sync"
@@ -11,21 +12,20 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	. "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
-	log "github.com/sirupsen/logrus"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestPublisherPublish(t *testing.T) {
-	done := make(chan struct{})
-	defer close(done)
-
-	message := &EventHookMessage{
+	message := &sdk.EventHookMessage{
 		Id:   uuid.New(),
 		Type: "test.event",
 		Data: make(map[string]any),
 	}
+
+	done := make(chan struct{})
+	defer close(done)
 
 	// should be 3 because of the fake provider
 	receiveCount := 0
@@ -37,8 +37,9 @@ func TestPublisherPublish(t *testing.T) {
 		defer mutex.Unlock()
 
 		body, _ := io.ReadAll(r.Body)
-		var received = &EventHookMessage{}
-		json.Unmarshal(body, received)
+		var received = &sdk.EventHookMessage{}
+		json.Unmarshal(body, &received)
+
 		log.Printf("Received message: %v", string(body))
 		// assert that the message that was published was received by the server that was registered to the publisher
 		assert.Equal(t, message.Id, received.Id)

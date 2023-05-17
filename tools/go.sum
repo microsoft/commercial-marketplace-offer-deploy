@@ -167,12 +167,8 @@ github.com/mattn/go-isatty v0.0.14/go.mod h1:7GGIvUiUoEMVVmxf/4nioHXj79iQHKdU27k
 github.com/mattn/go-isatty v0.0.16/go.mod h1:kYGgaQfpe5nmfYZH+SKPsOc2e4SrIfOl2e/yFXSvRLM=
 github.com/mattn/go-isatty v0.0.17 h1:BTarxUcIeDqL27Mc+vyvdWYSL28zpIhv3RoTdsLMPng=
 github.com/mattn/go-isatty v0.0.17/go.mod h1:kYGgaQfpe5nmfYZH+SKPsOc2e4SrIfOl2e/yFXSvRLM=
-github.com/microsoft/commercial-marketplace-offer-deploy v0.2.3 h1:LaK5wA1aQ9AxerOIydxRe0WbDA7K/Dhy2eWJ0fUMGaA=
-github.com/microsoft/commercial-marketplace-offer-deploy v0.2.3/go.mod h1:9bCYRrkkjqX84AklLIBCM4gbho0kfDp8cPx3L2T/KPM=
 github.com/microsoft/commercial-marketplace-offer-deploy v0.3.1 h1:YsVsFHuDbmM7RgC/mOjOOuhat7zk8EZq2xUOa4NhCAk=
 github.com/microsoft/commercial-marketplace-offer-deploy v0.3.1/go.mod h1:9bCYRrkkjqX84AklLIBCM4gbho0kfDp8cPx3L2T/KPM=
-github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.2.3 h1:7nN5kTQsYXtrfLTd/s90HavG3/ov8Xfuo9iirL74yxo=
-github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.2.3/go.mod h1:D9u4r0IkBEucoVe5Jw2Kbl8renLxxma6O6bKsDuj1xQ=
 github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.3.1 h1:1Ym0iuMXuaCjHBBNVsitnzNj1aQMF9pD3Maj0h4rfRs=
 github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.3.1/go.mod h1:ysPrL37fbQdRBQlE8+bAQHIv/uDeL1B4xckA8GuO2QU=
 github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyuac5Z2hdY=
@@ -211,7 +207,6 @@ github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/stretchr/testify v1.8.2 h1:+h33VjcLVPDHtOdpUCuF+7gSuG3yGIftsP1YvFihtJ8=
-github.com/stretchr/testify v1.8.2/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/subosito/gotenv v1.4.2 h1:X1TuBLAMDFbaTAChgCBLu3DU3UPyELpnF2jjJ2cz/S8=
 github.com/subosito/gotenv v1.4.2/go.mod h1:ayKnFf/c6rvx/2iiLrJUk1e6plDbT3edrFNGqEflhK0=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=

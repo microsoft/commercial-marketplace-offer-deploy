@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -27,7 +27,7 @@ const eventsQueueName = string(messaging.QueueNameEvents)
 // queue for adding hook messages to be published
 type Queue interface {
 	// adds a message to the hooks queue
-	Add(ctx context.Context, message *events.EventHookMessage) error
+	Add(ctx context.Context, message *sdk.EventHookMessage) error
 }
 
 type queue struct {
@@ -36,7 +36,7 @@ type queue struct {
 }
 
 // Add implements Queue
-func (q *queue) Add(ctx context.Context, message *events.EventHookMessage) error {
+func (q *queue) Add(ctx context.Context, message *sdk.EventHookMessage) error {
 	results, err := q.sender.Send(ctx, q.queueName, message)
 	if err != nil {
 		log.Errorf("Error attempting toadd event message to queue [%s]: %v", q.queueName, err)
@@ -56,7 +56,7 @@ func (q *queue) Add(ctx context.Context, message *events.EventHookMessage) error
 }
 
 // enqueues a message to the event hooks service
-func Add(ctx context.Context, message *events.EventHookMessage) error {
+func Add(ctx context.Context, message *sdk.EventHookMessage) error {
 	if instance == nil {
 		return errors.New("hook queue not configured. call Configure() first")
 	}

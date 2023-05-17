@@ -10,8 +10,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 )
@@ -43,7 +41,7 @@ func CreateEventHook(c echo.Context) error {
 	apiKey := "1234"
 	callbackclientEndpoint := fmt.Sprintf("%s/webhook", getCallback())
 
-	request := api.CreateEventHookRequest{
+	request := sdk.CreateEventHookRequest{
 		APIKey:   &apiKey,
 		Callback: &callbackclientEndpoint,
 		Name:     &hookName,
@@ -136,7 +134,7 @@ func CreateDeployment(c echo.Context) error {
 	ctx := context.Background()
 
 	deploymentName := "TaggedDeployment"
-	request := api.CreateDeployment{
+	request := sdk.CreateDeployment{
 		Name:           &deploymentName,
 		Template:       templateMap,
 		Location:       &location,
@@ -231,7 +229,7 @@ func StartDeployment(c echo.Context) error {
 func GetStatus(c echo.Context) error {
 	ctx := c.Request().Context()
 	deploymentId, _ := strconv.Atoi(c.Param("deploymentId"))
-	operationName, _ := operation.Type(c.Param("operationName"))
+	operationName := sdk.OperationType(c.Param("operationName"))
 
 	client, _ := getClient(ctx)
 

@@ -7,38 +7,11 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 )
 
-type DryRunResponse struct {
-	DryRunResult
-}
-
-type DryRunResult struct {
-	Status *string `json:"status,omitempty" azure:"ro"`
-	//Message *string `json:"message,omitempty" azure:"ro"`
-	//Target *string `json:"target,omitempty" azure:"ro"`
-	Error *DryRunErrorResponse
-}
-
-type DryRunErrorResponse struct {
-	// READ-ONLY; The error additional info.
-	AdditionalInfo []*ErrorAdditionalInfo `json:"additionalInfo,omitempty" azure:"ro" mapstructure:"additionalInfo"`
-
-	// READ-ONLY; The error code.
-	Code *string `json:"code,omitempty" azure:"ro" mapstructure:"code"`
-
-	// READ-ONLY; The error message.
-	Message *string `json:"message,omitempty" azure:"ro" mapstructure:"message"`
-
-	// READ-ONLY; The error target.
-	Target *string `json:"target,omitempty" azure:"ro" mapstructure:"target"`
-
-	// READ-ONLY; The error details.
-	Details []*DryRunErrorResponse `json:"details,omitempty" azure:"ro" mapstructure:"details"`
-}
-
-func whatIfValidator(input DryRunValidationInput) (*DryRunResponse, error) {
+func whatIfValidator(input DryRunValidationInput) (*sdk.DryRunResponse, error) {
 	if input.azureDeployment == nil {
 		log.Error(errors.New("azureDeployment is not set on input struct"))
 	}
@@ -68,8 +41,8 @@ func loadValidators() []DryRunValidator {
 	}
 }
 
-func validate(validators []DryRunValidator, input DryRunValidationInput) (*DryRunResponse, error) {
-	var responses []*DryRunResponse
+func validate(validators []DryRunValidator, input DryRunValidationInput) (*sdk.DryRunResponse, error) {
+	var responses []*sdk.DryRunResponse
 	for _, validator := range validators {
 		res, err := validator.Validate(input)
 		if err != nil {
@@ -83,7 +56,7 @@ func validate(validators []DryRunValidator, input DryRunValidationInput) (*DryRu
 	return aggregateResponses(responses), nil
 }
 
-func aggregateResponses(responses []*DryRunResponse) *DryRunResponse {
+func aggregateResponses(responses []*sdk.DryRunResponse) *sdk.DryRunResponse {
 	if responses == nil || len(responses) == 0 {
 		return nil
 	}
@@ -91,7 +64,7 @@ func aggregateResponses(responses []*DryRunResponse) *DryRunResponse {
 	return responses[0]
 }
 
-func DryRun(ctx context.Context, azureDeployment *AzureDeployment) (*DryRunResponse, error) {
+func DryRun(ctx context.Context, azureDeployment *AzureDeployment) (*sdk.DryRunResponse, error) {
 	log.Debug("Inside DryRun in pkg/deployment/dryrun.go")
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {

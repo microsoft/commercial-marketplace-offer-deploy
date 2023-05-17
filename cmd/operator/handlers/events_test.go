@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 )
@@ -15,7 +15,7 @@ type testEventsMessageHandler struct {
 	db               *gorm.DB
 	deployment       *data.Deployment
 	invokedOperation *data.InvokedOperation
-	message          *events.EventHookMessage
+	message          *sdk.EventHookMessage
 }
 
 func (h *testEventsMessageHandler) maxOutRetries() {
@@ -42,13 +42,13 @@ func newTestEventsMessageHandler() *testEventsMessageHandler {
 	}
 	db.Save(invokedOperation)
 
-	message := &events.EventHookMessage{
+	message := &sdk.EventHookMessage{
 		Id:      uuid.MustParse("22ed40f3-196a-43f8-9b5d-5459ce02ee45"),
 		HookId:  uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 		Type:    "deploymentCompleted",
 		Status:  "failed",
 		Subject: "/deployments/" + strconv.Itoa(int(deployment.ID)),
-		Data: events.DeploymentEventData{
+		Data: sdk.DeploymentEventData{
 			Attempts:      1,
 			DeploymentId:  1,
 			OperationId:   invokedOperation.ID,
@@ -75,7 +75,7 @@ func TestEventsHandlerUpdate(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 
-	assert.EqualValues(t, test.message.Data.(events.DeploymentEventData).OperationId, result.ID)
+	assert.EqualValues(t, test.message.Data.(sdk.DeploymentEventData).OperationId, result.ID)
 }
 
 func TestEventsHandlerShouldNotRetryIfRetriesExceeded(t *testing.T) {

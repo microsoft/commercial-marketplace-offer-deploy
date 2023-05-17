@@ -19,8 +19,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/structure"
 	d "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"gorm.io/gorm"
 )
 
@@ -50,9 +49,9 @@ func NewEventHookMessageFactory(filter filtering.EventGridEventFilter, client *a
 }
 
 // Creates a list of messages from a list of EventGridEventResource
-func (f *EventHookMessageFactory) Create(ctx context.Context, matchAny d.LookupTags, eventGridEvents []*eventgrid.Event) []*events.EventHookMessage {
+func (f *EventHookMessageFactory) Create(ctx context.Context, matchAny d.LookupTags, eventGridEvents []*eventgrid.Event) []*sdk.EventHookMessage {
 	result := f.filter.Filter(ctx, matchAny, eventGridEvents)
-	messages := []*events.EventHookMessage{}
+	messages := []*sdk.EventHookMessage{}
 
 	log.Debugf("factory received %d EventGridEvents, filtered to %d messages", len(eventGridEvents), len(result))
 
@@ -71,7 +70,7 @@ func (f *EventHookMessageFactory) Create(ctx context.Context, matchAny d.LookupT
 //region private methods
 
 // converts an EventGridEventResource to a WebHookEventMessage so it can be relayed via queue to be published to MODM consumer hook registration
-func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*events.EventHookMessage, error) {
+func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*sdk.EventHookMessage, error) {
 	deployment, err := f.getRelatedDeployment(item)
 	if err != nil {
 		return nil, err
@@ -89,10 +88,10 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*eve
 	invokedOperation := &data.InvokedOperation{}
 	f.db.Where("deployment_id = ? AND name = ?",
 		deployment.ID,
-		operation.TypeStartDeployment,
+		sdk.OperationStartDeployment,
 	).First(invokedOperation)
 
-	data := events.DeploymentEventData{
+	data := sdk.DeploymentEventData{
 		DeploymentId:  int(deployment.ID),
 		OperationId:   invokedOperation.ID,
 		CorrelationId: to.Ptr(uuid.MustParse(eventData.CorrelationID)),
@@ -100,7 +99,7 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*eve
 		Message:       *item.Message.Subject,
 	}
 
-	message := &events.EventHookMessage{
+	message := &sdk.EventHookMessage{
 		Id:     messageId,
 		Status: f.getStatus(*item.Message.EventType),
 		Type:   f.getEventHookType(*item.Resource.Name, deployment),
@@ -108,7 +107,7 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*eve
 	}
 
 	// if this is a stage completed event, we need to set the stageId
-	if message.Type == string(events.EventTypeStageCompleted) {
+	if message.Type == string(sdk.EventTypeStageCompleted) {
 		for _, stage := range deployment.Stages {
 			if *item.Resource.Name == stage.DeploymentName {
 				data.StageId = to.Ptr(stage.ID)
@@ -188,9 +187,9 @@ func (f *EventHookMessageFactory) lookupDeploymentId(ctx context.Context, correl
 func (f *EventHookMessageFactory) getStatus(eventType string) string {
 	switch eventType {
 	case azureEventTypeResourceWriteFailure:
-		return operation.StatusFailed.String()
+		return sdk.StatusFailed.String()
 	case azureEventTypeResourceWriteSuccess:
-		return operation.StatusSuccess.String()
+		return sdk.StatusSuccess.String()
 	default:
 		return strcase.ToCamel(eventType)
 	}
@@ -198,15 +197,15 @@ func (f *EventHookMessageFactory) getStatus(eventType string) string {
 
 func (f *EventHookMessageFactory) getEventHookType(resourceName string, deployment *data.Deployment) string {
 	if resourceName == deployment.GetAzureDeploymentName() {
-		return string(events.EventTypeDeploymentCompleted)
+		return string(sdk.EventTypeDeploymentCompleted)
 	} else {
 		for _, stage := range deployment.Stages {
 			if resourceName == stage.DeploymentName {
-				return string(events.EventTypeStageCompleted)
+				return string(sdk.EventTypeStageCompleted)
 			}
 		}
 	}
-	return string(events.EventTypeDeploymentEventReceived)
+	return string(sdk.EventTypeDeploymentEventReceived)
 }
 
 //endregion private methods

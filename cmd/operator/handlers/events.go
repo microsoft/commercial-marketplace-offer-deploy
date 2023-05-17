@@ -11,8 +11,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/structure"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -23,7 +22,7 @@ type eventsMessageHandler struct {
 	sender    messaging.MessageSender
 }
 
-func (h *eventsMessageHandler) Handle(message *events.EventHookMessage, context messaging.MessageHandlerContext) error {
+func (h *eventsMessageHandler) Handle(message *sdk.EventHookMessage, context messaging.MessageHandlerContext) error {
 	bytes, _ := json.Marshal(message)
 	log.WithField("eventHookMessage", string(bytes)).Debug("Events Handler excuting")
 
@@ -35,14 +34,14 @@ func (h *eventsMessageHandler) Handle(message *events.EventHookMessage, context 
 	return err
 }
 
-func (h *eventsMessageHandler) shouldRetryIfDeployment(message *events.EventHookMessage) bool {
-	failedStatus := message != nil && message.Status == operation.StatusFailed.String()
-	deploymentTypes := message.Type == string(events.EventTypeDeploymentCompleted) || message.Type == string(events.EventTypeDeploymentRetried)
+func (h *eventsMessageHandler) shouldRetryIfDeployment(message *sdk.EventHookMessage) bool {
+	failedStatus := message != nil && message.Status == sdk.StatusFailed.String()
+	deploymentTypes := message.Type == string(sdk.EventTypeDeploymentCompleted) || message.Type == string(sdk.EventTypeDeploymentRetried)
 
 	return failedStatus && deploymentTypes
 }
 
-func (h *eventsMessageHandler) retryDeployment(ctx context.Context, message *events.EventHookMessage) error {
+func (h *eventsMessageHandler) retryDeployment(ctx context.Context, message *sdk.EventHookMessage) error {
 	log.Infof("EventHookMessage [%s]. enqueing to retry deployment", message.Id)
 
 	invokedOperation, err := h.update(message)
@@ -60,10 +59,10 @@ func (h *eventsMessageHandler) retryDeployment(ctx context.Context, message *eve
 			return results[0].Error
 		}
 
-		err = hook.Add(ctx, &events.EventHookMessage{
+		err = hook.Add(ctx, &sdk.EventHookMessage{
 			Status: invokedOperation.Status,
-			Type:   string(events.EventTypeDeploymentCompleted),
-			Data: events.DeploymentEventData{
+			Type:   string(sdk.EventTypeDeploymentCompleted),
+			Data: sdk.DeploymentEventData{
 				DeploymentId: int(invokedOperation.DeploymentId),
 				OperationId:  invokedOperation.ID,
 				Message:      "Deployment is being retried",
@@ -80,8 +79,8 @@ func (h *eventsMessageHandler) retryDeployment(ctx context.Context, message *eve
 }
 
 // updates the invoked operation
-func (h *eventsMessageHandler) update(message *events.EventHookMessage) (*data.InvokedOperation, error) {
-	eventData := &events.DeploymentEventData{}
+func (h *eventsMessageHandler) update(message *sdk.EventHookMessage) (*data.InvokedOperation, error) {
+	eventData := &sdk.DeploymentEventData{}
 	structure.Decode(message.Data, &eventData)
 
 	invokedOperation := &data.InvokedOperation{}
@@ -89,7 +88,7 @@ func (h *eventsMessageHandler) update(message *events.EventHookMessage) (*data.I
 
 	//update the status to scheduled
 	if invokedOperation.IsRetriable() {
-		invokedOperation.Status = string(operation.StatusScheduled)
+		invokedOperation.Status = string(sdk.StatusScheduled)
 	} else {
 		invokedOperation.Status = message.Status
 	}
