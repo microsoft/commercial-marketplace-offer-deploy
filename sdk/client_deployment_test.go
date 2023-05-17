@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -14,7 +15,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -72,7 +72,20 @@ func TestStartDeployment(t *testing.T) {
 
 func getParameters(t *testing.T, path string) map[string]interface{} {
 	paramsPath := filepath.Join(path, "parameters.json")
-	parameters, err := utils.ReadJson(paramsPath)
+	parameters, err := readJson(paramsPath)
 	require.NoError(t, err)
 	return parameters
+}
+
+func readJson(path string) (map[string]interface{}, error) {
+	templateFile, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	template := make(map[string]interface{})
+	if err := json.Unmarshal(templateFile, &template); err != nil {
+		return nil, err
+	}
+	return template, nil
 }
