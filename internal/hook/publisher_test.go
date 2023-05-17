@@ -6,38 +6,59 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	. "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestPublisherPublish(t *testing.T) {
+	done := make(chan struct{})
+	defer close(done)
+
 	message := &EventHookMessage{
 		Id:   uuid.New(),
 		Type: "test.event",
 		Data: make(map[string]any),
 	}
 
+	// should be 3 because of the fake provider
+	receiveCount := 0
+	mutex := sync.Mutex{}
+
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mutex.Lock()
+		receiveCount++
+		defer mutex.Unlock()
+
 		body, _ := io.ReadAll(r.Body)
 		var received = &EventHookMessage{}
-		json.Unmarshal(body, &received)
-
+		json.Unmarshal(body, received)
+		log.Printf("Received message: %v", string(body))
 		// assert that the message that was published was received by the server that was registered to the publisher
 		assert.Equal(t, message.Id, received.Id)
+
+		if receiveCount == 3 {
+			log.Print("All messages received")
+			done <- struct{}{}
+		}
 	}))
 	defer ts.Close()
 
-	publisher := getPublisher(ts.URL)
+	go func() {
+		publisher := getPublisher(ts.URL)
 
-	fmt.Printf("URL: %s/\n", ts.URL)
+		fmt.Printf("URL: %s/\n", ts.URL)
 
-	err := publisher.Publish(message)
-	require.NoError(t, err)
+		err := publisher.Publish(message)
+		require.NoError(t, err)
+	}()
+	<-done
 }
 
 func getPublisher(url string) Publisher {
