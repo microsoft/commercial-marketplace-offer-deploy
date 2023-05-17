@@ -16,6 +16,7 @@ require (
 	github.com/labstack/echo/v4 v4.10.2
 	github.com/lestrrat-go/jwx v1.2.25
 	github.com/microsoft/ApplicationInsights-Go v0.4.4
+	github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.3.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.0
