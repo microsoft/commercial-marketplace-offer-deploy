@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/avast/retry-go"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
@@ -18,10 +19,11 @@ import (
 )
 
 type dryRun struct {
-	db     *gorm.DB
-	dryRun DryRunFunc
-	sender messaging.MessageSender
-	log    *log.Entry
+	db         *gorm.DB
+	dryRun     DryRunFunc
+	sender     messaging.MessageSender
+	log        *log.Entry
+	retryDelay time.Duration
 }
 
 func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOperation) error {
@@ -29,36 +31,49 @@ func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOp
 	exe.log = log.WithFields(log.Fields{
 		"operationId":  invokedOperation.ID,
 		"deploymentId": invokedOperation.DeploymentId,
-		"retries":      retries,
 	})
 
 	err := retry.Do(func() error {
-		exe.log.WithField("attempt", invokedOperation.Attempts).Debug("attempting dry run")
+		log := exe.log.WithField("attempt", invokedOperation.Attempts+1)
+		log.Info("attempting dry run")
 		azureDeployment := exe.getAzureDeployment(invokedOperation)
 
 		response, err := exe.dryRun(ctx, azureDeployment)
 
 		if err != nil {
-			exe.log.Errorf("Error: %v", err)
+			log.Errorf("Error: %v", err)
 			invokedOperation.Status = operation.StatusRunning.String()
 			invokedOperation.Attempts = invokedOperation.Attempts + 1
 			exe.save(invokedOperation)
 
-			return &RetriableError{Err: err, RetryAfter: 10 * time.Second}
+			return &RetriableError{Err: err, RetryAfter: exe.retryDelay}
+		}
+		log.WithField("response", response).Debug("Received dry run response from Azure")
+
+		var result *deployment.DryRunResult
+		if response != nil {
+			result = &response.DryRunResult
+			invokedOperation.Status = operation.StatusSuccess.String()
+		} else {
+			invokedOperation.Status = string(operation.StatusError)
+			exe.log.Warn("Dry run response is nil")
 		}
 
-		exe.log.WithField("response", response).Debug("Received dry run response from Azure")
-
-		invokedOperation.Status = operation.StatusSuccess.String()
-		invokedOperation.Result = response.DryRunResult
+		invokedOperation.Result = result
 		exe.save(invokedOperation)
 
-		hookMessage := exe.mapToEventHookMessage(invokedOperation, &response.DryRunResult)
+		hookMessage := exe.mapToEventHookMessage(invokedOperation, result)
 		hook.Add(ctx, hookMessage)
 
 		return nil
 	},
 		retry.Attempts(retries),
+		retry.DelayType(func(n uint, err error, config *retry.Config) time.Duration {
+			if retriable, ok := err.(*RetriableError); ok {
+				return retriable.RetryAfter
+			}
+			return retry.BackOffDelay(n, err, config)
+		}),
 	)
 
 	if err != nil {
@@ -90,12 +105,20 @@ func (exe *dryRun) getFailedEventHookMessage(err error, invokedOperation *data.I
 }
 
 func (exe *dryRun) mapToEventHookMessage(invokedOperation *data.InvokedOperation, result *deployment.DryRunResult) *events.EventHookMessage {
+	resultStatus := to.Ptr(operation.StatusError.String())
+	resultError := &deployment.DryRunErrorResponse{}
+
+	if result != nil {
+		resultStatus = result.Status
+		resultError = result.Error
+	}
+
 	data := events.DryRunEventData{
 		DeploymentId: int(invokedOperation.DeploymentId),
 		OperationId:  invokedOperation.ID,
-		Status:       result.Status,
+		Status:       resultStatus,
 		Attempts:     invokedOperation.Attempts,
-		Error:        result.Error,
+		Error:        resultError,
 	}
 
 	message := &events.EventHookMessage{
@@ -150,9 +173,10 @@ func NewDryRunExecutor(appConfig *config.AppConfig) Executor {
 	})
 
 	dryRunOperation := &dryRun{
-		db:     db,
-		dryRun: deployment.DryRun,
-		sender: sender,
+		db:         db,
+		dryRun:     deployment.DryRun,
+		sender:     sender,
+		retryDelay: 5 * time.Second,
 	}
 	return dryRunOperation
 }
