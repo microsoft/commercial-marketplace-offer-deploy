@@ -1,3 +1,6 @@
+//go:build integration
+// +build integration
+
 package test
 
 import (
@@ -14,6 +17,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
@@ -43,25 +47,29 @@ func (s *dryRunSuite) SetupSuite() {
 func (s *dryRunSuite) SetupTest() {
 	s.SetupResourceGroup()
 	s.DeployPolicyDefintion()
-	//s.DeployPolicy()
 }
 
-func (s *dryRunSuite) runDeploymentTest(path string) *sdk.InvokeDryRunResponse {
+func (s *dryRunSuite) runDeploymentTest(path string, errorExpected bool) *deployment.DryRunResponse {
+	azureDeployment := &deployment.AzureDeployment{
+		SubscriptionId:    s.subscriptionId,
+		Location:          s.location,
+		ResourceGroupName: s.resourceGroupName,
+		DeploymentName:    "DryRunDeploymentTest",
+		DeploymentType:    deployment.AzureResourceManager,
+		Template:          s.getTemplate(path),
+		Params:            s.getParameters(path),
+	}
+
+	s.Assert().NotNil(azureDeployment)
+
 	ctx := context.TODO()
-	cred, err := azidentity.NewDefaultAzureCredential(nil)
-	require.NoError(s.T(), err)
+	resp, err := deployment.DryRun(ctx, azureDeployment)
+	if errorExpected {
+		s.Assert().NoError(err)
+	}
 
-	client, err := sdk.NewClient(s.endpoint, cred, nil)
-	require.NoError(s.T(), err)
-	require.NotNil(s.T(), client)
-
-	deployment := s.createDeployment(ctx, client, path)
-	deploymentId := deployment.ID
-
-	result, err := client.DryRun(ctx, int(*deploymentId), s.getParameters(path))
-	require.NoError(s.T(), err)
-	require.NotNil(s.T(), result)
-	return result
+	s.Assert().NotNil(resp)
+	return resp
 }
 
 func (s *dryRunSuite) getJsonAsMap(path string) map[string]interface{} {
@@ -73,28 +81,40 @@ func (s *dryRunSuite) getJsonAsMap(path string) map[string]interface{} {
 }
 
 func (s *dryRunSuite) TestNamePolicyFailure() {
-	nameViolationPath := "testdata/nameviolation/failure"
-	result := s.runDeploymentTest(nameViolationPath)
-	log.Print("TestNamePolicyFailure Results:\n %s" + *s.prettify(result.Results))
+	nameViolationPath := "./testdata/nameviolation/failure"
+	result := s.runDeploymentTest(nameViolationPath, true)
+	log.Print("TestNamePolicyFailure Results:\n %s" + *s.prettify(result.DryRunResult))
 }
 
 func (s *dryRunSuite) TestExistingStorageFailure() {
-	nameViolationPath := "../../test/testdata/existingstorage"
-	result := s.runDeploymentTest(nameViolationPath)
-	log.Print("TestNamePolicyFailure Results:\n %s" + *s.prettify(result.Results))
+	nameViolationPath := "./testdata/existingstorage"
+	result := s.runDeploymentTest(nameViolationPath, true)
+	log.Print("TestNamePolicyFailure Results:\n %s" + *s.prettify(result.DryRunResult))
+}
+
+func (s *dryRunSuite) TestTaggedDeployment() {
+	taggedDeploymentPath := "./testdata/taggeddeployment"
+	result := s.runDeploymentTest(taggedDeploymentPath, true)
+	log.Print("TestNamePolicyFailure Results:\n %s" + *s.prettify(result.DryRunResult))
+}
+
+func (s *dryRunSuite) TestMissingParameter() {
+	taggedDeploymentPath := "./testdata/missingparam"
+	result := s.runDeploymentTest(taggedDeploymentPath, true)
+	log.Print("TestMissingParameter Results:\n %s" + *s.prettify(result.DryRunResult))
 }
 
 func (s *dryRunSuite) TestNestedPolicyFailure() {
-	nameViolationPath := "testdata/nameviolation/nestedfailure"
-	result := s.runDeploymentTest(nameViolationPath)
-	log.Print("TestNamePolicyFailure Results:\n %s" + *s.prettify(result.Results))
+	nameViolationPath := "./testdata/nameviolation/nestedfailure"
+	result := s.runDeploymentTest(nameViolationPath, true)
+	log.Print("TestNamePolicyFailure Results:\n %s" + *s.prettify(result.DryRunResult))
 }
 
 func (s *dryRunSuite) TestQuotaViolation() {
-	quotaViolationPath := "testdata/quotaviolation"
-	result := s.runDeploymentTest(quotaViolationPath)
+	quotaViolationPath := "./testdata/quotaviolation"
+	result := s.runDeploymentTest(quotaViolationPath, true)
 	require.NotNil(s.T(), result)
-	log.Print("TestQuotaViolation Results:\n %s" + *s.prettify(result.Results))
+	log.Print("TestQuotaViolation Results:\n %s" + *s.prettify(result.DryRunResult))
 }
 
 func (s *dryRunSuite) prettify(obj any) *string {

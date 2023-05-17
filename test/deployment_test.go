@@ -1,15 +1,11 @@
+// +build integration
+
 package test
 
 import (
-//	"context"
 	"encoding/json"
-//	"fmt"
 	"io/ioutil"
 	"testing"
-	// "github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
-	// "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	// "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
-	// "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
