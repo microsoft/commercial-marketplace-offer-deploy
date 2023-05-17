@@ -12,8 +12,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -29,7 +28,7 @@ func (exe *retryStage) Execute(ctx context.Context, invokedOperation *data.Invok
 	db.First(&dep, invokedOperation.DeploymentId)
 
 	db.Save(dep)
-	invokedOperation.Status = string(operation.StatusRunning)
+	invokedOperation.Status = string(sdk.StatusRunning)
 	exe.save(invokedOperation)
 
 	stageId, err := uuid.Parse(invokedOperation.Parameters["stageId"].(string))
@@ -69,9 +68,9 @@ func (exe *retryStage) Execute(ctx context.Context, invokedOperation *data.Invok
 }
 
 func (exe *retryStage) sendHook(ctx context.Context, deployment *data.Deployment, invokedOperation *data.InvokedOperation, stage *data.Stage) error {
-	message := &events.EventHookMessage{
+	message := &sdk.EventHookMessage{
 		Status: invokedOperation.Status,
-		Data: &events.DeploymentEventData{
+		Data: &sdk.DeploymentEventData{
 			DeploymentId: int(deployment.ID),
 			StageId:      to.Ptr(stage.ID),
 			Message:      "Retry stage started successfully",

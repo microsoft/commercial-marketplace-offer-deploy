@@ -1,4 +1,4 @@
-package api
+package sdk
 
 import (
 	log "github.com/sirupsen/logrus"

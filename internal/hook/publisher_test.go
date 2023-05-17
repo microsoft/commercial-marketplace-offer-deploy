@@ -10,13 +10,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	. "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestPublisherPublish(t *testing.T) {
-	message := &EventHookMessage{
+	message := &sdk.EventHookMessage{
 		Id:   uuid.New(),
 		Type: "test.event",
 		Data: make(map[string]any),
@@ -24,7 +24,7 @@ func TestPublisherPublish(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, _ := io.ReadAll(r.Body)
-		var received = &EventHookMessage{}
+		var received = &sdk.EventHookMessage{}
 		json.Unmarshal(body, &received)
 
 		// assert that the message that was published was received by the server that was registered to the publisher

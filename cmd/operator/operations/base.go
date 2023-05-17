@@ -7,7 +7,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -20,10 +20,10 @@ type Executor interface {
 type Execute func(ctx context.Context, operation *data.InvokedOperation) error
 
 // this is so the dry run can be tested, detaching actual dry run implementation
-type DryRunFunc func(context.Context, *deployment.AzureDeployment) (*deployment.DryRunResponse, error)
+type DryRunFunc func(context.Context, *deployment.AzureDeployment) (*sdk.DryRunResponse, error)
 
 type ExecutorFactory interface {
-	Create(operationType operation.OperationType) (Executor, error)
+	Create(operationType sdk.OperationType) (Executor, error)
 }
 
 func NewExecutorFactory(appConfig *config.AppConfig) ExecutorFactory {
@@ -36,18 +36,18 @@ type factory struct {
 	appConfig *config.AppConfig
 }
 
-func (f *factory) Create(operationType operation.OperationType) (Executor, error) {
+func (f *factory) Create(operationType sdk.OperationType) (Executor, error) {
 	var executor Executor
 	log.Debugf("Creating executor for operation type: %s", string(operationType))
 
 	switch operationType {
-	case operation.TypeDryRun:
+	case sdk.OperationDryRun:
 		executor = NewDryRunExecutor(f.appConfig)
-	case operation.TypeStartDeployment:
+	case sdk.OperationStartDeployment:
 		executor = NewStartDeploymentExecutor(f.appConfig)
-	case operation.TypeRetryDeployment:
+	case sdk.OperationRetryDeployment:
 		executor = NewRetryDeploymentExecutor(f.appConfig)
-	case operation.TypeRetryStage:
+	case sdk.OperationRetryStage:
 		executor = NewRetryStageExecutor(f.appConfig)
 	}
 

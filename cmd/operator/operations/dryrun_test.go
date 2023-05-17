@@ -11,7 +11,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/test/fakes"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -46,7 +46,7 @@ func newDryExecutorTest(t *testing.T, options *dryRunExecutorTestOptions) *dryRu
 	hookQueue := fakes.NewFakeHookQueue(t)
 	hook.SetInstance(hookQueue)
 
-	dryRunFunc := func(ctx context.Context, ad *deployment.AzureDeployment) (*deployment.DryRunResponse, error) {
+	dryRunFunc := func(ctx context.Context, ad *deployment.AzureDeployment) (*sdk.DryRunResponse, error) {
 		t.Log("dryRunFunc called")
 		if options.causeDryRunError {
 			return nil, errors.New("dryRunFunc error")
@@ -54,8 +54,8 @@ func newDryExecutorTest(t *testing.T, options *dryRunExecutorTestOptions) *dryRu
 		if options.causeDryRunResultToBeNil {
 			return nil, nil
 		}
-		return &deployment.DryRunResponse{
-			DryRunResult: deployment.DryRunResult{},
+		return &sdk.DryRunResponse{
+			DryRunResult: sdk.DryRunResult{},
 		}, nil
 	}
 
@@ -69,7 +69,7 @@ func newDryExecutorTest(t *testing.T, options *dryRunExecutorTestOptions) *dryRu
 			ID: uuid.New(),
 		},
 		DeploymentId: deployment.ID,
-		Name:         string(operation.TypeDryRun),
+		Name:         string(sdk.OperationDryRun),
 		Retries:      3,
 		Attempts:     0,
 		Parameters:   map[string]interface{}{},
@@ -147,8 +147,8 @@ func Test_DryRun_Execute_DryRunError_Status_Is_Failed(t *testing.T) {
 
 	invokedOperation := test.getSavedState()
 
-	assert.Equal(t, operation.StatusFailed.String(), test.invokedOperation.Status)
-	assert.Equal(t, operation.StatusFailed.String(), invokedOperation.Status)
+	assert.Equal(t, sdk.StatusFailed.String(), test.invokedOperation.Status)
+	assert.Equal(t, sdk.StatusFailed.String(), invokedOperation.Status)
 }
 
 func Test_DryRun_Execute_NoError_With_Nil_Result_Status_Is_Error(t *testing.T) {
@@ -165,7 +165,7 @@ func Test_DryRun_Execute_NoError_With_Nil_Result_Status_Is_Error(t *testing.T) {
 	}
 
 	executor.Execute(test.ctx, test.invokedOperation)
-	assert.Equal(t, operation.StatusError.String(), test.invokedOperation.Status)
+	assert.Equal(t, sdk.StatusError.String(), test.invokedOperation.Status)
 }
 
 func Test_DryRun_Execute_NoError_With_Result_Status_Is_Success(t *testing.T) {
@@ -182,5 +182,5 @@ func Test_DryRun_Execute_NoError_With_Result_Status_Is_Success(t *testing.T) {
 	}
 
 	executor.Execute(test.ctx, test.invokedOperation)
-	assert.Equal(t, operation.StatusSuccess.String(), test.invokedOperation.Status)
+	assert.Equal(t, sdk.StatusSuccess.String(), test.invokedOperation.Status)
 }

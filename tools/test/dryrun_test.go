@@ -4,19 +4,20 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armpolicy"
-	
+
+	"path/filepath"
+	"testing"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"path/filepath"
-	"testing"
 )
 
 type dryRunSuite struct {
@@ -45,7 +46,7 @@ func (s *dryRunSuite) SetupTest() {
 	//s.DeployPolicy()
 }
 
-func (s *dryRunSuite) runDeploymentTest(path string) *sdk.DryRunResponse {
+func (s *dryRunSuite) runDeploymentTest(path string) *sdk.InvokeDryRunResponse {
 	ctx := context.TODO()
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	require.NoError(s.T(), err)
@@ -53,7 +54,7 @@ func (s *dryRunSuite) runDeploymentTest(path string) *sdk.DryRunResponse {
 	client, err := sdk.NewClient(s.endpoint, cred, nil)
 	require.NoError(s.T(), err)
 	require.NotNil(s.T(), client)
-	
+
 	deployment := s.createDeployment(ctx, client, path)
 	deploymentId := deployment.ID
 
@@ -109,11 +110,11 @@ func (s *dryRunSuite) getParameters(path string) map[string]interface{} {
 	return parameters
 }
 
-func (s *dryRunSuite) createDeployment(ctx context.Context, client *sdk.Client, templatePath string) *api.Deployment {
+func (s *dryRunSuite) createDeployment(ctx context.Context, client *sdk.Client, templatePath string) *sdk.Deployment {
 	name := "DryRunDeploymentTest"
 	template := s.getTemplate(templatePath)
 
-	deployment, err := client.Create(ctx, api.CreateDeployment{
+	deployment, err := client.Create(ctx, sdk.CreateDeployment{
 		Name:           &name,
 		SubscriptionID: &s.subscriptionId,
 		ResourceGroup:  &s.resourceGroupName,

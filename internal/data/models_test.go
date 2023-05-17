@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/stretchr/testify/assert"
@@ -38,7 +38,7 @@ func TestInvokedOperationUpdate(t *testing.T) {
 	model := &InvokedOperation{
 		DeploymentId: 1,
 		Parameters:   params,
-		Name:         string(operation.StatusScheduled),
+		Name:         string(sdk.StatusScheduled),
 		Status:       "test",
 		Result:       make(map[string]interface{}),
 	}

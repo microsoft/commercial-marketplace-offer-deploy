@@ -10,8 +10,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"gorm.io/gorm"
 )
 
@@ -49,7 +48,7 @@ func (h *dispatcher) Dispatch(ctx context.Context, command *DispatchInvokedOpera
 }
 
 func validateOperationName(name string) error {
-	_, err := operation.Type(name)
+	_, err := sdk.Type(name)
 	return err
 }
 
@@ -60,7 +59,7 @@ func (p *dispatcher) save(ctx context.Context, c *DispatchInvokedOperation) (*da
 	invokedOperation := &data.InvokedOperation{
 		DeploymentId: uint(c.DeploymentId),
 		Name:         *c.Request.Name,
-		Status:       string(operation.StatusScheduled),
+		Status:       string(sdk.StatusScheduled),
 		Parameters:   c.Request.Parameters.(map[string]interface{}),
 	}
 
@@ -97,11 +96,11 @@ func (h *dispatcher) send(ctx context.Context, operationId uuid.UUID) error {
 }
 
 func (h *dispatcher) addEventHook(ctx context.Context, invokedOperation *data.InvokedOperation) error {
-	return hook.Add(ctx, &events.EventHookMessage{
+	return hook.Add(ctx, &sdk.EventHookMessage{
 		Status:  invokedOperation.Status,
-		Type:    string(events.EventTypeDeploymentOperationReceived),
+		Type:    string(sdk.EventTypeDeploymentOperationReceived),
 		Subject: "/deployments/" + strconv.Itoa(int(invokedOperation.DeploymentId)),
-		Data: &events.DeploymentEventData{
+		Data: &sdk.DeploymentEventData{
 			DeploymentId: int(invokedOperation.DeploymentId),
 			OperationId:  invokedOperation.ID,
 			Message:      "",

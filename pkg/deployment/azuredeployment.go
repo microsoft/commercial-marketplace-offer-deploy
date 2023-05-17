@@ -2,10 +2,11 @@ package deployment
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
-	"encoding/json"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
@@ -37,10 +38,10 @@ type AzureDeployment struct {
 }
 
 type AzureRedeployment struct {
-	SubscriptionId    string         `json:"subscriptionId"`
-	Location          string         `json:"location"`
-	ResourceGroupName string         `json:"resourceGroupName"`
-	DeploymentName    string         `json:"deploymentName"`
+	SubscriptionId    string `json:"subscriptionId"`
+	Location          string `json:"location"`
+	ResourceGroupName string `json:"resourceGroupName"`
+	DeploymentName    string `json:"deploymentName"`
 }
 
 type AzureDeploymentResult struct {
@@ -74,9 +75,8 @@ type ArmTemplateDeployer struct {
 	deployerType DeploymentType
 }
 
-func (armDeployer *ArmTemplateDeployer) getParamsMapFromTemplate(template map[string]interface{}, params map[string]interface{}) map[string]interface{} { 
+func (armDeployer *ArmTemplateDeployer) getParamsMapFromTemplate(template map[string]interface{}, params map[string]interface{}) map[string]interface{} {
 	paramValues := make(map[string]interface{})
-	
 
 	var templateParams map[string]interface{}
 	if template != nil {
@@ -98,18 +98,17 @@ func (armDeployer *ArmTemplateDeployer) getParamsMapFromTemplate(template map[st
 	return paramValues
 }
 
-
 func (armDeployer *ArmTemplateDeployer) Redeploy(ctx context.Context, ad *AzureRedeployment) (*AzureDeploymentResult, error) {
 	b, err := json.MarshalIndent(ad, "", "  ")
-    if err != nil {
-        log.Error(err)
-    }
+	if err != nil {
+		log.Error(err)
+	}
 	log.Debugf("Inside Redeploy in deployment package with a value of %s", string(b))
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	deploymentsClient, err := armresources.NewDeploymentsClient(ad.SubscriptionId, cred, nil)
 	if err != nil {
 		return nil, err
@@ -146,7 +145,6 @@ func (armDeployer *ArmTemplateDeployer) Redeploy(ctx context.Context, ad *AzureR
 	castTemplate := template.Template.(map[string]interface{})
 	paramValuesMap := armDeployer.getParamsMapFromTemplate(castTemplate, castParams)
 
-
 	log.Debugf("About to call BeginCreateOrUpdate in Redeploy in deployment package with a resourceGroupName of %s and a deploymentName of %s", ad.ResourceGroupName, ad.DeploymentName)
 	deploymentPollerResp, err := deploymentsClient.BeginCreateOrUpdate(
 		ctx,
@@ -160,7 +158,7 @@ func (armDeployer *ArmTemplateDeployer) Redeploy(ctx context.Context, ad *AzureR
 			},
 		},
 		nil)
-		
+
 	if err != nil {
 		return nil, errors.New("unable to redeploy the deployment")
 	}
@@ -309,13 +307,4 @@ func FindResourcesByType(template Template, resourceType string) []string {
 		}
 	}
 	return deploymentResources
-}
-
-// ErrorAdditionalInfo - The resource management error additional info.
-type ErrorAdditionalInfo struct {
-	// READ-ONLY; The additional info.
-	Info interface{} `json:"info,omitempty" azure:"ro"`
-
-	// READ-ONLY; The additional info type.
-	Type *string `json:"type,omitempty" azure:"ro"`
 }

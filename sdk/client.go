@@ -5,12 +5,11 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 )
 
 // Client is the struct for interacting with an Azure App Configuration instance.
 type Client struct {
-	internalClient *api.DeploymentManagementClient
+	internalClient *DeploymentManagementClient
 }
 
 // ClientOptions contains the optional parameters for the NewClient method.
@@ -31,7 +30,7 @@ func NewClient(endpoint string, credential azcore.TokenCredential, options *Clie
 		options.Cloud = cloud.AzurePublic
 	}
 
-	internalClient, err := api.NewDeploymentManagementClient(endpoint, credential, &api.DeploymentManagementClientOptions{
+	internalClient, err := NewDeploymentManagementClient(endpoint, credential, &DeploymentManagementClientOptions{
 		ClientOptions: &options.ClientOptions,
 		ClientName:    moduleName + ".client",
 		Version:       moduleVersion,

@@ -8,8 +8,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/test/fakes"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
@@ -70,7 +69,7 @@ func Test_StartDeployment_FirstAttemptSendsEventHookWithOperationId(t *testing.T
 	assert.NoError(t, err)
 	message := test.hook.Messages()[0]
 
-	assert.EqualValues(t, test.invokedOperation.ID, message.Data.(*events.DeploymentEventData).OperationId)
+	assert.EqualValues(t, test.invokedOperation.ID, message.Data.(*sdk.DeploymentEventData).OperationId)
 }
 
 // region fakes
@@ -85,7 +84,7 @@ func (f *fakeExecutor) Execute(ctx context.Context, invokedOperation *data.Invok
 	return nil
 }
 
-func (f *fakeExecutorFactory) Create(operationType operation.OperationType) (Executor, error) {
+func (f *fakeExecutorFactory) Create(operationType sdk.OperationType) (Executor, error) {
 	return &fakeExecutor{}, nil
 }
 

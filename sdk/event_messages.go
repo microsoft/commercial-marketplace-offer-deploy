@@ -1,4 +1,4 @@
-package events
+package sdk
 
 import (
 	"errors"
@@ -6,8 +6,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/structure"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk/internal"
 )
 
 // subscription model for MODM webhook events
@@ -38,7 +37,7 @@ func (m *EventHookMessage) DryRunEventData() (*DryRunEventData, error) {
 	}
 
 	var data *DryRunEventData
-	err := structure.Decode(m.Data, &data)
+	err := internal.Decode(m.Data, &data)
 	if err != nil {
 		return nil, errors.New("data is not of type DryRunEventData")
 	}
@@ -48,7 +47,7 @@ func (m *EventHookMessage) DryRunEventData() (*DryRunEventData, error) {
 func (m *EventHookMessage) DeploymentEventData() (*DeploymentEventData, error) {
 	if strings.HasPrefix(m.Type, "deployment") {
 		var data *DeploymentEventData
-		err := structure.Decode(m.Data, &data)
+		err := internal.Decode(m.Data, &data)
 		if err != nil {
 			return nil, errors.New("data is not of type DeploymentEventData")
 		}
@@ -60,11 +59,11 @@ func (m *EventHookMessage) DeploymentEventData() (*DeploymentEventData, error) {
 // Event data for a message
 
 type DryRunEventData struct {
-	DeploymentId int                             `json:"deploymentId" mapstructure:"deploymentId"`
-	OperationId  uuid.UUID                       `json:"operationId" mapstructure:"operationId"`
-	Attempts     int                             `json:"attempts" mapstructure:"attempts"`
-	Status       *string                         `json:"status,omitempty" mapstructure:"status"`
-	Error        *deployment.DryRunErrorResponse `json:"error,omitempty" mapstructure:"error"`
+	DeploymentId int                  `json:"deploymentId" mapstructure:"deploymentId"`
+	OperationId  uuid.UUID            `json:"operationId" mapstructure:"operationId"`
+	Attempts     int                  `json:"attempts" mapstructure:"attempts"`
+	Status       *string              `json:"status,omitempty" mapstructure:"status"`
+	Error        *DryRunErrorResponse `json:"error,omitempty" mapstructure:"error"`
 }
 
 type DeploymentEventData struct {

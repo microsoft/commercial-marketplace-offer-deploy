@@ -4,8 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
 // TODO: this needs to go and pull from .env
@@ -16,7 +15,7 @@ var (
 	subscription   string
 	clientEndpoint = "http://localhost:8080"
 	env            = loadEnvironmentVariables()
-	deployment     *api.Deployment
+	deployment     *sdk.Deployment
 )
 
 func AddRoutes(e *echo.Echo) {

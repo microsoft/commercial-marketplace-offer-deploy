@@ -7,7 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	data "github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"gorm.io/gorm"
 )
 
@@ -18,7 +18,7 @@ type createEventHookHandler struct {
 // HTTP handler for creating deployments
 func (h createEventHookHandler) Handle(c echo.Context) error {
 	db := h.db
-	var request *api.CreateEventHookRequest
+	var request *sdk.CreateEventHookRequest
 	err := c.Bind(&request)
 
 	if err != nil {
@@ -33,7 +33,7 @@ func (h createEventHookHandler) Handle(c echo.Context) error {
 		hook.ApiKey = *request.APIKey
 		db.Save(&hook)
 
-		result := &api.EventHookResponse{
+		result := &sdk.EventHookResponse{
 			ID:       to.Ptr(hook.ID.String()),
 			Name:     to.Ptr(hook.Name),
 			Callback: to.Ptr(hook.Callback),
@@ -47,7 +47,7 @@ func (h createEventHookHandler) Handle(c echo.Context) error {
 		return err
 	}
 
-	result := &api.EventHookResponse{
+	result := &sdk.EventHookResponse{
 		ID:       to.Ptr(hook.ID.String()),
 		Name:     &hook.Name,
 		Callback: &hook.Callback,

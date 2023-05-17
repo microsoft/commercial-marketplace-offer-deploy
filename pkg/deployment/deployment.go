@@ -7,6 +7,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -22,33 +23,26 @@ const (
 	Terraform
 )
 
-func mapResponse(whatIfResponse *armresources.DeploymentsClientWhatIfResponse) (*DryRunResponse, error) {
+func mapResponse(whatIfResponse *armresources.DeploymentsClientWhatIfResponse) (*sdk.DryRunResponse, error) {
 	dryRunErrorResponse, err := mapError(whatIfResponse.Error)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Debug("Before creation of DryRunResult")
-	dryRunResult := DryRunResult{
+	dryRunResult := sdk.DryRunResult{
 		Status: whatIfResponse.Status,
 		Error:  dryRunErrorResponse,
 	}
-
-	log.Debug("After creation of DryRunResult")
-	dryRunResponse := DryRunResponse{
-		DryRunResult: dryRunResult,
-	}
-
-	return &dryRunResponse, nil
+	return &sdk.DryRunResponse{dryRunResult}, nil
 }
 
-func mapError(armResourceResponse *armresources.ErrorResponse) (*DryRunErrorResponse, error) {
+func mapError(armResourceResponse *armresources.ErrorResponse) (*sdk.DryRunErrorResponse, error) {
 	if armResourceResponse == nil {
 		log.Debug("returning nil")
 		return nil, nil
 	}
 
-	var dryRunErrorDetails []*DryRunErrorResponse
+	var dryRunErrorDetails []*sdk.DryRunErrorResponse
 	if armResourceResponse.Details != nil && len(armResourceResponse.Details) > 0 {
 		for _, v := range armResourceResponse.Details {
 			dryRunError, err := mapError(v)
@@ -60,15 +54,15 @@ func mapError(armResourceResponse *armresources.ErrorResponse) (*DryRunErrorResp
 		}
 	}
 
-	var errorAdditionalInfo []*ErrorAdditionalInfo
+	var errorAdditionalInfo []*sdk.ErrorAdditionalInfo
 	if armResourceResponse.AdditionalInfo != nil && len(armResourceResponse.AdditionalInfo) > 0 {
 		for _, v := range armResourceResponse.AdditionalInfo {
-			errAddInfo := &ErrorAdditionalInfo{Info: v.Info, Type: v.Type}
+			errAddInfo := &sdk.ErrorAdditionalInfo{Info: v.Info, Type: v.Type}
 			errorAdditionalInfo = append(errorAdditionalInfo, errAddInfo)
 		}
 	}
 
-	dryRunErrorResponse := DryRunErrorResponse{
+	dryRunErrorResponse := sdk.DryRunErrorResponse{
 		Message:        armResourceResponse.Message,
 		Code:           armResourceResponse.Code,
 		Target:         armResourceResponse.Target,

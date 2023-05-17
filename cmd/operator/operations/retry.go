@@ -9,8 +9,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	deployments "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -48,20 +47,20 @@ func (exe *retryDeployment) updateWithResults(ctx context.Context, results *depl
 		invokedOperation.Result = results
 
 		if results.Status == deployments.Failed {
-			invokedOperation.Status = operation.StatusFailed.String()
+			invokedOperation.Status = sdk.StatusFailed.String()
 		} else if results.Status == deployments.Succeeded {
-			invokedOperation.Status = operation.StatusSuccess.String()
+			invokedOperation.Status = sdk.StatusSuccess.String()
 		}
 	} else {
-		invokedOperation.Status = operation.StatusFailed.String()
+		invokedOperation.Status = sdk.StatusFailed.String()
 	}
 
 	db.Save(invokedOperation)
 
-	message := &events.EventHookMessage{
+	message := &sdk.EventHookMessage{
 		Status: invokedOperation.Status,
-		Type:   string(events.EventTypeDeploymentRetried),
-		Data: &events.DeploymentEventData{
+		Type:   string(sdk.EventTypeDeploymentRetried),
+		Data: &sdk.DeploymentEventData{
 			DeploymentId: int(invokedOperation.DeploymentId),
 			OperationId:  invokedOperation.ID,
 			Message:      fmt.Sprintf("Retry deployment %s", invokedOperation.Status),
@@ -69,7 +68,7 @@ func (exe *retryDeployment) updateWithResults(ctx context.Context, results *depl
 	}
 	message.SetSubject(invokedOperation.DeploymentId, nil)
 
-	// by sending this message, it will be caught (in operator/handlers/events.go) and the retry will get executed again
+	// by sending this message, it will be caught (in operator/handlers/sdk.go) and the retry will get executed again
 	// as long as the Attempts haven't exceeded the max set on Retries
 	err := hook.Add(ctx, message)
 	if err != nil {
@@ -83,13 +82,13 @@ func (exe *retryDeployment) updateToRunning(ctx context.Context, invokedOperatio
 
 	deployment := &data.Deployment{}
 	db.First(&deployment, invokedOperation.DeploymentId)
-	invokedOperation.Status = operation.StatusRunning.String()
+	invokedOperation.Status = sdk.StatusRunning.String()
 	db.Save(invokedOperation)
 
-	err := hook.Add(ctx, &events.EventHookMessage{
+	err := hook.Add(ctx, &sdk.EventHookMessage{
 		Subject: "/deployments/" + strconv.Itoa(int(deployment.ID)),
 		Status:  invokedOperation.Status,
-		Data: &events.DeploymentEventData{
+		Data: &sdk.DeploymentEventData{
 			DeploymentId: int(deployment.ID),
 			Message:      "Retry deployment started successfully",
 		},

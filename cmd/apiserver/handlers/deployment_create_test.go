@@ -12,7 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/mapper"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	testutils "github.com/microsoft/commercial-marketplace-offer-deploy/test/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -47,7 +47,7 @@ func TestCreateDeployment(t *testing.T) {
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	// check response
-	var jsonResponse api.Deployment
+	var jsonResponse sdk.Deployment
 	json.Unmarshal(recorder.Body.Bytes(), &jsonResponse)
 	assert.Equal(t, "test name", *jsonResponse.Name)
 
@@ -70,7 +70,7 @@ func getFakeCreateDeploymentJson(t *testing.T) string {
 		t.Fatalf("Error: %v", err)
 	}
 
-	item := &api.CreateDeployment{
+	item := &sdk.CreateDeployment{
 		Name:           to.Ptr("test name"),
 		SubscriptionID: to.Ptr("test"),
 		ResourceGroup:  to.Ptr("test"),

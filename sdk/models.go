@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"github.com/google/uuid"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 )
 
 type RetryOptions struct {
@@ -19,7 +18,7 @@ type StatusResponse struct {
 	DeploymentId int
 }
 
-type DryRunResponse struct {
+type InvokeDryRunResponse struct {
 	Id uuid.UUID
 	//Results map[string]any
 	Results any
@@ -42,9 +41,9 @@ type RetryResponse struct {
 }
 
 type ListResponse struct {
-	Deployments []*api.Deployment
+	Deployments []*Deployment
 }
 
 type GetResponse struct {
-	Deployment *api.Deployment
+	Deployment *Deployment
 }

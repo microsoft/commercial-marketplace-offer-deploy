@@ -7,11 +7,13 @@
 // Changes may cause incorrect behavior and will be lost if the code is regenerated.
 // DO NOT EDIT.
 
-package api
+package sdk
 
 type Status string
 
 const (
+	StatusError Status = "error"
+	StatusFailed Status = "failed"
 	StatusNone Status = "none"
 	StatusRunning Status = "running"
 	StatusScheduled Status = "scheduled"
@@ -21,6 +23,8 @@ const (
 // PossibleStatusValues returns the possible values for the Status const type.
 func PossibleStatusValues() []Status {
 	return []Status{	
+		StatusError,
+		StatusFailed,
 		StatusNone,
 		StatusRunning,
 		StatusScheduled,

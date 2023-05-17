@@ -12,8 +12,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -42,7 +41,7 @@ func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOp
 
 		if err != nil {
 			log.Errorf("Error: %v", err)
-			invokedOperation.Status = operation.StatusRunning.String()
+			invokedOperation.Status = sdk.StatusRunning.String()
 			invokedOperation.Attempts = invokedOperation.Attempts + 1
 			exe.save(invokedOperation)
 
@@ -50,12 +49,12 @@ func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOp
 		}
 		log.WithField("response", response).Debug("Received dry run response from Azure")
 
-		var result *deployment.DryRunResult
+		var result *sdk.DryRunResult
 		if response != nil {
 			result = &response.DryRunResult
-			invokedOperation.Status = operation.StatusSuccess.String()
+			invokedOperation.Status = sdk.StatusSuccess.String()
 		} else {
-			invokedOperation.Status = string(operation.StatusError)
+			invokedOperation.Status = string(sdk.StatusError)
 			exe.log.Warn("Dry run response is nil")
 		}
 
@@ -78,7 +77,7 @@ func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOp
 
 	if err != nil {
 		exe.log.Errorf("Attempts to retry exceeded. Error: %v", err)
-		invokedOperation.Status = operation.StatusFailed.String()
+		invokedOperation.Status = sdk.StatusFailed.String()
 		exe.save(invokedOperation)
 
 		hookMessage := exe.getFailedEventHookMessage(err, invokedOperation)
@@ -88,7 +87,7 @@ func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOp
 	return err
 }
 
-func (exe *dryRun) getFailedEventHookMessage(err error, invokedOperation *data.InvokedOperation) *events.EventHookMessage {
+func (exe *dryRun) getFailedEventHookMessage(err error, invokedOperation *data.InvokedOperation) *sdk.EventHookMessage {
 	var data interface{}
 	if err != nil && len(err.Error()) > 0 {
 		data = err.Error()
@@ -97,23 +96,23 @@ func (exe *dryRun) getFailedEventHookMessage(err error, invokedOperation *data.I
 			data = invokedOperation.Result
 		}
 	}
-	return &events.EventHookMessage{
-		Type:   string(events.EventTypeDryRunCompleted),
+	return &sdk.EventHookMessage{
+		Type:   string(sdk.EventTypeDryRunCompleted),
 		Data:   data,
-		Status: operation.StatusFailed.String(),
+		Status: sdk.StatusFailed.String(),
 	}
 }
 
-func (exe *dryRun) mapToEventHookMessage(invokedOperation *data.InvokedOperation, result *deployment.DryRunResult) *events.EventHookMessage {
-	resultStatus := to.Ptr(operation.StatusError.String())
-	resultError := &deployment.DryRunErrorResponse{}
+func (exe *dryRun) mapToEventHookMessage(invokedOperation *data.InvokedOperation, result *sdk.DryRunResult) *sdk.EventHookMessage {
+	resultStatus := to.Ptr(sdk.StatusError.String())
+	resultError := &sdk.DryRunErrorResponse{}
 
 	if result != nil {
 		resultStatus = result.Status
 		resultError = result.Error
 	}
 
-	data := events.DryRunEventData{
+	data := sdk.DryRunEventData{
 		DeploymentId: int(invokedOperation.DeploymentId),
 		OperationId:  invokedOperation.ID,
 		Status:       resultStatus,
@@ -121,9 +120,9 @@ func (exe *dryRun) mapToEventHookMessage(invokedOperation *data.InvokedOperation
 		Error:        resultError,
 	}
 
-	message := &events.EventHookMessage{
-		Type:   string(events.EventTypeDryRunCompleted),
-		Status: operation.StatusSuccess.String(),
+	message := &sdk.EventHookMessage{
+		Type:   string(sdk.EventTypeDryRunCompleted),
+		Status: sdk.StatusSuccess.String(),
 		Data:   data,
 	}
 	message.SetSubject(uint(invokedOperation.DeploymentId), nil)

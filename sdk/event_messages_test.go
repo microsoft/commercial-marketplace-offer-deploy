@@ -1,4 +1,4 @@
-package events
+package sdk
 
 import (
 	"encoding/json"
@@ -6,7 +6,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -40,9 +39,9 @@ func Test_EventHookMessage_DryRunEventData_Marshaling(t *testing.T) {
 			OperationId:  uuid.New(),
 			Attempts:     1,
 			Status:       to.Ptr("failed"),
-			Error: &deployment.DryRunErrorResponse{
+			Error: &DryRunErrorResponse{
 				Code:           to.Ptr("code"),
-				AdditionalInfo: []*deployment.ErrorAdditionalInfo{},
+				AdditionalInfo: []*ErrorAdditionalInfo{},
 			},
 		},
 	}
@@ -70,8 +69,8 @@ func Test_EventHookMessage_DryRunEventData_Fails_With_WrongType(t *testing.T) {
 			OperationId:  uuid.New(),
 			Attempts:     1,
 			Status:       to.Ptr("failed"),
-			Error: &deployment.DryRunErrorResponse{
-				AdditionalInfo: []*deployment.ErrorAdditionalInfo{},
+			Error: &DryRunErrorResponse{
+				AdditionalInfo: []*ErrorAdditionalInfo{},
 			},
 		},
 	}
@@ -90,7 +89,7 @@ func Test_EventHookMessage_DryRunEventData_Fails_With_WrongType(t *testing.T) {
 // deployment event data parsing
 
 func Test_EventHookMessage_DeploymentEventData_Marshaling(t *testing.T) {
-	types := []EventType{
+	types := []EventTypeName{
 		EventTypeDeploymentCompleted,
 		EventTypeDeploymentCreated,
 		EventTypeDeploymentDeleted,

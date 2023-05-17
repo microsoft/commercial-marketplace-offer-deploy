@@ -2,12 +2,10 @@ package sdk
 
 import (
 	"context"
-
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 )
 
 // lists the event topics available to register a web hook
-func (client *Client) ListEventTypes(ctx context.Context) ([]*api.EventType, error) {
+func (client *Client) ListEventTypes(ctx context.Context) ([]*EventType, error) {
 	response, err := client.internalClient.GetEventTypes(ctx, nil)
 
 	if err != nil {
@@ -17,7 +15,7 @@ func (client *Client) ListEventTypes(ctx context.Context) ([]*api.EventType, err
 	return types, nil
 }
 
-func (client *Client) CreateEventHook(ctx context.Context, request api.CreateEventHookRequest) (*api.CreateEventHookResponse, error) {
+func (client *Client) CreateEventHook(ctx context.Context, request CreateEventHookRequest) (*CreateEventHookResponse, error) {
 	response, err := client.internalClient.CreateEvenHook(ctx, request, nil)
 
 	if err != nil {
