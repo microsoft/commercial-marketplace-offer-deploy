@@ -63,7 +63,8 @@ func whatIfValidator(input DryRunValidationInput) (*DryRunResponse, error) {
 func loadValidators() []DryRunValidator {
 	//todo: load validators from config
 	return []DryRunValidator{
-		WhatIfValidatorFunc(whatIfValidator),
+		ValidatorFunc(validateParams),
+		ValidatorFunc(whatIfValidator),
 	}
 }
 
@@ -72,7 +73,7 @@ func validate(validators []DryRunValidator, input DryRunValidationInput) (*DryRu
 	for _, validator := range validators {
 		res, err := validator.Validate(input)
 		if err != nil {
-			return nil, err
+			return res, err
 		}
 		if res != nil {
 			responses = append(responses, res)
