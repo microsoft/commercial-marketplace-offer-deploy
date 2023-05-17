@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/structure"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 )
 
 // subscription model for MODM webhook events
@@ -16,11 +18,13 @@ type EventHookMessage struct {
 	// the ID of the hook
 	HookId uuid.UUID `json:"hookId,omitempty"`
 
-	// the type of the event, .e.g. "dryRunCompleted"
+	// the type of the event, .e.g. "dryRunCompleted" found in pkg/events
 	Type string `json:"type,omitempty"`
 
 	// the status of the event, e.g. "success"
 	Status string `json:"status,omitempty"`
+
+	Error string `json:"error,omitempty"`
 
 	// subject is in format like /deployments/{deploymentId}/stages/{stageId}/operations/{operationName}
 	// /deployments/{deploymentId}/operations/{operationName}
@@ -28,19 +32,40 @@ type EventHookMessage struct {
 	Data    any    `json:"data,omitempty"`
 }
 
-// Dry run data
-type DryRunData struct {
-	Status         string                 `json:"status,omitempty"`
-	AdditionalInfo []DryRunAdditionalInfo `json:"additionalInfo,omitempty"`
+func (m *EventHookMessage) DryRunEventData() (*DryRunEventData, error) {
+	if m.Type != EventTypeDryRunCompleted.String() {
+		return nil, errors.New("message type is not dryRunCompleted")
+	}
+
+	var data *DryRunEventData
+	err := structure.Decode(m.Data, &data)
+	if err != nil {
+		return nil, errors.New("data is not of type DryRunEventData")
+	}
+	return data, nil
 }
 
-// Dry run message that's part of the dry run data, containing details of the specific dry run results
-type DryRunAdditionalInfo struct {
-	Info interface{} `json:"info,omitempty"`
-	Type string      `json:"type,omitempty"`
+func (m *EventHookMessage) DeploymentEventData() (*DeploymentEventData, error) {
+	if strings.HasPrefix(m.Type, "deployment") {
+		var data *DeploymentEventData
+		err := structure.Decode(m.Data, &data)
+		if err != nil {
+			return nil, errors.New("data is not of type DeploymentEventData")
+		}
+		return data, nil
+	}
+	return nil, errors.New("message event type is not deployment*")
 }
 
-// all other deployment events
+// Event data for a message
+
+type DryRunEventData struct {
+	DeploymentId int                             `json:"deploymentId" mapstructure:"deploymentId"`
+	OperationId  uuid.UUID                       `json:"operationId" mapstructure:"operationId"`
+	Attempts     int                             `json:"attempts" mapstructure:"attempts"`
+	Status       *string                         `json:"status,omitempty" mapstructure:"status"`
+	Error        *deployment.DryRunErrorResponse `json:"error,omitempty" mapstructure:"error"`
+}
 
 type DeploymentEventData struct {
 	DeploymentId int        `json:"deploymentId,omitempty" mapstructure:"deploymentId"`

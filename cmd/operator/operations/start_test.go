@@ -10,12 +10,13 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/test/fakes"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 )
 
 type testStartDeploymentExecutor struct {
-	hook                  *fakeHookQueue
+	hook                  *fakes.FakeHookQueue
 	db                    *gorm.DB
 	createAzureDeployment deployment.CreateDeployment
 	executionFactory      ExecutorFactory
@@ -25,7 +26,7 @@ type testStartDeploymentExecutor struct {
 
 func newTestStartDeploymentExecutor(t *testing.T) *testStartDeploymentExecutor {
 	// set hook queue to fake instance
-	fakeHookQueue := &fakeHookQueue{t: t}
+	fakeHookQueue := fakes.NewFakeHookQueue(t)
 	hook.SetInstance(fakeHookQueue)
 
 	db := data.NewDatabase(&data.DatabaseOptions{UseInMemory: true}).Instance()
@@ -66,24 +67,13 @@ func Test_StartDeployment_FirstAttemptSendsEventHookWithOperationId(t *testing.T
 	}
 	// execute with setup
 	err := executor.Execute(context.TODO(), test.invokedOperation)
-
 	assert.NoError(t, err)
-	t.Logf("hook message: %+v", test.hook.message)
-	assert.EqualValues(t, test.invokedOperation.ID, test.hook.message.Data.(*events.DeploymentEventData).OperationId)
+	message := test.hook.Messages()[0]
+
+	assert.EqualValues(t, test.invokedOperation.ID, message.Data.(*events.DeploymentEventData).OperationId)
 }
 
 // region fakes
-
-type fakeHookQueue struct {
-	t       *testing.T
-	message *events.EventHookMessage
-}
-
-func (f *fakeHookQueue) Add(ctx context.Context, message *events.EventHookMessage) error {
-	f.t.Log("fakeHookQueue.Add called")
-	f.message = message
-	return nil
-}
 
 type fakeExecutorFactory struct {
 }

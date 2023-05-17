@@ -3,6 +3,7 @@ package subscriptionmanagement
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -189,7 +190,31 @@ func getProperties(ctx context.Context, cred azcore.TokenCredential, resourceGro
 		SubscriptionId:    resourceId.SubscriptionID,
 		ResourceGroupName: resourceId.ResourceGroupName,
 		ResourceGroupId:   resourceGroupId,
-		SystemTopicName:   resourceId.ResourceGroupName + "-event-topic",
+		SystemTopicName:   getSystemTopicName(resourceId.ResourceGroupName),
 	}
 	return props, nil
+}
+
+func getSystemTopicName(resourceGroupName string) string {
+	reservedPrefixes := []string{
+		"Microsoft-", "",
+		"EventGrid-", "",
+		"System-", "",
+	}
+	replacer := strings.NewReplacer(reservedPrefixes...)
+	prefix := replacer.Replace(resourceGroupName)
+
+	r := regexp.MustCompile("[^a-zA-Z0-9 -]")
+	prefix = r.ReplaceAllString(prefix, "")
+	suffix := "-event-topic"
+
+	//https://learn.microsoft.com/en-us/azure/event-grid/troubleshoot-errors
+	maxLength := 50
+	lengthCheck := len(prefix + suffix)
+
+	if lengthCheck > maxLength {
+		prefix = prefix[:maxLength-len(suffix)]
+	}
+	prefix = strings.TrimSuffix(prefix, "-")
+	return prefix + suffix
 }
