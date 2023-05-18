@@ -13,6 +13,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/test/fakes"
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
@@ -183,4 +184,30 @@ func Test_DryRun_Execute_NoError_With_Result_Status_Is_Success(t *testing.T) {
 
 	executor.Execute(test.ctx, test.invokedOperation)
 	assert.Equal(t, sdk.StatusSuccess.String(), test.invokedOperation.Status)
+}
+
+func Test_DryRun_getAzureDeployment_name_is_correctly_set(t *testing.T) {
+	test := newDryExecutorTest(t, &dryRunExecutorTestOptions{
+		causeDryRunError:         false,
+		causeDryRunResultToBeNil: false,
+	})
+
+	executor := &dryRun{
+		db:         test.db,
+		dryRun:     test.dryRun,
+		sender:     test.sender,
+		retryDelay: 0 * time.Second,
+		log:        logrus.New().WithField("test", "Test_DryRun_getAzureDeployment_name_is_correctly_set"),
+	}
+
+	// set the name using the invoked operation's deployment id
+	deployment := &data.Deployment{}
+	test.db.First(deployment, test.invokedOperation.DeploymentId)
+
+	deployment.Name = "test-deployment/with some slashes-*&^%$#@!_+=.:'\""
+	test.db.Save(deployment)
+
+	result := executor.getAzureDeployment(test.invokedOperation)
+	assert.NotNil(t, result)
+	assert.Equal(t, "modm.1.test-deploymentwith-some-slashes", result.DeploymentName)
 }
