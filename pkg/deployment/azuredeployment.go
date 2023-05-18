@@ -37,6 +37,26 @@ type AzureDeployment struct {
 	ResumeToken       string         `json:"resumeToken"`
 }
 
+func (ad AzureDeployment) GetParams() map[string]interface{} {
+	return getParams(ad.Params)
+}
+
+func (ad AzureDeployment) GetTemplateParams() map[string]interface{} {
+	return getParams(ad.Template)
+}
+
+func getParams(input map[string]interface{}) map[string]interface{} {
+	var paramsValue map[string]interface{}
+	if input != nil {
+		if p, ok := input["parameters"]; ok {
+			paramsValue = p.(map[string]interface{})
+		} else {
+			paramsValue = input
+		}
+	}
+	return paramsValue
+}
+
 type AzureRedeployment struct {
 	SubscriptionId    string `json:"subscriptionId"`
 	Location          string `json:"location"`
@@ -58,14 +78,6 @@ func (ad *AzureDeployment) GetDeploymentType() DeploymentType {
 	return ad.DeploymentType
 }
 
-func (ad *AzureDeployment) GetTemplate() map[string]interface{} {
-	return ad.Template
-}
-
-func (ad *AzureDeployment) GetTemplateParams() map[string]interface{} {
-	return ad.Params
-}
-
 type Deployer interface {
 	Deploy(ctx context.Context, d *AzureDeployment) (*AzureDeploymentResult, error)
 	Redeploy(ctx context.Context, d *AzureRedeployment) (*AzureDeploymentResult, error)
@@ -78,15 +90,7 @@ type ArmTemplateDeployer struct {
 func (armDeployer *ArmTemplateDeployer) getParamsMapFromTemplate(template map[string]interface{}, params map[string]interface{}) map[string]interface{} {
 	paramValues := make(map[string]interface{})
 
-	var templateParams map[string]interface{}
-	if template != nil {
-		if p, ok := template["parameters"]; ok {
-			templateParams = p.(map[string]interface{})
-		} else {
-			templateParams = template
-		}
-	}
-
+	templateParams := getParams(template)
 	for k := range templateParams {
 		valueMap := make(map[string]interface{})
 		templateValueMap := params[k].(map[string]interface{})
@@ -189,14 +193,7 @@ func (armDeployer *ArmTemplateDeployer) Deploy(ctx context.Context, ad *AzureDep
 
 	log.Error("About to Create a deployment")
 
-	var templateParams map[string]interface{}
-	if ad.Params != nil {
-		if p, ok := ad.Params["parameters"]; ok {
-			templateParams = p.(map[string]interface{})
-		} else {
-			templateParams = ad.Params
-		}
-	}
+	templateParams := ad.GetParams()
 
 	deploymentPollerResp, err := deploymentsClient.BeginCreateOrUpdate(
 		ctx,
