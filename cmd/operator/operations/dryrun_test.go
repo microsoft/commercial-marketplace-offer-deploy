@@ -13,7 +13,6 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/test/fakes"
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
@@ -197,7 +196,7 @@ func Test_DryRun_getAzureDeployment_name_is_correctly_set(t *testing.T) {
 		dryRun:     test.dryRun,
 		sender:     test.sender,
 		retryDelay: 0 * time.Second,
-		log:        logrus.New().WithField("test", "Test_DryRun_getAzureDeployment_name_is_correctly_set"),
+		log:        log.WithField("test", "Test_DryRun_getAzureDeployment_name_is_correctly_set"),
 	}
 
 	// set the name using the invoked operation's deployment id
