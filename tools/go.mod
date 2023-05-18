@@ -5,17 +5,14 @@ go 1.18
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.2.2
 	github.com/labstack/echo/v4 v4.10.2
-	github.com/microsoft/commercial-marketplace-offer-deploy v0.3.1
-	github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.3.1
+	github.com/microsoft/commercial-marketplace-offer-deploy/sdk v1.0.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.15.0
 )
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.5.0 // indirect
-	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/internal v1.1.2 // indirect
-	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armpolicy v0.6.0 // indirect
-	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources v1.0.0 // indirect
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
 
 require (
