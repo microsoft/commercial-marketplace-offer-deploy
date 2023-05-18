@@ -138,7 +138,7 @@ func (exe *dryRun) getAzureDeployment(operation *data.InvokedOperation) *deploym
 		SubscriptionId:    retrieved.SubscriptionId,
 		Location:          retrieved.Location,
 		ResourceGroupName: retrieved.ResourceGroup,
-		DeploymentName:    retrieved.Name,
+		DeploymentName:    retrieved.GetAzureDeploymentName(),
 		Template:          retrieved.Template,
 		Params:            operation.Parameters,
 	}
