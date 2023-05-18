@@ -21,6 +21,14 @@ type DryRunValidationInput struct {
 	azureDeployment *AzureDeployment
 }
 
+func (i DryRunValidationInput) GetParams() map[string]interface{} {
+	return i.azureDeployment.GetParams()
+}
+
+func (i DryRunValidationInput) GetTemplateParams() map[string]interface{} {
+	return i.azureDeployment.GetTemplateParams()
+}
+
 type ValidatorFunc func(input DryRunValidationInput) (*sdk.DryRunResponse, error)
 
 func (f ValidatorFunc) Validate(input DryRunValidationInput) (*sdk.DryRunResponse, error) {
@@ -36,7 +44,7 @@ func validateParams(input DryRunValidationInput) (*sdk.DryRunResponse, error) {
 
 	template := input.azureDeployment.Template
 	requiredParams := getRequiredParams(template["parameters"].(map[string]interface{}))
-	params := input.azureDeployment.Params
+	params := input.GetParams()
 
 	var missingRequiredParams []string
 	for _, v := range requiredParams {
