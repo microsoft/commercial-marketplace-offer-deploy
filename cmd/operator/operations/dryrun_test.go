@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
@@ -48,8 +47,7 @@ func newDryExecutorTest(t *testing.T, options *dryRunExecutorTestOptions) *dryRu
 	hookQueue := fakes.NewFakeHookQueue(t)
 	hook.SetInstance(hookQueue)
 
-	dryRunFunc := func(ctx context.Context, ad *deployment.AzureDeployment) ([]*sdk.DryRunResult, error) {
-		var results []*sdk.DryRunResult
+	dryRunFunc := func(ctx context.Context, ad *deployment.AzureDeployment) (*sdk.DryRunResult, error) {
 		t.Log("dryRunFunc called")
 		if options.causeDryRunError {
 			return nil, errors.New("dryRunFunc error")
@@ -60,12 +58,12 @@ func newDryExecutorTest(t *testing.T, options *dryRunExecutorTestOptions) *dryRu
 		}
 
 		if options.causeDryRunStatusToBeFailed {
-			return append(results, &sdk.DryRunResult{
-				Status: to.Ptr(sdk.StatusFailed.String()),
-			}), nil
+			return &sdk.DryRunResult{
+				Status: sdk.StatusFailed.String(),
+			}, nil
 		}
 
-		return append(results, &sdk.DryRunResult{}), nil
+		return &sdk.DryRunResult{}, nil
 	}
 
 	db := data.NewDatabase(&data.DatabaseOptions{UseInMemory: true}).Instance()
@@ -124,7 +122,7 @@ func Test_DryRun_Execute_failure_hook_message_data_is_DryRunEventData(t *testing
 	t.Logf("data: %v", data)
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
-	assert.Equal(t, sdk.StatusFailed.String(), *data.Status)
+	assert.Equal(t, sdk.StatusFailed.String(), data.Status)
 }
 
 func Test_DryRun_Execute_DryRunError_Returns_Error(t *testing.T) {

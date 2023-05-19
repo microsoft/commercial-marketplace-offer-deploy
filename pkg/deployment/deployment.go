@@ -23,26 +23,21 @@ const (
 	Terraform
 )
 
-func mapResult(whatIfResponse *armresources.DeploymentsClientWhatIfResponse) (*sdk.DryRunResult, error) {
-	dryRunErrorResponse, err := mapError(whatIfResponse.Error)
+func mapResult(whatIfResponse *armresources.DeploymentsClientWhatIfResponse) (*sdk.DryRunError, error) {
+	dryRunError, err := mapError(whatIfResponse.Error)
 	if err != nil {
 		return nil, err
 	}
-
-	dryRunResult := sdk.DryRunResult{
-		Status: whatIfResponse.Status,
-		Error:  dryRunErrorResponse,
-	}
-	return &dryRunResult, nil
+	return dryRunError, nil
 }
 
-func mapError(armResourceResponse *armresources.ErrorResponse) (*sdk.DryRunErrorResponse, error) {
+func mapError(armResourceResponse *armresources.ErrorResponse) (*sdk.DryRunError, error) {
 	if armResourceResponse == nil {
 		log.Debug("returning nil")
 		return nil, nil
 	}
 
-	var dryRunErrorDetails []*sdk.DryRunErrorResponse
+	var dryRunErrorDetails []*sdk.DryRunError
 	if armResourceResponse.Details != nil && len(armResourceResponse.Details) > 0 {
 		for _, v := range armResourceResponse.Details {
 			dryRunError, err := mapError(v)
@@ -62,7 +57,7 @@ func mapError(armResourceResponse *armresources.ErrorResponse) (*sdk.DryRunError
 		}
 	}
 
-	dryRunErrorResponse := sdk.DryRunErrorResponse{
+	dryRunErrorResponse := sdk.DryRunError{
 		Message:        armResourceResponse.Message,
 		Code:           armResourceResponse.Code,
 		Target:         armResourceResponse.Target,
