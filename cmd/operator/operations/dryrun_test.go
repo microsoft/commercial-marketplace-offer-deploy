@@ -48,7 +48,8 @@ func newDryExecutorTest(t *testing.T, options *dryRunExecutorTestOptions) *dryRu
 	hookQueue := fakes.NewFakeHookQueue(t)
 	hook.SetInstance(hookQueue)
 
-	dryRunFunc := func(ctx context.Context, ad *deployment.AzureDeployment) (*sdk.DryRunResponse, error) {
+	dryRunFunc := func(ctx context.Context, ad *deployment.AzureDeployment) ([]*sdk.DryRunResult, error) {
+		var results []*sdk.DryRunResult
 		t.Log("dryRunFunc called")
 		if options.causeDryRunError {
 			return nil, errors.New("dryRunFunc error")
@@ -59,16 +60,12 @@ func newDryExecutorTest(t *testing.T, options *dryRunExecutorTestOptions) *dryRu
 		}
 
 		if options.causeDryRunStatusToBeFailed {
-			return &sdk.DryRunResponse{
-				DryRunResult: sdk.DryRunResult{
-					Status: to.Ptr(sdk.StatusFailed.String()),
-				},
-			}, nil
+			return append(results, &sdk.DryRunResult{
+				Status: to.Ptr(sdk.StatusFailed.String()),
+			}), nil
 		}
 
-		return &sdk.DryRunResponse{
-			DryRunResult: sdk.DryRunResult{},
-		}, nil
+		return append(results, &sdk.DryRunResult{}), nil
 	}
 
 	db := data.NewDatabase(&data.DatabaseOptions{UseInMemory: true}).Instance()

@@ -49,9 +49,9 @@ func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOp
 		}
 		log.WithField("response", response).Debug("Received dry run response from Azure")
 
-		var result *sdk.DryRunResult
+		var result []*sdk.DryRunResult
 		if response != nil {
-			result = &response.DryRunResult
+			result = response
 			invokedOperation.Status = sdk.StatusSuccess.String()
 		} else {
 			invokedOperation.Status = string(sdk.StatusError)
@@ -108,13 +108,46 @@ func (exe *dryRun) getFailedEventHookMessage(err error, invokedOperation *data.I
 	return message
 }
 
-func (exe *dryRun) mapToEventHookMessage(invokedOperation *data.InvokedOperation, result *sdk.DryRunResult) *sdk.EventHookMessage {
+func getErrorResponse(results []*sdk.DryRunResult) *sdk.DryRunErrorResponse {
+	if results == nil {
+		return nil
+	}
+
+	var errorAdditionalInfo []*sdk.ErrorAdditionalInfo
+	for _, result := range results {
+		if result.Status != nil && *result.Status == sdk.StatusError.String() {
+			if result.Error != nil {
+				errorAdditionalInfo = append(errorAdditionalInfo, result.Error.AdditionalInfo...)
+			}
+		}
+	}
+
+	return nil
+}
+
+func getStatus(result []*sdk.DryRunResult) *string {
+	if result == nil {
+		return to.Ptr(sdk.StatusError.String())
+	}
+
+	for _, r := range result {
+		if r.Status != nil {
+			if *r.Status == sdk.StatusError.String() {
+				return to.Ptr(sdk.StatusError.String())
+			}
+		}
+	}
+
+	return to.Ptr(sdk.StatusSuccess.String())
+}
+
+func (exe *dryRun) mapToEventHookMessage(invokedOperation *data.InvokedOperation, result []*sdk.DryRunResult) *sdk.EventHookMessage {
 	resultStatus := to.Ptr(sdk.StatusError.String())
 	resultError := &sdk.DryRunErrorResponse{}
 
 	if result != nil {
-		resultStatus = result.Status
-		resultError = result.Error
+		resultStatus = getStatus(result)
+		resultError = getErrorResponse(result)
 	}
 
 	data := sdk.DryRunEventData{
