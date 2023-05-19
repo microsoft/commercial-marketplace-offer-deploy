@@ -158,8 +158,8 @@ func (exe *dryRun) mapToEventHookMessage(invokedOperation *data.InvokedOperation
 		Status:       resultStatus,
 		Attempts:     invokedOperation.Attempts,
 		Error:        resultError,
-		StartedAt:    invokedOperation.CreatedAt,
-		CompletedAt:  invokedOperation.UpdatedAt,
+		StartedAt:    invokedOperation.CreatedAt.UTC(),
+		CompletedAt:  invokedOperation.UpdatedAt.UTC(),
 	}
 
 	message := &sdk.EventHookMessage{

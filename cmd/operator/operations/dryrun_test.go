@@ -322,6 +322,6 @@ func Test_DryRun_Execute_eventhook_message_times_match_invokedoperation(t *testi
 	data, err := message.DryRunEventData()
 	assert.NoError(t, err)
 
-	assert.Equal(t, test.invokedOperation.CreatedAt, data.StartedAt)
-	assert.Equal(t, test.invokedOperation.UpdatedAt, data.CompletedAt)
+	assert.Equal(t, test.invokedOperation.CreatedAt.UTC(), data.StartedAt)
+	assert.Equal(t, test.invokedOperation.UpdatedAt.UTC(), data.CompletedAt)
 }
