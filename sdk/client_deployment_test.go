@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -78,7 +78,7 @@ func getParameters(t *testing.T, path string) map[string]interface{} {
 }
 
 func readJson(path string) (map[string]interface{}, error) {
-	templateFile, err := ioutil.ReadFile(path)
+	templateFile, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

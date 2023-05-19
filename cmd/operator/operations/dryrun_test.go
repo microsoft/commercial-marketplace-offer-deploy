@@ -251,3 +251,77 @@ func Test_DryRun_getAzureDeployment_name_is_correctly_set(t *testing.T) {
 	assert.NotNil(t, result)
 	assert.Equal(t, "modm.1.test-deploymentwith-some-slashes", result.DeploymentName)
 }
+
+func Test_DryRun_Execute_failure_captures_errors(t *testing.T) {
+	test := newDryExecutorTest(t, &dryRunExecutorTestOptions{
+		causeDryRunError:            true,
+		causeDryRunResultToBeNil:    false,
+		causeDryRunStatusToBeFailed: false,
+	})
+
+	executor := &dryRun{
+		db:         test.db,
+		dryRun:     test.dryRun,
+		sender:     test.sender,
+		retryDelay: 0 * time.Second,
+		log:        &log.Entry{},
+	}
+
+	executor.Execute(test.ctx, test.invokedOperation)
+
+	assert.Equal(t, 3, len(test.invokedOperation.Errors))
+}
+
+func Test_DryRun_Execute_eventhook_message_attempts_nonzero_index(t *testing.T) {
+	test := newDryExecutorTest(t, &dryRunExecutorTestOptions{
+		causeDryRunError:            true,
+		causeDryRunResultToBeNil:    false,
+		causeDryRunStatusToBeFailed: false,
+	})
+
+	executor := &dryRun{
+		db:         test.db,
+		dryRun:     test.dryRun,
+		sender:     test.sender,
+		retryDelay: 0 * time.Second,
+		log:        &log.Entry{},
+	}
+
+	executor.Execute(test.ctx, test.invokedOperation)
+
+	messages := test.hookQueue.Messages()
+
+	for index, message := range messages {
+		data, _ := message.DryRunEventData()
+		assert.NotEqual(t, index+1, data.Attempts)
+	}
+}
+
+func Test_DryRun_Execute_eventhook_message_times_match_invokedoperation(t *testing.T) {
+	test := newDryExecutorTest(t, &dryRunExecutorTestOptions{
+		causeDryRunError:            false,
+		causeDryRunResultToBeNil:    false,
+		causeDryRunStatusToBeFailed: false,
+	})
+
+	executor := &dryRun{
+		db:         test.db,
+		dryRun:     test.dryRun,
+		sender:     test.sender,
+		retryDelay: 0 * time.Second,
+		log:        &log.Entry{},
+	}
+
+	executor.Execute(test.ctx, test.invokedOperation)
+
+	assert.Equal(t, 1, len(test.hookQueue.Messages()))
+
+	message := test.hookQueue.Messages()[0]
+	t.Logf("message: %+v", message)
+
+	data, err := message.DryRunEventData()
+	assert.NoError(t, err)
+
+	assert.Equal(t, test.invokedOperation.CreatedAt, data.StartedAt)
+	assert.Equal(t, test.invokedOperation.UpdatedAt, data.CompletedAt)
+}

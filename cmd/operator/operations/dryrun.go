@@ -35,14 +35,16 @@ func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOp
 	err := retry.Do(func() error {
 		log := exe.log.WithField("attempt", invokedOperation.Attempts+1)
 		log.Info("attempting dry run")
-		azureDeployment := exe.getAzureDeployment(invokedOperation)
 
+		invokedOperation.Running()
+		exe.save(invokedOperation)
+
+		azureDeployment := exe.getAzureDeployment(invokedOperation)
 		response, err := exe.dryRun(ctx, azureDeployment)
 
 		if err != nil {
 			log.Errorf("Error: %v", err)
-			invokedOperation.Status = sdk.StatusRunning.String()
-			invokedOperation.Attempts = invokedOperation.Attempts + 1
+			invokedOperation.Error(err)
 			exe.save(invokedOperation)
 
 			return &RetriableError{Err: err, RetryAfter: exe.retryDelay}
@@ -156,6 +158,8 @@ func (exe *dryRun) mapToEventHookMessage(invokedOperation *data.InvokedOperation
 		Status:       resultStatus,
 		Attempts:     invokedOperation.Attempts,
 		Error:        resultError,
+		StartedAt:    invokedOperation.CreatedAt,
+		CompletedAt:  invokedOperation.UpdatedAt,
 	}
 
 	message := &sdk.EventHookMessage{
