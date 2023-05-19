@@ -15,7 +15,7 @@ require (
 	github.com/iancoleman/strcase v0.2.0
 	github.com/labstack/echo/v4 v4.10.2
 	github.com/lestrrat-go/jwx v1.2.25
-	github.com/microsoft/commercial-marketplace-offer-deploy/sdk v1.0.2
+	github.com/microsoft/commercial-marketplace-offer-deploy/sdk v1.0.3
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.0
