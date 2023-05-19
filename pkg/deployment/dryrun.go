@@ -11,7 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func whatIfValidator(input DryRunValidationInput) (*sdk.DryRunResponse, error) {
+func whatIfValidator(input DryRunValidationInput) (*sdk.DryRunResult, error) {
 	if input.azureDeployment == nil {
 		log.Error(errors.New("azureDeployment is not set on input struct"))
 	}
@@ -25,12 +25,12 @@ func whatIfValidator(input DryRunValidationInput) (*sdk.DryRunResponse, error) {
 		return nil, err
 	}
 
-	dryResponse, err := mapResponse(whatIfResult)
+	dryRunResult, err := mapResult(whatIfResult)
 	if err != nil {
 		return nil, err
 	}
 
-	return dryResponse, nil
+	return dryRunResult, nil
 }
 
 func loadValidators() []DryRunValidator {
@@ -41,30 +41,31 @@ func loadValidators() []DryRunValidator {
 	}
 }
 
-func validate(validators []DryRunValidator, input DryRunValidationInput) (*sdk.DryRunResponse, error) {
-	var responses []*sdk.DryRunResponse
+func validate(validators []DryRunValidator, input DryRunValidationInput) ([]*sdk.DryRunResult, error) {
+	var results []*sdk.DryRunResult
 	for _, validator := range validators {
 		res, err := validator.Validate(input)
 		if err != nil {
-			return res, err
+			results = append(results, res)
+			return results, err
 		}
 		if res != nil {
-			responses = append(responses, res)
+			results = append(results, res)
 		}
 	}
 
-	return aggregateResponses(responses), nil
+	return results, nil
 }
 
-func aggregateResponses(responses []*sdk.DryRunResponse) *sdk.DryRunResponse {
-	if responses == nil || len(responses) == 0 {
-		return nil
-	}
-	//todo: aggregate responses
-	return responses[0]
-}
+// func aggregateResults(results []*sdk.DryRunResult) []*sdk.DryRunResult {
+// 	if results == nil || len(results) == 0 {
+// 		return nil
+// 	}
+// 	//todo: aggregate responses
+// 	return responses[0]
+// }
 
-func DryRun(ctx context.Context, azureDeployment *AzureDeployment) (*sdk.DryRunResponse, error) {
+func DryRun(ctx context.Context, azureDeployment *AzureDeployment) ([]*sdk.DryRunResult, error) {
 	log.Debug("Inside DryRun in pkg/deployment/dryrun.go")
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
@@ -102,15 +103,7 @@ func whatIfDeployment(input DryRunValidationInput) (*armresources.DeploymentsCli
 		return nil, err
 	}
 
-	var templateParams map[string]interface{}
-	if azureDeployment.Params != nil {
-		if p, ok := azureDeployment.Params["parameters"]; ok {
-			templateParams = p.(map[string]interface{})
-		} else {
-			templateParams = azureDeployment.Params
-		}
-	}
-
+	templateParams := input.GetParams()
 	log.Debugf("About to call whatIf with templateParams of - %v", templateParams)
 
 	pollerResp, err := deploymentsClient.BeginWhatIf(

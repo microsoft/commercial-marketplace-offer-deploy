@@ -35,23 +35,25 @@ func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOp
 	err := retry.Do(func() error {
 		log := exe.log.WithField("attempt", invokedOperation.Attempts+1)
 		log.Info("attempting dry run")
-		azureDeployment := exe.getAzureDeployment(invokedOperation)
 
+		invokedOperation.Running()
+		exe.save(invokedOperation)
+
+		azureDeployment := exe.getAzureDeployment(invokedOperation)
 		response, err := exe.dryRun(ctx, azureDeployment)
 
 		if err != nil {
 			log.Errorf("Error: %v", err)
-			invokedOperation.Status = sdk.StatusRunning.String()
-			invokedOperation.Attempts = invokedOperation.Attempts + 1
+			invokedOperation.Error(err)
 			exe.save(invokedOperation)
 
 			return &RetriableError{Err: err, RetryAfter: exe.retryDelay}
 		}
 		log.WithField("response", response).Debug("Received dry run response from Azure")
 
-		var result *sdk.DryRunResult
+		var result []*sdk.DryRunResult
 		if response != nil {
-			result = &response.DryRunResult
+			result = response
 			invokedOperation.Status = sdk.StatusSuccess.String()
 		} else {
 			invokedOperation.Status = string(sdk.StatusError)
@@ -88,28 +90,66 @@ func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOp
 }
 
 func (exe *dryRun) getFailedEventHookMessage(err error, invokedOperation *data.InvokedOperation) *sdk.EventHookMessage {
-	var data interface{}
-	if err != nil && len(err.Error()) > 0 {
-		data = err.Error()
-	} else {
-		if invokedOperation != nil && invokedOperation.Result != nil {
-			data = invokedOperation.Result
-		}
+	data := &sdk.DryRunEventData{
+		DeploymentId: int(invokedOperation.DeploymentId),
+		OperationId:  invokedOperation.ID,
+		Status:       to.Ptr(sdk.StatusFailed.String()),
+		Attempts:     invokedOperation.Attempts,
 	}
-	return &sdk.EventHookMessage{
+
+	message := &sdk.EventHookMessage{
 		Type:   string(sdk.EventTypeDryRunCompleted),
 		Data:   data,
 		Status: sdk.StatusFailed.String(),
 	}
+
+	if err != nil && len(err.Error()) > 0 {
+		message.Error = err.Error()
+	}
+
+	return message
 }
 
-func (exe *dryRun) mapToEventHookMessage(invokedOperation *data.InvokedOperation, result *sdk.DryRunResult) *sdk.EventHookMessage {
+func getErrorResponse(results []*sdk.DryRunResult) *sdk.DryRunErrorResponse {
+	if results == nil {
+		return nil
+	}
+
+	var errorAdditionalInfo []*sdk.ErrorAdditionalInfo
+	for _, result := range results {
+		if result.Status != nil && *result.Status == sdk.StatusError.String() {
+			if result.Error != nil {
+				errorAdditionalInfo = append(errorAdditionalInfo, result.Error.AdditionalInfo...)
+			}
+		}
+	}
+
+	return nil
+}
+
+func getStatus(result []*sdk.DryRunResult) *string {
+	if result == nil {
+		return to.Ptr(sdk.StatusError.String())
+	}
+
+	for _, r := range result {
+		if r.Status != nil {
+			if *r.Status == sdk.StatusError.String() {
+				return to.Ptr(sdk.StatusError.String())
+			}
+		}
+	}
+
+	return to.Ptr(sdk.StatusSuccess.String())
+}
+
+func (exe *dryRun) mapToEventHookMessage(invokedOperation *data.InvokedOperation, result []*sdk.DryRunResult) *sdk.EventHookMessage {
 	resultStatus := to.Ptr(sdk.StatusError.String())
 	resultError := &sdk.DryRunErrorResponse{}
 
 	if result != nil {
-		resultStatus = result.Status
-		resultError = result.Error
+		resultStatus = getStatus(result)
+		resultError = getErrorResponse(result)
 	}
 
 	data := sdk.DryRunEventData{
@@ -118,6 +158,8 @@ func (exe *dryRun) mapToEventHookMessage(invokedOperation *data.InvokedOperation
 		Status:       resultStatus,
 		Attempts:     invokedOperation.Attempts,
 		Error:        resultError,
+		StartedAt:    invokedOperation.CreatedAt.UTC(),
+		CompletedAt:  invokedOperation.UpdatedAt.UTC(),
 	}
 
 	message := &sdk.EventHookMessage{
@@ -138,7 +180,7 @@ func (exe *dryRun) getAzureDeployment(operation *data.InvokedOperation) *deploym
 		SubscriptionId:    retrieved.SubscriptionId,
 		Location:          retrieved.Location,
 		ResourceGroupName: retrieved.ResourceGroup,
-		DeploymentName:    retrieved.Name,
+		DeploymentName:    retrieved.GetAzureDeploymentName(),
 		Template:          retrieved.Template,
 		Params:            operation.Parameters,
 	}

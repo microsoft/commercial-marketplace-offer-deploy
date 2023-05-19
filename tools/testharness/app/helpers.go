@@ -2,11 +2,12 @@ package app
 
 import (
 	"context"
+	"encoding/json"
+	"os"
 	"path/filepath"
 	"strconv"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -28,7 +29,7 @@ func getClient(ctx context.Context) (*sdk.Client, error) {
 }
 
 func getJsonAsMap(path string) map[string]interface{} {
-	jsonMap, err := utils.ReadJson(path)
+	jsonMap, err := readJson(path)
 	if err != nil {
 		log.Println(err)
 	}
@@ -110,4 +111,17 @@ func loadEnvironmentVariables() *viper.Viper {
 		log.Errorf("Error reading config file, %s", err)
 	}
 	return env
+}
+
+func readJson(path string) (map[string]interface{}, error) {
+	templateFile, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	template := make(map[string]interface{})
+	if err := json.Unmarshal(templateFile, &template); err != nil {
+		return nil, err
+	}
+	return template, nil
 }

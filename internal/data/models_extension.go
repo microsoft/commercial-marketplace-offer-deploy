@@ -5,6 +5,7 @@ package data
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -14,7 +15,16 @@ import (
 // Gets the azure deployment name suitable for azure deployment
 // format - modm.<deploymentId>-<deploymentName>
 func (d *Deployment) GetAzureDeploymentName() string {
-	return "modm." + strconv.FormatUint(uint64(d.ID), 10) + "-" + d.Name
+	prefix := "modm." + strconv.FormatUint(uint64(d.ID), 10) + "."
+	suffix := d.getSanitizedName()
+	maxLength := 64
+	lengthCheck := len(prefix + suffix)
+
+	// reduce size of the name if the total length is greater than 64
+	if lengthCheck > maxLength {
+		suffix = suffix[:maxLength-len(suffix)]
+	}
+	return prefix + suffix
 }
 
 // Parses the azure deployment name and returns OUR deployment id
@@ -31,6 +41,15 @@ func (d *Deployment) ParseAzureDeploymentName(azureDeploymentName string) (*int,
 		return &id, nil
 	}
 	return nil, fmt.Errorf("[%s] is not a managed deployment", azureDeploymentName)
+}
+
+func (d *Deployment) getSanitizedName() string {
+	r := regexp.MustCompile("[^a-zA-Z0-9 -]")
+	name := r.ReplaceAllString(d.Name, "")
+	name = strings.ReplaceAll(name, " ", "-")
+	name = strings.TrimSuffix(name, "-")
+
+	return name
 }
 
 //region InvokedOperation

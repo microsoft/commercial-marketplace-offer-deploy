@@ -23,7 +23,7 @@ const (
 	Terraform
 )
 
-func mapResponse(whatIfResponse *armresources.DeploymentsClientWhatIfResponse) (*sdk.DryRunResponse, error) {
+func mapResult(whatIfResponse *armresources.DeploymentsClientWhatIfResponse) (*sdk.DryRunResult, error) {
 	dryRunErrorResponse, err := mapError(whatIfResponse.Error)
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func mapResponse(whatIfResponse *armresources.DeploymentsClientWhatIfResponse) (
 		Status: whatIfResponse.Status,
 		Error:  dryRunErrorResponse,
 	}
-	return &sdk.DryRunResponse{dryRunResult}, nil
+	return &dryRunResult, nil
 }
 
 func mapError(armResourceResponse *armresources.ErrorResponse) (*sdk.DryRunErrorResponse, error) {
