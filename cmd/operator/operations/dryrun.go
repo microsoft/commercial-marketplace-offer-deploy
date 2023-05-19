@@ -88,19 +88,24 @@ func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOp
 }
 
 func (exe *dryRun) getFailedEventHookMessage(err error, invokedOperation *data.InvokedOperation) *sdk.EventHookMessage {
-	var data interface{}
-	if err != nil && len(err.Error()) > 0 {
-		data = err.Error()
-	} else {
-		if invokedOperation != nil && invokedOperation.Result != nil {
-			data = invokedOperation.Result
-		}
+	data := &sdk.DryRunEventData{
+		DeploymentId: int(invokedOperation.DeploymentId),
+		OperationId:  invokedOperation.ID,
+		Status:       to.Ptr(sdk.StatusFailed.String()),
+		Attempts:     invokedOperation.Attempts,
 	}
-	return &sdk.EventHookMessage{
+
+	message := &sdk.EventHookMessage{
 		Type:   string(sdk.EventTypeDryRunCompleted),
 		Data:   data,
 		Status: sdk.StatusFailed.String(),
 	}
+
+	if err != nil && len(err.Error()) > 0 {
+		message.Error = err.Error()
+	}
+
+	return message
 }
 
 func (exe *dryRun) mapToEventHookMessage(invokedOperation *data.InvokedOperation, result *sdk.DryRunResult) *sdk.EventHookMessage {

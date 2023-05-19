@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
@@ -24,14 +25,15 @@ type dryRunExecutorTest struct {
 	db               *gorm.DB
 	dryRun           DryRunFunc
 	sender           messaging.MessageSender
-	hookQueue        hook.Queue
+	hookQueue        *fakes.FakeHookQueue
 	invokedOperation *data.InvokedOperation
 	ctx              context.Context
 }
 
 type dryRunExecutorTestOptions struct {
-	causeDryRunError         bool
-	causeDryRunResultToBeNil bool
+	causeDryRunError            bool
+	causeDryRunResultToBeNil    bool
+	causeDryRunStatusToBeFailed bool
 }
 
 func (t *dryRunExecutorTest) getSavedState() data.InvokedOperation {
@@ -51,9 +53,19 @@ func newDryExecutorTest(t *testing.T, options *dryRunExecutorTestOptions) *dryRu
 		if options.causeDryRunError {
 			return nil, errors.New("dryRunFunc error")
 		}
+
 		if options.causeDryRunResultToBeNil {
 			return nil, nil
 		}
+
+		if options.causeDryRunStatusToBeFailed {
+			return &sdk.DryRunResponse{
+				DryRunResult: sdk.DryRunResult{
+					Status: to.Ptr(sdk.StatusFailed.String()),
+				},
+			}, nil
+		}
+
 		return &sdk.DryRunResponse{
 			DryRunResult: sdk.DryRunResult{},
 		}, nil
@@ -87,6 +99,36 @@ func newDryExecutorTest(t *testing.T, options *dryRunExecutorTestOptions) *dryRu
 }
 
 //endregion test setup
+
+//region Execute
+
+func Test_DryRun_Execute_failure_hook_message_data_is_DryRunEventData(t *testing.T) {
+	test := newDryExecutorTest(t, &dryRunExecutorTestOptions{
+		causeDryRunError:            true,
+		causeDryRunResultToBeNil:    false,
+		causeDryRunStatusToBeFailed: true,
+	})
+
+	executor := &dryRun{
+		db:         test.db,
+		dryRun:     test.dryRun,
+		sender:     test.sender,
+		retryDelay: 0 * time.Second,
+		log:        &log.Entry{},
+	}
+
+	executor.Execute(test.ctx, test.invokedOperation)
+
+	assert.Equal(t, 1, len(test.hookQueue.Messages()))
+
+	msg := test.hookQueue.Messages()[0]
+	data, err := msg.DryRunEventData()
+
+	t.Logf("data: %v", data)
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+	assert.Equal(t, sdk.StatusFailed.String(), *data.Status)
+}
 
 func Test_DryRun_Execute_DryRunError_Returns_Error(t *testing.T) {
 	test := newDryExecutorTest(t, &dryRunExecutorTestOptions{causeDryRunError: true})
@@ -184,6 +226,8 @@ func Test_DryRun_Execute_NoError_With_Result_Status_Is_Success(t *testing.T) {
 	executor.Execute(test.ctx, test.invokedOperation)
 	assert.Equal(t, sdk.StatusSuccess.String(), test.invokedOperation.Status)
 }
+
+//endregion Execute
 
 func Test_DryRun_getAzureDeployment_name_is_correctly_set(t *testing.T) {
 	test := newDryExecutorTest(t, &dryRunExecutorTestOptions{

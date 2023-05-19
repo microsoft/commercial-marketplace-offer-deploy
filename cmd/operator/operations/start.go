@@ -89,6 +89,7 @@ func (exe *startDeployment) updateToRunning(ctx context.Context, invokedOperatio
 	err := hook.Add(ctx, &sdk.EventHookMessage{
 		Subject: "/deployments/" + strconv.Itoa(int(invokedOperation.DeploymentId)),
 		Status:  invokedOperation.Status,
+		Type:    string(sdk.EventTypeDeploymentStarted),
 		Data: &sdk.DeploymentEventData{
 			DeploymentId: int(invokedOperation.DeploymentId),
 			OperationId:  invokedOperation.ID,
