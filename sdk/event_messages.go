@@ -60,13 +60,13 @@ func (m *EventHookMessage) DeploymentEventData() (*DeploymentEventData, error) {
 // Event data for a message
 
 type DryRunEventData struct {
-	DeploymentId int                  `json:"deploymentId" mapstructure:"deploymentId"`
-	OperationId  uuid.UUID            `json:"operationId" mapstructure:"operationId"`
-	Attempts     int                  `json:"attempts" mapstructure:"attempts"`
-	Status       *string              `json:"status,omitempty" mapstructure:"status"`
-	Error        *DryRunErrorResponse `json:"error,omitempty" mapstructure:"error"`
-	StartedAt    time.Time            `json:"startedAt,omitempty" mapstructure:"startedAt"`
-	CompletedAt  time.Time            `json:"completedAt,omitempty" mapstructure:"completedAt"`
+	DeploymentId int           `json:"deploymentId" mapstructure:"deploymentId"`
+	OperationId  uuid.UUID     `json:"operationId" mapstructure:"operationId"`
+	Attempts     int           `json:"attempts" mapstructure:"attempts"`
+	Status       string        `json:"status,omitempty" mapstructure:"status"`
+	Errors       []DryRunError `json:"error,omitempty" mapstructure:"error"`
+	StartedAt    time.Time     `json:"startedAt,omitempty" mapstructure:"startedAt"`
+	CompletedAt  time.Time     `json:"completedAt,omitempty" mapstructure:"completedAt"`
 }
 
 type DeploymentEventData struct {
