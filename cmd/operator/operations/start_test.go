@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type testStartDeploymentExecutor struct {
+type startDeploymentTest struct {
 	hook                  *fakes.FakeHookQueue
 	db                    *gorm.DB
 	createAzureDeployment deployment.CreateDeployment
@@ -23,7 +23,7 @@ type testStartDeploymentExecutor struct {
 	t                     *testing.T
 }
 
-func newTestStartDeploymentExecutor(t *testing.T) *testStartDeploymentExecutor {
+func newStartDeploymentTest(t *testing.T) *startDeploymentTest {
 	// set hook queue to fake instance
 	fakeHookQueue := fakes.NewFakeHookQueue(t)
 	hook.SetInstance(fakeHookQueue)
@@ -34,7 +34,7 @@ func newTestStartDeploymentExecutor(t *testing.T) *testStartDeploymentExecutor {
 
 	createAzureDeployment := func(ctx context.Context, dep deployment.AzureDeployment) (*deployment.AzureDeploymentResult, error) {
 		t.Log("createAzureDeployment called")
-		return nil, nil
+		return &deployment.AzureDeploymentResult{}, nil
 	}
 
 	invokedOperation := &data.InvokedOperation{
@@ -46,7 +46,7 @@ func newTestStartDeploymentExecutor(t *testing.T) *testStartDeploymentExecutor {
 	}
 	db.Create(&invokedOperation)
 
-	return &testStartDeploymentExecutor{
+	return &startDeploymentTest{
 		t:                     t,
 		db:                    db,
 		hook:                  fakeHookQueue,
@@ -57,19 +57,27 @@ func newTestStartDeploymentExecutor(t *testing.T) *testStartDeploymentExecutor {
 }
 
 func Test_StartDeployment_FirstAttemptSendsEventHookWithOperationId(t *testing.T) {
-	test := newTestStartDeploymentExecutor(t)
+	test := newStartDeploymentTest(t)
 
 	executor := startDeployment{
 		db:                    test.db,
 		factory:               test.executionFactory,
 		createAzureDeployment: test.createAzureDeployment,
 	}
+
 	// execute with setup
 	err := executor.Execute(context.TODO(), test.invokedOperation)
+
 	assert.NoError(t, err)
+	assert.Equal(t, 1, len(test.hook.Messages()))
+
 	message := test.hook.Messages()[0]
 
-	assert.EqualValues(t, test.invokedOperation.ID, message.Data.(*sdk.DeploymentEventData).OperationId)
+	data, err := message.DeploymentEventData()
+	assert.NoError(t, err)
+
+	assert.EqualValues(t, sdk.EventTypeDeploymentStarted.String(), message.Type)
+	assert.EqualValues(t, test.invokedOperation.ID, data.OperationId)
 }
 
 // region fakes

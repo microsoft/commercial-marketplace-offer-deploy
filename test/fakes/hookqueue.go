@@ -2,6 +2,7 @@ package fakes
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
@@ -25,6 +26,11 @@ func (q *FakeHookQueue) Messages() []sdk.EventHookMessage {
 
 func (q *FakeHookQueue) Add(ctx context.Context, message *sdk.EventHookMessage) error {
 	q.t.Logf("fakeHookQueue.Add called with message: %v", message)
-	q.messages = append(q.messages, *message)
+
+	bytes, _ := json.Marshal(message)
+	unmarshaled := sdk.EventHookMessage{}
+	json.Unmarshal(bytes, &unmarshaled)
+
+	q.messages = append(q.messages, unmarshaled)
 	return nil
 }
