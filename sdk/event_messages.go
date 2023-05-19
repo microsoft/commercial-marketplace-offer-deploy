@@ -64,7 +64,7 @@ type DryRunEventData struct {
 	OperationId  uuid.UUID     `json:"operationId" mapstructure:"operationId"`
 	Attempts     int           `json:"attempts" mapstructure:"attempts"`
 	Status       string        `json:"status,omitempty" mapstructure:"status"`
-	Errors       []DryRunError `json:"error,omitempty" mapstructure:"error"`
+	Errors       []DryRunError `json:"errors,omitempty" mapstructure:"errors"`
 	StartedAt    time.Time     `json:"startedAt,omitempty" mapstructure:"startedAt"`
 	CompletedAt  time.Time     `json:"completedAt,omitempty" mapstructure:"completedAt"`
 }
