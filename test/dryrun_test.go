@@ -1,6 +1,5 @@
 //go:build integration
 // +build integration
-
 package test
 
 import (
@@ -49,15 +48,15 @@ func (s *dryRunSuite) SetupTest() {
 	s.DeployPolicyDefintion()
 }
 
-func (s *dryRunSuite) runDeploymentTest(path string, errorExpected bool) *deployment.DryRunResponse {
+func (s *dryRunSuite) runDeploymentTest(path string, errorExpected bool, template map[string]interface{}, params map[string]interface{}) *sdk.DryRunResult {
 	azureDeployment := &deployment.AzureDeployment{
 		SubscriptionId:    s.subscriptionId,
 		Location:          s.location,
 		ResourceGroupName: s.resourceGroupName,
 		DeploymentName:    "DryRunDeploymentTest",
 		DeploymentType:    deployment.AzureResourceManager,
-		Template:          s.getTemplate(path),
-		Params:            s.getParameters(path),
+		Template:          template,
+		Params:            params,
 	}
 
 	s.Assert().NotNil(azureDeployment)
@@ -82,39 +81,51 @@ func (s *dryRunSuite) getJsonAsMap(path string) map[string]interface{} {
 
 func (s *dryRunSuite) TestNamePolicyFailure() {
 	nameViolationPath := "./testdata/nameviolation/failure"
-	result := s.runDeploymentTest(nameViolationPath, true)
-	log.Print("TestNamePolicyFailure Results:\n %s" + *s.prettify(result.DryRunResult))
+	result := s.runDeploymentTest(nameViolationPath, true, s.getTemplate(nameViolationPath), s.getParameters(nameViolationPath))
+	log.Print("TestNamePolicyFailure Results:\n %s" + *s.prettify(result))
 }
 
 func (s *dryRunSuite) TestExistingStorageFailure() {
 	nameViolationPath := "./testdata/existingstorage"
-	result := s.runDeploymentTest(nameViolationPath, true)
-	log.Print("TestNamePolicyFailure Results:\n %s" + *s.prettify(result.DryRunResult))
+	result := s.runDeploymentTest(nameViolationPath, true, s.getTemplate(nameViolationPath), s.getParameters(nameViolationPath))
+	log.Print("TestNamePolicyFailure Results:\n %s" + *s.prettify(result))
 }
 
 func (s *dryRunSuite) TestTaggedDeployment() {
 	taggedDeploymentPath := "./testdata/taggeddeployment"
-	result := s.runDeploymentTest(taggedDeploymentPath, true)
-	log.Print("TestNamePolicyFailure Results:\n %s" + *s.prettify(result.DryRunResult))
+	result := s.runDeploymentTest(taggedDeploymentPath, true, s.getTemplate(taggedDeploymentPath), s.getParameters(taggedDeploymentPath))
+	log.Print("TestNamePolicyFailure Results:\n %s" + *s.prettify(result))
 }
 
 func (s *dryRunSuite) TestMissingParameter() {
 	taggedDeploymentPath := "./testdata/missingparam"
-	result := s.runDeploymentTest(taggedDeploymentPath, true)
-	log.Print("TestMissingParameter Results:\n %s" + *s.prettify(result.DryRunResult))
+	result := s.runDeploymentTest(taggedDeploymentPath, true, s.getTemplate(taggedDeploymentPath), s.getParameters(taggedDeploymentPath))
+	log.Print("TestMissingParameter Results:\n %s" + *s.prettify(result))
 }
 
 func (s *dryRunSuite) TestNestedPolicyFailure() {
 	nameViolationPath := "./testdata/nameviolation/nestedfailure"
-	result := s.runDeploymentTest(nameViolationPath, true)
-	log.Print("TestNamePolicyFailure Results:\n %s" + *s.prettify(result.DryRunResult))
+	result := s.runDeploymentTest(nameViolationPath, true, s.getTemplate(nameViolationPath), s.getParameters(nameViolationPath))
+	log.Print("TestNamePolicyFailure Results:\n %s" + *s.prettify(result))
+}
+
+func (s *dryRunSuite) TestDirectParamsMap() {
+	paramsMapPath := "./testdata/directparamsmap"
+	valueMap := map[string]interface{}{
+		"value"	: "bobjacbicep2",
+	}
+	paramsMap := map[string]interface{}{
+		"testName": valueMap,
+	}
+	result := s.runDeploymentTest(paramsMapPath, true, s.getTemplate(paramsMapPath), paramsMap)
+	s.Assert().NotNil(result)
 }
 
 func (s *dryRunSuite) TestQuotaViolation() {
 	quotaViolationPath := "./testdata/quotaviolation"
-	result := s.runDeploymentTest(quotaViolationPath, true)
+	result := s.runDeploymentTest(quotaViolationPath, true, s.getTemplate(quotaViolationPath), s.getParameters(quotaViolationPath))
 	require.NotNil(s.T(), result)
-	log.Print("TestQuotaViolation Results:\n %s" + *s.prettify(result.DryRunResult))
+	log.Print("TestQuotaViolation Results:\n %s" + *s.prettify(result))
 }
 
 func (s *dryRunSuite) prettify(obj any) *string {
