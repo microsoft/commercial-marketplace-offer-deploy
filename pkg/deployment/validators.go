@@ -13,7 +13,13 @@ import (
 )
 
 type DryRunValidator interface {
-	Validate(input DryRunValidationInput) (*sdk.DryRunResult, error)
+	// Validates dry run input
+	//	returns:
+	//		- dryRunError: error that will be returned if there were no runtime errors, AND the validator failed. If there were no errors
+	//			and the validator passed, then this will be nil
+	//		- error: runtime error, so there won't be a dry run error returned by the validator
+	//
+	Validate(input DryRunValidationInput) (*sdk.DryRunError, error)
 }
 type DryRunValidationInput struct {
 	ctx             context.Context
@@ -29,41 +35,26 @@ func (i DryRunValidationInput) GetTemplateParams() map[string]interface{} {
 	return i.azureDeployment.GetTemplateParams()
 }
 
-type ValidatorFunc func(input DryRunValidationInput) (*sdk.DryRunResult, error)
+type ValidatorFunc func(input DryRunValidationInput) (*sdk.DryRunError, error)
 
-func (f ValidatorFunc) Validate(input DryRunValidationInput) (*sdk.DryRunResult, error) {
+func (f ValidatorFunc) Validate(input DryRunValidationInput) (*sdk.DryRunError, error) {
 	return f(input)
 }
 
-func validateParams(input DryRunValidationInput) (*sdk.DryRunResult, error) {
-	// response := &sdk.DryRunResponse{
-	// 	DryRunResult: sdk.DryRunResult{
-	// 		Status: to.Ptr(sdk.StatusSuccess.String()),
-	// 	},
-	// }
-	dryRunResult := &sdk.DryRunResult {
-		Status: to.Ptr(sdk.StatusSuccess.String()),
-	}
-
+func validateParams(input DryRunValidationInput) (*sdk.DryRunError, error) {
 	template := input.azureDeployment.Template
 
-	var templateParams map[string]interface{}
-	if val, ok := template["parameters"]; ok {
-		templateParams, ok = val.(map[string]interface{})
-		if !ok {
-			// Handle the type assertion failure
-			log.Error("error: 'parameters' is not of type map[string]interface{}")
-			// This is considered a runtime error, not a validation error
-			return nil, errors.New("error: 'parameters' is not of type map[string]interface{}")
-		}
-	} else {
-		// Handle the case where "parameters" key is not present or is nil
-		log.Error("Error: 'parameters' key is missing or is nil")
-		// Additional error handling if needed
-		return nil, errors.New("error: 'parameters' key is missing or is nil")
+	if _, paramsExist := template["parameters"]; !paramsExist {
+		return nil, errors.New("template does not have parameters")
 	}
 
+	if _, isCorrectType := template["parameters"].(map[string]interface{}); !isCorrectType {
+		return nil, errors.New("template parameters are not of type map[string]interface{}")
+	}
+
+	templateParams := template["parameters"].(map[string]interface{})
 	requiredParams := getRequiredParams(templateParams)
+
 	params := input.GetParams()
 
 	var missingRequiredParams []string
@@ -82,19 +73,19 @@ func validateParams(input DryRunValidationInput) (*sdk.DryRunResult, error) {
 			})
 		}
 
-		dryRunResult.Status = to.Ptr("Failed")
 		log.Debugf("Missing required parameters: %v", missingRequiredParams)
 		errorMesg := fmt.Sprintf("Missing required parameters: %v", missingRequiredParams)
-		dryRunResult.Error = &sdk.DryRunErrorResponse{
+
+		return &sdk.DryRunError{
 			Code:           to.Ptr("Invalid Template"),
 			Message:        to.Ptr(errorMesg),
 			Target:         nil,
 			AdditionalInfo: addInfo,
-		}
-		return dryRunResult, errors.New(errorMesg)
+		}, nil
 	}
 
-	return dryRunResult, nil
+	// passed, so return nil for errors
+	return nil, nil
 }
 
 func getRequiredParams(params map[string]interface{}) []string {

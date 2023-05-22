@@ -7,11 +7,12 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 )
 
-func whatIfValidator(input DryRunValidationInput) (*sdk.DryRunResult, error) {
+func whatIfValidator(input DryRunValidationInput) (*sdk.DryRunError, error) {
 	if input.azureDeployment == nil {
 		log.Error(errors.New("azureDeployment is not set on input struct"))
 	}
@@ -25,12 +26,12 @@ func whatIfValidator(input DryRunValidationInput) (*sdk.DryRunResult, error) {
 		return nil, err
 	}
 
-	dryRunResult, err := mapResult(whatIfResult)
+	dryRunError, err := mapResult(whatIfResult)
 	if err != nil {
 		return nil, err
 	}
 
-	return dryRunResult, nil
+	return dryRunError, nil
 }
 
 func loadValidators() []DryRunValidator {
@@ -41,44 +42,58 @@ func loadValidators() []DryRunValidator {
 	}
 }
 
-func validate(validators []DryRunValidator, input DryRunValidationInput) ([]*sdk.DryRunResult, error) {
-	var results []*sdk.DryRunResult
+func validate(validators []DryRunValidator, input DryRunValidationInput) (sdk.DryRunResult, error) {
+	result := sdk.DryRunResult{
+		Status: sdk.StatusSuccess.String(),
+	}
+
+	// if any runtime errors happened, we want to return them all
+	errorMessages := []string{}
+
 	for _, validator := range validators {
-		res, err := validator.Validate(input)
+		dryRunError, err := validator.Validate(input)
+
 		if err != nil {
-			results = append(results, res)
-			return results, err
+			errorMessages = append(errorMessages, err.Error())
+			continue
 		}
-		if res != nil {
-			results = append(results, res)
+		// only add the validation error if it's not nil, which mean errrors were found in the validation
+		// of the deployment
+		if dryRunError != nil {
+			result.Errors = append(result.Errors, *dryRunError)
 		}
 	}
 
-	return results, nil
+	var err error
+
+	if len(errorMessages) > 0 {
+		err = utils.NewAggregateError(errorMessages)
+	}
+
+	if len(result.Errors) > 0 {
+		result.Status = sdk.StatusFailed.String()
+	}
+
+	return result, err
 }
 
-// func aggregateResults(results []*sdk.DryRunResult) []*sdk.DryRunResult {
-// 	if results == nil || len(results) == 0 {
-// 		return nil
-// 	}
-// 	//todo: aggregate responses
-// 	return responses[0]
-// }
+func DryRun(ctx context.Context, azureDeployment *AzureDeployment) (*sdk.DryRunResult, error) {
+	log.Debug("Executing deployment.DryRun")
 
-func DryRun(ctx context.Context, azureDeployment *AzureDeployment) ([]*sdk.DryRunResult, error) {
-	log.Debug("Inside DryRun in pkg/deployment/dryrun.go")
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		return nil, err
 	}
+
 	validators := loadValidators()
 	input := DryRunValidationInput{
 		ctx:             ctx,
 		cred:            cred,
 		azureDeployment: azureDeployment,
 	}
-	log.Debug("About to call DryRun validator")
-	return validate(validators, input)
+
+	result, err := validate(validators, input)
+	return &result, err
 }
 
 func whatIfDeployment(input DryRunValidationInput) (*armresources.DeploymentsClientWhatIfResponse, error) {
