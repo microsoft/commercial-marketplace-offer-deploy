@@ -164,6 +164,8 @@ github.com/mattn/go-isatty v0.0.17 h1:BTarxUcIeDqL27Mc+vyvdWYSL28zpIhv3RoTdsLMPn
 github.com/mattn/go-isatty v0.0.17/go.mod h1:kYGgaQfpe5nmfYZH+SKPsOc2e4SrIfOl2e/yFXSvRLM=
 github.com/microsoft/commercial-marketplace-offer-deploy/sdk v1.0.1 h1:qZr00W7Sr6/c9TebzdOSkTem4y2BB8FbrjjCLD0y220=
 github.com/microsoft/commercial-marketplace-offer-deploy/sdk v1.0.1/go.mod h1:R9U5eUJiu9FvqEPwYJJQYuYyul9yrpxDYBzGUGp+mNM=
+github.com/microsoft/commercial-marketplace-offer-deploy/sdk v1.1.0 h1:YIpI4NCpjnXdvRycPU7oO2cfBqj/YL9P4+JqZw1VxoA=
+github.com/microsoft/commercial-marketplace-offer-deploy/sdk v1.1.0/go.mod h1:R9U5eUJiu9FvqEPwYJJQYuYyul9yrpxDYBzGUGp+mNM=
 github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyuac5Z2hdY=
 github.com/mitchellh/mapstructure v1.5.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/pelletier/go-toml/v2 v2.0.6 h1:nrzqCb7j9cDFj2coyLNLaZuJTLjWjlaz6nvTvIwycIU=

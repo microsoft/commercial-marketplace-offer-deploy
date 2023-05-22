@@ -38,10 +38,12 @@ func Test_EventHookMessage_DryRunEventData_Marshaling(t *testing.T) {
 			DeploymentId: 1,
 			OperationId:  uuid.New(),
 			Attempts:     1,
-			Status:       to.Ptr("failed"),
-			Error: &DryRunErrorResponse{
-				Code:           to.Ptr("code"),
-				AdditionalInfo: []*ErrorAdditionalInfo{},
+			Status:       StatusFailed.String(),
+			Errors: []DryRunError{
+				{
+					Code:           to.Ptr("code"),
+					AdditionalInfo: []*ErrorAdditionalInfo{},
+				},
 			},
 		},
 	}
@@ -57,7 +59,7 @@ func Test_EventHookMessage_DryRunEventData_Marshaling(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, 1, data.DeploymentId)
-	assert.Equal(t, "code", *data.Error.Code)
+	assert.Equal(t, "code", *data.Errors[0].Code)
 }
 
 func Test_EventHookMessage_DryRunEventData_Fails_With_WrongType(t *testing.T) {
@@ -68,9 +70,11 @@ func Test_EventHookMessage_DryRunEventData_Fails_With_WrongType(t *testing.T) {
 			DeploymentId: 1,
 			OperationId:  uuid.New(),
 			Attempts:     1,
-			Status:       to.Ptr("failed"),
-			Error: &DryRunErrorResponse{
-				AdditionalInfo: []*ErrorAdditionalInfo{},
+			Status:       StatusFailed.String(),
+			Errors: []DryRunError{
+				{
+					AdditionalInfo: []*ErrorAdditionalInfo{},
+				},
 			},
 		},
 	}

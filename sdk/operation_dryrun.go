@@ -1,17 +1,15 @@
 package sdk
 
 type DryRunResponse struct {
-	DryRunResult
+	Result DryRunResult `json:"result,omitempty" mapstructure:"result"`
 }
 
 type DryRunResult struct {
-	Status *string `json:"status,omitempty" azure:"ro"`
-	//Message *string `json:"message,omitempty" azure:"ro"`
-	//Target *string `json:"target,omitempty" azure:"ro"`
-	Error *DryRunErrorResponse
+	Status string        `json:"status,omitempty" mapstructure:"status"`
+	Errors []DryRunError `json:"errors,omitempty" mapstructure:"errors"`
 }
 
-type DryRunErrorResponse struct {
+type DryRunError struct {
 	// READ-ONLY; The error additional info.
 	AdditionalInfo []*ErrorAdditionalInfo `json:"additionalInfo,omitempty" azure:"ro" mapstructure:"additionalInfo"`
 
@@ -25,7 +23,7 @@ type DryRunErrorResponse struct {
 	Target *string `json:"target,omitempty" azure:"ro" mapstructure:"target"`
 
 	// READ-ONLY; The error details.
-	Details []*DryRunErrorResponse `json:"details,omitempty" azure:"ro" mapstructure:"details"`
+	Details []*DryRunError `json:"details,omitempty" azure:"ro" mapstructure:"details"`
 }
 
 // ErrorAdditionalInfo - The resource management error additional info.
