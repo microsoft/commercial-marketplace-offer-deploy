@@ -113,6 +113,7 @@ func whatIfDeployment(input DryRunValidationInput) (*armresources.DeploymentsCli
 	}
 	ctx := input.ctx
 
+	
 	deploymentsClient, err := armresources.NewDeploymentsClient(azureDeployment.SubscriptionId, cred, nil)
 	if err != nil {
 		return nil, err

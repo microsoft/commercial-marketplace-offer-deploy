@@ -121,6 +121,15 @@ func (s *dryRunSuite) TestDirectParamsMap() {
 	s.Assert().NotNil(result)
 }
 
+func (s *dryRunSuite) TestDirectParamsMapStringValue() {
+	paramsMapPath := "./testdata/directparamsmap"
+	paramsMap := map[string]interface{}{
+		"testName": "bobjacbicep2",
+	}
+	result := s.runDeploymentTest(paramsMapPath, true, s.getTemplate(paramsMapPath), paramsMap)
+	s.Assert().NotNil(result)
+}
+
 func (s *dryRunSuite) TestQuotaViolation() {
 	quotaViolationPath := "./testdata/quotaviolation"
 	result := s.runDeploymentTest(quotaViolationPath, true, s.getTemplate(quotaViolationPath), s.getParameters(quotaViolationPath))
