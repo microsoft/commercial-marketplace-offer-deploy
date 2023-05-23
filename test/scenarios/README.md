@@ -10,4 +10,13 @@ export TEST_AZURE_SUBSCRIPTION_ID=
 export TEST_AZURE_LOCATION=
 ```
 
+## Running Dry Run Suite
 
+```sh
+# run the enture suite
+go test -timeout 500s -run ^TestNameConflictTestSuite$ -test.v
+go test -timeout 500s -run ^TestUnavailableResourceTestSuite$  -test.v
+
+# run a particular test
+go test -timeout 500s -run ^TestNameConflictTestSuite$  -test.v -testify.m Test_Should_Fail_In_Different_Resource_Group
+```

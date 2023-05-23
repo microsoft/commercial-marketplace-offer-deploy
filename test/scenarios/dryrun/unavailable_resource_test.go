@@ -20,6 +20,7 @@ func TestUnavailableResourceTestSuite(t *testing.T) {
 }
 
 func (suite *UnavailableResourceTestSuite) SetupSuite() {
+	suite.DryRunTestSuite.SetupSuite()
 	suite.TestDataDirPath = "./testdata/unavailableresource"
 }
 
