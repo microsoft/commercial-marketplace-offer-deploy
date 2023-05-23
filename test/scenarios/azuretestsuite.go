@@ -41,11 +41,11 @@ func (suite *AzureTestSuite) SetupSuite() {
 
 	suite.T().Logf("SetupSuite: %+v", suite.AzureVars)
 
-	suite.CreateOrUpdateResourceGroup()
+	suite.CreateOrUpdateResourceGroup(suite.AzureVars.ResourceGroupName)
 }
 
 func (suite *AzureTestSuite) TearDownSuite() {
-	suite.DeleteResourceGroup()
+	suite.DeleteResourceGroup(suite.AzureVars.ResourceGroupName)
 }
 
 // RequireEnvVars checks that the required environment variables are set as part of the setup.
@@ -62,13 +62,13 @@ func (suite *AzureTestSuite) RandomString(length uint) string {
 	return baseString[0:length]
 }
 
-func (suite *AzureTestSuite) CreateOrUpdateResourceGroup() {
-	suite.T().Logf("Creating - %s", suite.AzureVars.ResourceGroupName)
+func (suite *AzureTestSuite) CreateOrUpdateResourceGroup(name string) {
+	suite.T().Logf("Creating Resource Group [%s]", name)
 
 	client := suite.newResourceGroupClient()
 	_, err := client.CreateOrUpdate(
 		context.Background(),
-		suite.AzureVars.ResourceGroupName,
+		name,
 		armresources.ResourceGroup{
 			Location: to.Ptr(suite.AzureVars.Location),
 		},
@@ -77,13 +77,13 @@ func (suite *AzureTestSuite) CreateOrUpdateResourceGroup() {
 	suite.Require().NoError(err)
 }
 
-func (suite *AzureTestSuite) DeleteResourceGroup() {
-	suite.T().Logf("Deleting - %s", suite.AzureVars.ResourceGroupName)
+func (suite *AzureTestSuite) DeleteResourceGroup(name string) {
+	suite.T().Logf("Deleting Resource Group [%s]", name)
 
 	client := suite.newResourceGroupClient()
 	_, err := client.BeginDelete(
 		context.Background(),
-		suite.AzureVars.ResourceGroupName,
+		name,
 		nil,
 	)
 	suite.Require().NoError(err)
