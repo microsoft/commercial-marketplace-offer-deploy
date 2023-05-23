@@ -1,0 +1,94 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.17.1.54307",
+      "templateHash": "1657771664597667507"
+    }
+  },
+  "parameters": {
+    "administratorLogin": {
+      "type": "string"
+    },
+    "administratorLoginPassword": {
+      "type": "securestring"
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    },
+    "serverName": {
+      "type": "string"
+    },
+    "serverEdition": {
+      "type": "string",
+      "defaultValue": "GeneralPurpose"
+    },
+    "skuSizeGB": {
+      "type": "int",
+      "defaultValue": 128
+    },
+    "dbInstanceType": {
+      "type": "string",
+      "defaultValue": "Standard_D4ds_v4"
+    },
+    "haMode": {
+      "type": "string",
+      "defaultValue": "ZoneRedundant"
+    },
+    "availabilityZone": {
+      "type": "string",
+      "defaultValue": "1"
+    },
+    "version": {
+      "type": "string",
+      "defaultValue": "12"
+    },
+    "virtualNetworkExternalId": {
+      "type": "string",
+      "defaultValue": ""
+    },
+    "subnetName": {
+      "type": "string",
+      "defaultValue": ""
+    },
+    "privateDnsZoneArmResourceId": {
+      "type": "string",
+      "defaultValue": ""
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.DBforPostgreSQL/flexibleServers",
+      "apiVersion": "2021-06-01",
+      "name": "[parameters('serverName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[parameters('dbInstanceType')]",
+        "tier": "[parameters('serverEdition')]"
+      },
+      "properties": {
+        "version": "[parameters('version')]",
+        "administratorLogin": "[parameters('administratorLogin')]",
+        "administratorLoginPassword": "[parameters('administratorLoginPassword')]",
+        "network": {
+          "delegatedSubnetResourceId": "[if(empty(parameters('virtualNetworkExternalId')), json('null'), json(format('''{0}/subnets/{1}''', parameters('virtualNetworkExternalId'), parameters('subnetName'))))]",
+          "privateDnsZoneArmResourceId": "[if(empty(parameters('virtualNetworkExternalId')), json('null'), parameters('privateDnsZoneArmResourceId'))]"
+        },
+        "highAvailability": {
+          "mode": "[parameters('haMode')]"
+        },
+        "storage": {
+          "storageSizeGB": "[parameters('skuSizeGB')]"
+        },
+        "backup": {
+          "backupRetentionDays": 7,
+          "geoRedundantBackup": "Disabled"
+        },
+        "availabilityZone": "[parameters('availabilityZone')]"
+      }
+    }
+  ]
+}
