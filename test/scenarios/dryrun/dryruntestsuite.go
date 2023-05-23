@@ -16,10 +16,10 @@ type DryRunTestSuite struct {
 
 //region helpers
 
-func (suite *DryRunTestSuite) newAzureDeployment(testName string) deployment.AzureDeployment {
+func (suite *DryRunTestSuite) NewDeployment(variablesKey string) deployment.AzureDeployment {
 	suite.T().Log(" - Creating AzureDeployment")
 
-	variables := suite.GetVariables(testName)
+	variables := suite.GetVariables(variablesKey)
 
 	d := deployment.AzureDeployment{
 		SubscriptionId:    variables.SubscriptionId,
@@ -55,7 +55,7 @@ func (suite *DryRunTestSuite) SetupTest() {
 	suite.CreateOrUpdateResourceGroup(vars)
 
 	suite.T().Logf("Setup Test - [%s]", testName)
-	suite.Deployment = suite.newAzureDeployment(testName)
+	suite.Deployment = suite.NewDeployment(testName)
 }
 
 func (suite *DryRunTestSuite) TearDownTest() {

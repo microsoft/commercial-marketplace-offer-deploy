@@ -106,12 +106,15 @@ func (suite *AzureTestSuite) DeleteResourceGroup(variables AzureTestVariables) {
 	suite.T().Logf("Deleting Resource Group [%s]", variables.ResourceGroupName)
 
 	client := suite.newResourceGroupClient(variables.SubscriptionId)
-	_, err := client.BeginDelete(
-		context.Background(),
-		variables.ResourceGroupName,
-		nil,
-	)
-	suite.Require().NoError(err)
+
+	if res, err := client.CheckExistence(context.Background(), variables.ResourceGroupName, nil); err == nil && res.Success {
+		_, err := client.BeginDelete(
+			context.Background(),
+			variables.ResourceGroupName,
+			nil,
+		)
+		suite.Require().NoError(err)
+	}
 }
 
 func (suite *AzureTestSuite) ReadJsonFile(dirPath string, fileName string) map[string]any {
