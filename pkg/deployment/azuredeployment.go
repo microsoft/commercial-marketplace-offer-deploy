@@ -215,7 +215,7 @@ func (armDeployer *ArmTemplateDeployer) Deploy(ctx context.Context, ad *AzureDep
 		return nil, err
 	}
 
-	log.Error("About to Create a deployment")
+	log.Debug("About to Create a deployment")
 
 	templateParams := ad.GetParams()
 

@@ -19,13 +19,15 @@ func TestUnavailableResourceTestSuite(t *testing.T) {
 	suite.Run(t, new(UnavailableResourceTestSuite))
 }
 
+func (suite *UnavailableResourceTestSuite) SetupSuite() {
+	suite.TestDataDirPath = "./testdata/unavailableresource"
+}
+
 //endregion setup
 
 //region tests
 
 func (suite *UnavailableResourceTestSuite) Test_Should_Fail_If_Resource_Sku_Not_In_Region() {
-	suite.T().Log("Test_Should_Fail_If_Resource_Sku_Not_In_Region")
-
 	ctx := context.TODO()
 	result, err := deployment.DryRun(ctx, &suite.Deployment)
 	suite.Assert().NoError(err)

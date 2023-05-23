@@ -17,7 +17,7 @@ type DryRunTestSuite struct {
 //region helpers
 
 func (suite *DryRunTestSuite) newAzureDeployment() deployment.AzureDeployment {
-	suite.T().Log(" - Creating new AzureDeployment")
+	suite.T().Log(" - Creating AzureDeployment")
 
 	d := deployment.AzureDeployment{
 		SubscriptionId:    suite.AzureVars.SubscriptionId,
@@ -28,8 +28,6 @@ func (suite *DryRunTestSuite) newAzureDeployment() deployment.AzureDeployment {
 		Template:          suite.readJsonFile("template"),
 		Params:            suite.readJsonFile("parameters"),
 	}
-	suite.T().Logf(" - %+v", d)
-
 	return d
 }
 
@@ -41,12 +39,6 @@ func (suite *DryRunTestSuite) readJsonFile(name string) map[string]any {
 
 func (suite *DryRunTestSuite) SetupSuite() {
 	suite.AzureTestSuite.SetupSuite()
-
-	t := suite.T()
-
-	t.Log("SetupSuite")
-	suite.TestDataDirPath = "./testdata/unavailableresource"
-
 }
 
 func (suite *DryRunTestSuite) TearDownSuite() {
