@@ -129,7 +129,7 @@ func whatIfDeployment(input DryRunValidationInput) (*armresources.DeploymentsCli
 			Properties: &armresources.DeploymentWhatIfProperties{
 				Template:   azureDeployment.Template,
 				Parameters: templateParams,
-				Mode:       to.Ptr(armresources.DeploymentModeComplete),
+				Mode:       to.Ptr(armresources.DeploymentModeIncremental),
 			},
 		},
 		nil)
