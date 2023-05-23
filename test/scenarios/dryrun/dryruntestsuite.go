@@ -16,14 +16,16 @@ type DryRunTestSuite struct {
 
 //region helpers
 
-func (suite *DryRunTestSuite) newAzureDeployment() deployment.AzureDeployment {
+func (suite *DryRunTestSuite) newAzureDeployment(testName string) deployment.AzureDeployment {
 	suite.T().Log(" - Creating AzureDeployment")
 
+	variables := suite.GetVariables(testName)
+
 	d := deployment.AzureDeployment{
-		SubscriptionId:    suite.AzureVars.SubscriptionId,
-		Location:          suite.AzureVars.Location,
-		ResourceGroupName: suite.AzureVars.ResourceGroupName,
-		DeploymentName:    "DryRunTest",
+		SubscriptionId:    variables.SubscriptionId,
+		Location:          variables.Location,
+		ResourceGroupName: variables.ResourceGroupName,
+		DeploymentName:    "DryRunTest-" + suite.RandomString(5),
 		DeploymentType:    deployment.AzureResourceManager,
 		Template:          suite.readJsonFile("template"),
 		Params:            suite.readJsonFile("parameters"),
@@ -47,10 +49,19 @@ func (suite *DryRunTestSuite) TearDownSuite() {
 }
 
 func (suite *DryRunTestSuite) SetupTest() {
-	suite.T().Logf("Setup Test - [%s]", suite.T().Name())
-	suite.Deployment = suite.newAzureDeployment()
+	testName := suite.T().Name()
+
+	vars := suite.GetVariables(testName)
+	suite.CreateOrUpdateResourceGroup(vars)
+
+	suite.T().Logf("Setup Test - [%s]", testName)
+	suite.Deployment = suite.newAzureDeployment(testName)
 }
 
 func (suite *DryRunTestSuite) TearDownTest() {
+	testName := suite.T().Name()
 	suite.T().Log("TearDown Test")
+
+	vars := suite.GetVariables(testName)
+	suite.DeleteResourceGroup(vars)
 }

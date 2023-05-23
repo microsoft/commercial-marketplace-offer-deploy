@@ -12,13 +12,15 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
 const RequiredEnvVars = "TEST_AZURE_SUBSCRIPTION_ID,TEST_AZURE_LOCATION"
+const DefaultTestVariablesKey = "default"
 
-type AzureTestVars struct {
+type AzureTestVariables struct {
 	SubscriptionId    string
 	ResourceGroupName string
 	Location          string
@@ -27,25 +29,48 @@ type AzureTestVars struct {
 // AzureTestSuite is the base test suite for all Azure tests.
 type AzureTestSuite struct {
 	suite.Suite
-	AzureVars AzureTestVars
+	Variables map[string]AzureTestVariables
+}
+
+func (suite *AzureTestSuite) AddVariables(testName string, vars AzureTestVariables) {
+	if suite.Variables == nil {
+		suite.Variables = make(map[string]AzureTestVariables)
+	}
+	suite.Variables[testName] = vars
+}
+
+func (suite *AzureTestSuite) GetVariables(testName string) AzureTestVariables {
+	if vars, ok := suite.Variables[testName]; ok {
+		return vars
+	}
+	return suite.Variables[DefaultTestVariablesKey]
 }
 
 func (suite *AzureTestSuite) SetupSuite() {
+
+	log.SetLevel(log.DebugLevel)
+
 	suite.RequireEnvVars()
 
-	suite.AzureVars = AzureTestVars{
+	defaultVariables := AzureTestVariables{
 		SubscriptionId:    os.Getenv("TEST_AZURE_SUBSCRIPTION_ID"),
-		ResourceGroupName: "modm-test-scenario-" + suite.RandomString(5),
+		ResourceGroupName: "modmtest-scenario-" + suite.RandomString(5),
 		Location:          os.Getenv("TEST_AZURE_LOCATION"),
 	}
 
-	suite.T().Logf("SetupSuite: %+v", suite.AzureVars)
+	// override resource group name if set
+	if os.Getenv("TEST_AZURE_RESOURCE_GROUP") != "" {
+		defaultVariables.ResourceGroupName = os.Getenv("TEST_AZURE_RESOURCE_GROUP")
+	}
 
-	suite.CreateOrUpdateResourceGroup(suite.AzureVars.ResourceGroupName)
+	suite.AddVariables(DefaultTestVariablesKey, defaultVariables)
+	suite.T().Logf("SetupSuite: %+v", suite.Variables)
 }
 
 func (suite *AzureTestSuite) TearDownSuite() {
-	suite.DeleteResourceGroup(suite.AzureVars.ResourceGroupName)
+	for _, vars := range suite.Variables {
+		suite.DeleteResourceGroup(vars)
+	}
 }
 
 // RequireEnvVars checks that the required environment variables are set as part of the setup.
@@ -62,28 +87,28 @@ func (suite *AzureTestSuite) RandomString(length uint) string {
 	return baseString[0:length]
 }
 
-func (suite *AzureTestSuite) CreateOrUpdateResourceGroup(name string) {
-	suite.T().Logf("Creating Resource Group [%s]", name)
+func (suite *AzureTestSuite) CreateOrUpdateResourceGroup(variables AzureTestVariables) {
+	suite.T().Logf("Creating Resource Group [%s]", variables.ResourceGroupName)
 
-	client := suite.newResourceGroupClient()
+	client := suite.newResourceGroupClient(variables.SubscriptionId)
 	_, err := client.CreateOrUpdate(
 		context.Background(),
-		name,
+		variables.ResourceGroupName,
 		armresources.ResourceGroup{
-			Location: to.Ptr(suite.AzureVars.Location),
+			Location: to.Ptr(strings.ToLower(variables.Location)),
 		},
 		nil,
 	)
 	suite.Require().NoError(err)
 }
 
-func (suite *AzureTestSuite) DeleteResourceGroup(name string) {
-	suite.T().Logf("Deleting Resource Group [%s]", name)
+func (suite *AzureTestSuite) DeleteResourceGroup(variables AzureTestVariables) {
+	suite.T().Logf("Deleting Resource Group [%s]", variables.ResourceGroupName)
 
-	client := suite.newResourceGroupClient()
+	client := suite.newResourceGroupClient(variables.SubscriptionId)
 	_, err := client.BeginDelete(
 		context.Background(),
-		name,
+		variables.ResourceGroupName,
 		nil,
 	)
 	suite.Require().NoError(err)
@@ -104,11 +129,11 @@ func (suite *AzureTestSuite) ToJson(i any) string {
 	return string(bytes)
 }
 
-func (suite *AzureTestSuite) newResourceGroupClient() *armresources.ResourceGroupsClient {
+func (suite *AzureTestSuite) newResourceGroupClient(subscriptionId string) *armresources.ResourceGroupsClient {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	suite.Require().NoError(err)
 
-	client, err := armresources.NewResourceGroupsClient(suite.AzureVars.SubscriptionId, cred, nil)
+	client, err := armresources.NewResourceGroupsClient(subscriptionId, cred, nil)
 	suite.Require().NoError(err)
 
 	return client
