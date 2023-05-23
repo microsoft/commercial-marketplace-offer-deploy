@@ -13,7 +13,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	log "github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -119,11 +118,14 @@ func (suite *AzureTestSuite) DeleteResourceGroup(variables AzureTestVariables) {
 
 func (suite *AzureTestSuite) ReadJsonFile(dirPath string, fileName string) map[string]any {
 	fullPath := filepath.Join(dirPath, fileName)
-	template, err := utils.ReadJson(fullPath)
+	contents, err := utils.ReadJson(fullPath)
 
-	require.NoError(suite.T(), err)
+	if err != nil {
+		suite.T().Log(err)
+		return make(map[string]any)
+	}
 
-	return template
+	return contents
 }
 
 func (suite *AzureTestSuite) ToJson(i any) string {

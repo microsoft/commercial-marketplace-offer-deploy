@@ -16,6 +16,8 @@ export TEST_AZURE_LOCATION=
 # run the enture suite
 go test -timeout 500s -run ^TestNameConflictTestSuite$ -test.v
 go test -timeout 500s -run ^TestUnavailableResourceTestSuite$  -test.v
+go test -timeout 120s -run ^TestDirectTemplateParamsTestSuite$  -test.v
+
 
 # run a particular test
 go test -timeout 500s -run ^TestNameConflictTestSuite$  -test.v -testify.m Test_Should_Fail_In_Different_Resource_Group
