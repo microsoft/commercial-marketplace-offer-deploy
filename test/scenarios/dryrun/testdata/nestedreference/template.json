@@ -5,21 +5,22 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "17480422748864656098"
+      "templateHash": "2699324366366071702"
     }
   },
   "parameters": {
     "name1": {
       "type": "string",
-      "defaultValue": "Standard_LRS"
+      "defaultValue": "storetest09sdkjf34"
     },
     "name2": {
       "type": "string",
-      "defaultValue": "Standard_LRS"
+      "defaultValue": "bobjacresource12"
     }
   },
   "variables": {
-    "location": "[resourceGroup().location]"
+    "location": "[resourceGroup().location]",
+    "varName2": "[parameters('name2')]"
   },
   "resources": [
     {
@@ -129,7 +130,7 @@
         "mode": "Incremental",
         "parameters": {
           "storageAccountName": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'mod1'), '2022-09-01').outputs.storageAccountName2.value]"
+            "value": "[variables('varName2')]"
           },
           "location": {
             "value": "[variables('location')]"

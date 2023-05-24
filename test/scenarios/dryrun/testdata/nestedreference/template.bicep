@@ -1,7 +1,8 @@
-param name1 string = 'Standard_LRS'
-param name2 string = 'Standard_LRS'
+param name1 string = 'storetest09sdkjf34'
+param name2 string = 'bobjacresource12'
 
 var location = resourceGroup().location
+var varName2 = name2
 
 module mod1 './modules/storageAccount.bicep' = {
   name: 'mod1'
@@ -15,7 +16,7 @@ module mod1 './modules/storageAccount.bicep' = {
 module mod2 './modules/storageAccountWithRefence.bicep' = {
   name: 'mod2'
   params: {
-    storageAccountName: mod1.outputs.storageAccountName2
+    storageAccountName:  varName2
     location: location
   }
   dependsOn: [
