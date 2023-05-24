@@ -45,6 +45,10 @@ func (suite *AzureTestSuite) GetVariables(testName string) AzureTestVariables {
 	return suite.Variables[DefaultTestVariablesKey]
 }
 
+func (suite *AzureTestSuite) DefaultVariables() AzureTestVariables {
+	return suite.GetVariables(DefaultTestVariablesKey)
+}
+
 func (suite *AzureTestSuite) SetupSuite() {
 
 	log.SetLevel(log.DebugLevel)
