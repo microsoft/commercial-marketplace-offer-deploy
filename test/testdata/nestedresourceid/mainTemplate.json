@@ -1,0 +1,607 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "metadata": {
+      "_generator": {
+        "name": "bicep",
+        "version": "0.17.1.54307",
+        "templateHash": "599363528300528027"
+      }
+    },
+    "variables": {
+      "firstName": "bobjacresource2",
+      "firstName2": "[format('{0}2', variables('firstName'))]",
+      "location": "eastus2"
+    },
+    "resources": [
+      {
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2022-09-01",
+        "name": "storage1",
+        "properties": {
+          "expressionEvaluationOptions": {
+            "scope": "inner"
+          },
+          "mode": "Incremental",
+          "parameters": {
+            "name": {
+              "value": "[variables('firstName')]"
+            },
+            "location": {
+              "value": "[variables('location')]"
+            }
+          },
+          "template": {
+            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "metadata": {
+              "_generator": {
+                "name": "bicep",
+                "version": "0.17.1.54307",
+                "templateHash": "17298017205306157361"
+              }
+            },
+            "parameters": {
+              "name": {
+                "type": "string",
+                "defaultValue": ""
+              },
+              "location": {
+                "type": "string",
+                "defaultValue": ""
+              }
+            },
+            "variables": {
+              "storageAccountName": "[parameters('name')]"
+            },
+            "resources": [
+              {
+                "type": "Microsoft.Resources/deployments",
+                "apiVersion": "2022-09-01",
+                "name": "storageAccountDeploy",
+                "properties": {
+                  "expressionEvaluationOptions": {
+                    "scope": "inner"
+                  },
+                  "mode": "Incremental",
+                  "parameters": {
+                    "name": {
+                      "value": "[variables('storageAccountName')]"
+                    },
+                    "location": {
+                      "value": "[parameters('location')]"
+                    }
+                  },
+                  "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "metadata": {
+                      "_generator": {
+                        "name": "bicep",
+                        "version": "0.17.1.54307",
+                        "templateHash": "1570765216901802009"
+                      }
+                    },
+                    "parameters": {
+                      "name": {
+                        "type": "string",
+                        "defaultValue": ""
+                      },
+                      "location": {
+                        "type": "string",
+                        "defaultValue": ""
+                      },
+                      "sku_name": {
+                        "type": "string",
+                        "defaultValue": "Standard_LRS",
+                        "allowedValues": [
+                          "Premium_LRS",
+                          "Premium_ZRS",
+                          "Standard_GRS",
+                          "Standard_GZRS",
+                          "Standard_LRS",
+                          "Standard_RAGRS",
+                          "Standard_RAGZRS",
+                          "Standard_ZRS"
+                        ]
+                      },
+                      "kind": {
+                        "type": "string",
+                        "defaultValue": "StorageV2",
+                        "allowedValues": [
+                          "BlobStorage",
+                          "BlockBlobStorage",
+                          "FileStorage",
+                          "Storage",
+                          "StorageV2"
+                        ]
+                      }
+                    },
+                    "resources": [
+                      {
+                        "type": "Microsoft.Storage/storageAccounts",
+                        "apiVersion": "2021-08-01",
+                        "name": "[parameters('name')]",
+                        "location": "[parameters('location')]",
+                        "sku": {
+                          "name": "[parameters('sku_name')]"
+                        },
+                        "kind": "[parameters('kind')]",
+                        "properties": {
+                          "allowBlobPublicAccess": false,
+                          "publicNetworkAccess": "Disabled",
+                          "minimumTlsVersion": "TLS1_2",
+                          "networkAcls": {
+                            "defaultAction": "Deny"
+                          }
+                        }
+                      },
+                      {
+                        "type": "Microsoft.Storage/storageAccounts/blobServices",
+                        "apiVersion": "2021-08-01",
+                        "name": "[format('{0}/{1}', parameters('name'), 'default')]",
+                        "properties": {
+                          "deleteRetentionPolicy": {
+                            "enabled": true,
+                            "days": 181
+                          },
+                          "isVersioningEnabled": true,
+                          "changeFeed": {
+                            "enabled": true
+                          },
+                          "restorePolicy": {
+                            "enabled": true,
+                            "days": 180
+                          },
+                          "containerDeleteRetentionPolicy": {
+                            "enabled": true,
+                            "days": 181
+                          }
+                        },
+                        "dependsOn": [
+                          "[resourceId('Microsoft.Storage/storageAccounts', parameters('name'))]"
+                        ]
+                      }
+                    ],
+                    "outputs": {
+                      "name": {
+                        "type": "string",
+                        "value": "[parameters('name')]"
+                      },
+                      "id": {
+                        "type": "string",
+                        "value": "[resourceId('Microsoft.Storage/storageAccounts', parameters('name'))]"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "Microsoft.Resources/deployments",
+                "apiVersion": "2022-09-01",
+                "name": "containerDeploy",
+                "properties": {
+                  "expressionEvaluationOptions": {
+                    "scope": "inner"
+                  },
+                  "mode": "Incremental",
+                  "parameters": {
+                    "name": {
+                      "value": "pulp"
+                    },
+                    "parent": {
+                      "value": "[variables('storageAccountName')]"
+                    }
+                  },
+                  "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "metadata": {
+                      "_generator": {
+                        "name": "bicep",
+                        "version": "0.17.1.54307",
+                        "templateHash": "6600142489256890911"
+                      }
+                    },
+                    "parameters": {
+                      "name": {
+                        "type": "string",
+                        "defaultValue": ""
+                      },
+                      "parent": {
+                        "type": "string",
+                        "defaultValue": ""
+                      }
+                    },
+                    "variables": {
+                      "containerName": "[format('{0}/default/{1}', parameters('parent'), parameters('name'))]"
+                    },
+                    "resources": [
+                      {
+                        "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+                        "apiVersion": "2022-05-01",
+                        "name": "[variables('containerName')]"
+                      }
+                    ]
+                  }
+                },
+                "dependsOn": [
+                  "[resourceId('Microsoft.Resources/deployments', 'storageAccountDeploy')]"
+                ]
+              }
+            ],
+            "outputs": {
+              "name": {
+                "type": "string",
+                "value": "[variables('storageAccountName')]"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2022-09-01",
+        "name": "storage2",
+        "properties": {
+          "expressionEvaluationOptions": {
+            "scope": "inner"
+          },
+          "mode": "Incremental",
+          "parameters": {
+            "name": {
+              "value": "[variables('firstName2')]"
+            },
+            "location": {
+              "value": "[variables('location')]"
+            }
+          },
+          "template": {
+            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "metadata": {
+              "_generator": {
+                "name": "bicep",
+                "version": "0.17.1.54307",
+                "templateHash": "17298017205306157361"
+              }
+            },
+            "parameters": {
+              "name": {
+                "type": "string",
+                "defaultValue": ""
+              },
+              "location": {
+                "type": "string",
+                "defaultValue": ""
+              }
+            },
+            "variables": {
+              "storageAccountName": "[parameters('name')]"
+            },
+            "resources": [
+              {
+                "type": "Microsoft.Resources/deployments",
+                "apiVersion": "2022-09-01",
+                "name": "storageAccountDeploy",
+                "properties": {
+                  "expressionEvaluationOptions": {
+                    "scope": "inner"
+                  },
+                  "mode": "Incremental",
+                  "parameters": {
+                    "name": {
+                      "value": "[variables('storageAccountName')]"
+                    },
+                    "location": {
+                      "value": "[parameters('location')]"
+                    }
+                  },
+                  "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "metadata": {
+                      "_generator": {
+                        "name": "bicep",
+                        "version": "0.17.1.54307",
+                        "templateHash": "1570765216901802009"
+                      }
+                    },
+                    "parameters": {
+                      "name": {
+                        "type": "string",
+                        "defaultValue": ""
+                      },
+                      "location": {
+                        "type": "string",
+                        "defaultValue": ""
+                      },
+                      "sku_name": {
+                        "type": "string",
+                        "defaultValue": "Standard_LRS",
+                        "allowedValues": [
+                          "Premium_LRS",
+                          "Premium_ZRS",
+                          "Standard_GRS",
+                          "Standard_GZRS",
+                          "Standard_LRS",
+                          "Standard_RAGRS",
+                          "Standard_RAGZRS",
+                          "Standard_ZRS"
+                        ]
+                      },
+                      "kind": {
+                        "type": "string",
+                        "defaultValue": "StorageV2",
+                        "allowedValues": [
+                          "BlobStorage",
+                          "BlockBlobStorage",
+                          "FileStorage",
+                          "Storage",
+                          "StorageV2"
+                        ]
+                      }
+                    },
+                    "resources": [
+                      {
+                        "type": "Microsoft.Storage/storageAccounts",
+                        "apiVersion": "2021-08-01",
+                        "name": "[parameters('name')]",
+                        "location": "[parameters('location')]",
+                        "sku": {
+                          "name": "[parameters('sku_name')]"
+                        },
+                        "kind": "[parameters('kind')]",
+                        "properties": {
+                          "allowBlobPublicAccess": false,
+                          "publicNetworkAccess": "Disabled",
+                          "minimumTlsVersion": "TLS1_2",
+                          "networkAcls": {
+                            "defaultAction": "Deny"
+                          }
+                        }
+                      },
+                      {
+                        "type": "Microsoft.Storage/storageAccounts/blobServices",
+                        "apiVersion": "2021-08-01",
+                        "name": "[format('{0}/{1}', parameters('name'), 'default')]",
+                        "properties": {
+                          "deleteRetentionPolicy": {
+                            "enabled": true,
+                            "days": 181
+                          },
+                          "isVersioningEnabled": true,
+                          "changeFeed": {
+                            "enabled": true
+                          },
+                          "restorePolicy": {
+                            "enabled": true,
+                            "days": 180
+                          },
+                          "containerDeleteRetentionPolicy": {
+                            "enabled": true,
+                            "days": 181
+                          }
+                        },
+                        "dependsOn": [
+                          "[resourceId('Microsoft.Storage/storageAccounts', parameters('name'))]"
+                        ]
+                      }
+                    ],
+                    "outputs": {
+                      "name": {
+                        "type": "string",
+                        "value": "[parameters('name')]"
+                      },
+                      "id": {
+                        "type": "string",
+                        "value": "[resourceId('Microsoft.Storage/storageAccounts', parameters('name'))]"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "Microsoft.Resources/deployments",
+                "apiVersion": "2022-09-01",
+                "name": "containerDeploy",
+                "properties": {
+                  "expressionEvaluationOptions": {
+                    "scope": "inner"
+                  },
+                  "mode": "Incremental",
+                  "parameters": {
+                    "name": {
+                      "value": "pulp"
+                    },
+                    "parent": {
+                      "value": "[variables('storageAccountName')]"
+                    }
+                  },
+                  "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "metadata": {
+                      "_generator": {
+                        "name": "bicep",
+                        "version": "0.17.1.54307",
+                        "templateHash": "6600142489256890911"
+                      }
+                    },
+                    "parameters": {
+                      "name": {
+                        "type": "string",
+                        "defaultValue": ""
+                      },
+                      "parent": {
+                        "type": "string",
+                        "defaultValue": ""
+                      }
+                    },
+                    "variables": {
+                      "containerName": "[format('{0}/default/{1}', parameters('parent'), parameters('name'))]"
+                    },
+                    "resources": [
+                      {
+                        "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+                        "apiVersion": "2022-05-01",
+                        "name": "[variables('containerName')]"
+                      }
+                    ]
+                  }
+                },
+                "dependsOn": [
+                  "[resourceId('Microsoft.Resources/deployments', 'storageAccountDeploy')]"
+                ]
+              }
+            ],
+            "outputs": {
+              "name": {
+                "type": "string",
+                "value": "[variables('storageAccountName')]"
+              }
+            }
+          }
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.Resources/deployments', 'storage1')]"
+        ]
+      },
+      {
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2022-09-01",
+        "name": "kubernetes",
+        "properties": {
+          "expressionEvaluationOptions": {
+            "scope": "inner"
+          },
+          "mode": "Incremental",
+          "parameters": {
+            "dnsPrefix": {
+              "value": "bobjac"
+            },
+            "location": {
+              "value": "[variables('location')]"
+            },
+            "linuxAdminUsername": {
+              "value": "bobjac"
+            },
+            "sshRSAPublicKey": {
+              "value": ""
+            }
+          },
+          "template": {
+            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "metadata": {
+              "_generator": {
+                "name": "bicep",
+                "version": "0.17.1.54307",
+                "templateHash": "10362338128653125534"
+              }
+            },
+            "parameters": {
+              "clusterName": {
+                "type": "string",
+                "defaultValue": "aks101cluster",
+                "metadata": {
+                  "description": "The name of the Managed Cluster resource."
+                }
+              },
+              "location": {
+                "type": "string",
+                "defaultValue": "[resourceGroup().location]",
+                "metadata": {
+                  "description": "The location of the Managed Cluster resource."
+                }
+              },
+              "dnsPrefix": {
+                "type": "string",
+                "metadata": {
+                  "description": "Optional DNS prefix to use with hosted Kubernetes API server FQDN."
+                }
+              },
+              "osDiskSizeGB": {
+                "type": "int",
+                "defaultValue": 0,
+                "maxValue": 1023,
+                "minValue": 0,
+                "metadata": {
+                  "description": "Disk size (in GB) to provision for each of the agent pool nodes. This value ranges from 0 to 1023. Specifying 0 will apply the default disk size for that agentVMSize."
+                }
+              },
+              "agentCount": {
+                "type": "int",
+                "defaultValue": 1000,
+                "metadata": {
+                  "description": "The number of nodes for the cluster."
+                }
+              },
+              "agentVMSize": {
+                "type": "string",
+                "defaultValue": "Standard_D32s_v3",
+                "metadata": {
+                  "description": "The size of the Virtual Machine."
+                }
+              },
+              "linuxAdminUsername": {
+                "type": "string",
+                "metadata": {
+                  "description": "User name for the Linux Virtual Machines."
+                }
+              },
+              "sshRSAPublicKey": {
+                "type": "string",
+                "metadata": {
+                  "description": "Configure all linux machines with the SSH RSA public key string. Your key should include three parts, for example 'ssh-rsa AAAAB...snip...UcyupgH azureuser@linuxvm'"
+                }
+              }
+            },
+            "resources": [
+              {
+                "type": "Microsoft.ContainerService/managedClusters",
+                "apiVersion": "2022-05-02-preview",
+                "name": "[parameters('clusterName')]",
+                "location": "[parameters('location')]",
+                "identity": {
+                  "type": "SystemAssigned"
+                },
+                "properties": {
+                  "dnsPrefix": "[parameters('dnsPrefix')]",
+                  "agentPoolProfiles": [
+                    {
+                      "name": "agentpool",
+                      "osDiskSizeGB": "[parameters('osDiskSizeGB')]",
+                      "count": "[parameters('agentCount')]",
+                      "vmSize": "[parameters('agentVMSize')]",
+                      "osType": "Linux",
+                      "mode": "System"
+                    }
+                  ],
+                  "linuxProfile": {
+                    "adminUsername": "[parameters('linuxAdminUsername')]",
+                    "ssh": {
+                      "publicKeys": [
+                        {
+                          "keyData": "[parameters('sshRSAPublicKey')]"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "outputs": {
+              "controlPlaneFQDN": {
+                "type": "string",
+                "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', parameters('clusterName')), '2022-05-02-preview').fqdn]"
+              }
+            }
+          }
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.Resources/deployments', 'storage1')]"
+        ]
+      }
+    ]
+  }

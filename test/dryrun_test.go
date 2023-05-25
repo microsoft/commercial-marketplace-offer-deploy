@@ -1,5 +1,3 @@
-//go:build integration
-// +build integration
 package test
 
 import (
@@ -77,6 +75,18 @@ func (s *dryRunSuite) getJsonAsMap(path string) map[string]interface{} {
 		log.Println(err)
 	}
 	return jsonMap
+}
+
+func (s *dryRunSuite) TestNestedResourceId() {
+	nestedResourceIdPath := "./testdata/nestedresourceid"
+	result := s.runDeploymentTest(nestedResourceIdPath, false, s.getTemplate(nestedResourceIdPath), s.getParameters(nestedResourceIdPath))
+	log.Print("TestNestedResourceId Results:\n %s" + *s.prettify(result))
+}
+
+func (s *dryRunSuite) TestKubernetes() {
+	kubernetesPath := "./testdata/kubernetes"
+	result := s.runDeploymentTest(kubernetesPath, false, s.getTemplate(kubernetesPath), s.getParameters(kubernetesPath))
+	log.Print("TestKubernetes Results:\n %s" + *s.prettify(result))
 }
 
 func (s *dryRunSuite) TestNamePolicyFailure() {
