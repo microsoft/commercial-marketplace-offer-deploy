@@ -5,7 +5,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/structure"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
@@ -17,7 +17,7 @@ func NewCreateDeploymentMapper() *CreateDeploymentMapper {
 	return &CreateDeploymentMapper{}
 }
 
-func (m *CreateDeploymentMapper) Map(from *sdk.CreateDeployment) (*data.Deployment, error) {
+func (m *CreateDeploymentMapper) Map(from *sdk.CreateDeployment) (*model.Deployment, error) {
 	err := m.validate(from)
 	if err != nil {
 		return nil, err
@@ -26,7 +26,7 @@ func (m *CreateDeploymentMapper) Map(from *sdk.CreateDeployment) (*data.Deployme
 	template := from.Template.(map[string]any)
 	stages := m.getStages(template)
 
-	deployment := &data.Deployment{
+	deployment := &model.Deployment{
 		Name:           *from.Name,
 		SubscriptionId: *from.SubscriptionID,
 		ResourceGroup:  *from.ResourceGroup,
@@ -50,16 +50,16 @@ func (m *CreateDeploymentMapper) validate(from *sdk.CreateDeployment) error {
 
 // using the map as a graph, drill into each resource that's of type deployment
 // then extract the values from the tags if they exist, otherwise use defaults to set the stage's fields
-func (m *CreateDeploymentMapper) getStages(template map[string]any) []data.Stage {
+func (m *CreateDeploymentMapper) getStages(template map[string]any) []model.Stage {
 	armTemplate := &armTemplate{}
 	structure.Decode(template, &armTemplate)
 
-	stages := []data.Stage{}
+	stages := []model.Stage{}
 
 	for _, resource := range armTemplate.Resources {
 		if resource.isDeploymentResourceType() {
-			stage := data.Stage{
-				BaseWithGuidPrimaryKey: data.BaseWithGuidPrimaryKey{ID: resource.getId()},
+			stage := model.Stage{
+				BaseWithGuidPrimaryKey: model.BaseWithGuidPrimaryKey{ID: resource.getId()},
 				Name:                   resource.getName(),
 				DeploymentName:         resource.Name,
 				Retries:                resource.getRetries(),

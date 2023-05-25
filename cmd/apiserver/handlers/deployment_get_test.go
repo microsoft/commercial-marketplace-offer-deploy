@@ -10,6 +10,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/mapper"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/stretchr/testify/assert"
 )
@@ -19,7 +20,7 @@ func TestGetDeployment(t *testing.T) {
 	db := data.NewDatabase(&data.DatabaseOptions{UseInMemory: true}).Instance()
 
 	//Add deployment to db
-	data := &data.Deployment{}
+	data := &model.Deployment{}
 	db.Save(data)
 
 	//Setup

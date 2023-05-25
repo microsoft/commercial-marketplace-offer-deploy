@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/mapper"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	testutils "github.com/microsoft/commercial-marketplace-offer-deploy/test/utils"
 	"github.com/stretchr/testify/assert"
@@ -53,7 +54,7 @@ func TestCreateDeployment(t *testing.T) {
 
 	// check database
 	id := uint(*jsonResponse.ID)
-	data := &data.Deployment{}
+	data := &model.Deployment{}
 	db.First(data, id)
 
 	assert.Equal(t, id, data.ID)

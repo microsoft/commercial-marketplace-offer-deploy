@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/test/fakes"
@@ -19,7 +20,7 @@ type startDeploymentTest struct {
 	db                    *gorm.DB
 	createAzureDeployment deployment.CreateDeployment
 	executionFactory      ExecutorFactory
-	invokedOperation      *data.InvokedOperation
+	invokedOperation      *model.InvokedOperation
 	t                     *testing.T
 }
 
@@ -29,7 +30,7 @@ func newStartDeploymentTest(t *testing.T) *startDeploymentTest {
 	hook.SetInstance(fakeHookQueue)
 
 	db := data.NewDatabase(&data.DatabaseOptions{UseInMemory: true}).Instance()
-	d := data.Deployment{}
+	d := model.Deployment{}
 	db.Create(&d)
 
 	createAzureDeployment := func(ctx context.Context, dep deployment.AzureDeployment) (*deployment.AzureDeploymentResult, error) {
@@ -37,8 +38,8 @@ func newStartDeploymentTest(t *testing.T) *startDeploymentTest {
 		return &deployment.AzureDeploymentResult{}, nil
 	}
 
-	invokedOperation := &data.InvokedOperation{
-		BaseWithGuidPrimaryKey: data.BaseWithGuidPrimaryKey{ID: uuid.New()},
+	invokedOperation := &model.InvokedOperation{
+		BaseWithGuidPrimaryKey: model.BaseWithGuidPrimaryKey{ID: uuid.New()},
 		Name:                   "startDeployment",
 		DeploymentId:           d.ID,
 		Attempts:               0,
@@ -88,7 +89,7 @@ type fakeExecutorFactory struct {
 type fakeExecutor struct {
 }
 
-func (f *fakeExecutor) Execute(ctx context.Context, invokedOperation *data.InvokedOperation) error {
+func (f *fakeExecutor) Execute(ctx context.Context, invokedOperation *model.InvokedOperation) error {
 	return nil
 }
 

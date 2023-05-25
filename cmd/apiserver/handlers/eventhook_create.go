@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	data "github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"gorm.io/gorm"
 )
@@ -25,10 +26,10 @@ func (h createEventHookHandler) Handle(c echo.Context) error {
 		return err
 	}
 
-	hook := &data.EventHook{}
+	hook := &model.EventHook{}
 
 	if h.hookExists(*request.Name, db) {
-		db.Where(&data.EventHook{Name: *request.Name}).First(hook)
+		db.Where(&model.EventHook{Name: *request.Name}).First(hook)
 		hook.Callback = *request.Callback
 		hook.ApiKey = *request.APIKey
 		db.Save(&hook)
@@ -41,7 +42,7 @@ func (h createEventHookHandler) Handle(c echo.Context) error {
 		return c.JSON(http.StatusOK, result)
 	}
 
-	hook = data.FromCreateEventHook(request)
+	hook = model.FromCreateEventHook(request)
 	tx := db.Save(&hook)
 	if tx.Error != nil {
 		return err
@@ -58,7 +59,7 @@ func (h createEventHookHandler) Handle(c echo.Context) error {
 
 func (h *createEventHookHandler) hookExists(hookName string, db *gorm.DB) bool {
 	var count int64
-	condition := data.EventHook{Name: hookName}
+	condition := model.EventHook{Name: hookName}
 	db.Model(condition).Where(condition).Count(&count)
 	return count > 0
 }

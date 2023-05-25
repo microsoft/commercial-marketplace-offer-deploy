@@ -1,4 +1,4 @@
-package data
+package model
 
 import "github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 

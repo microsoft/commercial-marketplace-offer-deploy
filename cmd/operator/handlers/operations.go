@@ -8,6 +8,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 )
@@ -33,9 +34,9 @@ func (h *operationMessageHandler) Handle(message *messaging.ExecuteInvokedOperat
 	return err
 }
 
-func (h *operationMessageHandler) getInvokedOperation(operationId uuid.UUID) (*data.InvokedOperation, error) {
+func (h *operationMessageHandler) getInvokedOperation(operationId uuid.UUID) (*model.InvokedOperation, error) {
 	db := h.database.Instance()
-	invokedOperation := &data.InvokedOperation{}
+	invokedOperation := &model.InvokedOperation{}
 	db.First(&invokedOperation, operationId)
 
 	if db.Error != nil {
@@ -48,7 +49,7 @@ func (h *operationMessageHandler) getInvokedOperation(operationId uuid.UUID) (*d
 	return invokedOperation, nil
 }
 
-func (h *operationMessageHandler) shouldExecute(invokedOperation *data.InvokedOperation) bool {
+func (h *operationMessageHandler) shouldExecute(invokedOperation *model.InvokedOperation) bool {
 	reasons, ok := h.evaluator.IsExecutable(invokedOperation)
 	if !ok {
 		log.Infof("Operation '%s' is not executable", invokedOperation.Name)
@@ -59,7 +60,7 @@ func (h *operationMessageHandler) shouldExecute(invokedOperation *data.InvokedOp
 	return ok
 }
 
-func (h *operationMessageHandler) executeOperation(ctx context.Context, invokedOperation *data.InvokedOperation) error {
+func (h *operationMessageHandler) executeOperation(ctx context.Context, invokedOperation *model.InvokedOperation) error {
 	executor, err := h.factory.Create(sdk.OperationType(invokedOperation.Name))
 	if err != nil {
 		return err
@@ -81,11 +82,11 @@ func NewOperationsMessageHandler(appConfig *config.AppConfig) *operationMessageH
 
 // mediator evaluation of the invoked operation
 type invokedOperationEvaluator struct {
-	invokedOperation *data.InvokedOperation
+	invokedOperation *model.InvokedOperation
 	reasons          []string
 }
 
-func (e *invokedOperationEvaluator) IsExecutable(invokedOperation *data.InvokedOperation) ([]string, bool) {
+func (e *invokedOperationEvaluator) IsExecutable(invokedOperation *model.InvokedOperation) ([]string, bool) {
 	e.reasons = []string{}
 	e.invokedOperation = invokedOperation
 

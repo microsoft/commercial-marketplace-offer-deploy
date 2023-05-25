@@ -11,6 +11,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
@@ -21,10 +22,10 @@ type retryStage struct {
 	db *gorm.DB
 }
 
-func (exe *retryStage) Execute(ctx context.Context, invokedOperation *data.InvokedOperation) error {
+func (exe *retryStage) Execute(ctx context.Context, invokedOperation *model.InvokedOperation) error {
 	db := exe.db
 
-	dep := &data.Deployment{}
+	dep := &model.Deployment{}
 	db.First(&dep, invokedOperation.DeploymentId)
 
 	db.Save(dep)
@@ -67,7 +68,7 @@ func (exe *retryStage) Execute(ctx context.Context, invokedOperation *data.Invok
 	return nil
 }
 
-func (exe *retryStage) sendHook(ctx context.Context, deployment *data.Deployment, invokedOperation *data.InvokedOperation, stage *data.Stage) error {
+func (exe *retryStage) sendHook(ctx context.Context, deployment *model.Deployment, invokedOperation *model.InvokedOperation, stage *model.Stage) error {
 	message := &sdk.EventHookMessage{
 		Status: invokedOperation.Status,
 		Data: &sdk.DeploymentEventData{
@@ -86,7 +87,7 @@ func (exe *retryStage) sendHook(ctx context.Context, deployment *data.Deployment
 	return nil
 }
 
-func (exe *retryStage) save(operation *data.InvokedOperation) error {
+func (exe *retryStage) save(operation *model.InvokedOperation) error {
 	tx := exe.db.Begin()
 	tx.Save(operation)
 
@@ -99,7 +100,7 @@ func (exe *retryStage) save(operation *data.InvokedOperation) error {
 	return nil
 }
 
-func (exe *retryStage) mapToAzureRedeployment(dep *data.Deployment, stage *data.Stage, operation *data.InvokedOperation) *deployment.AzureRedeployment {
+func (exe *retryStage) mapToAzureRedeployment(dep *model.Deployment, stage *model.Stage, operation *model.InvokedOperation) *deployment.AzureRedeployment {
 	b, err := json.MarshalIndent(dep, "", "  ")
 	if err != nil {
 		log.Error(err)
@@ -115,7 +116,7 @@ func (exe *retryStage) mapToAzureRedeployment(dep *data.Deployment, stage *data.
 	return azureRedeployment
 }
 
-func (exe *retryStage) findStage(deployment *data.Deployment, stageId uuid.UUID) *data.Stage {
+func (exe *retryStage) findStage(deployment *model.Deployment, stageId uuid.UUID) *model.Stage {
 	for _, stage := range deployment.Stages {
 		if stage.ID == stageId {
 			return &stage

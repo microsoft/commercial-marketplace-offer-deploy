@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	data "github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"gorm.io/gorm"
 )
@@ -16,7 +17,7 @@ type listEventHooksHandler struct {
 }
 
 func (h *listEventHooksHandler) Handle(c echo.Context) error {
-	hooks := []data.EventHook{}
+	hooks := []model.EventHook{}
 	h.db.Find(&hooks)
 
 	result := []sdk.EventHookResponse{}

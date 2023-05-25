@@ -10,6 +10,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
@@ -24,7 +25,7 @@ type dryRun struct {
 	retryDelay time.Duration
 }
 
-func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOperation) error {
+func (exe *dryRun) Execute(ctx context.Context, invokedOperation *model.InvokedOperation) error {
 	retries := uint(invokedOperation.Retries)
 	exe.log = log.WithFields(log.Fields{
 		"operationId":  invokedOperation.ID,
@@ -87,7 +88,7 @@ func (exe *dryRun) Execute(ctx context.Context, invokedOperation *data.InvokedOp
 	return err
 }
 
-func (exe *dryRun) getFailedEventHookMessage(err error, invokedOperation *data.InvokedOperation) *sdk.EventHookMessage {
+func (exe *dryRun) getFailedEventHookMessage(err error, invokedOperation *model.InvokedOperation) *sdk.EventHookMessage {
 	data := &sdk.DryRunEventData{
 		DeploymentId: int(invokedOperation.DeploymentId),
 		OperationId:  invokedOperation.ID,
@@ -108,7 +109,7 @@ func (exe *dryRun) getFailedEventHookMessage(err error, invokedOperation *data.I
 	return message
 }
 
-func (exe *dryRun) mapToEventHookMessage(invokedOperation *data.InvokedOperation, result *sdk.DryRunResult) *sdk.EventHookMessage {
+func (exe *dryRun) mapToEventHookMessage(invokedOperation *model.InvokedOperation, result *sdk.DryRunResult) *sdk.EventHookMessage {
 	resultStatus := sdk.StatusError.String()
 	resultErrors := []sdk.DryRunError{}
 
@@ -137,8 +138,8 @@ func (exe *dryRun) mapToEventHookMessage(invokedOperation *data.InvokedOperation
 	return message
 }
 
-func (exe *dryRun) getAzureDeployment(operation *data.InvokedOperation) *deployment.AzureDeployment {
-	retrieved := &data.Deployment{}
+func (exe *dryRun) getAzureDeployment(operation *model.InvokedOperation) *deployment.AzureDeployment {
+	retrieved := &model.Deployment{}
 	exe.db.First(&retrieved, operation.DeploymentId)
 
 	deployment := &deployment.AzureDeployment{
@@ -153,7 +154,7 @@ func (exe *dryRun) getAzureDeployment(operation *data.InvokedOperation) *deploym
 	return deployment
 }
 
-func (exe *dryRun) save(operation *data.InvokedOperation) error {
+func (exe *dryRun) save(operation *model.InvokedOperation) error {
 	tx := exe.db.Begin()
 	tx.Save(&operation)
 

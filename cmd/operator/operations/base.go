@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
@@ -14,10 +14,10 @@ import (
 // Executor is the interface for the actual execution of a logically invoked operation from the API
 // Requestor --> invoke this operation --> enqueue --> executor --> execute the operation
 type Executor interface {
-	Execute(ctx context.Context, operation *data.InvokedOperation) error
+	Execute(ctx context.Context, operation *model.InvokedOperation) error
 }
 
-type Execute func(ctx context.Context, operation *data.InvokedOperation) error
+type Execute func(ctx context.Context, operation *model.InvokedOperation) error
 
 // this is so the dry run can be tested, detaching actual dry run implementation
 type DryRunFunc func(context.Context, *deployment.AzureDeployment) (*sdk.DryRunResult, error)
@@ -58,7 +58,7 @@ func (f *factory) Create(operationType sdk.OperationType) (Executor, error) {
 }
 
 func Trace(execute Execute) Execute {
-	return func(ctx context.Context, invokedOperation *data.InvokedOperation) error {
+	return func(ctx context.Context, invokedOperation *model.InvokedOperation) error {
 		logger := log.WithFields(
 			log.Fields{
 				"name": invokedOperation.Name,

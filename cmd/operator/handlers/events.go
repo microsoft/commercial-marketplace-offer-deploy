@@ -10,6 +10,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/structure"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
@@ -79,11 +80,11 @@ func (h *eventsMessageHandler) retryDeployment(ctx context.Context, message *sdk
 }
 
 // updates the invoked operation
-func (h *eventsMessageHandler) update(message *sdk.EventHookMessage) (*data.InvokedOperation, error) {
+func (h *eventsMessageHandler) update(message *sdk.EventHookMessage) (*model.InvokedOperation, error) {
 	eventData := &sdk.DeploymentEventData{}
 	structure.Decode(message.Data, &eventData)
 
-	invokedOperation := &data.InvokedOperation{}
+	invokedOperation := &model.InvokedOperation{}
 	h.db.First(&invokedOperation, eventData.OperationId)
 
 	//update the status to scheduled

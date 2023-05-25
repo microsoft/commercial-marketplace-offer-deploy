@@ -2,7 +2,7 @@ package mapper
 
 import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
@@ -13,7 +13,7 @@ func NewDeploymentMapper() *DeploymentMapper {
 	return &DeploymentMapper{}
 }
 
-func (m *DeploymentMapper) MapAll(deployments []data.Deployment) []sdk.Deployment {
+func (m *DeploymentMapper) MapAll(deployments []model.Deployment) []sdk.Deployment {
 	result := []sdk.Deployment{}
 
 	for _, deployment := range deployments {
@@ -22,7 +22,7 @@ func (m *DeploymentMapper) MapAll(deployments []data.Deployment) []sdk.Deploymen
 	return result
 }
 
-func (m *DeploymentMapper) Map(deployment *data.Deployment) sdk.Deployment {
+func (m *DeploymentMapper) Map(deployment *model.Deployment) sdk.Deployment {
 	result := sdk.Deployment{
 		ID:   to.Ptr(int32(deployment.ID)),
 		Name: &deployment.Name,

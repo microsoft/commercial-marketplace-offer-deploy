@@ -11,6 +11,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/mapper"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"gorm.io/gorm"
 )
@@ -49,7 +50,7 @@ func (h *createDeploymentHandler) Handle(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
-func createResult(deployment *data.Deployment) *sdk.Deployment {
+func createResult(deployment *model.Deployment) *sdk.Deployment {
 	result := &sdk.Deployment{
 		ID:   to.Ptr(int32(deployment.ID)),
 		Name: &deployment.Name,

@@ -10,6 +10,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/test/fakes"
@@ -25,7 +26,7 @@ type dryRunExecutorTest struct {
 	dryRun           DryRunFunc
 	sender           messaging.MessageSender
 	hookQueue        *fakes.FakeHookQueue
-	invokedOperation *data.InvokedOperation
+	invokedOperation *model.InvokedOperation
 	ctx              context.Context
 }
 
@@ -35,8 +36,8 @@ type dryRunExecutorTestOptions struct {
 	causeDryRunStatusToBeFailed bool
 }
 
-func (t *dryRunExecutorTest) getSavedState() data.InvokedOperation {
-	invokedOperation := &data.InvokedOperation{}
+func (t *dryRunExecutorTest) getSavedState() model.InvokedOperation {
+	invokedOperation := &model.InvokedOperation{}
 	t.db.First(invokedOperation, t.invokedOperation.ID)
 	return *invokedOperation
 }
@@ -68,11 +69,11 @@ func newDryExecutorTest(t *testing.T, options *dryRunExecutorTestOptions) *dryRu
 
 	db := data.NewDatabase(&data.DatabaseOptions{UseInMemory: true}).Instance()
 
-	deployment := &data.Deployment{}
+	deployment := &model.Deployment{}
 	db.Save(deployment)
 
-	invokedOperation := &data.InvokedOperation{
-		BaseWithGuidPrimaryKey: data.BaseWithGuidPrimaryKey{
+	invokedOperation := &model.InvokedOperation{
+		BaseWithGuidPrimaryKey: model.BaseWithGuidPrimaryKey{
 			ID: uuid.New(),
 		},
 		DeploymentId: deployment.ID,
@@ -239,7 +240,7 @@ func Test_DryRun_getAzureDeployment_name_is_correctly_set(t *testing.T) {
 	}
 
 	// set the name using the invoked operation's deployment id
-	deployment := &data.Deployment{}
+	deployment := &model.Deployment{}
 	test.db.First(deployment, test.invokedOperation.DeploymentId)
 
 	deployment.Name = "test-deployment/with some slashes-*&^%$#@!_+=.:'\""

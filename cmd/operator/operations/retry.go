@@ -8,6 +8,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	deployments "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
@@ -21,7 +22,7 @@ type retryDeployment struct {
 	db *gorm.DB
 }
 
-func (exe *retryDeployment) Execute(ctx context.Context, invokedOperation *data.InvokedOperation) error {
+func (exe *retryDeployment) Execute(ctx context.Context, invokedOperation *model.InvokedOperation) error {
 	deployment, err := exe.updateToRunning(ctx, invokedOperation)
 	if err != nil {
 		return err
@@ -40,7 +41,7 @@ func (exe *retryDeployment) Execute(ctx context.Context, invokedOperation *data.
 	return nil
 }
 
-func (exe *retryDeployment) updateWithResults(ctx context.Context, results *deployments.AzureDeploymentResult, invokedOperation *data.InvokedOperation) error {
+func (exe *retryDeployment) updateWithResults(ctx context.Context, results *deployments.AzureDeploymentResult, invokedOperation *model.InvokedOperation) error {
 	db := exe.db
 
 	if results != nil {
@@ -77,10 +78,10 @@ func (exe *retryDeployment) updateWithResults(ctx context.Context, results *depl
 	return nil
 }
 
-func (exe *retryDeployment) updateToRunning(ctx context.Context, invokedOperation *data.InvokedOperation) (*data.Deployment, error) {
+func (exe *retryDeployment) updateToRunning(ctx context.Context, invokedOperation *model.InvokedOperation) (*model.Deployment, error) {
 	db := exe.db
 
-	deployment := &data.Deployment{}
+	deployment := &model.Deployment{}
 	db.First(&deployment, invokedOperation.DeploymentId)
 	invokedOperation.Status = sdk.StatusRunning.String()
 	db.Save(invokedOperation)
@@ -99,7 +100,7 @@ func (exe *retryDeployment) updateToRunning(ctx context.Context, invokedOperatio
 	return deployment, err
 }
 
-func (exe *retryDeployment) mapToAzureRedeployment(dep *data.Deployment, operation *data.InvokedOperation) deployments.AzureRedeployment {
+func (exe *retryDeployment) mapToAzureRedeployment(dep *model.Deployment, operation *model.InvokedOperation) deployments.AzureRedeployment {
 	azureRedeployment := deployments.AzureRedeployment{
 		SubscriptionId:    dep.SubscriptionId,
 		Location:          dep.Location,

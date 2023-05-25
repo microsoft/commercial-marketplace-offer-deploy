@@ -11,6 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	testutils "github.com/microsoft/commercial-marketplace-offer-deploy/test/utils"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
@@ -89,7 +90,7 @@ func setupDatabase() *gorm.DB {
 		UseInMemory: true,
 	}
 	db := data.NewDatabase(databaseOptions).Instance()
-	db.Save(&data.Deployment{
+	db.Save(&model.Deployment{
 		Name: "test-deployment",
 	})
 	return db

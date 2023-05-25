@@ -9,6 +9,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"gorm.io/gorm"
@@ -31,7 +32,7 @@ type startDeployment struct {
 	createAzureDeployment deployment.CreateDeployment
 }
 
-func (exe *startDeployment) Execute(ctx context.Context, invokedOperation *data.InvokedOperation) error {
+func (exe *startDeployment) Execute(ctx context.Context, invokedOperation *model.InvokedOperation) error {
 	invokedOperation.Attempts = invokedOperation.Attempts + 1
 
 	if invokedOperation.Attempts > invokedOperation.Retries {
@@ -56,13 +57,13 @@ func (exe *startDeployment) Execute(ctx context.Context, invokedOperation *data.
 	return nil
 }
 
-func (exe *startDeployment) start(ctx context.Context, invokedOperation *data.InvokedOperation) error {
+func (exe *startDeployment) start(ctx context.Context, invokedOperation *model.InvokedOperation) error {
 	err := exe.updateToRunning(ctx, invokedOperation)
 	if err != nil {
 		return err
 	}
 
-	deployment := &data.Deployment{}
+	deployment := &model.Deployment{}
 	exe.db.First(deployment, invokedOperation.DeploymentId)
 
 	azureDeployment := exe.mapAzureDeployment(deployment, invokedOperation)
@@ -76,7 +77,7 @@ func (exe *startDeployment) start(ctx context.Context, invokedOperation *data.In
 	return err
 }
 
-func (exe *startDeployment) updateToRunning(ctx context.Context, invokedOperation *data.InvokedOperation) error {
+func (exe *startDeployment) updateToRunning(ctx context.Context, invokedOperation *model.InvokedOperation) error {
 	db := exe.db
 
 	invokedOperation.Status = sdk.StatusRunning.String()
@@ -99,7 +100,7 @@ func (exe *startDeployment) updateToRunning(ctx context.Context, invokedOperatio
 	return err
 }
 
-func (exe *startDeployment) updateToFailed(ctx context.Context, invokedOperation *data.InvokedOperation, err error) error {
+func (exe *startDeployment) updateToFailed(ctx context.Context, invokedOperation *model.InvokedOperation, err error) error {
 	db := exe.db
 
 	invokedOperation.Status = string(sdk.StatusFailed)
@@ -130,7 +131,7 @@ func (exe *startDeployment) updateToFailed(ctx context.Context, invokedOperation
 	return nil
 }
 
-func (p *startDeployment) mapAzureDeployment(d *data.Deployment, io *data.InvokedOperation) deployment.AzureDeployment {
+func (p *startDeployment) mapAzureDeployment(d *model.Deployment, io *model.InvokedOperation) deployment.AzureDeployment {
 	return deployment.AzureDeployment{
 		SubscriptionId:    d.SubscriptionId,
 		ResourceGroupName: d.ResourceGroup,

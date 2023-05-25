@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
@@ -13,8 +14,8 @@ import (
 
 type testEventsMessageHandler struct {
 	db               *gorm.DB
-	deployment       *data.Deployment
-	invokedOperation *data.InvokedOperation
+	deployment       *model.Deployment
+	invokedOperation *model.InvokedOperation
 	message          *sdk.EventHookMessage
 }
 
@@ -34,10 +35,10 @@ func newTestEventsMessageHandler() *testEventsMessageHandler {
 		UseInMemory: true,
 	}).Instance()
 
-	deployment := &data.Deployment{}
+	deployment := &model.Deployment{}
 	db.Save(deployment)
 
-	invokedOperation := &data.InvokedOperation{
+	invokedOperation := &model.InvokedOperation{
 		DeploymentId: deployment.ID,
 	}
 	db.Save(invokedOperation)
