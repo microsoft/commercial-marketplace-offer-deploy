@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
@@ -15,34 +14,23 @@ import (
 	"gorm.io/gorm"
 )
 
-// RetriableError is a custom error that contains a positive duration for the next retry
-type RetriableError struct {
-	Err        error
-	RetryAfter time.Duration
-}
-
-// Error returns error message and a Retry-After duration
-func (e *RetriableError) Error() string {
-	return fmt.Sprintf("%s (retry after %v)", e.Err.Error(), e.RetryAfter)
-}
-
-type startDeployment struct {
+type deploy struct {
 	db                    *gorm.DB
 	factory               ExecutorFactory
 	createAzureDeployment deployment.CreateDeployment
 }
 
-func (exe *startDeployment) Execute(ctx context.Context, invokedOperation *model.InvokedOperation) error {
-	invokedOperation.Attempts = invokedOperation.Attempts + 1
+func (exe *deploy) Execute(ctx context.Context, invokedOperation *model.InvokedOperation) error {
+	invokedOperation.Running()
 
-	if invokedOperation.Attempts > invokedOperation.Retries {
+	if invokedOperation.AttemptsExceeded() {
 		return nil
 	}
 
-	execute := exe.start
+	execute := exe.execute
 
-	if invokedOperation.Attempts > 1 { // this is a retry if so
-		executor, err := exe.factory.Create(sdk.OperationRetryDeployment)
+	if invokedOperation.IsRetry() { // this is a retry if so
+		executor, err := exe.factory.Create(sdk.OperationRetry)
 		if err != nil {
 			exe.updateToFailed(ctx, invokedOperation, err)
 			return err
@@ -57,7 +45,7 @@ func (exe *startDeployment) Execute(ctx context.Context, invokedOperation *model
 	return nil
 }
 
-func (exe *startDeployment) start(ctx context.Context, invokedOperation *model.InvokedOperation) error {
+func (exe *deploy) execute(ctx context.Context, invokedOperation *model.InvokedOperation) error {
 	err := exe.updateToRunning(ctx, invokedOperation)
 	if err != nil {
 		return err
@@ -71,13 +59,13 @@ func (exe *startDeployment) start(ctx context.Context, invokedOperation *model.I
 
 	// if we waited this long, then we can assume we have the results, so we'll update the invoked operation results with it
 	if err == nil {
-		invokedOperation.Result = result
+		invokedOperation.Value(result)
 		exe.db.Save(invokedOperation)
 	}
 	return err
 }
 
-func (exe *startDeployment) updateToRunning(ctx context.Context, invokedOperation *model.InvokedOperation) error {
+func (exe *deploy) updateToRunning(ctx context.Context, invokedOperation *model.InvokedOperation) error {
 	db := exe.db
 
 	invokedOperation.Status = sdk.StatusRunning.String()
@@ -100,10 +88,10 @@ func (exe *startDeployment) updateToRunning(ctx context.Context, invokedOperatio
 	return err
 }
 
-func (exe *startDeployment) updateToFailed(ctx context.Context, invokedOperation *model.InvokedOperation, err error) error {
+func (exe *deploy) updateToFailed(ctx context.Context, invokedOperation *model.InvokedOperation, err error) error {
 	db := exe.db
 
-	invokedOperation.Status = string(sdk.StatusFailed)
+	invokedOperation.Failed()
 	db.Save(&invokedOperation)
 
 	eventType := string(sdk.EventTypeDeploymentCompleted)
@@ -131,7 +119,7 @@ func (exe *startDeployment) updateToFailed(ctx context.Context, invokedOperation
 	return nil
 }
 
-func (p *startDeployment) mapAzureDeployment(d *model.Deployment, io *model.InvokedOperation) deployment.AzureDeployment {
+func (p *deploy) mapAzureDeployment(d *model.Deployment, io *model.InvokedOperation) deployment.AzureDeployment {
 	return deployment.AzureDeployment{
 		SubscriptionId:    d.SubscriptionId,
 		ResourceGroupName: d.ResourceGroup,
@@ -146,7 +134,7 @@ func (p *startDeployment) mapAzureDeployment(d *model.Deployment, io *model.Invo
 func NewStartDeploymentExecutor(appConfig *config.AppConfig) Executor {
 	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
 	factory := NewExecutorFactory(appConfig)
-	executor := &startDeployment{
+	executor := &deploy{
 		db:                    db,
 		factory:               factory,
 		createAzureDeployment: deployment.Create,

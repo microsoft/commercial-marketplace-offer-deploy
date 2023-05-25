@@ -88,7 +88,7 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*sdk
 	invokedOperation := &model.InvokedOperation{}
 	f.db.Where("deployment_id = ? AND name = ?",
 		deployment.ID,
-		sdk.OperationStartDeployment,
+		sdk.OperationDeploy,
 	).First(invokedOperation)
 
 	data := sdk.DeploymentEventData{

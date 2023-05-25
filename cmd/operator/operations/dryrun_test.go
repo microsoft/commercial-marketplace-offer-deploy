@@ -81,7 +81,7 @@ func newDryExecutorTest(t *testing.T, options *dryRunExecutorTestOptions) *dryRu
 		Retries:      3,
 		Attempts:     0,
 		Parameters:   map[string]interface{}{},
-		Result:       nil,
+		Results:      make(map[int]*model.InvokedOperationResult),
 	}
 
 	return &dryRunExecutorTest{
@@ -268,7 +268,7 @@ func Test_DryRun_Execute_failure_captures_errors(t *testing.T) {
 
 	executor.Execute(test.ctx, test.invokedOperation)
 
-	assert.Equal(t, 3, len(test.invokedOperation.Errors))
+	assert.Equal(t, 3, len(test.invokedOperation.Results))
 }
 
 func Test_DryRun_Execute_eventhook_message_attempts_nonzero_index(t *testing.T) {

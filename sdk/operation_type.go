@@ -6,11 +6,11 @@ import "fmt"
 type OperationType string
 
 const (
-	OperationStartDeployment OperationType = "startDeployment"
-	OperationRetryDeployment OperationType = "retryDeployment"
-	OperationRetryStage      OperationType = "retryStage"
-	OperationDryRun          OperationType = "dryRun"
-	OperationUnknown         OperationType = "unknown"
+	OperationDeploy     OperationType = "deploy"
+	OperationRetry      OperationType = "retry"
+	OperationRetryStage OperationType = "retryStage"
+	OperationDryRun     OperationType = "dryRun"
+	OperationUnknown    OperationType = "unknown"
 )
 
 func (o OperationType) String() string {
@@ -23,10 +23,10 @@ func Type(o string) (OperationType, error) {
 	switch o {
 	case OperationDryRun.String():
 		return OperationDryRun, nil
-	case OperationStartDeployment.String():
-		return OperationStartDeployment, nil
-	case OperationRetryDeployment.String():
-		return OperationRetryDeployment, nil
+	case OperationDeploy.String():
+		return OperationDeploy, nil
+	case OperationRetry.String():
+		return OperationRetry, nil
 	case OperationRetryStage.String():
 		return OperationRetryStage, nil
 	default:

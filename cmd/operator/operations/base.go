@@ -3,6 +3,7 @@ package operations
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
@@ -10,6 +11,17 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 )
+
+// RetriableError is a custom error that contains a positive duration for the next retry
+type RetriableError struct {
+	Err        error
+	RetryAfter time.Duration
+}
+
+// Error returns error message and a Retry-After duration
+func (e *RetriableError) Error() string {
+	return fmt.Sprintf("%s (retry after %v)", e.Err.Error(), e.RetryAfter)
+}
 
 // Executor is the interface for the actual execution of a logically invoked operation from the API
 // Requestor --> invoke this operation --> enqueue --> executor --> execute the operation
@@ -43,9 +55,9 @@ func (f *factory) Create(operationType sdk.OperationType) (Executor, error) {
 	switch operationType {
 	case sdk.OperationDryRun:
 		executor = NewDryRunExecutor(f.appConfig)
-	case sdk.OperationStartDeployment:
+	case sdk.OperationDeploy:
 		executor = NewStartDeploymentExecutor(f.appConfig)
-	case sdk.OperationRetryDeployment:
+	case sdk.OperationRetry:
 		executor = NewRetryDeploymentExecutor(f.appConfig)
 	case sdk.OperationRetryStage:
 		executor = NewRetryStageExecutor(f.appConfig)

@@ -15,7 +15,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type startDeploymentTest struct {
+type deployTest struct {
 	hook                  *fakes.FakeHookQueue
 	db                    *gorm.DB
 	createAzureDeployment deployment.CreateDeployment
@@ -24,7 +24,7 @@ type startDeploymentTest struct {
 	t                     *testing.T
 }
 
-func newStartDeploymentTest(t *testing.T) *startDeploymentTest {
+func newDeployTest(t *testing.T) *deployTest {
 	// set hook queue to fake instance
 	fakeHookQueue := fakes.NewFakeHookQueue(t)
 	hook.SetInstance(fakeHookQueue)
@@ -47,7 +47,7 @@ func newStartDeploymentTest(t *testing.T) *startDeploymentTest {
 	}
 	db.Create(&invokedOperation)
 
-	return &startDeploymentTest{
+	return &deployTest{
 		t:                     t,
 		db:                    db,
 		hook:                  fakeHookQueue,
@@ -57,10 +57,10 @@ func newStartDeploymentTest(t *testing.T) *startDeploymentTest {
 	}
 }
 
-func Test_StartDeployment_FirstAttemptSendsEventHookWithOperationId(t *testing.T) {
-	test := newStartDeploymentTest(t)
+func Test_Deploy_FirstAttemptSendsEventHookWithOperationId(t *testing.T) {
+	test := newDeployTest(t)
 
-	executor := startDeployment{
+	executor := deploy{
 		db:                    test.db,
 		factory:               test.executionFactory,
 		createAzureDeployment: test.createAzureDeployment,

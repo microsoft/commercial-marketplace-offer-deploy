@@ -36,7 +36,7 @@ func (client *Client) Start(ctx context.Context, deploymentId int, templateParam
 	if options != nil {
 		retries = options.Retries
 	}
-	response, err := client.invokeDeploymentOperation(ctx, false, OperationStartDeployment, deploymentId, templateParameters, retries)
+	response, err := client.invokeDeploymentOperation(ctx, false, OperationDeploy, deploymentId, templateParameters, retries)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func (client *Client) Start(ctx context.Context, deploymentId int, templateParam
 //
 //	id: deployment id
 func (client *Client) Retry(ctx context.Context, deploymentId int, options *RetryOptions) (*RetryResponse, error) {
-	operationType := OperationRetryDeployment
+	operationType := OperationRetry
 
 	// if we have a stageId set, then we want to retry a stage of the deployment
 	if options != nil {

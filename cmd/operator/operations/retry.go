@@ -41,19 +41,19 @@ func (exe *retryDeployment) Execute(ctx context.Context, invokedOperation *model
 	return nil
 }
 
-func (exe *retryDeployment) updateWithResults(ctx context.Context, results *deployments.AzureDeploymentResult, invokedOperation *model.InvokedOperation) error {
+func (exe *retryDeployment) updateWithResults(ctx context.Context, azureResult *deployments.AzureDeploymentResult, invokedOperation *model.InvokedOperation) error {
 	db := exe.db
 
-	if results != nil {
-		invokedOperation.Result = results
+	if azureResult != nil {
+		invokedOperation.Value(azureResult)
 
-		if results.Status == deployments.Failed {
-			invokedOperation.Status = sdk.StatusFailed.String()
-		} else if results.Status == deployments.Succeeded {
-			invokedOperation.Status = sdk.StatusSuccess.String()
+		if azureResult.Status == deployments.Failed {
+			invokedOperation.Failed()
+		} else if azureResult.Status == deployments.Succeeded {
+			invokedOperation.Success()
 		}
 	} else {
-		invokedOperation.Status = sdk.StatusFailed.String()
+		invokedOperation.Failed()
 	}
 
 	db.Save(invokedOperation)
@@ -83,7 +83,9 @@ func (exe *retryDeployment) updateToRunning(ctx context.Context, invokedOperatio
 
 	deployment := &model.Deployment{}
 	db.First(&deployment, invokedOperation.DeploymentId)
-	invokedOperation.Status = sdk.StatusRunning.String()
+
+	invokedOperation.Running()
+
 	db.Save(invokedOperation)
 
 	err := hook.Add(ctx, &sdk.EventHookMessage{

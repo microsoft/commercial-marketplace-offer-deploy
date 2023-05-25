@@ -10,18 +10,19 @@ type InvokedDeploymentOperationResponseMapper struct {
 }
 
 func (m *InvokedDeploymentOperationResponseMapper) Map(invokedOperation *model.InvokedOperation) sdk.InvokedDeploymentOperationResponse {
-	result := sdk.InvokedDeploymentOperationResponse{
+
+	response := sdk.InvokedDeploymentOperationResponse{
 		InvokedOperation: &sdk.InvokedOperation{
 			DeploymentID: to.Ptr(int32(invokedOperation.DeploymentId)),
 			ID:           to.Ptr(invokedOperation.ID.String()),
 			InvokedOn:    to.Ptr(invokedOperation.CreatedAt),
 			Name:         &invokedOperation.Name,
 			Parameters:   &invokedOperation.Parameters,
-			Result:       &invokedOperation.Result,
+			Result:       to.Ptr(invokedOperation.LatestResult()),
 			Status:       &invokedOperation.Status,
 		},
 	}
-	return result
+	return response
 }
 
 type InvokedDeploymentResponseMapper struct {
@@ -46,7 +47,7 @@ func (m *InvokedDeploymentResponseMapper) Map(invokedOperation model.InvokedOper
 			InvokedOn:    to.Ptr(invokedOperation.CreatedAt),
 			Name:         &invokedOperation.Name,
 			Parameters:   &invokedOperation.Parameters,
-			Result:       &invokedOperation.Result,
+			Result:       to.Ptr(invokedOperation.LatestResult()),
 			Status:       &invokedOperation.Status,
 		},
 	}

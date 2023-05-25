@@ -42,7 +42,7 @@ func TestInvokedOperationUpdate(t *testing.T) {
 		Parameters:   params,
 		Name:         string(sdk.StatusScheduled),
 		Status:       "test",
-		Result:       make(map[string]interface{}),
+		Results:      map[int]*model.InvokedOperationResult{},
 	}
 
 	// save
@@ -55,10 +55,11 @@ func TestInvokedOperationUpdate(t *testing.T) {
 
 	// update
 	result.Status = "updated"
-	result.Result = nil
+	result.Results[1] = &model.InvokedOperationResult{}
 	db.Save(result)
 
 	assert.NotEqualValues(t, uuid.Nil, result.ID)
+	assert.Len(t, result.Results, 1)
 }
 
 func TestDeploymentUpdate(t *testing.T) {

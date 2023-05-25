@@ -59,7 +59,7 @@ func (exe *dryRun) Execute(ctx context.Context, invokedOperation *model.InvokedO
 			exe.log.Warn("Dry run result was nil")
 		}
 
-		invokedOperation.Result = result
+		invokedOperation.Value(result)
 		exe.save(invokedOperation)
 
 		hookMessage := exe.mapToEventHookMessage(invokedOperation, result)
@@ -78,7 +78,9 @@ func (exe *dryRun) Execute(ctx context.Context, invokedOperation *model.InvokedO
 
 	if err != nil {
 		exe.log.Errorf("Attempts to retry exceeded. Error: %v", err)
-		invokedOperation.Status = sdk.StatusFailed.String()
+		invokedOperation.Error(err)
+		invokedOperation.Failed()
+
 		exe.save(invokedOperation)
 
 		hookMessage := exe.getFailedEventHookMessage(err, invokedOperation)
