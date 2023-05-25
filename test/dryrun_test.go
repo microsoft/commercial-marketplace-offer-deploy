@@ -98,13 +98,13 @@ func (s *dryRunSuite) TestNamePolicyFailure() {
 func (s *dryRunSuite) TestExistingStorageFailure() {
 	nameViolationPath := "./testdata/existingstorage"
 	result := s.runDeploymentTest(nameViolationPath, true, s.getTemplate(nameViolationPath), s.getParameters(nameViolationPath))
-	log.Print("TestNamePolicyFailure Results:\n %s" + *s.prettify(result))
+	log.Print("TestExistingStorageFailure Results:\n %s" + *s.prettify(result))
 }
 
 func (s *dryRunSuite) TestTaggedDeployment() {
 	taggedDeploymentPath := "./testdata/taggeddeployment"
 	result := s.runDeploymentTest(taggedDeploymentPath, true, s.getTemplate(taggedDeploymentPath), s.getParameters(taggedDeploymentPath))
-	log.Print("TestNamePolicyFailure Results:\n %s" + *s.prettify(result))
+	log.Print("TestTaggedDeployment Results:\n %s" + *s.prettify(result))
 }
 
 func (s *dryRunSuite) TestMissingParameter() {
