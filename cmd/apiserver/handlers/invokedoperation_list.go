@@ -1,10 +1,8 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
@@ -24,14 +22,6 @@ func (h *listInvokedOperationHandler) Handle(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	return c.JSON(http.StatusOK, h.mapper.MapList(list))
-}
-
-func (h *listInvokedOperationHandler) getId(c echo.Context) (uuid.UUID, error) {
-	id, err := uuid.Parse(c.Param(operationIdParameterName))
-	if err != nil {
-		return uuid.Nil, fmt.Errorf("%s invalid", operationIdParameterName)
-	}
-	return id, nil
 }
 
 // method that gets a deployment struct by id
