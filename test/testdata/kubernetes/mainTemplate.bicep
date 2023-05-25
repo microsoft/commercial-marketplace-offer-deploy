@@ -7,6 +7,6 @@ module kubernetes 'modules/kubernetes.bicep' = {
     dnsPrefix: 'bobjac'
     location: location
     linuxAdminUsername: 'bobjac'
-    sshRSAPublicKey: ''
+    sshRSAPublicKey: '[INSERT SSH KEY HERE]'
   }
 }

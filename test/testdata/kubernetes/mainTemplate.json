@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "10127427317977406907"
+      "templateHash": "5317567792151163624"
     }
   },
   "variables": {
@@ -32,7 +32,7 @@
             "value": "bobjac"
           },
           "sshRSAPublicKey": {
-            "value": ""
+            "value": "[[INSERT SSH KEY HERE]"
           }
         },
         "template": {
@@ -42,13 +42,13 @@
             "_generator": {
               "name": "bicep",
               "version": "0.17.1.54307",
-              "templateHash": "10362338128653125534"
+              "templateHash": "2953073529301570825"
             }
           },
           "parameters": {
             "clusterName": {
               "type": "string",
-              "defaultValue": "aks101cluster",
+              "defaultValue": "bobjac1",
               "metadata": {
                 "description": "The name of the Managed Cluster resource."
               }
@@ -77,14 +77,14 @@
             },
             "agentCount": {
               "type": "int",
-              "defaultValue": 1000,
+              "defaultValue": 10,
               "metadata": {
                 "description": "The number of nodes for the cluster."
               }
             },
             "agentVMSize": {
               "type": "string",
-              "defaultValue": "Standard_D32s_v3",
+              "defaultValue": "standard_dc32ds_v3",
               "metadata": {
                 "description": "The size of the Virtual Machine."
               }

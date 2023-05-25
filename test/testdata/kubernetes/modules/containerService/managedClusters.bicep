@@ -9,7 +9,7 @@ param nodePool_count int = 1
   'User'
 ])
 param nodePool_mode string = 'System'
-param nodePool_vmSize string = 'Standard_D4s_v3'
+param nodePool_vmSize string = 'standard_dc32ds_v3'
 param enablePrivateCluster bool = true
 param identity object = {
   type: 'SystemAssigned'
