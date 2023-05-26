@@ -20,6 +20,9 @@ var (
 	instanceErr  error
 )
 
+// notify is the function signature for the event hook Add
+type Notify func(ctx context.Context, message *sdk.EventHookMessage) error
+
 const eventsQueueName = string(messaging.QueueNameEvents)
 
 // This implementation is to make the semantics clear that this is the lifecycle of a hook message:

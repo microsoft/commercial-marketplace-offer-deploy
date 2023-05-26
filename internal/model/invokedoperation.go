@@ -1,12 +1,14 @@
 package model
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
+// InvokedOperation is a record of an operation that was invoked by the operator
 type InvokedOperation struct {
 	BaseWithGuidPrimaryKey
 	Name         string `json:"name"`
@@ -32,10 +34,17 @@ type InvokedOperationResult struct {
 }
 
 // increment the number of attempts and set the status to running
-func (o *InvokedOperation) Running() *InvokedOperationResult {
+func (o *InvokedOperation) Running() error {
 	o.Attempts++
+
+	if o.AttemptsExceeded() {
+		return fmt.Errorf("cannot run operation, %d of %d attemps reached", +o.Attempts, o.Retries)
+	}
+
 	o.Status = sdk.StatusRunning.String()
-	return o.appendResult()
+	o.appendResult()
+
+	return nil
 }
 
 func (o *InvokedOperation) LatestResult() *InvokedOperationResult {
@@ -81,6 +90,10 @@ func (o *InvokedOperation) setStatus(status string) {
 func (o *InvokedOperation) appendResult() *InvokedOperationResult {
 	if o.Results == nil {
 		o.Results = make(map[int]*InvokedOperationResult)
+	}
+
+	if _, exists := o.Results[o.Attempts]; exists {
+		return o.Results[o.Attempts]
 	}
 
 	result := &InvokedOperationResult{
