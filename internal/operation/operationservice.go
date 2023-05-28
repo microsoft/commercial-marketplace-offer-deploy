@@ -16,7 +16,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type InvokedOperationContext struct {
+type operationService struct {
 	ctx                 context.Context
 	db                  *gorm.DB
 	publishNotification hook.Notify
@@ -24,14 +24,14 @@ type InvokedOperationContext struct {
 	sender              messaging.MessageSender
 	log                 *log.Entry
 	// the reference of the invoked operation that is being tracked
-	invokedOperation *InvokedOperation
+	invokedOperation *Operation
 }
 
-func (ioc *InvokedOperationContext) Context() context.Context {
+func (ioc *operationService) Context() context.Context {
 	return ioc.ctx
 }
 
-func (ioc *InvokedOperationContext) saveChanges() error {
+func (ioc *operationService) saveChanges() error {
 	tx := ioc.db.WithContext(ioc.ctx).Begin()
 
 	// could be an issue with starting the tx
@@ -59,13 +59,10 @@ func (ioc *InvokedOperationContext) saveChanges() error {
 }
 
 // triggers a notification of the invoked operation's state
-func (ioc *InvokedOperationContext) notify() error {
-	message, err := ioc.getMessage()
-	if err != nil {
-		ioc.log.Errorf("could not get event message: %v", err)
-		return err
-	}
-	err = ioc.publishNotification(ioc.Context(), message)
+func (ioc *operationService) notify() error {
+	message := ioc.getMessage()
+
+	err := ioc.publishNotification(ioc.Context(), message)
 	if err != nil {
 		ioc.log.Errorf("failed to add event message: %v", err)
 		return err
@@ -73,7 +70,7 @@ func (ioc *InvokedOperationContext) notify() error {
 	return nil
 }
 
-func (ioc *InvokedOperationContext) retry() error {
+func (ioc *operationService) retry() error {
 	message := messaging.ExecuteInvokedOperation{OperationId: ioc.id}
 
 	results, err := ioc.sender.Send(ioc.Context(), string(messaging.QueueNameOperations), message)
@@ -89,7 +86,7 @@ func (ioc *InvokedOperationContext) retry() error {
 
 // initializes the context and returns the single instance of InvokedOperation by the context's id
 // if the id is invalid and an instance cannot be found, returns an error
-func (ioc *InvokedOperationContext) begin(ctx context.Context, id uuid.UUID) (*model.InvokedOperation, error) {
+func (ioc *operationService) begin(ctx context.Context, id uuid.UUID) (*model.InvokedOperation, error) {
 	ioc.id = id
 	ioc.ctx = ctx
 	ioc.log = log.WithFields(log.Fields{
@@ -112,12 +109,19 @@ func (ioc *InvokedOperationContext) begin(ctx context.Context, id uuid.UUID) (*m
 }
 
 // encapsulates the conversion of an invoked operation to an event hook message
-func (ioc *InvokedOperationContext) getMessage() (*sdk.EventHookMessage, error) {
+func (ioc *operationService) getMessage() *sdk.EventHookMessage {
 	return mapToMessage(ioc.invokedOperation)
 }
 
-// constructor factory of InvokedOperationContext
-func NewInvokedOperationContext(appConfig *config.AppConfig) (*InvokedOperationContext, error) {
+func (ioc *operationService) deployment() *model.Deployment {
+	deployment := &model.Deployment{}
+	ioc.db.First(deployment, ioc.invokedOperation.DeploymentId)
+
+	return deployment
+}
+
+// constructor factory of operation service
+func newOperationService(appConfig *config.AppConfig) (*operationService, error) {
 	credential, err := getAzureCredential()
 	if err != nil {
 		log.Errorf("Error creating Azure credential for hook.Queue: %v", err)
@@ -136,7 +140,7 @@ func NewInvokedOperationContext(appConfig *config.AppConfig) (*InvokedOperationC
 		return nil, err
 	}
 
-	return &InvokedOperationContext{
+	return &operationService{
 		db:                  data.NewDatabase(appConfig.GetDatabaseOptions()).Instance(),
 		sender:              sender,
 		publishNotification: hook.Add,

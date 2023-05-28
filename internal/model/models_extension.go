@@ -51,11 +51,3 @@ func (d *Deployment) getSanitizedName() string {
 
 	return name
 }
-
-//region InvokedOperation
-
-func (io *InvokedOperation) IsRetriable() bool {
-	return io.Retries > io.Attempts
-}
-
-//endregion InvokedOperation

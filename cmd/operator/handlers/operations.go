@@ -6,109 +6,59 @@ import (
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/operations"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 )
 
 type operationMessageHandler struct {
-	database  data.Database
-	evaluator *invokedOperationEvaluator
-	factory   operations.ExecutorFactory
+	operationFactory operation.Factory
+	executorFactory  operation.ExecutorFactory
 }
 
 func (h *operationMessageHandler) Handle(message *messaging.ExecuteInvokedOperation, context messaging.MessageHandlerContext) error {
-	invokedOperation, err := h.getInvokedOperation(message.OperationId)
+	executionContext, err := h.createContext(context.Context(), message.OperationId)
 	if err != nil {
 		return err
 	}
 
-	if !h.shouldExecute(invokedOperation) {
-		return nil
-	}
-
-	err = h.executeOperation(context.Context(), invokedOperation)
-
-	return err
-}
-
-func (h *operationMessageHandler) getInvokedOperation(operationId uuid.UUID) (*model.InvokedOperation, error) {
-	db := h.database.Instance()
-	invokedOperation := &model.InvokedOperation{}
-	db.First(&invokedOperation, operationId)
-
-	if db.Error != nil {
-		log.Errorf("Error retrieving invoked operation: %s", db.Error)
-		return nil, db.Error
-	}
-
-	log.WithField("invokedOperationId", operationId).Infof("Retrieved invoked operation")
-
-	return invokedOperation, nil
-}
-
-func (h *operationMessageHandler) shouldExecute(invokedOperation *model.InvokedOperation) bool {
-	reasons, ok := h.evaluator.IsExecutable(invokedOperation)
-	if !ok {
-		log.Infof("Operation '%s' is not executable", invokedOperation.Name)
-		for _, reason := range reasons {
-			log.Info(reason)
-		}
-	}
-	return ok
-}
-
-func (h *operationMessageHandler) executeOperation(ctx context.Context, invokedOperation *model.InvokedOperation) error {
-	executor, err := h.factory.Create(sdk.OperationType(invokedOperation.Name))
+	executor, err := h.getExecutor(executionContext)
 	if err != nil {
 		return err
 	}
+	return executor.Execute(executionContext)
+}
 
-	exec := operations.Trace(executor.Execute)
-	return exec(ctx, invokedOperation)
+func (h *operationMessageHandler) createContext(ctx context.Context, id uuid.UUID) (*operation.ExecutionContext, error) {
+	invokedOperation, err := h.operationFactory.Create(context.Background(), id)
+	if err != nil {
+		return nil, err
+	}
+	return operation.NewExecutionContext(ctx, invokedOperation), nil
+}
+
+func (h *operationMessageHandler) getExecutor(context *operation.ExecutionContext) (operation.Executor, error) {
+	operationType := sdk.OperationType(context.InvokedOperation().Name)
+	executor, err := h.executorFactory.Create(operationType)
+
+	if err != nil {
+		log.Errorf("Error creating executor for operation '%s': %s", operationType, err)
+		return nil, err
+	}
+
+	return executor, nil
 }
 
 func NewOperationsMessageHandler(appConfig *config.AppConfig) *operationMessageHandler {
+	invokedOperationFactory, err := operation.NewOperationFactory(appConfig)
+	if err != nil {
+		log.Errorf("Error creating operations message handler: %s", err)
+		return nil
+	}
+
 	return &operationMessageHandler{
-		database:  data.NewDatabase(appConfig.GetDatabaseOptions()),
-		evaluator: &invokedOperationEvaluator{},
-		factory:   operations.NewExecutorFactory(appConfig),
+		executorFactory:  operations.NewExecutorFactory(appConfig),
+		operationFactory: invokedOperationFactory,
 	}
 }
-
-//region mediator
-
-// mediator evaluation of the invoked operation
-type invokedOperationEvaluator struct {
-	invokedOperation *model.InvokedOperation
-	reasons          []string
-}
-
-func (e *invokedOperationEvaluator) IsExecutable(invokedOperation *model.InvokedOperation) ([]string, bool) {
-	e.reasons = []string{}
-	e.invokedOperation = invokedOperation
-
-	isRunning := e.isRunning()
-	reachMaxRetries := e.reachedMaxRetries()
-	return e.reasons, (!isRunning && !reachMaxRetries)
-}
-
-func (e *invokedOperationEvaluator) isRunning() bool {
-	isRunning := sdk.Status(e.invokedOperation.Status) == sdk.StatusRunning
-	if isRunning {
-		e.reasons = append(e.reasons, "'%s' is already running [%s]", e.invokedOperation.Name, e.invokedOperation.ID.String())
-	}
-	return isRunning
-}
-
-func (e *invokedOperationEvaluator) reachedMaxRetries() bool {
-	reachedMaxRetries := e.invokedOperation.Attempts >= e.invokedOperation.Retries
-	if reachedMaxRetries {
-		e.reasons = append(e.reasons, "'%s' reached max retries [%s]", e.invokedOperation.Name, e.invokedOperation.ID.String())
-	}
-	return reachedMaxRetries
-}
-
-//endregion mediator

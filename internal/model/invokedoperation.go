@@ -33,18 +33,41 @@ type InvokedOperationResult struct {
 	Status      string    `json:"status"`
 }
 
+// can the operation be executed? if not, then reasons are returned
+func (o *InvokedOperation) IsExecutable() ([]string, bool) {
+	reasons := []string{}
+
+	isRunning := o.IsRunning()
+	if isRunning {
+		reasons = append(reasons, "operation is already running")
+	}
+	attemptsExceeded := o.AttemptsExceeded()
+	if attemptsExceeded {
+		reasons = append(reasons, fmt.Sprintf("operation has exceeded the maximum number of attempts (%d)", o.Retries))
+	}
+	return reasons, (!isRunning && !attemptsExceeded)
+}
+
+func (o *InvokedOperation) IsRunning() bool {
+	return o.Status == sdk.StatusRunning.String()
+}
+
 // increment the number of attempts and set the status to running
-func (o *InvokedOperation) Running() error {
+func (o *InvokedOperation) Running() (error, bool) {
+	if o.IsRunning() { //already running, so do nothing
+		return nil, true
+	}
+
 	o.Attempts++
 
 	if o.AttemptsExceeded() {
-		return fmt.Errorf("cannot run operation, %d of %d attemps reached", +o.Attempts, o.Retries)
+		return fmt.Errorf("cannot run operation, %d of %d attemps reached", +o.Attempts, o.Retries), false
 	}
 
 	o.Status = sdk.StatusRunning.String()
 	o.appendResult()
 
-	return nil
+	return nil, true
 }
 
 func (o *InvokedOperation) LatestResult() *InvokedOperationResult {
@@ -68,6 +91,11 @@ func (o *InvokedOperation) AttemptsExceeded() bool {
 
 func (o *InvokedOperation) IsRetry() bool {
 	return o.Attempts > 1
+}
+
+func (io *InvokedOperation) IsRetriable() bool {
+	attemptsExceeded := io.Attempts >= io.Retries
+	return !io.IsRunning() && !attemptsExceeded
 }
 
 // sets the status to failed for the operation and the latest attempt's result

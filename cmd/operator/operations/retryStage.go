@@ -1,122 +1,67 @@
 package operations
 
 import (
-	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 )
 
-type retryStage struct {
-	db *gorm.DB
-}
+type retryStageOperation struct{}
 
-func (exe *retryStage) Execute(ctx context.Context, invokedOperation *model.InvokedOperation) error {
-	db := exe.db
-
-	dep := &model.Deployment{}
-	db.First(&dep, invokedOperation.DeploymentId)
-
-	db.Save(dep)
-	invokedOperation.Status = string(sdk.StatusRunning)
-	exe.save(invokedOperation)
-
-	stageId, err := uuid.Parse(invokedOperation.Parameters["stageId"].(string))
+func (op *retryStageOperation) Do(context *operation.ExecutionContext) error {
+	stageId, err := op.getStageId(context)
 	if err != nil {
-		log.Errorf("error parsing stageId: %s", err)
 		return err
 	}
 
-	foundStage := exe.findStage(dep, stageId)
-	if foundStage == nil {
-		errMsg := fmt.Sprintf("stage not found for deployment %v and stageId %v", dep.ID, stageId)
-		return errors.New(errMsg)
+	parent := context.InvokedOperation().Deployment()
+	stage := op.findStage(parent, stageId)
+
+	if stage == nil {
+		return fmt.Errorf("stage not found for deployment %v and stageId %v", parent.ID, stageId)
 	}
 
-	redeployment := exe.mapToAzureRedeployment(dep, foundStage, invokedOperation)
+	redeployment := op.mapToAzureRedeployment(parent, stage)
 	if redeployment == nil {
 		return errors.New("unable to map to AzureRedeployment")
 	}
 
-	res, err := deployment.Redeploy(ctx, *redeployment)
-	if err != nil {
-		log.Errorf("error redeploying deployment: %s", err)
-		return err
-	}
-
-	if res == nil {
-		log.Debugf("Redeployment response is nil")
-	}
-
-	err = exe.sendHook(ctx, dep, invokedOperation, foundStage)
-	if err != nil {
-		log.Errorf("error adding hook: %s", err)
-		return err
-	}
-
-	return nil
-}
-
-func (exe *retryStage) sendHook(ctx context.Context, deployment *model.Deployment, invokedOperation *model.InvokedOperation, stage *model.Stage) error {
-	message := &sdk.EventHookMessage{
-		Status: invokedOperation.Status,
-		Data: &sdk.DeploymentEventData{
-			DeploymentId: int(deployment.ID),
-			StageId:      to.Ptr(stage.ID),
-			Message:      "Retry stage started successfully",
-		},
-	}
-	message.SetSubject(deployment.ID, &stage.ID)
-	err := hook.Add(ctx, message)
-
+	result, err := deployment.Redeploy(context.Context(), *redeployment)
 	if err != nil {
 		return err
 	}
 
+	context.Value(result)
 	return nil
 }
 
-func (exe *retryStage) save(operation *model.InvokedOperation) error {
-	tx := exe.db.Begin()
-	tx.Save(operation)
+func (op *retryStageOperation) getStageId(context *operation.ExecutionContext) (uuid.UUID, error) {
+	stageId, err := uuid.Parse(context.InvokedOperation().Parameters["stageId"].(string))
 
-	if tx.Error != nil {
-		tx.Rollback()
-		return tx.Error
-	}
-	tx.Commit()
-
-	return nil
-}
-
-func (exe *retryStage) mapToAzureRedeployment(dep *model.Deployment, stage *model.Stage, operation *model.InvokedOperation) *deployment.AzureRedeployment {
-	b, err := json.MarshalIndent(dep, "", "  ")
 	if err != nil {
-		log.Error(err)
+		log.Errorf("error parsing stageId: %s", err)
+		return uuid.Nil, err
 	}
-	log.Debugf("retryStage.mapToAzureRedeployment: dep: %v, stage: %v, operation: %v", string(b), stage, operation)
+	return stageId, nil
+}
+
+func (exe *retryStageOperation) mapToAzureRedeployment(dep *model.Deployment, stage *model.Stage) *deployment.AzureRedeployment {
 	azureRedeployment := &deployment.AzureRedeployment{
 		SubscriptionId:    dep.SubscriptionId,
 		Location:          dep.Location,
 		ResourceGroupName: dep.ResourceGroup,
 		DeploymentName:    stage.DeploymentName,
 	}
-
 	return azureRedeployment
 }
 
-func (exe *retryStage) findStage(deployment *model.Deployment, stageId uuid.UUID) *model.Stage {
+func (exe *retryStageOperation) findStage(deployment *model.Deployment, stageId uuid.UUID) *model.Stage {
 	for _, stage := range deployment.Stages {
 		if stage.ID == stageId {
 			return &stage
@@ -125,9 +70,7 @@ func (exe *retryStage) findStage(deployment *model.Deployment, stageId uuid.UUID
 	return nil
 }
 
-func NewRetryStageExecutor(appConfig *config.AppConfig) Executor {
-	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
-	return &retryStage{
-		db: db,
-	}
+func NewRetryStageExecutor(appConfig *config.AppConfig) operation.OperationFunc {
+	operation := &retryStageOperation{}
+	return operation.Do
 }

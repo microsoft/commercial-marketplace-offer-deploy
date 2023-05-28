@@ -11,9 +11,9 @@ const (
 	EventTypeDeploymentStarted   EventTypeName = "deploymentStarted"
 	EventTypeDeploymentCompleted EventTypeName = "deploymentCompleted"
 	EventTypeStageCompleted      EventTypeName = "stageCompleted"
-
-	EventTypeDeploymentRetried EventTypeName = "deploymentRetried"
-	EventTypeDryRunCompleted   EventTypeName = "dryRunCompleted"
+	EventTypeStageRetried        EventTypeName = "stageRetried"
+	EventTypeDeploymentRetried   EventTypeName = "deploymentRetried"
+	EventTypeDryRunCompleted     EventTypeName = "dryRunCompleted"
 
 	EventTypeDeploymentOperationReceived EventTypeName = "deploymentOperationReceived"
 	EventTypeDeploymentEventReceived     EventTypeName = "deploymentEventReceived"
