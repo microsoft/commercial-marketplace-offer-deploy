@@ -17,28 +17,17 @@ type factory struct {
 }
 
 func (iof *factory) Create(ctx context.Context, id uuid.UUID) (*Operation, error) {
-	invokedOperation, err := iof.service.begin(ctx, id)
-
-	if err != nil {
-		return nil, err
-	}
-
-	instance := &Operation{
-		InvokedOperation: *invokedOperation, //copy left
-		service:          iof.service,
-	}
-
-	return instance, nil
+	return iof.service.init(ctx, id)
 }
 
 func NewOperationFactory(appConfig *config.AppConfig) (Factory, error) {
-	context, err := newOperationService(appConfig)
+	service, err := newOperationService(appConfig)
 	if err != nil {
 		return nil, err
 	}
 
 	factory := &factory{
-		service: context,
+		service: service,
 	}
 
 	return factory, nil

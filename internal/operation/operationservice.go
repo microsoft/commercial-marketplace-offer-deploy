@@ -2,6 +2,7 @@ package operation
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
@@ -23,35 +24,35 @@ type operationService struct {
 	id                  uuid.UUID
 	sender              messaging.MessageSender
 	log                 *log.Entry
-	// the reference of the invokedOperation
-	invokedOperation *model.InvokedOperation
+	// the reference of the operation
+	operation *Operation
 }
 
-func (ioc *operationService) Context() context.Context {
-	return ioc.ctx
+func (service *operationService) Context() context.Context {
+	return service.ctx
 }
 
-func (ioc *operationService) saveChanges() error {
-	tx := ioc.db.WithContext(ioc.ctx).Begin()
+func (service *operationService) saveChanges() error {
+	tx := service.db.WithContext(service.ctx).Begin()
 
 	// could be an issue with starting the tx
 	if tx.Error != nil {
-		ioc.log.Errorf("saveChanges transaction aborted: %v", tx.Error)
+		service.log.Errorf("saveChanges transaction aborted: %v", tx.Error)
 		return tx.Error
 	}
 
-	tx.Save(ioc.invokedOperation)
+	tx.Save(service.operation)
 
 	if tx.Error != nil {
 		tx.Rollback()
-		ioc.log.Errorf("saveChanges failed to save: %v", tx.Error)
+		service.log.Errorf("saveChanges failed to save: %v", tx.Error)
 		return tx.Error
 	}
 
 	tx.Commit()
 
 	if tx.Error != nil {
-		ioc.log.Errorf("saveChanges failed to commit transaction: %v", tx.Error)
+		service.log.Errorf("saveChanges failed to commit transaction: %v", tx.Error)
 		tx.Rollback()
 	}
 
@@ -59,21 +60,21 @@ func (ioc *operationService) saveChanges() error {
 }
 
 // triggers a notification of the invoked operation's state
-func (ioc *operationService) notify() error {
-	message := ioc.getMessage()
+func (service *operationService) notify() error {
+	message := service.getMessage()
 
-	err := ioc.publishNotification(ioc.Context(), message)
+	err := service.publishNotification(service.Context(), message)
 	if err != nil {
-		ioc.log.Errorf("failed to add event message: %v", err)
+		service.log.Errorf("failed to add event message: %v", err)
 		return err
 	}
 	return nil
 }
 
-func (ioc *operationService) retry() error {
-	message := messaging.ExecuteInvokedOperation{OperationId: ioc.id}
+func (service *operationService) retry() error {
+	message := messaging.ExecuteInvokedOperation{OperationId: service.id}
 
-	results, err := ioc.sender.Send(ioc.Context(), string(messaging.QueueNameOperations), message)
+	results, err := service.sender.Send(service.Context(), string(messaging.QueueNameOperations), message)
 	if err != nil {
 		return err
 	}
@@ -84,39 +85,58 @@ func (ioc *operationService) retry() error {
 	return nil
 }
 
+func (service *operationService) first(id uuid.UUID) (*model.InvokedOperation, error) {
+	record := &model.InvokedOperation{}
+	result := service.db.First(record, service.id)
+
+	if result.Error != nil || result.RowsAffected == 0 {
+		err := result.Error
+		if err == nil {
+			err = fmt.Errorf("failed to get invoked operation: %v", result.Error)
+		}
+		return nil, err
+	}
+	return record, nil
+}
+
 // initializes the context and returns the single instance of InvokedOperation by the context's id
 // if the id is invalid and an instance cannot be found, returns an error
-func (ioc *operationService) begin(ctx context.Context, id uuid.UUID) (*model.InvokedOperation, error) {
-	ioc.id = id
-	ioc.ctx = ctx
-	ioc.log = log.WithFields(log.Fields{
+func (service *operationService) init(ctx context.Context, id uuid.UUID) (*Operation, error) {
+	service.id = id
+	service.ctx = ctx
+	service.log = log.WithFields(log.Fields{
 		"invokedOperationId": id,
 	})
 
-	instance := &model.InvokedOperation{}
-	err := ioc.db.First(instance, ioc.id).Error
-
+	invokedOperation, err := service.first(id)
 	if err != nil {
-		ioc.log.Errorf("failed to get invoked operation: %v", err)
 		return nil, err
 	}
 
-	ioc.log = log.WithFields(log.Fields{
-		"deploymentId": instance.DeploymentId,
+	service.operation = &Operation{
+		InvokedOperation: *invokedOperation,
+		service:          service,
+	}
+
+	service.log = log.WithFields(log.Fields{
+		"deploymentId": invokedOperation.DeploymentId,
 	})
 
-	return instance, err
+	return service.operation, nil
 }
 
 // encapsulates the conversion of an invoked operation to an event hook message
-func (ioc *operationService) getMessage() *sdk.EventHookMessage {
-	return mapToMessage(ioc.invokedOperation)
+func (service *operationService) getMessage() *sdk.EventHookMessage {
+	return mapToMessage(&service.operation.InvokedOperation)
 }
 
-func (ioc *operationService) deployment() *model.Deployment {
+func (service *operationService) deployment() *model.Deployment {
 	deployment := &model.Deployment{}
-	ioc.db.First(deployment, ioc.invokedOperation.DeploymentId)
+	result := service.db.First(deployment, service.operation.DeploymentId)
 
+	if result.RowsAffected == 0 {
+		return nil
+	}
 	return deployment
 }
 
@@ -136,7 +156,7 @@ func newOperationService(appConfig *config.AppConfig) (*operationService, error)
 	})
 
 	if err != nil {
-		log.Errorf("Error creating message sender for hook.Queue: %v", err)
+		log.Errorf("Error creating message sender: %v", err)
 		return nil, err
 	}
 

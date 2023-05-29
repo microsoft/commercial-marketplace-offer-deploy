@@ -1,12 +1,14 @@
 package operations
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/avast/retry-go"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -38,8 +40,12 @@ func (exe *dryRunOperation) Do(context *operation.ExecutionContext) error {
 
 		log.Info("attempting dry run")
 
-		azureDeployment := exe.getAzureDeployment(invokedOperation)
-		result, err := exe.dryRun(context.Context(), azureDeployment)
+		azureDeployment, err := exe.getAzureDeployment(invokedOperation)
+		var result *sdk.DryRunResult
+
+		if err == nil {
+			result, err = exe.dryRun(context.Context(), azureDeployment)
+		}
 
 		if err != nil {
 			log.Errorf("error executing dry run. error: %v", err)
@@ -78,8 +84,12 @@ func (exe *dryRunOperation) Do(context *operation.ExecutionContext) error {
 	return err
 }
 
-func (exe *dryRunOperation) getAzureDeployment(operation *operation.Operation) *deployment.AzureDeployment {
+func (exe *dryRunOperation) getAzureDeployment(operation *operation.Operation) (*deployment.AzureDeployment, error) {
 	d := operation.Deployment()
+
+	if d == nil {
+		return nil, fmt.Errorf("deployment [%d] not found for operation: %s", operation.DeploymentId, operation.Name)
+	}
 
 	deployment := &deployment.AzureDeployment{
 		SubscriptionId:    d.SubscriptionId,
@@ -89,8 +99,9 @@ func (exe *dryRunOperation) getAzureDeployment(operation *operation.Operation) *
 		Template:          d.Template,
 		Params:            operation.Parameters,
 	}
-	exe.log.Debugf("AzureDeployment: %v", deployment)
-	return deployment
+	exe.log.Debugf("Azure Deployment: %+v", deployment)
+
+	return deployment, nil
 }
 
 //region factory
