@@ -36,6 +36,7 @@ type executor struct {
 	operation OperationFunc
 }
 
+// default implementation for executing an operation
 func (exe *executor) Execute(context *ExecutionContext) error {
 	if reasons, ok := context.Operation().IsExecutable(); !ok {
 		log.Infof("Operation is not in an executable state: %s", reasons)

@@ -43,7 +43,8 @@ func NewOperationFactory(appConfig *config.AppConfig, provider OperationFuncProv
 	}
 
 	factory := &factory{
-		service: service,
+		service:  service,
+		provider: provider,
 	}
 
 	return factory, nil
