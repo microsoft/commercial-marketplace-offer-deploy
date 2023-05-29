@@ -31,11 +31,7 @@ type Executor interface {
 	Execute(context *ExecutionContext) error
 }
 
-type ExecutorFactory interface {
-	Create(operationType sdk.OperationType) (Executor, error)
-}
-
-// default implementation of an operation(s) executor
+// default implementation of an operation executor
 type executor struct {
 	operation OperationFunc
 }

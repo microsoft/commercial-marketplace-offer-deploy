@@ -31,5 +31,5 @@ func NewOperationsMessageHandler(appConfig *config.AppConfig) *operationMessageH
 
 	handler.operationFactory = operationFactory
 
-	return &operationMessageHandler{}
+	return handler
 }
