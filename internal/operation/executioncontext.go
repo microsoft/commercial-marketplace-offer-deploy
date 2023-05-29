@@ -4,7 +4,9 @@ import (
 	"context"
 )
 
-// wrapper decoration object for executing an operation
+// Context object for interacting with an operation execution
+//
+//	remarks: flyweight of an Operation
 type ExecutionContext struct {
 	operation *Operation
 }
