@@ -32,7 +32,7 @@ func (exe *dryRunOperation) Do(context *operation.ExecutionContext) error {
 	err := retry.Do(func() error {
 		log := exe.log
 
-		err := invokedOperation.Running()
+		err := context.Running()
 
 		if err != nil {
 			return err
@@ -49,8 +49,8 @@ func (exe *dryRunOperation) Do(context *operation.ExecutionContext) error {
 
 		if err != nil {
 			log.Errorf("error executing dry run. error: %v", err)
-			invokedOperation.Error(err)
-			invokedOperation.SaveChanges() //save changes instead of retry since we're doing it inline with retry.Do
+			context.Error(err)
+			context.SaveChanges() //save changes instead of retry since we're doing it inline with retry.Do
 
 			return &operation.RetriableError{Err: err, RetryAfter: exe.retryDelay}
 		}
@@ -58,13 +58,13 @@ func (exe *dryRunOperation) Do(context *operation.ExecutionContext) error {
 		log.WithField("result", result).Debug("Received dry run result")
 
 		if result != nil {
-			invokedOperation.Value(result)
+			context.Value(result)
 
 		} else {
 			exe.log.Warn("Dry run result was nil")
 		}
 
-		invokedOperation.Success()
+		context.Success()
 
 		return nil
 	},

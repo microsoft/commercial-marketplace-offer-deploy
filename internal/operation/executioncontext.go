@@ -25,6 +25,10 @@ func (c *ExecutionContext) Success() error {
 	return c.operation.Success()
 }
 
+func (c *ExecutionContext) SaveChanges() error {
+	return c.operation.SaveChanges()
+}
+
 func (c *ExecutionContext) Failed() error {
 	return c.operation.Failed()
 }

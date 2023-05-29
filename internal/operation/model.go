@@ -20,30 +20,23 @@ func (io *Operation) Running() error {
 		return err
 	}
 	if !running {
-		return io.SaveChanges()
+		return io.service.saveChanges(true)
 	}
 	return nil
 }
 
 func (io *Operation) Failed() error {
 	io.InvokedOperation.Failed()
-	return io.SaveChanges()
+	return io.service.saveChanges(true)
 }
 
 func (io *Operation) Success() error {
 	io.InvokedOperation.Success()
-	return io.SaveChanges()
+	return io.service.saveChanges(true)
 }
 
 func (io *Operation) SaveChanges() error {
-	err := io.service.saveChanges()
-
-	if err != nil {
-		return err
-	}
-	io.service.notify() // if the notification failes, save still happened
-
-	return nil
+	return io.service.saveChanges(false)
 }
 
 // Attempts to trigger a retry of the operation, if the operation has a retriable state

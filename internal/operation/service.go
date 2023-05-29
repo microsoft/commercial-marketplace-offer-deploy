@@ -32,7 +32,7 @@ func (service *operationService) Context() context.Context {
 	return service.ctx
 }
 
-func (service *operationService) saveChanges() error {
+func (service *operationService) saveChanges(notify bool) error {
 	tx := service.db.WithContext(service.ctx).Begin()
 
 	// could be an issue with starting the tx
@@ -41,7 +41,7 @@ func (service *operationService) saveChanges() error {
 		return tx.Error
 	}
 
-	tx.Save(service.operation)
+	tx.Save(service.operation.InvokedOperation)
 
 	if tx.Error != nil {
 		tx.Rollback()
@@ -50,6 +50,10 @@ func (service *operationService) saveChanges() error {
 	}
 
 	tx.Commit()
+
+	if notify {
+		service.notify() // if the notification failes, save still happened
+	}
 
 	if tx.Error != nil {
 		service.log.Errorf("saveChanges failed to commit transaction: %v", tx.Error)
