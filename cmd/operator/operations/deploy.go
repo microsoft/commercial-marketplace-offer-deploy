@@ -24,7 +24,7 @@ func (exe *deployeOperation) Do(context *operation.ExecutionContext) error {
 func (exe *deployeOperation) getOperation(context *operation.ExecutionContext) (operation.OperationFunc, error) {
 	do := exe.do
 
-	if context.InvokedOperation().IsRetry() { // this is a retry if so
+	if context.Operation().IsRetry() { // this is a retry if so
 		executor, err := exe.factory.Create(sdk.OperationRetry)
 		if err != nil {
 			return nil, err
@@ -35,7 +35,7 @@ func (exe *deployeOperation) getOperation(context *operation.ExecutionContext) (
 }
 
 func (exe *deployeOperation) do(context *operation.ExecutionContext) error {
-	invokedOperation := context.InvokedOperation()
+	invokedOperation := context.Operation()
 
 	azureDeployment := exe.mapAzureDeployment(invokedOperation)
 	result, err := exe.createAzureDeployment(context.Context(), azureDeployment)

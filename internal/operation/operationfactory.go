@@ -13,11 +13,11 @@ type Factory interface {
 }
 
 type factory struct {
-	context *operationService
+	service *operationService
 }
 
 func (iof *factory) Create(ctx context.Context, id uuid.UUID) (*Operation, error) {
-	invokedOperation, err := iof.context.begin(ctx, id)
+	invokedOperation, err := iof.service.begin(ctx, id)
 
 	if err != nil {
 		return nil, err
@@ -25,7 +25,7 @@ func (iof *factory) Create(ctx context.Context, id uuid.UUID) (*Operation, error
 
 	instance := &Operation{
 		InvokedOperation: *invokedOperation, //copy left
-		context:          iof.context,
+		service:          iof.service,
 	}
 
 	return instance, nil
@@ -38,7 +38,7 @@ func NewOperationFactory(appConfig *config.AppConfig) (Factory, error) {
 	}
 
 	factory := &factory{
-		context: context,
+		service: context,
 	}
 
 	return factory, nil

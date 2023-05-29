@@ -5,12 +5,13 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
 // performs mapping of the invoked operation to the correct event hook message
 
-func mapToMessage(invokedOperation *Operation) *sdk.EventHookMessage {
+func mapToMessage(invokedOperation *model.InvokedOperation) *sdk.EventHookMessage {
 	message := &sdk.EventHookMessage{
 		Status: invokedOperation.Status,
 		Type:   getEventType(invokedOperation),
@@ -22,7 +23,7 @@ func mapToMessage(invokedOperation *Operation) *sdk.EventHookMessage {
 	return message
 }
 
-func getEventType(invokedOperation *Operation) string {
+func getEventType(invokedOperation *model.InvokedOperation) string {
 	eventType := ""
 
 	if invokedOperation.Name == sdk.OperationDeploy.String() {
@@ -41,7 +42,7 @@ func getEventType(invokedOperation *Operation) string {
 	return eventType
 }
 
-func getEventData(invokedOperation *Operation) any {
+func getEventData(invokedOperation *model.InvokedOperation) any {
 	if invokedOperation.Name == sdk.OperationDeploy.String() {
 		return getDeploymentData(invokedOperation)
 	}
@@ -57,7 +58,7 @@ func getEventData(invokedOperation *Operation) any {
 	return nil
 }
 
-func getRetryData(operation *Operation) any {
+func getRetryData(operation *model.InvokedOperation) any {
 	return &sdk.DeploymentEventData{
 		DeploymentId: int(operation.DeploymentId),
 		OperationId:  operation.ID,
@@ -65,7 +66,7 @@ func getRetryData(operation *Operation) any {
 	}
 }
 
-func getRetryStageData(operation *Operation) any {
+func getRetryStageData(operation *model.InvokedOperation) any {
 	return &sdk.DeploymentEventData{
 		DeploymentId: int(operation.DeploymentId),
 		StageId:      to.Ptr(uuid.MustParse(operation.Parameters["stageId"].(string))),
@@ -74,7 +75,7 @@ func getRetryStageData(operation *Operation) any {
 	}
 }
 
-func getDryRunData(invokedOperation *Operation) any {
+func getDryRunData(invokedOperation *model.InvokedOperation) any {
 	resultStatus := sdk.StatusError.String()
 	result := invokedOperation.LatestResult().Value
 
@@ -96,7 +97,7 @@ func getDryRunData(invokedOperation *Operation) any {
 	return data
 }
 
-func getDeploymentData(invokedOperation *Operation) any {
+func getDeploymentData(invokedOperation *model.InvokedOperation) any {
 	var data any
 
 	if invokedOperation.Name == "deploy" {

@@ -10,7 +10,7 @@ type OperationFunc func(context *ExecutionContext) error
 // remarks: decorator+visitor of Invoked Operation
 type Operation struct {
 	model.InvokedOperation
-	context *operationService
+	service *operationService
 }
 
 func (io *Operation) Running() error {
@@ -36,12 +36,12 @@ func (io *Operation) Success() error {
 }
 
 func (io *Operation) SaveChanges() error {
-	err := io.context.saveChanges()
+	err := io.service.saveChanges()
 
 	if err != nil {
 		return err
 	}
-	io.context.notify() // if the notification failes, save still happened
+	io.service.notify() // if the notification failes, save still happened
 
 	return nil
 }
@@ -52,7 +52,7 @@ func (io *Operation) Retry() error {
 		return nil
 	}
 
-	err := io.context.retry()
+	err := io.service.retry()
 	if err != nil {
 		return err
 	}
@@ -61,5 +61,5 @@ func (io *Operation) Retry() error {
 
 // provides access to latest instance of associated deployment
 func (io *Operation) Deployment() *model.Deployment {
-	return io.context.deployment()
+	return io.service.deployment()
 }

@@ -5,8 +5,8 @@ import (
 )
 
 type ExecutionContext struct {
-	ctx              context.Context
-	invokedOperation *Operation
+	ctx       context.Context
+	operation *Operation
 }
 
 func (c *ExecutionContext) Context() context.Context {
@@ -14,36 +14,36 @@ func (c *ExecutionContext) Context() context.Context {
 }
 
 func (c *ExecutionContext) Running() error {
-	return c.invokedOperation.Running()
+	return c.operation.Running()
 }
 
 func (c *ExecutionContext) Error(err error) {
-	c.invokedOperation.Error(err)
+	c.operation.Error(err)
 }
 
 func (c *ExecutionContext) Success() error {
-	return c.invokedOperation.Success()
+	return c.operation.Success()
 }
 
 func (c *ExecutionContext) Failed() error {
-	return c.invokedOperation.Failed()
+	return c.operation.Failed()
 }
 
 func (c *ExecutionContext) Retry() error {
-	return c.invokedOperation.Retry()
+	return c.operation.Retry()
 }
 
 func (c *ExecutionContext) Value(v any) {
-	c.invokedOperation.Value(v)
+	c.operation.Value(v)
 }
 
-func (c *ExecutionContext) InvokedOperation() *Operation {
-	return c.invokedOperation
+func (c *ExecutionContext) Operation() *Operation {
+	return c.operation
 }
 
-func NewExecutionContext(ctx context.Context, invokedOperation *Operation) *ExecutionContext {
+func NewExecutionContext(ctx context.Context, operation *Operation) *ExecutionContext {
 	return &ExecutionContext{
-		ctx:              ctx,
-		invokedOperation: invokedOperation,
+		ctx:       ctx,
+		operation: operation,
 	}
 }

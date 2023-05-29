@@ -24,7 +24,7 @@ func (op *retryOperation) Do(context *operation.ExecutionContext) error {
 }
 
 func (op *retryOperation) mapToAzureRedeployment(context *operation.ExecutionContext) deployments.AzureRedeployment {
-	dep := context.InvokedOperation().Deployment()
+	dep := context.Operation().Deployment()
 
 	azureRedeployment := deployments.AzureRedeployment{
 		SubscriptionId:    dep.SubscriptionId,

@@ -23,8 +23,8 @@ type operationService struct {
 	id                  uuid.UUID
 	sender              messaging.MessageSender
 	log                 *log.Entry
-	// the reference of the invoked operation that is being tracked
-	invokedOperation *Operation
+	// the reference of the invokedOperation
+	invokedOperation *model.InvokedOperation
 }
 
 func (ioc *operationService) Context() context.Context {

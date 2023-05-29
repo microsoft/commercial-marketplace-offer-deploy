@@ -20,7 +20,7 @@ func (op *retryStageOperation) Do(context *operation.ExecutionContext) error {
 		return err
 	}
 
-	parent := context.InvokedOperation().Deployment()
+	parent := context.Operation().Deployment()
 	stage := op.findStage(parent, stageId)
 
 	if stage == nil {
@@ -42,7 +42,7 @@ func (op *retryStageOperation) Do(context *operation.ExecutionContext) error {
 }
 
 func (op *retryStageOperation) getStageId(context *operation.ExecutionContext) (uuid.UUID, error) {
-	stageId, err := uuid.Parse(context.InvokedOperation().Parameters["stageId"].(string))
+	stageId, err := uuid.Parse(context.Operation().Parameters["stageId"].(string))
 
 	if err != nil {
 		log.Errorf("error parsing stageId: %s", err)

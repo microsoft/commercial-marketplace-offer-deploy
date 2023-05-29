@@ -31,15 +31,15 @@ func (h *operationMessageHandler) Handle(message *messaging.ExecuteInvokedOperat
 }
 
 func (h *operationMessageHandler) createContext(ctx context.Context, id uuid.UUID) (*operation.ExecutionContext, error) {
-	invokedOperation, err := h.operationFactory.Create(context.Background(), id)
+	op, err := h.operationFactory.Create(context.Background(), id)
 	if err != nil {
 		return nil, err
 	}
-	return operation.NewExecutionContext(ctx, invokedOperation), nil
+	return operation.NewExecutionContext(ctx, op), nil
 }
 
 func (h *operationMessageHandler) getExecutor(context *operation.ExecutionContext) (operation.Executor, error) {
-	operationType := sdk.OperationType(context.InvokedOperation().Name)
+	operationType := sdk.OperationType(context.Operation().Name)
 	executor, err := h.executorFactory.Create(operationType)
 
 	if err != nil {

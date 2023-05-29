@@ -41,7 +41,7 @@ type executor struct {
 }
 
 func (exe *executor) Execute(context *ExecutionContext) error {
-	if reasons, ok := context.InvokedOperation().IsExecutable(); !ok {
+	if reasons, ok := context.Operation().IsExecutable(); !ok {
 		log.Infof("Operation is not in an executable state: %s", reasons)
 		return nil
 	}

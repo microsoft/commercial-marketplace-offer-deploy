@@ -17,17 +17,18 @@ type dryRunOperation struct {
 }
 
 func (exe *dryRunOperation) Do(context *operation.ExecutionContext) error {
-	invokedOperation := context.InvokedOperation()
+	invokedOperation := context.Operation()
 
 	retries := uint(invokedOperation.Retries)
 
 	exe.log = log.WithFields(log.Fields{
 		"operationId":  invokedOperation.ID,
 		"deploymentId": invokedOperation.DeploymentId,
+		"attempt":      invokedOperation.Attempts,
 	})
 
 	err := retry.Do(func() error {
-		log := exe.log.WithField("attempt", invokedOperation.Attempts+1)
+		log := exe.log
 
 		err := invokedOperation.Running()
 
