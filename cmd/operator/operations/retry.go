@@ -10,8 +10,8 @@ import (
 type retryOperation struct {
 }
 
-func (exe *retryOperation) Do(context *operation.ExecutionContext) error {
-	azureRedeployment := exe.mapToAzureRedeployment(context)
+func (op *retryOperation) Do(context *operation.ExecutionContext) error {
+	azureRedeployment := op.mapToAzureRedeployment(context)
 
 	result, err := deployments.Redeploy(context.Context(), azureRedeployment)
 	context.Value(result)
@@ -23,7 +23,7 @@ func (exe *retryOperation) Do(context *operation.ExecutionContext) error {
 	return nil
 }
 
-func (exe *retryOperation) mapToAzureRedeployment(context *operation.ExecutionContext) deployments.AzureRedeployment {
+func (op *retryOperation) mapToAzureRedeployment(context *operation.ExecutionContext) deployments.AzureRedeployment {
 	dep := context.InvokedOperation().Deployment()
 
 	azureRedeployment := deployments.AzureRedeployment{
