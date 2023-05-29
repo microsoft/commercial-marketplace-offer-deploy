@@ -1,14 +1,12 @@
 package operations
 
 import (
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
 type deployeOperation struct {
-	factory               operation.ExecutorFactory
+	retryOperation        operation.OperationFunc
 	createAzureDeployment deployment.CreateDeployment
 }
 
@@ -25,11 +23,7 @@ func (exe *deployeOperation) getOperation(context *operation.ExecutionContext) (
 	do := exe.do
 
 	if context.Operation().IsRetry() { // this is a retry if so
-		executor, err := exe.factory.Create(sdk.OperationRetry)
-		if err != nil {
-			return nil, err
-		}
-		do = executor.Execute
+		do = exe.retryOperation
 	}
 	return do, nil
 }
@@ -60,16 +54,10 @@ func (p *deployeOperation) mapAzureDeployment(invokedOperation *operation.Operat
 	}
 }
 
-//region factory
-
-func NewDeploymentOperation(appConfig *config.AppConfig) operation.OperationFunc {
-	factory := NewExecutorFactory(appConfig)
-
+func NewDeploymentOperation() operation.OperationFunc {
 	operation := &deployeOperation{
-		factory:               factory,
+		retryOperation:        NewRetryOperation(),
 		createAzureDeployment: deployment.Create,
 	}
 	return operation.do
 }
-
-//endregion factory

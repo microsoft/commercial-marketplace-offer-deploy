@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
@@ -70,7 +69,7 @@ func (exe *retryStageOperation) findStage(deployment *model.Deployment, stageId 
 	return nil
 }
 
-func NewRetryStageExecutor(appConfig *config.AppConfig) operation.OperationFunc {
+func NewRetryStageOperation() operation.OperationFunc {
 	operation := &retryStageOperation{}
 	return operation.Do
 }

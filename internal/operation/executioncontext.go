@@ -4,13 +4,13 @@ import (
 	"context"
 )
 
+// wrapper decoration object for executing an operation
 type ExecutionContext struct {
-	ctx       context.Context
 	operation *Operation
 }
 
 func (c *ExecutionContext) Context() context.Context {
-	return c.ctx
+	return c.operation.Context()
 }
 
 func (c *ExecutionContext) Running() error {
@@ -45,9 +45,8 @@ func (c *ExecutionContext) Operation() *Operation {
 	return c.operation
 }
 
-func NewExecutionContext(ctx context.Context, operation *Operation) *ExecutionContext {
+func newExecutionContext(operation *Operation) *ExecutionContext {
 	return &ExecutionContext{
-		ctx:       ctx,
 		operation: operation,
 	}
 }

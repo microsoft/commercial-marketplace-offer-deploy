@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/avast/retry-go"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
@@ -106,7 +105,7 @@ func (exe *dryRunOperation) getAzureDeployment(operation *operation.Operation) (
 
 //region factory
 
-func NewdryRunOperation(appConfig *config.AppConfig) operation.OperationFunc {
+func NewdryRunOperation() operation.OperationFunc {
 	dryRunOperation := &dryRunOperation{
 		dryRun:     deployment.DryRun,
 		retryDelay: 5 * time.Second,

@@ -1,7 +1,6 @@
 package operations
 
 import (
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
 	deployments "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	log "github.com/sirupsen/logrus"
@@ -36,7 +35,7 @@ func (op *retryOperation) mapToAzureRedeployment(context *operation.ExecutionCon
 	return azureRedeployment
 }
 
-func NewRetryDeploymentExecutor(appConfig *config.AppConfig) operation.OperationFunc {
+func NewRetryOperation() operation.OperationFunc {
 	operation := &retryOperation{}
 	return operation.Do
 }

@@ -5,7 +5,12 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
+
+type OperationFuncProvider interface {
+	Get(operationType sdk.OperationType) (OperationFunc, error)
+}
 
 // Operation factory
 type Factory interface {
@@ -13,14 +18,25 @@ type Factory interface {
 }
 
 type factory struct {
-	service *operationService
+	service  *operationService
+	provider OperationFuncProvider
 }
 
 func (iof *factory) Create(ctx context.Context, id uuid.UUID) (*Operation, error) {
-	return iof.service.init(ctx, id)
+	operation, err := iof.service.init(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	do, err := iof.provider.Get(sdk.OperationType(operation.Name))
+	if err != nil {
+		return nil, err
+	}
+	operation.do = do
+
+	return operation, nil
 }
 
-func NewOperationFactory(appConfig *config.AppConfig) (Factory, error) {
+func NewOperationFactory(appConfig *config.AppConfig, provider OperationFuncProvider) (Factory, error) {
 	service, err := newOperationService(appConfig)
 	if err != nil {
 		return nil, err
