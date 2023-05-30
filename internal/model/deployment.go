@@ -1,10 +1,4 @@
 package model
-<<<<<<<< HEAD:internal/model/models_extension.go
-
-// The purpose of this file is to provide a place to put extension methods to the data models
-// so we keep models clean
-========
->>>>>>>> v1-operations:internal/model/deployment.go
 
 import (
 	"fmt"
