@@ -11,6 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	testutils "github.com/microsoft/commercial-marketplace-offer-deploy/test/utils"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
@@ -53,21 +54,13 @@ func getHandler(t *testing.T) echo.HandlerFunc {
 		}
 
 		db := setupDatabase()
-
-		sender, err := newMessageSender(appConfig, credential)
-		if err != nil {
-			t.Fatal(err)
-		}
-
 		messageFactory, err := newWebHookEventMessageFactory(appConfig.Azure.SubscriptionId, db, credential)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		handler := eventGridWebHook{
-			db:             db,
 			messageFactory: messageFactory,
-			sender:         sender,
 		}
 
 		log.Debug("handler: ", handler)
@@ -89,7 +82,7 @@ func setupDatabase() *gorm.DB {
 		UseInMemory: true,
 	}
 	db := data.NewDatabase(databaseOptions).Instance()
-	db.Save(&data.Deployment{
+	db.Save(&model.Deployment{
 		Name: "test-deployment",
 	})
 	return db

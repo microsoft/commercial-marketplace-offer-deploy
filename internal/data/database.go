@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	log "github.com/sirupsen/logrus"
 
 	"gorm.io/driver/sqlite"
@@ -85,7 +86,7 @@ func createInstance(dsn string, models ...interface{}) (*gorm.DB, error) {
 		return nil, fmt.Errorf("could not open and connect to database at %s: %w", dsn, err)
 	}
 
-	if err := db.AutoMigrate(&Deployment{}, &Stage{}, &EventHook{}, &InvokedOperation{}); err != nil {
+	if err := db.AutoMigrate(&model.Deployment{}, &model.Stage{}, &model.EventHook{}, &model.InvokedOperation{}); err != nil {
 		return nil, fmt.Errorf("could not migrate models %T: %w", models, err)
 	}
 

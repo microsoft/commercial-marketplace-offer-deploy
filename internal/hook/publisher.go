@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/google/uuid"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
@@ -67,7 +67,7 @@ func (p *publisher) Publish(message *sdk.EventHookMessage) error {
 	return nil
 }
 
-func (p *publisher) getSender(subscription data.EventHook) hookSender {
+func (p *publisher) getSender(subscription model.EventHook) hookSender {
 	if _, ok := p.senders[subscription.ID]; !ok {
 		p.senders[subscription.ID] = newHookSender(subscription.Callback, subscription.ApiKey)
 	}

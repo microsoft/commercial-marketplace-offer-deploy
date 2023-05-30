@@ -1,105 +1,30 @@
 package operations
 
 import (
-	"context"
-	"fmt"
-	"strconv"
-
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
 	deployments "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 )
 
-// deployment retry
-// TODO: implement retry of an entire deployment and also a stage
-
-type retryDeployment struct {
-	db *gorm.DB
+type retryOperation struct {
 }
 
-func (exe *retryDeployment) Execute(ctx context.Context, invokedOperation *data.InvokedOperation) error {
-	deployment, err := exe.updateToRunning(ctx, invokedOperation)
-	if err != nil {
-		return err
-	}
-	azureRedeployment := exe.mapToAzureRedeployment(deployment, invokedOperation)
-	results, err := deployments.Redeploy(ctx, azureRedeployment)
-	if err != nil {
-		log.WithError(err).Error("error redeploying deployment")
-	}
-	err = exe.updateWithResults(ctx, results, invokedOperation)
+func (op *retryOperation) Do(context *operation.ExecutionContext) error {
+	azureRedeployment := op.mapToAzureRedeployment(context)
+
+	result, err := deployments.Redeploy(context.Context(), azureRedeployment)
+	context.Value(result)
 
 	if err != nil {
 		return err
 	}
-
+	context.Value(result)
 	return nil
 }
 
-func (exe *retryDeployment) updateWithResults(ctx context.Context, results *deployments.AzureDeploymentResult, invokedOperation *data.InvokedOperation) error {
-	db := exe.db
+func (op *retryOperation) mapToAzureRedeployment(context *operation.ExecutionContext) deployments.AzureRedeployment {
+	dep := context.Operation().Deployment()
 
-	if results != nil {
-		invokedOperation.Result = results
-
-		if results.Status == deployments.Failed {
-			invokedOperation.Status = sdk.StatusFailed.String()
-		} else if results.Status == deployments.Succeeded {
-			invokedOperation.Status = sdk.StatusSuccess.String()
-		}
-	} else {
-		invokedOperation.Status = sdk.StatusFailed.String()
-	}
-
-	db.Save(invokedOperation)
-
-	message := &sdk.EventHookMessage{
-		Status: invokedOperation.Status,
-		Type:   string(sdk.EventTypeDeploymentRetried),
-		Data: &sdk.DeploymentEventData{
-			DeploymentId: int(invokedOperation.DeploymentId),
-			OperationId:  invokedOperation.ID,
-			Message:      fmt.Sprintf("Retry deployment %s", invokedOperation.Status),
-		},
-	}
-	message.SetSubject(invokedOperation.DeploymentId, nil)
-
-	// by sending this message, it will be caught (in operator/handlers/sdk.go) and the retry will get executed again
-	// as long as the Attempts haven't exceeded the max set on Retries
-	err := hook.Add(ctx, message)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (exe *retryDeployment) updateToRunning(ctx context.Context, invokedOperation *data.InvokedOperation) (*data.Deployment, error) {
-	db := exe.db
-
-	deployment := &data.Deployment{}
-	db.First(&deployment, invokedOperation.DeploymentId)
-	invokedOperation.Status = sdk.StatusRunning.String()
-	db.Save(invokedOperation)
-
-	err := hook.Add(ctx, &sdk.EventHookMessage{
-		Subject: "/deployments/" + strconv.Itoa(int(deployment.ID)),
-		Status:  invokedOperation.Status,
-		Data: &sdk.DeploymentEventData{
-			DeploymentId: int(deployment.ID),
-			Message:      "Retry deployment started successfully",
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-	return deployment, err
-}
-
-func (exe *retryDeployment) mapToAzureRedeployment(dep *data.Deployment, operation *data.InvokedOperation) deployments.AzureRedeployment {
 	azureRedeployment := deployments.AzureRedeployment{
 		SubscriptionId:    dep.SubscriptionId,
 		Location:          dep.Location,
@@ -110,13 +35,7 @@ func (exe *retryDeployment) mapToAzureRedeployment(dep *data.Deployment, operati
 	return azureRedeployment
 }
 
-//region factory
-
-func NewRetryDeploymentExecutor(appConfig *config.AppConfig) Executor {
-	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
-	return &retryDeployment{
-		db: db,
-	}
+func NewRetryOperation() operation.OperationFunc {
+	operation := &retryOperation{}
+	return operation.Do
 }
-
-//endregion factory

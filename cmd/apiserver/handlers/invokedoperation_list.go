@@ -1,14 +1,13 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/mapper"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"gorm.io/gorm"
 )
 
@@ -25,17 +24,9 @@ func (h *listInvokedOperationHandler) Handle(c echo.Context) error {
 	return c.JSON(http.StatusOK, h.mapper.MapList(list))
 }
 
-func (h *listInvokedOperationHandler) getId(c echo.Context) (uuid.UUID, error) {
-	id, err := uuid.Parse(c.Param(operationIdParameterName))
-	if err != nil {
-		return uuid.Nil, fmt.Errorf("%s invalid", operationIdParameterName)
-	}
-	return id, nil
-}
-
 // method that gets a deployment struct by id
-func (h *listInvokedOperationHandler) list() ([]data.InvokedOperation, error) {
-	list := []data.InvokedOperation{}
+func (h *listInvokedOperationHandler) list() ([]model.InvokedOperation, error) {
+	list := []model.InvokedOperation{}
 	h.db.Find(&list)
 	return list, h.db.Error
 }

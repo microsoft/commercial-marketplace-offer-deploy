@@ -10,6 +10,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"gorm.io/gorm"
 )
@@ -53,10 +54,10 @@ func validateOperationName(name string) error {
 }
 
 // save changes to the database
-func (p *dispatcher) save(ctx context.Context, c *DispatchInvokedOperation) (*data.InvokedOperation, error) {
+func (p *dispatcher) save(ctx context.Context, c *DispatchInvokedOperation) (*model.InvokedOperation, error) {
 	tx := p.db.Begin()
 
-	invokedOperation := &data.InvokedOperation{
+	invokedOperation := &model.InvokedOperation{
 		DeploymentId: uint(c.DeploymentId),
 		Name:         *c.Request.Name,
 		Status:       string(sdk.StatusScheduled),
@@ -95,7 +96,7 @@ func (h *dispatcher) send(ctx context.Context, operationId uuid.UUID) error {
 	return nil
 }
 
-func (h *dispatcher) addEventHook(ctx context.Context, invokedOperation *data.InvokedOperation) error {
+func (h *dispatcher) addEventHook(ctx context.Context, invokedOperation *model.InvokedOperation) error {
 	return hook.Add(ctx, &sdk.EventHookMessage{
 		Status:  invokedOperation.Status,
 		Type:    string(sdk.EventTypeDeploymentOperationReceived),

@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -71,19 +71,19 @@ func getPublisher(url string) Publisher {
 //region fakes
 
 type fakeProvider struct {
-	subscriptions []*data.EventHook
+	subscriptions []*model.EventHook
 }
 
 func newFakProvider(url string) EventHooksProvider {
 	provider := &fakeProvider{
-		subscriptions: []*data.EventHook{
-			{Callback: url, Name: "test-subscription-1", ApiKey: "testapikey", BaseWithGuidPrimaryKey: data.BaseWithGuidPrimaryKey{
+		subscriptions: []*model.EventHook{
+			{Callback: url, Name: "test-subscription-1", ApiKey: "testapikey", BaseWithGuidPrimaryKey: model.BaseWithGuidPrimaryKey{
 				ID: uuid.New(),
 			}},
-			{Callback: url, Name: "test-subscription-2", ApiKey: "testapikey", BaseWithGuidPrimaryKey: data.BaseWithGuidPrimaryKey{
+			{Callback: url, Name: "test-subscription-2", ApiKey: "testapikey", BaseWithGuidPrimaryKey: model.BaseWithGuidPrimaryKey{
 				ID: uuid.New(),
 			}},
-			{Callback: url, Name: "test-subscription-3", ApiKey: "testapikey", BaseWithGuidPrimaryKey: data.BaseWithGuidPrimaryKey{
+			{Callback: url, Name: "test-subscription-3", ApiKey: "testapikey", BaseWithGuidPrimaryKey: model.BaseWithGuidPrimaryKey{
 				ID: uuid.New(),
 			}},
 		},
@@ -91,7 +91,7 @@ func newFakProvider(url string) EventHooksProvider {
 	return provider
 }
 
-func (p *fakeProvider) Get() ([]*data.EventHook, error) {
+func (p *fakeProvider) Get() ([]*model.EventHook, error) {
 	return p.subscriptions, nil
 }
 

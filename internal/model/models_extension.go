@@ -1,4 +1,4 @@
-package data
+package model
 
 // The purpose of this file is to provide a place to put extension methods to the data models
 // so we keep models clean
@@ -51,11 +51,3 @@ func (d *Deployment) getSanitizedName() string {
 
 	return name
 }
-
-//region InvokedOperation
-
-func (io *InvokedOperation) IsRetriable() bool {
-	return io.Retries > io.Attempts
-}
-
-//endregion InvokedOperation

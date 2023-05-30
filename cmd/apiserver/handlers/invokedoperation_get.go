@@ -9,6 +9,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/mapper"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"gorm.io/gorm"
 )
 
@@ -42,8 +43,8 @@ func (h *getInvokedOperationHandler) getId(c echo.Context) (uuid.UUID, error) {
 }
 
 // method that gets a deployment struct by id
-func (h *getInvokedOperationHandler) get(id uuid.UUID) (*data.InvokedOperation, error) {
-	invokedOperation := &data.InvokedOperation{}
+func (h *getInvokedOperationHandler) get(id uuid.UUID) (*model.InvokedOperation, error) {
+	invokedOperation := &model.InvokedOperation{}
 	result := h.db.First(invokedOperation, id)
 	if result.Error != nil {
 		return nil, result.Error

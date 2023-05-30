@@ -16,7 +16,7 @@ import (
 	"github.com/google/uuid"
 	eg "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid"
 	filtering "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventsfiltering"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/structure"
 	d "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
@@ -59,6 +59,7 @@ func (f *EventHookMessageFactory) Create(ctx context.Context, matchAny d.LookupT
 		message, err := f.convert(item)
 		if err != nil {
 			log.Errorf("failed to convert EventGridEventResource to WebHookEventMessage: %s", err.Error())
+			continue
 		}
 
 		messages = append(messages, message)
@@ -85,10 +86,10 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*sdk
 	structure.Decode(item.Message.Data, &eventData)
 
 	// get related operation
-	invokedOperation := &data.InvokedOperation{}
+	invokedOperation := &model.InvokedOperation{}
 	f.db.Where("deployment_id = ? AND name = ?",
 		deployment.ID,
-		sdk.OperationStartDeployment,
+		sdk.OperationDeploy,
 	).First(invokedOperation)
 
 	data := sdk.DeploymentEventData{
@@ -129,7 +130,7 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*sdk
 //
 //	remarks: the correlationId cannot be used to lookup the stage, since the stage will be a child deployment of the parent, and its correlationId still related to the parent
 //			 that started the deployment
-func (f *EventHookMessageFactory) getRelatedDeployment(item *eg.EventGridEventResource) (*data.Deployment, error) {
+func (f *EventHookMessageFactory) getRelatedDeployment(item *eg.EventGridEventResource) (*model.Deployment, error) {
 	eventData := eg.ResourceEventData{}
 	structure.Decode(item.Message.Data, &eventData)
 
@@ -145,7 +146,7 @@ func (f *EventHookMessageFactory) getRelatedDeployment(item *eg.EventGridEventRe
 		return nil, err
 	}
 
-	deployment := &data.Deployment{}
+	deployment := &model.Deployment{}
 	tx := f.db.First(deployment, deploymentId)
 	if tx.Error != nil {
 		return nil, tx.Error
@@ -155,7 +156,7 @@ func (f *EventHookMessageFactory) getRelatedDeployment(item *eg.EventGridEventRe
 }
 
 func (f *EventHookMessageFactory) lookupDeploymentId(ctx context.Context, correlationId string, pager *runtime.Pager[armresources.DeploymentsClientListByResourceGroupResponse]) (*int, error) {
-	deployment := &data.Deployment{}
+	deployment := &model.Deployment{}
 
 	for pager.More() {
 		nextResult, err := pager.NextPage(ctx)
@@ -167,9 +168,11 @@ func (f *EventHookMessageFactory) lookupDeploymentId(ctx context.Context, correl
 			for _, item := range nextResult.DeploymentListResult.Value {
 				correlationIdMatches := strings.EqualFold(*item.Properties.CorrelationID, correlationId)
 				if correlationIdMatches {
+					log.Debugf("correlationId [%s] matches [%s]", *item.Properties.CorrelationID, *item.Name)
+
 					id, err := deployment.ParseAzureDeploymentName(*item.Name)
 					if err != nil {
-						fmt.Printf("correlation: resource/%s/correlationId/%s", *item.Name, *item.Properties.CorrelationID)
+						log.Errorf("error parsing deployment resource [%s]. correlationId [%s]", *item.Name, *item.Properties.CorrelationID)
 
 						// the name didn't match our pattern so we're not interested in this azure deployment, keep searching for a match
 						// until we find 1=1 for our deployment (the top level "main deployment")
@@ -195,7 +198,7 @@ func (f *EventHookMessageFactory) getStatus(eventType string) string {
 	}
 }
 
-func (f *EventHookMessageFactory) getEventHookType(resourceName string, deployment *data.Deployment) string {
+func (f *EventHookMessageFactory) getEventHookType(resourceName string, deployment *model.Deployment) string {
 	if resourceName == deployment.GetAzureDeploymentName() {
 		return string(sdk.EventTypeDeploymentCompleted)
 	} else {

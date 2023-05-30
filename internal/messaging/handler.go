@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
+	"github.com/labstack/gommon/log"
 )
 
 //region message handler context
@@ -39,6 +40,12 @@ type serviceBusMessageHandler struct {
 
 // Handle implements MessageHandler for service bus usage
 func (h *serviceBusMessageHandler) Handle(ctx context.Context, message *azservicebus.ReceivedMessage) error {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Errorf("Recovered from panic handling message type: %s", h.messageType.Name())
+		}
+	}()
+
 	typedMessage := reflect.New(h.messageType)
 
 	if message != nil {

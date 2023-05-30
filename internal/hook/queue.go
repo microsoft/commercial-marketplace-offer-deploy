@@ -20,6 +20,9 @@ var (
 	instanceErr  error
 )
 
+// notify is the function signature for the event hook Add
+type Notify func(ctx context.Context, message *sdk.EventHookMessage) error
+
 const eventsQueueName = string(messaging.QueueNameEvents)
 
 // This implementation is to make the semantics clear that this is the lifecycle of a hook message:
@@ -37,6 +40,10 @@ type queue struct {
 
 // Add implements Queue
 func (q *queue) Add(ctx context.Context, message *sdk.EventHookMessage) error {
+	if message == nil {
+		return errors.New("message is nil")
+	}
+
 	results, err := q.sender.Send(ctx, q.queueName, message)
 	if err != nil {
 		log.Errorf("Error attempting toadd event message to queue [%s]: %v", q.queueName, err)

@@ -15,7 +15,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventsfiltering"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
@@ -30,9 +30,7 @@ var matchAny deployment.LookupTags = deployment.LookupTags{
 }
 
 type eventGridWebHook struct {
-	db             *gorm.DB
 	messageFactory *eventhook.EventHookMessageFactory
-	sender         messaging.MessageSender
 }
 
 // HTTP handler is the webook endpoint that receives event grid events
@@ -49,14 +47,12 @@ func (h *eventGridWebHook) Handle(c echo.Context) error {
 	}
 
 	messages := h.messageFactory.Create(ctx, matchAny, events)
+	log.Debugf("Event Hook Mesages total: %d", len(messages))
 
 	if len(messages) == 0 {
-		log.Debug("No messages were created to process")
 		return c.String(http.StatusOK, "OK")
 	}
-
-	err = h.enqueueResultForProcessing(ctx, messages)
-
+	err = h.add(ctx, messages)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -66,17 +62,14 @@ func (h *eventGridWebHook) Handle(c echo.Context) error {
 
 // send these event grid events through our message bus to be processed and published
 // to the web hook endpoints that are subscribed to our MODM events
-func (h *eventGridWebHook) enqueueResultForProcessing(ctx context.Context, messages []*sdk.EventHookMessage) error {
+func (h *eventGridWebHook) add(ctx context.Context, messages []*sdk.EventHookMessage) error {
 	errors := []string{}
 	for _, message := range messages {
-		sendResult, err := h.sender.Send(ctx, string(messaging.QueueNameEvents), message)
+		log.Debugf("Adding event hook message: %+v", message)
+		err := hook.Add(ctx, message)
 
 		if err != nil {
 			errors = append(errors, err.Error())
-		}
-
-		if len(sendResult) == 1 && sendResult[0].Error != nil {
-			errors = append(errors, sendResult[0].Error.Error())
 		}
 	}
 
@@ -94,20 +87,13 @@ func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.T
 		errors := []string{}
 
 		db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
-		sender, err := newMessageSender(appConfig, credential)
-		if err != nil {
-			errors = append(errors, err.Error())
-		}
-
 		messageFactory, err := newWebHookEventMessageFactory(appConfig.Azure.SubscriptionId, db, credential)
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
 		handler := eventGridWebHook{
-			db:             db,
 			messageFactory: messageFactory,
-			sender:         sender,
 		}
 
 		if len(errors) > 0 {
@@ -132,21 +118,6 @@ func newWebHookEventMessageFactory(subscriptionId string, db *gorm.DB, credentia
 	}
 
 	return eventhook.NewEventHookMessageFactory(filter, client, db), nil
-}
-
-func newMessageSender(appConfig *config.AppConfig, credential azcore.TokenCredential) (messaging.MessageSender, error) {
-	sender, err := messaging.NewServiceBusMessageSender(credential, messaging.MessageSenderOptions{
-		SubscriptionId:          appConfig.Azure.SubscriptionId,
-		Location:                appConfig.Azure.Location,
-		ResourceGroupName:       appConfig.Azure.ResourceGroupName,
-		FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return sender, nil
 }
 
 func newEventsFilter(subscriptionId string, credential azcore.TokenCredential) (eventsfiltering.EventGridEventFilter, error) {
