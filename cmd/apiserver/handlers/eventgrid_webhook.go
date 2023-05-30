@@ -47,12 +47,11 @@ func (h *eventGridWebHook) Handle(c echo.Context) error {
 	}
 
 	messages := h.messageFactory.Create(ctx, matchAny, events)
+	log.Debugf("Event Hook Mesages total: %d", len(messages))
 
 	if len(messages) == 0 {
-		log.Debug("Event Hook messages to process: 0")
 		return c.String(http.StatusOK, "OK")
 	}
-
 	err = h.add(ctx, messages)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -66,6 +65,7 @@ func (h *eventGridWebHook) Handle(c echo.Context) error {
 func (h *eventGridWebHook) add(ctx context.Context, messages []*sdk.EventHookMessage) error {
 	errors := []string{}
 	for _, message := range messages {
+		log.Debugf("Adding event hook message: %+v", message)
 		err := hook.Add(ctx, message)
 
 		if err != nil {
