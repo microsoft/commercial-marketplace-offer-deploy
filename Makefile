@@ -40,7 +40,7 @@ sdk:
 tools:
 	./scripts/build-tools.sh
 
-assemble: apiserver operator 
+assemble: build 
 	./scripts/assemble.sh
 
 .NOTPARALLEL:

@@ -16,9 +16,16 @@ services:
       - MODM_LOCAL_PORT=8080
   modm:
     env_file: ../bin/.env
-    image: gpsuscodewith/modm:latest
+    image: gpsuscodewith/modmapi:latest
     ports:
       - 8080:8080
+    environment:
+      - GO_ENV=development
+    networks:
+      - web
+  modmoperator:
+    env_file: ../bin/.env
+    image: gpsuscodewith/modmoperator:latest
     environment:
       - GO_ENV=development
     networks:

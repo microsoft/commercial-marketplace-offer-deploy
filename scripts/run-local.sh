@@ -21,7 +21,9 @@ function run_modm() {
     arg_build=$1
     
     if [ "$arg_build" = "build" ]  || [ "$arg_build" = "true" ]; then
-      build_image modm ./build/package/Dockerfile
+      #build_image modm ./build/package/Dockerfile
+      build_image modmapi ./build/package/Dockerfile.apiserver
+      build_image modmoperator ./build/package/Dockerfile.operator
     fi
 
     start_ngrok_background
@@ -36,7 +38,9 @@ function run_testharness() {
     # the paths are going to be relative to the ./tools dir but the execution is always from the root of the repo dir
     if [ "$arg_build" = "build" ]  || [ "$arg_build" = "true" ]; then
       pushd ../
-      build_image modm ./build/package/Dockerfile
+      #build_image modm ./build/package/Dockerfile
+      build_image modmapi ./build/package/Dockerfile.apiserver
+      build_image modmoperator ./build/package/Dockerfile.operator
       build_image testharness ./build/package/Dockerfile.testharness
       popd
     fi
@@ -62,6 +66,7 @@ function build_image() {
   image_name=$1
   dockerfile=$2
   echo "Building $image_name container image."
+  echo "  dockerfile: $dockerfile"
   docker build . -t $image_name:latest -f $dockerfile --quiet
   docker_build_result=$?
 

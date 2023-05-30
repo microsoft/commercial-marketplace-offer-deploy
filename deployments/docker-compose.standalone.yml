@@ -1,7 +1,7 @@
 services:
   modm:
     env_file: ../bin/.env
-    image: modm:latest
+    image: modmapi:latest
     volumes:
       - "${HOME}/.azure:/root/.azure"
       - "${HOME}/tmp:/tmp"
@@ -11,6 +11,13 @@ services:
       - GO_ENV=development
       - MODM_PUBLIC_BASE_URL=${MODM_PUBLIC_BASE_URL}
       - MODM_LOG_FILE_PATH=/tmp
+    networks:
+      - web
+  modmoperator:
+    env_file: ../bin/.env
+    image: modmoperator:latest
+    environment:
+      - GO_ENV=development
     networks:
       - web
 
