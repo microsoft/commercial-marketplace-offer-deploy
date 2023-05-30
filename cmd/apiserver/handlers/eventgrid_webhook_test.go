@@ -54,21 +54,13 @@ func getHandler(t *testing.T) echo.HandlerFunc {
 		}
 
 		db := setupDatabase()
-
-		sender, err := newMessageSender(appConfig, credential)
-		if err != nil {
-			t.Fatal(err)
-		}
-
 		messageFactory, err := newWebHookEventMessageFactory(appConfig.Azure.SubscriptionId, db, credential)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		handler := eventGridWebHook{
-			db:             db,
 			messageFactory: messageFactory,
-			sender:         sender,
 		}
 
 		log.Debug("handler: ", handler)
