@@ -38,12 +38,12 @@ func main() {
 			}).Print("Received")
 		}
 
-		responseBody := string(resBody)
-		if len(responseBody) > 0 {
-			log.WithFields(log.Fields{
-				"body": string(responseBody),
-			}).Print("Returned")
-		}
+		// responseBody := string(resBody)
+		// if len(responseBody) > 0 {
+		// 	log.WithFields(log.Fields{
+		// 		"body": string(responseBody),
+		// 	}).Print("Returned")
+		// }
 	}))
 
 	if err := e.Start(formattedPort); err != http.ErrServerClosed {
