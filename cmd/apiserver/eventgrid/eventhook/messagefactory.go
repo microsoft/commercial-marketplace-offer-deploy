@@ -168,9 +168,11 @@ func (f *EventHookMessageFactory) lookupDeploymentId(ctx context.Context, correl
 			for _, item := range nextResult.DeploymentListResult.Value {
 				correlationIdMatches := strings.EqualFold(*item.Properties.CorrelationID, correlationId)
 				if correlationIdMatches {
+					log.Debugf("correlationId [%s] matches [%s]", *item.Properties.CorrelationID, *item.Name)
+
 					id, err := deployment.ParseAzureDeploymentName(*item.Name)
 					if err != nil {
-						fmt.Printf("correlation: resource/%s/correlationId/%s", *item.Name, *item.Properties.CorrelationID)
+						log.Errorf("error parsing deployment resource [%s]. correlationId [%s]", *item.Name, *item.Properties.CorrelationID)
 
 						// the name didn't match our pattern so we're not interested in this azure deployment, keep searching for a match
 						// until we find 1=1 for our deployment (the top level "main deployment")
