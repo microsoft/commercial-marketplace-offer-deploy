@@ -68,7 +68,7 @@ func (c *azureResourceClient) resolveApiVersion(ctx context.Context, resourceId 
 		if isResourceTypeMatch {
 			if len(resourceType.APIVersions) > 0 {
 				apiVersion := *resourceType.APIVersions[0]
-				log.Debugf("resolved api version: %s for resource: %s", apiVersion, resourceId.String())
+				log.Tracef("resolved api version: %s for resource: %s", apiVersion, resourceId.String())
 				return apiVersion, nil
 			}
 		}

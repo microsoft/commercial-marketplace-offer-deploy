@@ -29,7 +29,7 @@ type InvokedOperationResult struct {
 	Error       string    `json:"error"`
 	Value       any       `json:"value" gorm:"json"`
 	StartedAt   time.Time `json:"startedAt"`
-	CompletedAt time.Time `json:"occurredAt"`
+	CompletedAt time.Time `json:"completedAt"`
 	Status      string    `json:"status"`
 }
 
@@ -86,6 +86,9 @@ func (o *InvokedOperation) Value(v any) {
 }
 
 func (o *InvokedOperation) Attribute(key AttributeKey, v any) {
+	if o.Attributes == nil {
+		o.Attributes = make(map[string]any)
+	}
 	o.Attributes[string(key)] = v
 }
 

@@ -31,17 +31,17 @@ function create() {
 
 function dryrun() {
     id=$1
-    if [ "$id" == "" ]; then
+    if [[ -z "$id" ]]; then
         id=$deployment_id
     fi
     echo "starting dry run [$id]"
-   # curl -s $testharness_url/dryrun/$id | jq .
+    curl -s $testharness_url/dryrun/$id | jq .
     echo ""
 }
 
 function deploy() {
     id=$1
-    if [ "$id" == "" ]; then
+    if [[ -z "$id" ]]; then
         id=$deployment_id
     fi
     echo "starting deployment [$id]"
