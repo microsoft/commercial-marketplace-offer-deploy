@@ -55,6 +55,7 @@ func ConfigureLogging(config *LoggingOptions) {
 		stacktraceHook := &StacktraceHook{
 			innerHook: &FileHook{
 				fileName: config.FilePath,
+				Formatter: formatter,
 			},
 		}
 		logrus.AddHook(stacktraceHook)
