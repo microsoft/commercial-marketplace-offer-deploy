@@ -37,4 +37,4 @@ COPY --from=builder /app/bin/operator /operator
 COPY --from=builder /app/bin/entrypoint.operator.sh /entrypoint.operator.sh
 
 # Run the web service on container startup.
-CMD ["/entrypoint.operator.sh"]
+CMD ["/operator"]

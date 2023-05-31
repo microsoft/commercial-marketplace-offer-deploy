@@ -38,4 +38,4 @@ COPY --from=builder /app/bin/apiserver /apiserver
 COPY --from=builder /app/bin/entrypoint.apiserver.sh /entrypoint.apiserver.sh
 
 # Run the web service on container startup.
-CMD ["/entrypoint.apiserver.sh"]
+CMD ["/apiserver"]
