@@ -18,7 +18,7 @@ const (
 
 // deploys templates to Azure
 type Deployer interface {
-	Begin(ctx context.Context, azureDeployment AzureDeployment) (*ResumeToken, error)
+	Begin(ctx context.Context, azureDeployment AzureDeployment) (*BeginAzureDeploymentResult, error)
 	Wait(ctx context.Context, resumeToken *ResumeToken) (*AzureDeploymentResult, error)
 
 	Redeploy(ctx context.Context, d AzureRedeployment) (*AzureDeploymentResult, error)

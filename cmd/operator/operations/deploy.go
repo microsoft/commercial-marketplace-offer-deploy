@@ -36,14 +36,17 @@ func (op *deployeOperation) do(context *operation.ExecutionContext) error {
 		return err
 	}
 
-	token, err := deployer.Begin(context.Context(), azureDeployment)
+	beginResult, err := deployer.Begin(context.Context(), azureDeployment)
 	if err != nil {
 		return err
 	}
 
-	context.Attribute(model.AttributeKeyResumeToken, token)
+	token := beginResult.ResumeToken
 
-	result, err := deployer.Wait(context.Context(), token)
+	context.Attribute(model.AttributeKeyResumeToken, token)
+	context.Attribute(model.AttributeKeyCorrelationId, beginResult.CorrelationID)
+
+	result, err := deployer.Wait(context.Context(), &token)
 	context.Value(result)
 
 	if err != nil {

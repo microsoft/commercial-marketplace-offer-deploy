@@ -3,5 +3,6 @@ package model
 type AttributeKey string
 
 const (
-	AttributeKeyResumeToken AttributeKey = "resumeToken"
+	AttributeKeyCorrelationId AttributeKey = "correlationId"
+	AttributeKeyResumeToken   AttributeKey = "resumeToken"
 )

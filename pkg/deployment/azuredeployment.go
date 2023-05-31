@@ -80,6 +80,11 @@ type AzureDeploymentResult struct {
 	Status            ExecutionStatus
 }
 
+type BeginAzureDeploymentResult struct {
+	CorrelationID *string     `json:"correlationId" mapstructure:"correlationId"`
+	ResumeToken   ResumeToken `json:"resumeToken" mapstructure:"resumeToken"`
+}
+
 // the resume token to resume waiting for an azure operation
 type ResumeToken struct {
 	SubscriptionId string `json:"subscriptionId" mapstructure:"subscriptionId"`

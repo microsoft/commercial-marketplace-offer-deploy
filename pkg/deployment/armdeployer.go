@@ -105,7 +105,7 @@ func (deployer *ArmDeployer) Redeploy(ctx context.Context, ad AzureRedeployment)
 	return mappedResult, nil
 }
 
-func (deployer *ArmDeployer) Begin(ctx context.Context, azureDeployment AzureDeployment) (*ResumeToken, error) {
+func (deployer *ArmDeployer) Begin(ctx context.Context, azureDeployment AzureDeployment) (*BeginAzureDeploymentResult, error) {
 	logger := azureDeployment.logger()
 	logger.Trace("Beginning Azure deployment")
 
@@ -127,15 +127,25 @@ func (deployer *ArmDeployer) Begin(ctx context.Context, azureDeployment AzureDep
 		return nil, fmt.Errorf("the Azure deployment creation failed: %v", err)
 	}
 
-	resumeToken, err := poller.ResumeToken()
+	resumeTokenValue, err := poller.ResumeToken()
 	if err != nil {
 		return nil, fmt.Errorf("cannot get the create deployment future response: %v", err)
 	}
 
-	return &ResumeToken{
-		SubscriptionId: azureDeployment.SubscriptionId,
-		Value:          resumeToken,
-	}, nil
+	result := &BeginAzureDeploymentResult{
+		ResumeToken: ResumeToken{
+			SubscriptionId: azureDeployment.SubscriptionId,
+			Value:          resumeTokenValue,
+		},
+	}
+
+	//try and get the correlationId
+	info, err := deployer.client.Get(ctx, azureDeployment.ResourceGroupName, azureDeployment.DeploymentName, nil)
+	if err == nil {
+		result.CorrelationID = info.Properties.CorrelationID
+	}
+
+	return result, nil
 }
 
 func (deployer *ArmDeployer) Wait(ctx context.Context, resumeToken *ResumeToken) (*AzureDeploymentResult, error) {
