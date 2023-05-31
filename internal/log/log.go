@@ -3,6 +3,7 @@ package log
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 )
@@ -25,9 +26,8 @@ type InsightsConfig struct {
 	Version string
 }
 
-func ConfigureLogging(config *LoggingOptions) {
+func ConfigureLogging(config *LoggingOptions) {	
 	logrus.SetOutput(os.Stdout)
-	logrus.SetLevel(logrus.DebugLevel)
 	logrus.SetReportCaller(true)
 
 	formatter := &logrus.TextFormatter{
@@ -42,6 +42,16 @@ func ConfigureLogging(config *LoggingOptions) {
 		return
 	}
 
+	fmt.Println("default log level: ", config.DefaultLogLevel)
+
+	logLevel := logrus.TraceLevel
+	if len(config.DefaultLogLevel) > 0 {
+		logLevel = getLogorusLevel(config.DefaultLogLevel)
+	}
+	logrus.SetLevel(logLevel)
+
+	fmt.Println("log level set to: ", logLevel)
+
 	if len(config.FilePath) > 0 {
 		stacktraceHook := &StacktraceHook{
 			innerHook: &FileHook{
@@ -50,4 +60,21 @@ func ConfigureLogging(config *LoggingOptions) {
 		}
 		logrus.AddHook(stacktraceHook)
 	}
+}
+
+func getLogorusLevel(level string) logrus.Level {
+    switch strings.ToLower(level) {
+    case "debug":
+        return logrus.DebugLevel
+    case "info":
+        return logrus.InfoLevel
+    case "warn":
+        return logrus.WarnLevel
+    case "error":
+        return logrus.ErrorLevel
+	case "trace":
+		return logrus.TraceLevel
+    default:
+        return logrus.InfoLevel
+    }
 }
