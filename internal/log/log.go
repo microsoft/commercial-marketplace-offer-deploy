@@ -41,11 +41,15 @@ func ConfigureLogging(config *LoggingOptions) {
 		return
 	}
 
+	fmt.Println("default log level: ", config.DefaultLogLevel)
+
 	logLevel := logrus.TraceLevel
 	if len(config.DefaultLogLevel) > 0 {
 		logLevel = getLogorusLevel(config.DefaultLogLevel)
 	}
 	logrus.SetLevel(logLevel)
+
+	fmt.Println("log level set to: ", logLevel)
 
 	if len(config.FilePath) > 0 {
 		stacktraceHook := &StacktraceHook{
