@@ -1,37 +1,39 @@
 package data
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"gorm.io/gorm"
 )
 
-type FindStageQuery struct {
+type StageQuery struct {
 	db *gorm.DB
 }
 
 // finds a stage by id. If found returns the parent deployment, the stage and nil error
 // if not found, returns nil, nil, error
-func (q *FindStageQuery) Execute(id uuid.UUID) (*model.Deployment, *model.Stage, error) {
-	var list []model.Deployment
-	q.db.Model(&model.Deployment{}).Find(&list)
+func (q *StageQuery) Execute(id uuid.UUID) (*model.Deployment, *model.Stage, error) {
+	stage := &model.Stage{}
 
-	for _, deployment := range list {
-		if len(deployment.Stages) > 0 {
-			for _, stage := range deployment.Stages {
-				if stage.ID == id {
-					return &deployment, &stage, nil
-				}
-			}
+	result := q.db.First(stage, id)
+
+	if result.Error != nil || result.RowsAffected == 0 {
+		err := result.Error
+		if err == nil {
+			err = fmt.Errorf("failed to get invoked operation: %v", result.Error)
 		}
+		return nil, nil, err
 	}
-	return nil, nil, errors.New("stage not found")
+
+	deployment := &model.Deployment{}
+	q.db.First(deployment, stage.DeploymentID)
+	return deployment, stage, nil
 }
 
-func NewFindStageQuery(db *gorm.DB) *FindStageQuery {
-	return &FindStageQuery{
+func NewStageQuery(db *gorm.DB) *StageQuery {
+	return &StageQuery{
 		db: db,
 	}
 }

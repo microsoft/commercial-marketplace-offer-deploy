@@ -8,15 +8,19 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
 	"github.com/labstack/echo/v4"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/dispatch"
+	eg "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventhook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventsfiltering"
 	filter "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventsfiltering"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
@@ -33,6 +37,9 @@ var matchAny deployment.LookupTags = deployment.LookupTags{
 type eventGridWebHook struct {
 	messageFactory *eventhook.EventHookMessageFactory
 	filter         filter.EventGridEventFilter
+	stageQuery     *data.StageQuery
+	operationQuery *data.InvokedOperationQuery
+	dispatcher     dispatch.OperatorDispatcher
 }
 
 // HTTP handler is the webook endpoint that receives event grid events
@@ -54,21 +61,85 @@ func (h *eventGridWebHook) Handle(c echo.Context) error {
 		return c.String(http.StatusOK, "OK")
 	}
 
-	//
-
-	messages := h.messageFactory.Create(ctx, resources)
-	log.Debugf("Event Hook messages total: %d", len(messages))
-
-	if len(messages) == 0 {
-		return c.String(http.StatusOK, "OK")
+	// handle failed events for retry
+	err = h.handleFailedDeployment(ctx, resources)
+	if err != nil {
+		log.Errorf("Failed to handle failed deployment: %s", err.Error())
 	}
 
-	err = h.add(ctx, messages)
+	err = h.sendEventHookMessages(ctx, resources)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	return c.String(http.StatusOK, "OK")
+}
+
+func (h *eventGridWebHook) handleFailedDeployment(ctx context.Context, resources eg.EventGridEventResources) error {
+	for _, resource := range resources {
+		if !resource.IsDeployment() {
+			continue
+		}
+
+		if resource.IsFailedStage() {
+			log.Debugf("Handling failed stage: %v", resource.Deployment)
+			stageId, err := resource.StageId()
+			if err != nil {
+				log.Errorf("Failed to get stage id: %s", err.Error())
+				continue
+			}
+
+			log.Debugf("Handling stageId: %v", stageId)
+
+			correlationId, err := resource.CorrelationID()
+			if err != nil {
+				log.Errorf("Failed to get correlation id: %s", err.Error())
+				continue
+			}
+
+			deployment, stage, err := h.stageQuery.Execute(stageId)
+			if err != nil {
+				log.Errorf("Failed to get deployment and stage: %s", err.Error())
+				continue
+			}
+
+			command := dispatch.DispatchInvokedOperation{
+				Name:         sdk.OperationRetryStage.String(),
+				Parameters:   map[string]any{string(model.ParameterKeyStageId): stage.ID},
+				Attributes:   map[string]any{string(model.AttributeKeyCorrelationId): correlationId},
+				Retries:      int(stage.Retries),
+				DeploymentId: deployment.ID,
+			}
+
+			invokedOperation, err := h.operationQuery.First(stageId, *correlationId)
+			if err != nil {
+				log.Errorf("Failed to get invoked operation: %s", err.Error())
+				continue
+			}
+
+			if invokedOperation != nil {
+				command.OperationId = invokedOperation.ID
+			}
+
+			id, err := h.dispatcher.Dispatch(ctx, &command)
+			if err != nil {
+				log.Errorf("Failed to dispatch operation [%s]: %s", id, err.Error())
+			}
+		}
+	}
+	return nil
+}
+
+func (h *eventGridWebHook) sendEventHookMessages(ctx context.Context, resources eg.EventGridEventResources) error {
+	messages := h.messageFactory.Create(ctx, resources)
+	log.Debugf("Event Hook messages total: %d", len(messages))
+
+	if len(messages) == 0 {
+		return nil
+	}
+
+	err := h.add(ctx, messages)
+	return err
 }
 
 // send these event grid events through our message bus to be processed and published
@@ -108,15 +179,28 @@ func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.T
 			errors = append(errors, err.Error())
 		}
 
-		handler := eventGridWebHook{
-			messageFactory: messageFactory,
-			filter:         eventsFilter,
+		credential, err := azidentity.NewDefaultAzureCredential(nil)
+		if err != nil {
+			errors = append(errors, err.Error())
+		}
+
+		dispatcher, err := dispatch.NewOperatorDispatcher(appConfig, credential)
+		if err != nil {
+			errors = append(errors, err.Error())
 		}
 
 		if len(errors) > 0 {
 			err = utils.NewAggregateError(errors)
 			log.Errorf("Failed to create event grid webhook handler: %s", err.Error())
 			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+		handler := eventGridWebHook{
+			messageFactory: messageFactory,
+			filter:         eventsFilter,
+			stageQuery:     data.NewStageQuery(db),
+			operationQuery: data.NewInvokedOperationQuery(db),
+			dispatcher:     dispatcher,
 		}
 
 		return handler.Handle(c)

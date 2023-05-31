@@ -75,7 +75,7 @@ func (service *operationService) notify() error {
 	return nil
 }
 
-func (service *operationService) retry() error {
+func (service *operationService) dispatch() error {
 	message := messaging.ExecuteInvokedOperation{OperationId: service.id}
 
 	results, err := service.sender.Send(service.Context(), string(messaging.QueueNameOperations), message)

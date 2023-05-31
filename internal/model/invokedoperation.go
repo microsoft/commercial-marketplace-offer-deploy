@@ -115,6 +115,14 @@ func (o *InvokedOperation) Success() {
 	o.setStatus(sdk.StatusSuccess.String())
 }
 
+func (o *InvokedOperation) Schedule() error {
+	if o.AttemptsExceeded() {
+		return fmt.Errorf("cannot schedule operation, %d of %d attemps reached", o.Attempts, o.Retries)
+	}
+	o.setStatus(sdk.StatusScheduled.String())
+	return nil
+}
+
 func (o *InvokedOperation) setStatus(status string) {
 	o.Status = status
 	result := o.LatestResult()

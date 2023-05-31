@@ -26,10 +26,12 @@ func (h *invokeDeploymentOperation) Handle(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	operationId, err := h.dispatcher.Dispatch(c.Request().Context(), &dispatch.DispatchInvokedOperation{
-		DeploymentId: deploymentId,
-		Request:      request,
-	})
+	command, err := h.createCommand(deploymentId, request)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	operationId, err := h.dispatcher.Dispatch(c.Request().Context(), command)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -48,19 +50,43 @@ func (h *invokeDeploymentOperation) Handle(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func (h *invokeDeploymentOperation) getParameters(c echo.Context) (int, *sdk.InvokeDeploymentOperationRequest, error) {
+func (h *invokeDeploymentOperation) createCommand(deploymentId uint, request *sdk.InvokeDeploymentOperationRequest) (*dispatch.DispatchInvokedOperation, error) {
+	if request == nil {
+		return nil, fmt.Errorf("request is nil")
+	}
+
+	parameters, ok := request.Parameters.(map[string]interface{})
+	if !ok {
+		parameters = make(map[string]interface{})
+	}
+
+	command := &dispatch.DispatchInvokedOperation{
+		DeploymentId: deploymentId,
+		Retries:      int(*request.Retries),
+		Name:         *request.Name,
+		Parameters:   parameters,
+	}
+
+	if command.Retries <= 0 {
+		command.Retries = 1
+	}
+
+	return command, nil
+}
+
+func (h *invokeDeploymentOperation) getParameters(c echo.Context) (uint, *sdk.InvokeDeploymentOperationRequest, error) {
 	deploymentId, err := strconv.Atoi(c.Param(deploymenIdParameterName))
 	if err != nil {
-		return deploymentId, nil, fmt.Errorf("%s invalid", deploymenIdParameterName)
+		return uint(deploymentId), nil, fmt.Errorf("%s invalid", deploymenIdParameterName)
 	}
 
 	var request *sdk.InvokeDeploymentOperationRequest
 	err = c.Bind(&request)
 	if err != nil {
-		return deploymentId, nil, err
+		return uint(deploymentId), nil, err
 	}
 
-	return deploymentId, request, nil
+	return uint(deploymentId), request, nil
 }
 
 func NewInvokeDeploymentOperationHandler(appConfig *config.AppConfig, credential azcore.TokenCredential) echo.HandlerFunc {

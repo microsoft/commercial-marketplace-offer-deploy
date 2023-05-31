@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/iancoleman/strcase"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
@@ -22,28 +21,19 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	// we want to identify the write failure and success
-	azureEventTypeResourceWriteFailure = "Microsoft.Resources.ResourceWriteFailure"
-	azureEventTypeResourceWriteSuccess = "Microsoft.Resources.ResourceWriteSuccess"
-
-	// identifies that we're dealing with an azure deployment resource, not just a resource being deployed as part of a deployment
-	azureDeploymentResourceOperationName = "Microsoft.Resources/deployments/write"
-)
-
 // this factory is intented to create a list of WebHookEventMessages from a list of EventGridEventResources
 // so the messages can be relayed via queue to be published to MODM consumer webhook subscription
 type EventHookMessageFactory struct {
 	client    *armresources.DeploymentsClient
 	db        *gorm.DB
-	findStage data.FindStageQuery
+	findStage *data.StageQuery
 }
 
 func NewEventHookMessageFactory(client *armresources.DeploymentsClient, db *gorm.DB) *EventHookMessageFactory {
 	return &EventHookMessageFactory{
 		client:    client,
 		db:        db,
-		findStage: *data.NewFindStageQuery(db),
+		findStage: data.NewStageQuery(db),
 	}
 }
 
@@ -97,7 +87,7 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*sdk
 
 	message := &sdk.EventHookMessage{
 		Id:     messageId,
-		Status: f.getStatus(*item.Message.EventType),
+		Status: item.GetStatus(),
 		Type:   f.getEventHookType(*item.Resource.Name, deployment),
 		Data:   data,
 	}
@@ -194,17 +184,6 @@ func (f *EventHookMessageFactory) lookupDeploymentId(ctx context.Context, correl
 		}
 	}
 	return nil, fmt.Errorf("deployment not found for correlationId: %s", correlationId)
-}
-
-func (f *EventHookMessageFactory) getStatus(eventType string) string {
-	switch eventType {
-	case azureEventTypeResourceWriteFailure:
-		return sdk.StatusFailed.String()
-	case azureEventTypeResourceWriteSuccess:
-		return sdk.StatusSuccess.String()
-	default:
-		return strcase.ToCamel(eventType)
-	}
 }
 
 func (f *EventHookMessageFactory) getEventHookType(resourceName string, deployment *model.Deployment) string {

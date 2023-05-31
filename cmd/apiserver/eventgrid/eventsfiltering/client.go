@@ -13,15 +13,22 @@ import (
 
 type AzureResourceClient interface {
 	Get(ctx context.Context, resourceId *arm.ResourceID) (*armresources.GenericResource, error)
+	GetDeployment(ctx context.Context, resourceId *arm.ResourceID) (*armresources.DeploymentExtended, error)
 }
 
 type azureResourceClient struct {
-	resourcesClient *armresources.Client
-	providersClient *armresources.ProvidersClient
+	resourcesClient   *armresources.Client
+	deploymentsClient *armresources.DeploymentsClient
+	providersClient   *armresources.ProvidersClient
 }
 
 func NewAzureResourceClient(subscriptionId string, credential azcore.TokenCredential) (AzureResourceClient, error) {
 	resourcesClient, err := armresources.NewClient(subscriptionId, credential, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	deploymentsClient, err := armresources.NewDeploymentsClient(subscriptionId, credential, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -32,8 +39,9 @@ func NewAzureResourceClient(subscriptionId string, credential azcore.TokenCreden
 	}
 
 	return &azureResourceClient{
-		resourcesClient: resourcesClient,
-		providersClient: providerClient,
+		resourcesClient:   resourcesClient,
+		deploymentsClient: deploymentsClient,
+		providersClient:   providerClient,
 	}, nil
 }
 
@@ -51,6 +59,15 @@ func (c *azureResourceClient) Get(ctx context.Context, resourceId *arm.ResourceI
 	}
 
 	return &response.GenericResource, nil
+}
+
+func (c *azureResourceClient) GetDeployment(ctx context.Context, resourceId *arm.ResourceID) (*armresources.DeploymentExtended, error) {
+	response, err := c.deploymentsClient.Get(ctx, resourceId.Parent.ResourceGroupName, resourceId.Name, nil)
+	if err != nil {
+		log.Errorf("failed to get deployment resource: %s, err: %v", resourceId.String(), err)
+		return nil, err
+	}
+	return &response.DeploymentExtended, nil
 }
 
 // port from Python code from Azure CLI

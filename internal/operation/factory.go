@@ -27,15 +27,22 @@ func (iof *factory) Create(ctx context.Context, id uuid.UUID) (*Operation, error
 	if err != nil {
 		return nil, err
 	}
-	do, err := iof.provider.Get(sdk.OperationType(operation.Name))
-	if err != nil {
-		return nil, err
+
+	if iof.provider != nil {
+		do, err := iof.provider.Get(sdk.OperationType(operation.Name))
+
+		if err != nil {
+			return nil, err
+		}
+		operation.do = do
 	}
-	operation.do = do
 
 	return operation, nil
 }
 
+// NewOperationFactory creates a new operation factory
+// appConfig: application configuration
+// provider: operation function provider, optional if the operation is not going to be executed and you want to interact with the operation
 func NewOperationFactory(appConfig *config.AppConfig, provider OperationFuncProvider) (Factory, error) {
 	service, err := newOperationService(appConfig)
 	if err != nil {

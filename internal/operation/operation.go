@@ -2,6 +2,7 @@ package operation
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 )
@@ -52,6 +53,23 @@ func (io *Operation) Success() error {
 	return io.service.saveChanges(true)
 }
 
+func (io *Operation) Schedule() error {
+	err := io.InvokedOperation.Schedule()
+	if err != nil {
+		return err
+	}
+
+	err = io.service.dispatch()
+	if err != nil {
+		return fmt.Errorf("failed to schedule operation: %v", err)
+	}
+	err = io.service.saveChanges(true)
+	if err != nil {
+		return fmt.Errorf("failed to save schedule changes for operation: %v", err)
+	}
+	return nil
+}
+
 func (io *Operation) SaveChanges() error {
 	return io.saveChangesWithoutNotification()
 }
@@ -62,7 +80,9 @@ func (io *Operation) Retry() error {
 		return nil
 	}
 
-	err := io.service.retry()
+	io.Schedule()
+
+	err := io.service.dispatch()
 	if err != nil {
 		return err
 	}

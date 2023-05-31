@@ -6,7 +6,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
 	eg "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	d "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	log "github.com/sirupsen/logrus"
 )
@@ -45,8 +44,8 @@ func (f *tagsFilter) Filter(ctx context.Context, matchAny d.LookupTags, events [
 			item.Tags = matches
 			items = append(items, item)
 		}
-		isRootDeploymentResource := strings.HasPrefix(*item.Resource.Name, deployment.LookupPrefix)
-		if isRootDeploymentResource {
+
+		if item.IsParentDeployment() {
 			items = append(items, item)
 		}
 	}

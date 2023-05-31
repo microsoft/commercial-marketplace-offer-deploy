@@ -13,6 +13,9 @@ const (
 	// the unique id for an instance of any operation executed by modm against one or more resources
 	LookupTagKeyOperationId LookupTagKey = "modm.operation.id"
 
+	// the unique id for an instance of any operation executed by modm against one or more resources
+	LookupTagKeyDeploymentId LookupTagKey = "modm.deployment.id"
+
 	// whether or not to send events, if this is not set to true, then the event will not be sent
 	LookupTagKeyEvents LookupTagKey = "modm.events"
 
