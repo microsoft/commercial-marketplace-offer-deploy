@@ -3,7 +3,6 @@ package operations
 import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
-	deployments "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -29,10 +28,10 @@ func (op *retryOperation) newDeployer(subscriptionId string) (deployment.Deploye
 	return deployment.NewDeployer(deployment.DeploymentTypeARM, subscriptionId)
 }
 
-func (op *retryOperation) mapToAzureRedeployment(context *operation.ExecutionContext) deployments.AzureRedeployment {
+func (op *retryOperation) mapToAzureRedeployment(context *operation.ExecutionContext) deployment.AzureRedeployment {
 	dep := context.Operation().Deployment()
 
-	azureRedeployment := deployments.AzureRedeployment{
+	azureRedeployment := deployment.AzureRedeployment{
 		SubscriptionId:    dep.SubscriptionId,
 		Location:          dep.Location,
 		ResourceGroupName: dep.ResourceGroup,

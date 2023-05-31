@@ -1,6 +1,7 @@
 package operations
 
 import (
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
@@ -11,26 +12,26 @@ type deployeOperation struct {
 }
 
 // the operation to execute
-func (exe *deployeOperation) Do(context *operation.ExecutionContext) error {
-	operation, err := exe.getOperation(context)
+func (op *deployeOperation) Do(context *operation.ExecutionContext) error {
+	operation, err := op.getOperation(context)
 	if err != nil {
 		return err
 	}
 	return operation(context)
 }
 
-func (exe *deployeOperation) getOperation(context *operation.ExecutionContext) (operation.OperationFunc, error) {
-	do := exe.do
+func (op *deployeOperation) getOperation(context *operation.ExecutionContext) (operation.OperationFunc, error) {
+	do := op.do
 
 	if context.Operation().IsRetry() { // this is a retry if so
-		do = exe.retryOperation
+		do = op.retryOperation
 	}
 	return do, nil
 }
 
-func (exe *deployeOperation) do(context *operation.ExecutionContext) error {
-	azureDeployment := exe.mapAzureDeployment(context.Operation())
-	deployer, err := exe.newDeployer(azureDeployment.SubscriptionId)
+func (op *deployeOperation) do(context *operation.ExecutionContext) error {
+	azureDeployment := op.mapAzureDeployment(context.Operation())
+	deployer, err := op.newDeployer(azureDeployment.SubscriptionId)
 	if err != nil {
 		return err
 	}
@@ -52,11 +53,11 @@ func (exe *deployeOperation) do(context *operation.ExecutionContext) error {
 	return nil
 }
 
-func (p *deployeOperation) newDeployer(subscriptionId string) (deployment.Deployer, error) {
+func (op *deployeOperation) newDeployer(subscriptionId string) (deployment.Deployer, error) {
 	return deployment.NewDeployer(deployment.DeploymentTypeARM, subscriptionId)
 }
 
-func (p *deployeOperation) mapAzureDeployment(invokedOperation *operation.Operation) deployment.AzureDeployment {
+func (op *deployeOperation) mapAzureDeployment(invokedOperation *operation.Operation) deployment.AzureDeployment {
 	d := invokedOperation.Deployment()
 
 	return deployment.AzureDeployment{
@@ -65,6 +66,9 @@ func (p *deployeOperation) mapAzureDeployment(invokedOperation *operation.Operat
 		DeploymentName:    d.GetAzureDeploymentName(),
 		Template:          d.Template,
 		Params:            invokedOperation.Parameters,
+		Tags: map[string]*string{
+			string(deployment.LookupTagKeyOperationId): to.Ptr(invokedOperation.ID.String()),
+		},
 	}
 }
 
