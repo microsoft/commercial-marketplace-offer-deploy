@@ -1,4 +1,4 @@
-package deployment_test
+package deployment
 
 import (
 	"path/filepath"
@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,7 +15,7 @@ func TestStartDeployment(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, template)
 
-	resources := deployment.FindResourcesByType(template, "Microsoft.Resources/deployments")
+	resources := findResourcesByType(template, "Microsoft.Resources/deployments")
 	assert.Greater(t, len(resources), 0)
 }
 
@@ -31,17 +30,17 @@ func TestGetDeploymentParamsNested(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, params)
 
-	azureDeployment := &deployment.AzureDeployment{
-		SubscriptionId: uuid.NewString(),
-		Location:       "eastus",
+	azureDeployment := &AzureDeployment{
+		SubscriptionId:    uuid.NewString(),
+		Location:          "eastus",
 		ResourceGroupName: "TestResourceGroup",
-		DeploymentName: "TestDeployment",
-		DeploymentType: deployment.AzureResourceManager,
-		Template:       template,
-		Params:         params,
+		DeploymentName:    "TestDeployment",
+		DeploymentType:    DeploymentTypeARM,
+		Template:          template,
+		Params:            params,
 	}
 
-	result := azureDeployment.GetParams()
+	result := azureDeployment.GetParameters()
 	assert.NotNil(t, result)
 	assert.Equal(t, 2, len(result))
 	assert.NotNil(t, result["aapName"])
@@ -55,27 +54,27 @@ func TestGetDeploymentParamsUnNested(t *testing.T) {
 	assert.NotNil(t, template)
 
 	paramsMap := make(map[string]interface{})
-	
+
 	aapNameMap := make(map[string]interface{})
 	aapNameMap["value"] = "test"
 
 	testNameMap := make(map[string]interface{})
 	testNameMap["value"] = "test2"
-	
+
 	paramsMap["aapName"] = aapNameMap
 	paramsMap["testName"] = testNameMap
-	
-	azureDeployment := &deployment.AzureDeployment{
-		SubscriptionId: uuid.NewString(),
-		Location:       "eastus",
+
+	azureDeployment := &AzureDeployment{
+		SubscriptionId:    uuid.NewString(),
+		Location:          "eastus",
 		ResourceGroupName: "TestResourceGroup",
-		DeploymentName: "TestDeployment",
-		DeploymentType: deployment.AzureResourceManager,
-		Template:       template,
-		Params:         paramsMap,
+		DeploymentName:    "TestDeployment",
+		DeploymentType:    DeploymentTypeARM,
+		Template:          template,
+		Params:            paramsMap,
 	}
 
-	result := azureDeployment.GetParams()
+	result := azureDeployment.GetParameters()
 	assert.NotNil(t, result)
 	assert.Equal(t, 2, len(result))
 	assert.NotNil(t, result["aapName"])
@@ -99,20 +98,38 @@ func TestGetDeploymentTemplateParamsNested(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, params)
 
-	azureDeployment := &deployment.AzureDeployment{
-		SubscriptionId: uuid.NewString(),
-		Location:       "eastus",
+	azureDeployment := &AzureDeployment{
+		SubscriptionId:    uuid.NewString(),
+		Location:          "eastus",
 		ResourceGroupName: "TestResourceGroup",
-		DeploymentName: "TestDeployment",
-		DeploymentType: deployment.AzureResourceManager,
-		Template:       template,
-		Params:         params,
+		DeploymentName:    "TestDeployment",
+		DeploymentType:    DeploymentTypeARM,
+		Template:          template,
+		Params:            params,
 	}
 
-	result := azureDeployment.GetTemplateParams()
+	result := azureDeployment.GetParametersFromTemplate()
 	assert.NotNil(t, result)
 	assert.Equal(t, 3, len(result))
 	assert.NotNil(t, result["aapName"])
 	assert.NotNil(t, result["testName"])
 	assert.NotNil(t, result["testName2"])
 }
+
+//region helpers
+
+func findResourcesByType(template AzureTemplate, resourceType string) []string {
+	deploymentResources := []string{}
+	if template != nil && template["resources"] != nil {
+		resources := template["resources"].([]interface{})
+		for _, resource := range resources {
+			resourceMap := resource.(map[string]interface{})
+			if resourceMap["type"] != nil && resourceMap["type"].(string) == resourceType {
+				deploymentResources = append(deploymentResources, resourceMap["name"].(string))
+			}
+		}
+	}
+	return deploymentResources
+}
+
+//endregion helpers

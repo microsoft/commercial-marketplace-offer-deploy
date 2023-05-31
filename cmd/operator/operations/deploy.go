@@ -1,13 +1,13 @@
 package operations
 
 import (
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 )
 
 type deployeOperation struct {
-	retryOperation        operation.OperationFunc
-	createAzureDeployment deployment.CreateDeployment
+	retryOperation operation.OperationFunc
 }
 
 // the operation to execute
@@ -29,17 +29,31 @@ func (exe *deployeOperation) getOperation(context *operation.ExecutionContext) (
 }
 
 func (exe *deployeOperation) do(context *operation.ExecutionContext) error {
-	invokedOperation := context.Operation()
+	azureDeployment := exe.mapAzureDeployment(context.Operation())
+	deployer, err := exe.newDeployer(azureDeployment.SubscriptionId)
+	if err != nil {
+		return err
+	}
 
-	azureDeployment := exe.mapAzureDeployment(invokedOperation)
-	result, err := exe.createAzureDeployment(context.Context(), azureDeployment)
-	invokedOperation.Value(result)
+	token, err := deployer.Begin(context.Context(), azureDeployment)
+	if err != nil {
+		return err
+	}
+
+	context.Attribute(model.AttributeKeyResumeToken, token)
+
+	result, err := deployer.Wait(context.Context(), token)
+	context.Value(result)
 
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (p *deployeOperation) newDeployer(subscriptionId string) (deployment.Deployer, error) {
+	return deployment.NewDeployer(deployment.DeploymentTypeARM, subscriptionId)
 }
 
 func (p *deployeOperation) mapAzureDeployment(invokedOperation *operation.Operation) deployment.AzureDeployment {
@@ -56,8 +70,7 @@ func (p *deployeOperation) mapAzureDeployment(invokedOperation *operation.Operat
 
 func NewDeploymentOperation() operation.OperationFunc {
 	operation := &deployeOperation{
-		retryOperation:        NewRetryOperation(),
-		createAzureDeployment: deployment.Create,
+		retryOperation: NewRetryOperation(),
 	}
 	return operation.do
 }

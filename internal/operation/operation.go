@@ -32,6 +32,16 @@ func (io *Operation) Running() error {
 	return nil
 }
 
+func (io *Operation) Attribute(key model.AttributeKey, v any) error {
+	io.InvokedOperation.Attribute(key, v)
+	return io.saveChangesWithoutNotification()
+}
+
+func (io *Operation) Value(v any) error {
+	io.InvokedOperation.Value(v)
+	return io.saveChangesWithoutNotification()
+}
+
 func (io *Operation) Failed() error {
 	io.InvokedOperation.Failed()
 	return io.service.saveChanges(true)
@@ -43,7 +53,7 @@ func (io *Operation) Success() error {
 }
 
 func (io *Operation) SaveChanges() error {
-	return io.service.saveChanges(false)
+	return io.saveChangesWithoutNotification()
 }
 
 // Attempts to trigger a retry of the operation, if the operation has a retriable state
@@ -70,4 +80,8 @@ func (io *Operation) Execute() error {
 	executor := NewExecutor(io.do)
 
 	return executor.Execute(context)
+}
+
+func (o *Operation) saveChangesWithoutNotification() error {
+	return o.service.saveChanges(false)
 }

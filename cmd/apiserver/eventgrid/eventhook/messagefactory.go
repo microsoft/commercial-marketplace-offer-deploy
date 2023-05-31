@@ -12,10 +12,9 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
-	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
 	"github.com/google/uuid"
 	eg "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid"
-	filtering "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventsfiltering"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/structure"
 	d "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
@@ -35,27 +34,23 @@ const (
 // this factory is intented to create a list of WebHookEventMessages from a list of EventGridEventResources
 // so the messages can be relayed via queue to be published to MODM consumer webhook subscription
 type EventHookMessageFactory struct {
-	client *armresources.DeploymentsClient
-	filter filtering.EventGridEventFilter
-	db     *gorm.DB
+	client    *armresources.DeploymentsClient
+	db        *gorm.DB
+	findStage data.FindStageQuery
 }
 
-func NewEventHookMessageFactory(filter filtering.EventGridEventFilter, client *armresources.DeploymentsClient, db *gorm.DB) *EventHookMessageFactory {
+func NewEventHookMessageFactory(client *armresources.DeploymentsClient, db *gorm.DB) *EventHookMessageFactory {
 	return &EventHookMessageFactory{
-		client: client,
-		filter: filter,
-		db:     db,
+		client:    client,
+		db:        db,
+		findStage: *data.NewFindStageQuery(db),
 	}
 }
 
 // Creates a list of messages from a list of EventGridEventResource
-func (f *EventHookMessageFactory) Create(ctx context.Context, matchAny d.LookupTags, eventGridEvents []*eventgrid.Event) []*sdk.EventHookMessage {
-	result := f.filter.Filter(ctx, matchAny, eventGridEvents)
+func (f *EventHookMessageFactory) Create(ctx context.Context, resources []*eg.EventGridEventResource) []*sdk.EventHookMessage {
 	messages := []*sdk.EventHookMessage{}
-
-	log.Debugf("factory received %d EventGridEvents, filtered to %d messages", len(eventGridEvents), len(result))
-
-	for _, item := range result {
+	for _, item := range resources {
 		message, err := f.convert(item)
 		if err != nil {
 			log.Errorf("failed to convert EventGridEventResource to WebHookEventMessage: %s", err.Error())
@@ -110,7 +105,7 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*sdk
 	// if this is a stage completed event, we need to set the stageId
 	if message.Type == string(sdk.EventTypeStageCompleted) {
 		for _, stage := range deployment.Stages {
-			if *item.Resource.Name == stage.DeploymentName {
+			if *item.Resource.Name == stage.AzureDeploymentName {
 				data.StageId = to.Ptr(stage.ID)
 			}
 		}
@@ -167,19 +162,33 @@ func (f *EventHookMessageFactory) lookupDeploymentId(ctx context.Context, correl
 		if nextResult.DeploymentListResult.Value != nil {
 			for _, item := range nextResult.DeploymentListResult.Value {
 				correlationIdMatches := strings.EqualFold(*item.Properties.CorrelationID, correlationId)
+
 				if correlationIdMatches {
 					log.Debugf("correlationId [%s] matches [%s]", *item.Properties.CorrelationID, *item.Name)
 
-					id, err := deployment.ParseAzureDeploymentName(*item.Name)
-					if err != nil {
-						log.Errorf("error parsing deployment resource [%s]. correlationId [%s]", *item.Name, *item.Properties.CorrelationID)
+					// try find the deployment using the name, then the stageId tag
 
-						// the name didn't match our pattern so we're not interested in this azure deployment, keep searching for a match
-						// until we find 1=1 for our deployment (the top level "main deployment")
-						continue
+					id, err := deployment.ParseAzureDeploymentName(*item.Name)
+
+					// if we couldn't get the deployment by the resource deployment name, then it's a stage.
+					if err != nil {
+						log.Debugf("resource [%s] could not be found using correlationId [%s]", *item.Name, *item.Properties.CorrelationID)
 					} else {
 						return id, nil
 					}
+
+					if stageId, ok := item.Tags[string(d.LookupTagKeyId)]; ok {
+						uuid, err := uuid.Parse(*stageId)
+						if err == nil {
+							deployment, _, err := f.findStage.Execute(uuid)
+
+							if err == nil {
+								return to.Ptr(int(deployment.ID)), nil
+							}
+						}
+					}
+
+					log.Errorf("error finding deploymentId for [%s] using correlationId [%s]", *item.Name, *item.Properties.CorrelationID)
 				}
 			}
 		}
@@ -203,7 +212,7 @@ func (f *EventHookMessageFactory) getEventHookType(resourceName string, deployme
 		return string(sdk.EventTypeDeploymentCompleted)
 	} else {
 		for _, stage := range deployment.Stages {
-			if resourceName == stage.DeploymentName {
+			if resourceName == stage.AzureDeploymentName {
 				return string(sdk.EventTypeStageCompleted)
 			}
 		}

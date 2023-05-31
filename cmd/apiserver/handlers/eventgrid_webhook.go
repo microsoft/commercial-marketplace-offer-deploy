@@ -13,6 +13,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventhook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventsfiltering"
+	filter "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventsfiltering"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
@@ -31,6 +32,7 @@ var matchAny deployment.LookupTags = deployment.LookupTags{
 
 type eventGridWebHook struct {
 	messageFactory *eventhook.EventHookMessageFactory
+	filter         filter.EventGridEventFilter
 }
 
 // HTTP handler is the webook endpoint that receives event grid events
@@ -46,12 +48,21 @@ func (h *eventGridWebHook) Handle(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	messages := h.messageFactory.Create(ctx, matchAny, events)
-	log.Debugf("Event Hook Mesages total: %d", len(messages))
+	resources := h.filter.Filter(ctx, matchAny, events)
+
+	if len(resources) == 0 {
+		return c.String(http.StatusOK, "OK")
+	}
+
+	//
+
+	messages := h.messageFactory.Create(ctx, resources)
+	log.Debugf("Event Hook messages total: %d", len(messages))
 
 	if len(messages) == 0 {
 		return c.String(http.StatusOK, "OK")
 	}
+
 	err = h.add(ctx, messages)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -92,8 +103,14 @@ func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.T
 			errors = append(errors, err.Error())
 		}
 
+		eventsFilter, err := newEventsFilter(appConfig.Azure.SubscriptionId, credential)
+		if err != nil {
+			errors = append(errors, err.Error())
+		}
+
 		handler := eventGridWebHook{
 			messageFactory: messageFactory,
+			filter:         eventsFilter,
 		}
 
 		if len(errors) > 0 {
@@ -107,17 +124,12 @@ func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.T
 }
 
 func newWebHookEventMessageFactory(subscriptionId string, db *gorm.DB, credential azcore.TokenCredential) (*eventhook.EventHookMessageFactory, error) {
-	filter, err := newEventsFilter(subscriptionId, credential)
-	if err != nil {
-		return nil, err
-	}
-
 	client, err := armresources.NewDeploymentsClient(subscriptionId, credential, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	return eventhook.NewEventHookMessageFactory(filter, client, db), nil
+	return eventhook.NewEventHookMessageFactory(client, db), nil
 }
 
 func newEventsFilter(subscriptionId string, credential azcore.TokenCredential) (eventsfiltering.EventGridEventFilter, error) {

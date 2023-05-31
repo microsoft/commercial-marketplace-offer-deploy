@@ -16,7 +16,7 @@ type Deployment struct {
 	gorm.Model
 	Name     string         `json:"name"`
 	Template map[string]any `json:"template" gorm:"json"`
-	Stages   []Stage        `json:"stages" gorm:"json"`
+	Stages   []Stage        `json:"stages" gorm:"foreignKey:DeploymentID"`
 
 	// azure properties
 	SubscriptionId string `json:"subscriptionId"`
@@ -39,8 +39,12 @@ func (d *Deployment) GetAzureDeploymentName() string {
 	return prefix + suffix
 }
 
-// Parses the azure deployment name and returns OUR deployment id
 func (d *Deployment) ParseAzureDeploymentName(azureDeploymentName string) (*int, error) {
+	return ParseAzureDeploymentName(azureDeploymentName)
+}
+
+// Parses the azure deployment name and returns OUR deployment id
+func ParseAzureDeploymentName(azureDeploymentName string) (*int, error) {
 	isManagedDeployment := strings.HasPrefix(azureDeploymentName, deployment.LookupPrefix)
 
 	if isManagedDeployment {
