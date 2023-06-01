@@ -9,15 +9,16 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/labstack/echo/v4"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/dispatch"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
 const deploymenIdParameterName = "deploymentId"
 
 type invokeDeploymentOperation struct {
-	dispatcher dispatch.OperatorDispatcher
+	repository operation.Repository
 }
 
 func (h *invokeDeploymentOperation) Handle(c echo.Context) error {
@@ -26,19 +27,19 @@ func (h *invokeDeploymentOperation) Handle(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	command, err := h.createCommand(deploymentId, request)
+	operation, err := h.createOperation(deploymentId, request)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		return err
 	}
 
-	operationId, err := h.dispatcher.Dispatch(c.Request().Context(), command)
+	err = operation.Schedule()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	response := sdk.InvokedDeploymentOperationResponse{
 		InvokedOperation: &sdk.InvokedOperation{
-			ID:         to.Ptr(operationId.String()),
+			ID:         to.Ptr(operation.ID.String()),
 			InvokedOn:  to.Ptr(time.Now().UTC()),
 			Name:       request.Name,
 			Parameters: request.Parameters,
@@ -50,9 +51,27 @@ func (h *invokeDeploymentOperation) Handle(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func (h *invokeDeploymentOperation) createCommand(deploymentId uint, request *sdk.InvokeDeploymentOperationRequest) (*dispatch.DispatchInvokedOperation, error) {
+func (h *invokeDeploymentOperation) createOperation(deploymentId uint, request *sdk.InvokeDeploymentOperationRequest) (*operation.Operation, error) {
+	operationType, configure, err := h.getConfigurator(deploymentId, request)
+	if err != nil {
+		return nil, echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	operation, err := h.repository.New(operationType, configure)
+	if err != nil {
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	return operation, nil
+}
+
+func (h *invokeDeploymentOperation) getConfigurator(deploymentId uint, request *sdk.InvokeDeploymentOperationRequest) (sdk.OperationType, operation.Configure, error) {
 	if request == nil {
-		return nil, fmt.Errorf("request is nil")
+		return sdk.OperationUnknown, nil, fmt.Errorf("request is nil")
+	}
+
+	operationType, err := sdk.Type(*request.Name)
+	if err != nil {
+		return sdk.OperationUnknown, nil, err
 	}
 
 	parameters, ok := request.Parameters.(map[string]interface{})
@@ -60,18 +79,19 @@ func (h *invokeDeploymentOperation) createCommand(deploymentId uint, request *sd
 		parameters = make(map[string]interface{})
 	}
 
-	command := &dispatch.DispatchInvokedOperation{
-		DeploymentId: deploymentId,
-		Retries:      int(*request.Retries),
-		Name:         *request.Name,
-		Parameters:   parameters,
+	configure := func(i *model.InvokedOperation) error {
+		retries := int(*request.Retries)
+		if retries <= 0 {
+			i.Retries = 1
+		}
+
+		i.DeploymentId = deploymentId
+		i.Name = operationType.String()
+		i.Parameters = parameters
+		return nil
 	}
 
-	if command.Retries <= 0 {
-		command.Retries = 1
-	}
-
-	return command, nil
+	return operationType, configure, nil
 }
 
 func (h *invokeDeploymentOperation) getParameters(c echo.Context) (uint, *sdk.InvokeDeploymentOperationRequest, error) {
@@ -91,13 +111,13 @@ func (h *invokeDeploymentOperation) getParameters(c echo.Context) (uint, *sdk.In
 
 func NewInvokeDeploymentOperationHandler(appConfig *config.AppConfig, credential azcore.TokenCredential) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		processor, err := dispatch.NewOperatorDispatcher(appConfig, credential)
+		repository, err := operation.NewRepository(appConfig, nil)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
 
 		handler := invokeDeploymentOperation{
-			dispatcher: processor,
+			repository: repository,
 		}
 		return handler.Handle(c)
 	}

@@ -31,7 +31,7 @@ func (q *InvokedOperationQuery) First(stageId uuid.UUID, correlationId string) (
 				if operation.Attributes == nil {
 					continue
 				}
-				if value, ok := operation.Attributes[string(model.AttributeKeyCorrelationId)]; ok {
+				if value, ok := operation.AttributeValue(model.AttributeKeyCorrelationId); ok {
 					if value == correlationId {
 						return &operation, nil
 					}

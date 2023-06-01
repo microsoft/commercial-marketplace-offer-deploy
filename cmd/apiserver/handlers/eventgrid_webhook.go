@@ -8,11 +8,9 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
 	"github.com/labstack/echo/v4"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/dispatch"
 	eg "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventhook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventsfiltering"
@@ -21,6 +19,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
@@ -35,11 +34,11 @@ var matchAny deployment.LookupTags = deployment.LookupTags{
 }
 
 type eventGridWebHook struct {
-	messageFactory *eventhook.EventHookMessageFactory
-	filter         filter.EventGridEventFilter
-	stageQuery     *data.StageQuery
-	operationQuery *data.InvokedOperationQuery
-	dispatcher     dispatch.OperatorDispatcher
+	messageFactory      *eventhook.EventHookMessageFactory
+	filter              filter.EventGridEventFilter
+	stageQuery          *data.StageQuery
+	operationQuery      *data.InvokedOperationQuery
+	operationRepository operation.Repository
 }
 
 // HTTP handler is the webook endpoint that receives event grid events
@@ -103,27 +102,34 @@ func (h *eventGridWebHook) handleFailedDeployment(ctx context.Context, resources
 				continue
 			}
 
-			command := dispatch.DispatchInvokedOperation{
-				Name:         sdk.OperationRetryStage.String(),
-				Parameters:   map[string]any{string(model.ParameterKeyStageId): stage.ID},
-				Attributes:   map[string]any{string(model.AttributeKeyCorrelationId): correlationId},
-				Retries:      int(stage.Retries),
-				DeploymentId: deployment.ID,
-			}
-
 			invokedOperation, err := h.operationQuery.First(stageId, *correlationId)
 			if err != nil {
 				log.Errorf("Failed to get invoked operation: %s", err.Error())
 				continue
 			}
 
-			if invokedOperation != nil {
-				command.OperationId = invokedOperation.ID
+			exists := invokedOperation != nil
+			operation := &operation.Operation{}
+
+			if exists {
+				operation, err = h.operationRepository.First(invokedOperation.ID)
+				if err != nil {
+					log.Errorf("Failed to dispatch operation [%s]: %s", invokedOperation.ID, err.Error())
+				}
+			} else {
+				operation, err = h.operationRepository.New(sdk.OperationRetryStage, func(i *model.InvokedOperation) error {
+					i.Parameters = make(map[string]any)
+					i.Parameters[string(model.ParameterKeyStageId)] = stageId
+					i.Attribute(model.AttributeKeyCorrelationId, *correlationId)
+					i.Retries = int(stage.Retries)
+					i.DeploymentId = deployment.ID
+					return nil
+				})
 			}
 
-			id, err := h.dispatcher.Dispatch(ctx, &command)
+			err = operation.Schedule()
 			if err != nil {
-				log.Errorf("Failed to dispatch operation [%s]: %s", id, err.Error())
+				log.Errorf("Failed to schedule operation [%s]: %s", operation.ID, err.Error())
 			}
 		}
 	}
@@ -179,12 +185,7 @@ func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.T
 			errors = append(errors, err.Error())
 		}
 
-		credential, err := azidentity.NewDefaultAzureCredential(nil)
-		if err != nil {
-			errors = append(errors, err.Error())
-		}
-
-		dispatcher, err := dispatch.NewOperatorDispatcher(appConfig, credential)
+		repository, err := operation.NewRepository(appConfig, nil)
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
@@ -196,11 +197,11 @@ func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.T
 		}
 
 		handler := eventGridWebHook{
-			messageFactory: messageFactory,
-			filter:         eventsFilter,
-			stageQuery:     data.NewStageQuery(db),
-			operationQuery: data.NewInvokedOperationQuery(db),
-			dispatcher:     dispatcher,
+			messageFactory:      messageFactory,
+			filter:              eventsFilter,
+			stageQuery:          data.NewStageQuery(db),
+			operationQuery:      data.NewInvokedOperationQuery(db),
+			operationRepository: repository,
 		}
 
 		return handler.Handle(c)

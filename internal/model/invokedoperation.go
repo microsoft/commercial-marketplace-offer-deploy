@@ -7,18 +7,21 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
+const DefaultNumberOfRetries = 3
+
 // InvokedOperation is a record of an operation that was invoked by the operator
+//
+//	remarks:
+//		attributes - specify information about or that control the operation's use and behavior
 type InvokedOperation struct {
 	BaseWithGuidPrimaryKey
-	Name         string `json:"name"`
-	DeploymentId uint   `json:"deploymentId"`
-
-	// attributes that specify information about or that control the operation's use and behavior
-	Attributes map[string]any                  `json:"attributes" gorm:"json"`
-	Retries    int                             `json:"retries"`
-	Attempts   int                             `json:"attempts"`
-	Parameters map[string]any                  `json:"parameters" gorm:"json"`
-	Results    map[int]*InvokedOperationResult `json:"results" gorm:"json"`
+	Name         string                          `json:"name"`
+	DeploymentId uint                            `json:"deploymentId"`
+	Attributes   []InvokedOperationAttribute     `json:"attributes"`
+	Retries      int                             `json:"retries"`
+	Attempts     int                             `json:"attempts"`
+	Parameters   map[string]any                  `json:"parameters" gorm:"json"`
+	Results      map[int]*InvokedOperationResult `json:"results" gorm:"json"`
 
 	// the current or final status of the operation
 	Status string `json:"status"`
@@ -87,9 +90,28 @@ func (o *InvokedOperation) Value(v any) {
 
 func (o *InvokedOperation) Attribute(key AttributeKey, v any) {
 	if o.Attributes == nil {
-		o.Attributes = make(map[string]any)
+		o.Attributes = []InvokedOperationAttribute{}
 	}
-	o.Attributes[string(key)] = v
+	o.Attributes = append(o.Attributes, NewAttribute(key, v))
+}
+
+// does the InvokedOperation have an attribute with the specified key?
+func (o *InvokedOperation) HasAttribute(key AttributeKey) bool {
+	for _, attr := range o.Attributes {
+		if attr.Key == string(key) {
+			return true
+		}
+	}
+	return false
+}
+
+func (o *InvokedOperation) AttributeValue(key AttributeKey) (any, bool) {
+	for _, attr := range o.Attributes {
+		if attr.Key == string(key) {
+			return attr.Value, true
+		}
+	}
+	return nil, false
 }
 
 func (o *InvokedOperation) AttemptsExceeded() bool {

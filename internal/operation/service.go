@@ -89,7 +89,7 @@ func (service *operationService) dispatch() error {
 	return nil
 }
 
-func (service *operationService) first(id uuid.UUID) (*model.InvokedOperation, error) {
+func (service *operationService) first() (*model.InvokedOperation, error) {
 	record := &model.InvokedOperation{}
 	result := service.db.First(record, service.id)
 
@@ -103,30 +103,42 @@ func (service *operationService) first(id uuid.UUID) (*model.InvokedOperation, e
 	return record, nil
 }
 
-// initializes the context and returns the single instance of InvokedOperation by the context's id
+func (service *operationService) new(i *model.InvokedOperation) (*model.InvokedOperation, error) {
+	result := service.db.Create(i)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return i, nil
+}
+
+// initializes and returns the single instance of InvokedOperation by the context's id
 // if the id is invalid and an instance cannot be found, returns an error
-func (service *operationService) init(ctx context.Context, id uuid.UUID) (*Operation, error) {
+func (service *operationService) initialize(id uuid.UUID) (*Operation, error) {
 	service.id = id
-	service.ctx = ctx
-	service.log = log.WithFields(log.Fields{
+	service.log = service.log.WithFields(log.Fields{
 		"invokedOperationId": id,
 	})
 
-	invokedOperation, err := service.first(id)
+	invokedOperation, err := service.first()
 	if err != nil {
 		return nil, err
 	}
+
+	service.log = service.log.WithFields(log.Fields{
+		"deploymentId": invokedOperation.DeploymentId,
+	})
 
 	service.operation = &Operation{
 		InvokedOperation: *invokedOperation,
 		service:          service,
 	}
 
-	service.log = log.WithFields(log.Fields{
-		"deploymentId": invokedOperation.DeploymentId,
-	})
-
 	return service.operation, nil
+}
+
+func (service *operationService) withContext(ctx context.Context) {
+	service.ctx = ctx
+	service.log = service.log.WithContext(ctx)
 }
 
 // encapsulates the conversion of an invoked operation to an event hook message
@@ -164,10 +176,14 @@ func newOperationService(appConfig *config.AppConfig) (*operationService, error)
 		return nil, err
 	}
 
+	ctx := context.Background()
+
 	return &operationService{
+		ctx:                 ctx,
 		db:                  data.NewDatabase(appConfig.GetDatabaseOptions()).Instance(),
 		sender:              sender,
 		publishNotification: hook.Add,
+		log:                 log.WithContext(ctx),
 	}, nil
 }
 

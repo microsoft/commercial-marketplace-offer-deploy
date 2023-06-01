@@ -17,72 +17,72 @@ type Operation struct {
 	do      OperationFunc
 }
 
-func (io *Operation) Context() context.Context {
-	return io.service.ctx
+func (o *Operation) Context() context.Context {
+	return o.service.ctx
 }
 
-func (io *Operation) Running() error {
-	err, running := io.InvokedOperation.Running()
+func (o *Operation) Running() error {
+	err, running := o.InvokedOperation.Running()
 
 	if err != nil {
 		return err
 	}
 	if !running {
-		return io.service.saveChanges(true)
+		return o.service.saveChanges(true)
 	}
 	return nil
 }
 
-func (io *Operation) Attribute(key model.AttributeKey, v any) error {
-	io.InvokedOperation.Attribute(key, v)
-	return io.saveChangesWithoutNotification()
+func (o *Operation) Attribute(key model.AttributeKey, v any) error {
+	o.InvokedOperation.Attribute(key, v)
+	return o.saveChangesWithoutNotification()
 }
 
-func (io *Operation) Value(v any) error {
-	io.InvokedOperation.Value(v)
-	return io.saveChangesWithoutNotification()
+func (o *Operation) Value(v any) error {
+	o.InvokedOperation.Value(v)
+	return o.saveChangesWithoutNotification()
 }
 
-func (io *Operation) Failed() error {
-	io.InvokedOperation.Failed()
-	return io.service.saveChanges(true)
+func (o *Operation) Failed() error {
+	o.InvokedOperation.Failed()
+	return o.service.saveChanges(true)
 }
 
-func (io *Operation) Success() error {
-	io.InvokedOperation.Success()
-	return io.service.saveChanges(true)
+func (o *Operation) Success() error {
+	o.InvokedOperation.Success()
+	return o.service.saveChanges(true)
 }
 
-func (io *Operation) Schedule() error {
-	err := io.InvokedOperation.Schedule()
+func (o *Operation) Schedule() error {
+	err := o.InvokedOperation.Schedule()
 	if err != nil {
 		return err
 	}
 
-	err = io.service.dispatch()
+	err = o.service.dispatch()
 	if err != nil {
 		return fmt.Errorf("failed to schedule operation: %v", err)
 	}
-	err = io.service.saveChanges(true)
+	err = o.service.saveChanges(true)
 	if err != nil {
 		return fmt.Errorf("failed to save schedule changes for operation: %v", err)
 	}
 	return nil
 }
 
-func (io *Operation) SaveChanges() error {
-	return io.saveChangesWithoutNotification()
+func (o *Operation) SaveChanges() error {
+	return o.saveChangesWithoutNotification()
 }
 
 // Attempts to trigger a retry of the operation, if the operation has a retriable state
-func (io *Operation) Retry() error {
-	if !io.InvokedOperation.IsRetriable() {
+func (o *Operation) Retry() error {
+	if !o.InvokedOperation.IsRetriable() {
 		return nil
 	}
 
-	io.Schedule()
+	o.Schedule()
 
-	err := io.service.dispatch()
+	err := o.service.dispatch()
 	if err != nil {
 		return err
 	}
@@ -90,14 +90,19 @@ func (io *Operation) Retry() error {
 }
 
 // provides access to latest instance of associated deployment
-func (io *Operation) Deployment() *model.Deployment {
-	return io.service.deployment()
+func (o *Operation) Deployment() *model.Deployment {
+	return o.service.deployment()
+}
+
+// sets the operation's execution function
+func (o *Operation) Do(fn OperationFunc) {
+	o.do = fn
 }
 
 // executes the operation
-func (io *Operation) Execute() error {
-	context := newExecutionContext(io)
-	executor := NewExecutor(io.do)
+func (o *Operation) Execute() error {
+	context := newExecutionContext(o)
+	executor := NewExecutor(o.do)
 
 	return executor.Execute(context)
 }
