@@ -5,13 +5,18 @@ import (
 	"gorm.io/gorm"
 )
 
+type AttributeKey string
+
+const (
+	AttributeKeyCorrelationId AttributeKey = "correlationId"
+	AttributeKeyResumeToken   AttributeKey = "resumeToken"
+)
+
 type InvokedOperationAttribute struct {
 	gorm.Model
-	Key   string `json:"key"`
-	Value any    `json:"value" gorm:"json"`
-
-	// FK to invokedoperation for 1..*
-	InvokedOperationID uuid.UUID `json:"invokedOperationId" gorm:"type:uuid"`
+	Key                string    `json:"key" gorm:"uniqueIndex:composite_index;index;not null"`
+	Value              any       `json:"value" gorm:"json"`
+	InvokedOperationID uuid.UUID `json:"invokedOperationId" gorm:"type:uuid;uniqueIndex:composite_index;index;not null"`
 }
 
 func (a InvokedOperationAttribute) Set(key AttributeKey, v any) InvokedOperationAttribute {

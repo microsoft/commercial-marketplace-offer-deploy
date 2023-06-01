@@ -15,20 +15,20 @@ const DefaultNumberOfRetries = 3
 //		attributes - specify information about or that control the operation's use and behavior
 type InvokedOperation struct {
 	BaseWithGuidPrimaryKey
-	Name         string                          `json:"name"`
-	DeploymentId uint                            `json:"deploymentId"`
-	Attributes   []InvokedOperationAttribute     `json:"attributes"`
-	Retries      int                             `json:"retries"`
-	Attempts     int                             `json:"attempts"`
-	Parameters   map[string]any                  `json:"parameters" gorm:"json"`
-	Results      map[int]*InvokedOperationResult `json:"results" gorm:"json"`
+	Name         string                           `json:"name"`
+	DeploymentId uint                             `json:"deploymentId"`
+	Attributes   []InvokedOperationAttribute      `json:"attributes"`
+	Retries      uint                             `json:"retries"`
+	Attempts     uint                             `json:"attempts"`
+	Parameters   map[string]any                   `json:"parameters" gorm:"json"`
+	Results      map[uint]*InvokedOperationResult `json:"results" gorm:"json"`
 
 	// the current or final status of the operation
 	Status string `json:"status"`
 }
 
 type InvokedOperationResult struct {
-	Attempt     int       `json:"attempt"`
+	Attempt     uint      `json:"attempt"`
 	Error       string    `json:"error"`
 	Value       any       `json:"value" gorm:"json"`
 	StartedAt   time.Time `json:"startedAt"`
@@ -92,6 +92,14 @@ func (o *InvokedOperation) Attribute(key AttributeKey, v any) {
 	if o.Attributes == nil {
 		o.Attributes = []InvokedOperationAttribute{}
 	}
+
+	for i, attr := range o.Attributes {
+		if attr.Key == string(key) {
+			o.Attributes[i].Value = v
+			return
+		}
+	}
+
 	o.Attributes = append(o.Attributes, NewAttribute(key, v))
 }
 
@@ -154,7 +162,7 @@ func (o *InvokedOperation) setStatus(status string) {
 
 func (o *InvokedOperation) appendResult() *InvokedOperationResult {
 	if o.Results == nil {
-		o.Results = make(map[int]*InvokedOperationResult)
+		o.Results = make(map[uint]*InvokedOperationResult)
 	}
 
 	if _, exists := o.Results[o.Attempts]; exists {

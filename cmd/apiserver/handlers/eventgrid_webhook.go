@@ -120,7 +120,7 @@ func (h *eventGridWebHook) handleFailedDeployment(ctx context.Context, resources
 					i.Parameters = make(map[string]any)
 					i.Parameters[string(model.ParameterKeyStageId)] = stageId
 					i.Attribute(model.AttributeKeyCorrelationId, *correlationId)
-					i.Retries = int(stage.Retries)
+					i.Retries = uint(stage.Retries)
 					i.DeploymentId = deployment.ID
 					return nil
 				})

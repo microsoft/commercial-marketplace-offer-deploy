@@ -15,6 +15,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type operationService struct {
@@ -91,7 +92,7 @@ func (service *operationService) dispatch() error {
 
 func (service *operationService) first() (*model.InvokedOperation, error) {
 	record := &model.InvokedOperation{}
-	result := service.db.First(record, service.id)
+	result := service.db.Preload(clause.Associations).First(record, service.id)
 
 	if result.Error != nil || result.RowsAffected == 0 {
 		err := result.Error

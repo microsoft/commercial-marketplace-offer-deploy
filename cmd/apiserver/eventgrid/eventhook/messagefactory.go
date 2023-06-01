@@ -81,7 +81,7 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*sdk
 		DeploymentId:  int(deployment.ID),
 		OperationId:   invokedOperation.ID,
 		CorrelationId: to.Ptr(uuid.MustParse(eventData.CorrelationID)),
-		Attempts:      invokedOperation.Attempts,
+		Attempts:      int(invokedOperation.Attempts),
 		Message:       *item.Message.Subject,
 	}
 

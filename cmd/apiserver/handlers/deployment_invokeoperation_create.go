@@ -80,7 +80,7 @@ func (h *invokeDeploymentOperation) getConfigurator(deploymentId uint, request *
 	}
 
 	configure := func(i *model.InvokedOperation) error {
-		retries := int(*request.Retries)
+		retries := uint(*request.Retries)
 		if retries <= 0 {
 			retries = 1
 		}
