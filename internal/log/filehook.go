@@ -8,6 +8,7 @@ import(
 
 type FileHook struct {
 	fileName string
+	Formatter logrus.Formatter
 }
 
 func (hook *FileHook) Fire(entry *logrus.Entry) error {
@@ -31,7 +32,16 @@ func (hook *FileHook) Fire(entry *logrus.Entry) error {
 	defer f.Close()
 
 	if message, ok := entry.Data["message"]; ok {
-		f.Write([]byte(fmt.Sprintf("%v\n", message)))
+		if hook.Formatter != nil {
+			formatted, err := hook.Formatter.Format(entry)
+			if err != nil {
+				fmt.Println("There was an error formatting the log entry: ", err)
+				return err
+			}
+			f.Write(formatted)
+		} else {
+			f.Write([]byte(fmt.Sprintf("%v\n", message)))
+		}
 	}
 	
 	return nil

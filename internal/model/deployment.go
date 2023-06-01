@@ -1,8 +1,5 @@
 package model
 
-// The purpose of this file is to provide a place to put extension methods to the data models
-// so we keep models clean
-
 import (
 	"fmt"
 	"regexp"
@@ -10,12 +7,27 @@ import (
 	"strings"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
+	"gorm.io/gorm"
 )
 
+const deploymentNamePartSeparator = "."
+
+type Deployment struct {
+	gorm.Model
+	Name     string         `json:"name"`
+	Template map[string]any `json:"template" gorm:"json"`
+	Stages   []Stage        `json:"stages" gorm:"foreignKey:DeploymentID"`
+
+	// azure properties
+	SubscriptionId string `json:"subscriptionId"`
+	ResourceGroup  string `json:"resourceGroup"`
+	Location       string `json:"location"`
+}
+
 // Gets the azure deployment name suitable for azure deployment
-// format - modm.<deploymentId>-<deploymentName>
+// format - modm.<deploymentId>.<deploymentName>
 func (d *Deployment) GetAzureDeploymentName() string {
-	prefix := "modm." + strconv.FormatUint(uint64(d.ID), 10) + "."
+	prefix := "modm" + deploymentNamePartSeparator + strconv.FormatUint(uint64(d.ID), 10) + deploymentNamePartSeparator
 	suffix := d.getSanitizedName()
 	maxLength := 64
 	lengthCheck := len(prefix + suffix)
@@ -27,13 +39,17 @@ func (d *Deployment) GetAzureDeploymentName() string {
 	return prefix + suffix
 }
 
-// Parses the azure deployment name and returns OUR deployment id
 func (d *Deployment) ParseAzureDeploymentName(azureDeploymentName string) (*int, error) {
-	parts := strings.Split(azureDeploymentName, "-")
-	isManagedDeployment := strings.HasPrefix(parts[0], deployment.LookupPrefix)
+	return ParseAzureDeploymentName(azureDeploymentName)
+}
+
+// Parses the azure deployment name and returns OUR deployment id
+func ParseAzureDeploymentName(azureDeploymentName string) (*int, error) {
+	isManagedDeployment := strings.HasPrefix(azureDeploymentName, deployment.LookupPrefix)
 
 	if isManagedDeployment {
-		idString := strings.TrimPrefix(parts[0], deployment.LookupPrefix)
+		parts := strings.Split(azureDeploymentName, deploymentNamePartSeparator)
+		idString := parts[1]
 		id, err := strconv.Atoi(idString)
 		if err != nil {
 			return nil, err

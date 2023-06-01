@@ -42,7 +42,7 @@ func TestInvokedOperationUpdate(t *testing.T) {
 		Parameters:   params,
 		Name:         string(sdk.StatusScheduled),
 		Status:       "test",
-		Results:      map[int]*model.InvokedOperationResult{},
+		Results:      map[uint]*model.InvokedOperationResult{},
 	}
 
 	// save

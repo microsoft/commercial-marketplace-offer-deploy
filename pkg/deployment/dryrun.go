@@ -113,7 +113,6 @@ func whatIfDeployment(input DryRunValidationInput) (*armresources.DeploymentsCli
 	}
 	ctx := input.ctx
 
-	
 	deploymentsClient, err := armresources.NewDeploymentsClient(azureDeployment.SubscriptionId, cred, nil)
 	if err != nil {
 		return nil, err
@@ -149,4 +148,49 @@ func whatIfDeployment(input DryRunValidationInput) (*armresources.DeploymentsCli
 	log.Debugf("whatIf response - %v", resp)
 
 	return &resp, nil
+}
+
+func mapResult(whatIfResponse *armresources.DeploymentsClientWhatIfResponse) (*sdk.DryRunError, error) {
+	dryRunError, err := mapError(whatIfResponse.Error)
+	if err != nil {
+		return nil, err
+	}
+	return dryRunError, nil
+}
+
+func mapError(armResourceResponse *armresources.ErrorResponse) (*sdk.DryRunError, error) {
+	if armResourceResponse == nil {
+		log.Debug("returning nil")
+		return nil, nil
+	}
+
+	var dryRunErrorDetails []*sdk.DryRunError
+	if armResourceResponse.Details != nil && len(armResourceResponse.Details) > 0 {
+		for _, v := range armResourceResponse.Details {
+			dryRunError, err := mapError(v)
+			if err != nil {
+				log.Error("There was an error mapping an error detail")
+				return nil, err
+			}
+			dryRunErrorDetails = append(dryRunErrorDetails, dryRunError)
+		}
+	}
+
+	var errorAdditionalInfo []*sdk.ErrorAdditionalInfo
+	if armResourceResponse.AdditionalInfo != nil && len(armResourceResponse.AdditionalInfo) > 0 {
+		for _, v := range armResourceResponse.AdditionalInfo {
+			errAddInfo := &sdk.ErrorAdditionalInfo{Info: v.Info, Type: v.Type}
+			errorAdditionalInfo = append(errorAdditionalInfo, errAddInfo)
+		}
+	}
+
+	dryRunErrorResponse := sdk.DryRunError{
+		Message:        armResourceResponse.Message,
+		Code:           armResourceResponse.Code,
+		Target:         armResourceResponse.Target,
+		Details:        dryRunErrorDetails,
+		AdditionalInfo: errorAdditionalInfo,
+	}
+
+	return &dryRunErrorResponse, nil
 }

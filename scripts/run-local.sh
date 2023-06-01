@@ -91,7 +91,7 @@ function start_ngrok_background() {
 
   echo "NGROK started: $NGROK_ID"
   sleep 2
-  export MODM_PUBLIC_BASE_URL=$(curl -s localhost:4040/api/tunnels | jq '.tunnels[0].public_url' -r)
+  export MODM_PUBLIC_BASE_URL=$(curl -s localhost:4040/api/tunnels | jq '.tunnels[] | select(.proto == "https") | .public_url' -r)
   echo "NGROK URL:  $MODM_PUBLIC_BASE_URL"
 }
 

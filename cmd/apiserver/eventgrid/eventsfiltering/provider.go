@@ -4,11 +4,14 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
 	eg "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/structure"
 	log "github.com/sirupsen/logrus"
 )
+
+const deploymentResourceType = "Microsoft.Resources/deployments"
 
 // maps event grid events to resources for the filter to filter out events
 //
@@ -35,16 +38,27 @@ func (m *provider) Get(ctx context.Context, events []*eventgrid.Event) eg.EventG
 		if err != nil {
 			continue
 		}
-		resource, err := m.resourceClient.Get(ctx, resourceId)
+		azureResource, err := m.resourceClient.Get(ctx, resourceId)
 
 		if err != nil {
 			log.Errorf("error: %v", err)
 			continue
 		}
-		result = append(result, &eg.EventGridEventResource{
+
+		resource := &eg.EventGridEventResource{
 			Message:  event,
-			Resource: resource,
-		})
+			Resource: azureResource,
+		}
+
+		if m.isDeploymentResource(azureResource) {
+			deploymentResource, err := m.resourceClient.GetDeployment(ctx, resourceId)
+			if err != nil {
+				log.Errorf("error: %v", err)
+			} else {
+				resource.Deployment = deploymentResource
+			}
+		}
+		result = append(result, resource)
 	}
 	return result
 }
@@ -61,4 +75,11 @@ func (m *provider) getResourceId(event *eventgrid.Event) (*arm.ResourceID, error
 	}
 
 	return resourceId, nil
+}
+
+func (m *provider) isDeploymentResource(resource *armresources.GenericResource) bool {
+	if resource == nil || resource.Type == nil || *resource.Type == "" {
+		return false
+	}
+	return *resource.Type == deploymentResourceType
 }

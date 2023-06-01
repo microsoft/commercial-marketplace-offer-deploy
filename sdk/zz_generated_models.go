@@ -86,6 +86,12 @@ type DeploymentManagementClientGetEventTypesOptions struct {
 	// placeholder for future optional parameters
 }
 
+// DeploymentManagementClientGetHealthOptions contains the optional parameters for the DeploymentManagementClient.GetHealth
+// method.
+type DeploymentManagementClientGetHealthOptions struct {
+	// placeholder for future optional parameters
+}
+
 // DeploymentManagementClientGetInvokedDeploymentOperationOptions contains the optional parameters for the DeploymentManagementClient.GetInvokedDeploymentOperation
 // method.
 type DeploymentManagementClientGetInvokedDeploymentOperationOptions struct {
@@ -144,6 +150,11 @@ type EventHookResponse struct {
 type EventType struct {
 	// The type of event, e.g. the topic
 	Name *string `json:"name,omitempty"`
+}
+
+type GetHealthResponse struct {
+	// REQUIRED
+	IsHealthy *bool `json:"isHealthy,omitempty"`
 }
 
 type GetInvokedOperationResponse struct {

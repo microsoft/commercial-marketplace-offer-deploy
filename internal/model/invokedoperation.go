@@ -4,32 +4,35 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
+const DefaultNumberOfRetries = 3
+
 // InvokedOperation is a record of an operation that was invoked by the operator
+//
+//	remarks:
+//		attributes - specify information about or that control the operation's use and behavior
 type InvokedOperation struct {
 	BaseWithGuidPrimaryKey
-	Name         string `json:"name"`
-	DeploymentId uint   `json:"deploymentId"`
-	// the correlation id used to track the operation (the correlation id will be set by default to the value on the azure deployment)
-	CorrelationId *uuid.UUID                      `json:"correlationId" gorm:"type:uuid"`
-	Retries       int                             `json:"retries"`
-	Attempts      int                             `json:"attempts"`
-	Parameters    map[string]any                  `json:"parameters" gorm:"json"`
-	Results       map[int]*InvokedOperationResult `json:"results" gorm:"json"`
+	Name         string                           `json:"name"`
+	DeploymentId uint                             `json:"deploymentId"`
+	Attributes   []InvokedOperationAttribute      `json:"attributes"`
+	Retries      uint                             `json:"retries"`
+	Attempts     uint                             `json:"attempts"`
+	Parameters   map[string]any                   `json:"parameters" gorm:"json"`
+	Results      map[uint]*InvokedOperationResult `json:"results" gorm:"json"`
 
 	// the current or final status of the operation
 	Status string `json:"status"`
 }
 
 type InvokedOperationResult struct {
-	Attempt     int       `json:"attempt"`
+	Attempt     uint      `json:"attempt"`
 	Error       string    `json:"error"`
 	Value       any       `json:"value" gorm:"json"`
 	StartedAt   time.Time `json:"startedAt"`
-	CompletedAt time.Time `json:"occurredAt"`
+	CompletedAt time.Time `json:"completedAt"`
 	Status      string    `json:"status"`
 }
 
@@ -85,6 +88,40 @@ func (o *InvokedOperation) Value(v any) {
 	o.LatestResult().Value = v
 }
 
+func (o *InvokedOperation) Attribute(key AttributeKey, v any) {
+	if o.Attributes == nil {
+		o.Attributes = []InvokedOperationAttribute{}
+	}
+
+	for i, attr := range o.Attributes {
+		if attr.Key == string(key) {
+			o.Attributes[i].Value = v
+			return
+		}
+	}
+
+	o.Attributes = append(o.Attributes, NewAttribute(key, v))
+}
+
+// does the InvokedOperation have an attribute with the specified key?
+func (o *InvokedOperation) HasAttribute(key AttributeKey) bool {
+	for _, attr := range o.Attributes {
+		if attr.Key == string(key) {
+			return true
+		}
+	}
+	return false
+}
+
+func (o *InvokedOperation) AttributeValue(key AttributeKey) (any, bool) {
+	for _, attr := range o.Attributes {
+		if attr.Key == string(key) {
+			return attr.Value, true
+		}
+	}
+	return nil, false
+}
+
 func (o *InvokedOperation) AttemptsExceeded() bool {
 	return o.Attempts > o.Retries
 }
@@ -108,6 +145,14 @@ func (o *InvokedOperation) Success() {
 	o.setStatus(sdk.StatusSuccess.String())
 }
 
+func (o *InvokedOperation) Schedule() error {
+	if o.AttemptsExceeded() {
+		return fmt.Errorf("cannot schedule operation, %d of %d attemps reached", o.Attempts, o.Retries)
+	}
+	o.setStatus(sdk.StatusScheduled.String())
+	return nil
+}
+
 func (o *InvokedOperation) setStatus(status string) {
 	o.Status = status
 	result := o.LatestResult()
@@ -117,7 +162,7 @@ func (o *InvokedOperation) setStatus(status string) {
 
 func (o *InvokedOperation) appendResult() *InvokedOperationResult {
 	if o.Results == nil {
-		o.Results = make(map[int]*InvokedOperationResult)
+		o.Results = make(map[uint]*InvokedOperationResult)
 	}
 
 	if _, exists := o.Results[o.Attempts]; exists {

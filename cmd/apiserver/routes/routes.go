@@ -17,7 +17,7 @@ func GetRoutes(appConfig *config.AppConfig) hosting.Routes {
 			Name:        "Index",
 			Method:      http.MethodGet,
 			Path:        "/",
-			HandlerFunc: handlers.Index,
+			HandlerFunc: handlers.NewHealthCheckHandler(),
 		},
 
 		hosting.Route{

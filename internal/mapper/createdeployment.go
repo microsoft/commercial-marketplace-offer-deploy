@@ -61,7 +61,7 @@ func (m *CreateDeploymentMapper) getStages(template map[string]any) []model.Stag
 			stage := model.Stage{
 				BaseWithGuidPrimaryKey: model.BaseWithGuidPrimaryKey{ID: resource.getId()},
 				Name:                   resource.getName(),
-				DeploymentName:         resource.Name,
+				AzureDeploymentName:    resource.Name,
 				Retries:                resource.getRetries(),
 			}
 			stages = append(stages, stage)

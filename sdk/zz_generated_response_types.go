@@ -40,6 +40,11 @@ type DeploymentManagementClientGetEventTypesResponse struct {
 	EventTypeArray []*EventType
 }
 
+// DeploymentManagementClientGetHealthResponse contains the response from method DeploymentManagementClient.GetHealth.
+type DeploymentManagementClientGetHealthResponse struct {
+	GetHealthResponse
+}
+
 // DeploymentManagementClientGetInvokedDeploymentOperationResponse contains the response from method DeploymentManagementClient.GetInvokedDeploymentOperation.
 type DeploymentManagementClientGetInvokedDeploymentOperationResponse struct {
 	GetInvokedOperationResponse

@@ -6,5 +6,5 @@ const (
 	moduleName = "commercial-marketplace-offer-deploy"
 
 	// moduleVersion is the semantic version (see http://semver.org) of this module.
-	moduleVersion = "v0.2.2"
+	moduleVersion = "v1.2.0"
 )

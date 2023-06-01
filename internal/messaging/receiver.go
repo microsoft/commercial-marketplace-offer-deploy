@@ -82,7 +82,7 @@ func (r *serviceBusReceiver) Start() {
 						"queueName": r.queueName,
 						"messageId": message.MessageID,
 						"body":      string(message.Body),
-					}).Debug("Received message")
+					}).Trace("Received message")
 
 					err := r.handler.Handle(r.ctx, message)
 
@@ -101,7 +101,7 @@ func (r *serviceBusReceiver) Start() {
 							continue
 						}
 					}
-					log.Debugf("Completed message [%s]", message.MessageID)
+					log.Tracef("Completed message [%s]", message.MessageID)
 				}
 			}
 		}
