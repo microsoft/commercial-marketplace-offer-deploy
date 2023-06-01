@@ -8,6 +8,7 @@ const (
 	EventTypeDeploymentCreated   EventTypeName = "deploymentCreated"
 	EventTypeDeploymentUpdated   EventTypeName = "deploymentUpdated"
 	EventTypeDeploymentDeleted   EventTypeName = "deploymentDeleted"
+	EventTypeDeploymentScheduled EventTypeName = "deploymentScheduled"
 	EventTypeDeploymentStarted   EventTypeName = "deploymentStarted"
 	EventTypeDeploymentCompleted EventTypeName = "deploymentCompleted"
 	EventTypeStageCompleted      EventTypeName = "stageCompleted"

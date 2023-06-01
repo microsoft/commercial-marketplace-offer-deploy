@@ -173,6 +173,8 @@ func getIncludedEventTypesForFilter() []*string {
 		// we don't need to worry about message ordering if we only listen for success and failure
 
 		// if this gets modified for more than success and failure, message ordering will need to be considered
+		to.Ptr("Microsoft.Resources.ResourceActionSuccess"),
+		to.Ptr("Microsoft.Resources.ResourceActionFailure"),
 		to.Ptr("Microsoft.Resources.ResourceWriteSuccess"),
 		to.Ptr("Microsoft.Resources.ResourceWriteFailure"),
 		to.Ptr("Microsoft.Resources.ResourceDeleteSuccess"),

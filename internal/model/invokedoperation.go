@@ -61,7 +61,7 @@ func (o *InvokedOperation) Running() (error, bool) {
 		return nil, true
 	}
 
-	o.Attempts++
+	o.incrementAttempts()
 
 	if o.AttemptsExceeded() {
 		return fmt.Errorf("cannot run operation, %d of %d attemps reached", +o.Attempts, o.Retries), false
@@ -123,7 +123,7 @@ func (o *InvokedOperation) AttributeValue(key AttributeKey) (any, bool) {
 }
 
 func (o *InvokedOperation) AttemptsExceeded() bool {
-	return o.Attempts > o.Retries
+	return o.Attempts >= o.Retries
 }
 
 func (o *InvokedOperation) IsRetry() bool {
@@ -131,8 +131,7 @@ func (o *InvokedOperation) IsRetry() bool {
 }
 
 func (io *InvokedOperation) IsRetriable() bool {
-	attemptsExceeded := io.Attempts >= io.Retries
-	return !io.IsRunning() && !attemptsExceeded
+	return !io.IsRunning() && !io.AttemptsExceeded()
 }
 
 // sets the status to failed for the operation and the latest attempt's result
@@ -158,6 +157,13 @@ func (o *InvokedOperation) setStatus(status string) {
 	result := o.LatestResult()
 	result.Status = status
 	result.CompletedAt = time.Now().UTC()
+}
+
+func (o *InvokedOperation) incrementAttempts() {
+	if o.AttemptsExceeded() {
+		return
+	}
+	o.Attempts++
 }
 
 func (o *InvokedOperation) appendResult() *InvokedOperationResult {

@@ -27,9 +27,15 @@ func getEventType(invokedOperation *model.InvokedOperation) string {
 	eventType := ""
 
 	if invokedOperation.Name == sdk.OperationDeploy.String() {
-		eventType = string(sdk.EventTypeDeploymentCompleted)
-		if invokedOperation.Attempts > 1 {
+		eventType = string(sdk.EventTypeDeploymentScheduled)
+		if invokedOperation.IsRetry() {
 			eventType = string(sdk.EventTypeDeploymentRetried)
+		}
+		if invokedOperation.AttemptsExceeded() {
+			eventType = string(sdk.EventTypeDeploymentCompleted)
+		}
+		if invokedOperation.AttemptsExceeded() && invokedOperation.IsRunning() {
+			eventType = string(sdk.EventTypeDeploymentStarted)
 		}
 	} else if invokedOperation.Name == sdk.OperationRetry.String() {
 		eventType = string(sdk.EventTypeDeploymentRetried)
