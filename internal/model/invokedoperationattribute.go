@@ -8,10 +8,10 @@ import (
 type InvokedOperationAttribute struct {
 	gorm.Model
 	Key   string `json:"key"`
-	Value any    `json:"value"`
+	Value any    `json:"value" gorm:"json"`
 
 	// FK to invokedoperation for 1..*
-	InvokedOperationID uuid.UUID `json:"invokedOperationId" gorm:"type:uuid;"`
+	InvokedOperationID uuid.UUID `json:"invokedOperationId" gorm:"type:uuid"`
 }
 
 func (a InvokedOperationAttribute) Set(key AttributeKey, v any) InvokedOperationAttribute {
