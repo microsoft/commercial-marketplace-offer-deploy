@@ -13,6 +13,8 @@ const (
 	EventTypeDeploymentCompleted EventTypeName = "deploymentCompleted"
 	EventTypeStageCompleted      EventTypeName = "stageCompleted"
 	EventTypeStageRetried        EventTypeName = "stageRetried"
+	EventTypeStageStarted        EventTypeName = "stageStarted"
+	EventTypeStageScheduled      EventTypeName = "stageScheduled"
 	EventTypeDeploymentRetried   EventTypeName = "deploymentRetried"
 	EventTypeDryRunCompleted     EventTypeName = "dryRunCompleted"
 

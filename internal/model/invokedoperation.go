@@ -55,6 +55,15 @@ func (o *InvokedOperation) IsRunning() bool {
 	return o.Status == sdk.StatusRunning.String()
 }
 
+func (o *InvokedOperation) IsCompleted() bool {
+	hasCompletedStatus := o.Status == sdk.StatusSuccess.String() || o.Status == sdk.StatusFailed.String()
+	return hasCompletedStatus && o.AttemptsExceeded()
+}
+
+func (o *InvokedOperation) IsScheduled() bool {
+	return o.Status == sdk.StatusScheduled.String()
+}
+
 // increment the number of attempts and set the status to running
 func (o *InvokedOperation) Running() (error, bool) {
 	if o.IsRunning() { //already running, so do nothing

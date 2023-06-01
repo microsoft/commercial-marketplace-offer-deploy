@@ -23,29 +23,32 @@ func mapToMessage(invokedOperation *model.InvokedOperation) *sdk.EventHookMessag
 	return message
 }
 
-func getEventType(invokedOperation *model.InvokedOperation) string {
-	eventType := ""
+func getEventType(o *model.InvokedOperation) string {
+	noun := ""
 
-	if invokedOperation.Name == sdk.OperationDeploy.String() {
-		eventType = string(sdk.EventTypeDeploymentScheduled)
-		if invokedOperation.IsRetry() {
-			eventType = string(sdk.EventTypeDeploymentRetried)
-		}
-		if invokedOperation.AttemptsExceeded() {
-			eventType = string(sdk.EventTypeDeploymentCompleted)
-		}
-		if invokedOperation.AttemptsExceeded() && invokedOperation.IsRunning() {
-			eventType = string(sdk.EventTypeDeploymentStarted)
-		}
-	} else if invokedOperation.Name == sdk.OperationRetry.String() {
-		eventType = string(sdk.EventTypeDeploymentRetried)
-	} else if invokedOperation.Name == sdk.OperationDryRun.String() {
-		eventType = string(sdk.EventTypeDryRunCompleted)
-	} else if invokedOperation.Name == sdk.OperationRetryStage.String() {
-		return string(sdk.EventTypeStageRetried)
+	if o.Name == sdk.OperationDeploy.String() || o.Name == sdk.OperationRetry.String() {
+		noun = "deployment"
+	} else if o.Name == sdk.OperationDryRun.String() {
+		noun = "dryRun"
+	} else if o.Name == sdk.OperationRetryStage.String() {
+		noun = "stage"
 	}
 
-	return eventType
+	verb := ""
+
+	if o.IsScheduled() {
+		verb = "Scheduled"
+	} else if o.IsRunning() {
+		verb = "Started"
+	} else if o.IsCompleted() {
+		verb = "Completed"
+	} else if o.IsRetriable() {
+		verb = "Retried"
+	} else {
+		verb = "Completed"
+	}
+
+	return noun + verb
 }
 
 func getEventData(invokedOperation *model.InvokedOperation) any {
