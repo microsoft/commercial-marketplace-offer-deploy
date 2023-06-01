@@ -59,6 +59,25 @@
     ]
   },
   "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Get the health of a MODM instance",
+        "description": "List all deployments",
+        "operationId": "GetHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/GetHealthResponse"
+            }
+          }
+        }
+      }
+    },
     "/deployments": {
       "get": {
         "tags": [
@@ -345,8 +364,7 @@
         "summary": "Lists all event hooks",
         "description": "List all event hooks",
         "operationId": "ListEventHooks",
-        "parameters": [
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -422,6 +440,17 @@
     }
   },
   "definitions": {
+    "GetHealthResponse": {
+      "type": "object",
+      "required": [
+        "isHealthy"
+      ],
+      "properties": {
+        "isHealthy": {
+          "type": "boolean"
+        }
+      }
+    },
     "CreateDeployment": {
       "type": "object",
       "required": [
@@ -529,7 +558,7 @@
       "type": "object",
       "properties": {
         "invokedOperation": {
-         "$ref": "#/definitions/InvokedOperation"
+          "$ref": "#/definitions/InvokedOperation"
         }
       }
     },
@@ -545,7 +574,6 @@
         }
       }
     },
-
     "InvokeDeploymentOperationRequest": {
       "type": "object",
       "properties": {
@@ -568,7 +596,7 @@
       "type": "object",
       "properties": {
         "invokedOperation": {
-         "$ref": "#/definitions/InvokedOperation"
+          "$ref": "#/definitions/InvokedOperation"
         }
       }
     },
@@ -606,7 +634,7 @@
           "type": "string",
           "description": "the name of the subscription"
         },
-        "apiKey":{
+        "apiKey": {
           "type": "string",
           "description": "API key to be used in the Authorization header, e.g. 'apiKey =234dfsdf324234', to call the webhook callback URL."
         },

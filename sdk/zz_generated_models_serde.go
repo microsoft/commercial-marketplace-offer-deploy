@@ -269,6 +269,33 @@ func (e *EventType) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// MarshalJSON implements the json.Marshaller interface for type GetHealthResponse.
+func (g GetHealthResponse) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]any)
+	populate(objectMap, "isHealthy", g.IsHealthy)
+	return json.Marshal(objectMap)
+}
+
+// UnmarshalJSON implements the json.Unmarshaller interface for type GetHealthResponse.
+func (g *GetHealthResponse) UnmarshalJSON(data []byte) error {
+	var rawMsg map[string]json.RawMessage
+	if err := json.Unmarshal(data, &rawMsg); err != nil {
+		return fmt.Errorf("unmarshalling type %T: %v", g, err)
+	}
+	for key, val := range rawMsg {
+		var err error
+		switch key {
+		case "isHealthy":
+				err = unpopulate(val, "IsHealthy", &g.IsHealthy)
+				delete(rawMsg, key)
+		}
+		if err != nil {
+			return fmt.Errorf("unmarshalling type %T: %v", g, err)
+		}
+	}
+	return nil
+}
+
 // MarshalJSON implements the json.Marshaller interface for type GetInvokedOperationResponse.
 func (g GetInvokedOperationResponse) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]any)

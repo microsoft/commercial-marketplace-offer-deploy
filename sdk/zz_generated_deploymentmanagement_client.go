@@ -271,6 +271,46 @@ func (client *DeploymentManagementClient) getEventTypesHandleResponse(resp *http
 	return result, nil
 }
 
+// GetHealth - List all deployments
+// If the operation fails it returns an *azcore.ResponseError type.
+//
+// Generated from API version 0.1.0
+//   - options - DeploymentManagementClientGetHealthOptions contains the optional parameters for the DeploymentManagementClient.GetHealth
+//     method.
+func (client *DeploymentManagementClient) GetHealth(ctx context.Context, options *DeploymentManagementClientGetHealthOptions) (DeploymentManagementClientGetHealthResponse, error) {
+	req, err := client.getHealthCreateRequest(ctx, options)
+	if err != nil {
+		return DeploymentManagementClientGetHealthResponse{}, err
+	}
+	resp, err := client.internal.Pipeline().Do(req)
+	if err != nil {
+		return DeploymentManagementClientGetHealthResponse{}, err
+	}
+	if !runtime.HasStatusCode(resp, http.StatusOK) {
+		return DeploymentManagementClientGetHealthResponse{}, runtime.NewResponseError(resp)
+	}
+	return client.getHealthHandleResponse(resp)
+}
+
+// getHealthCreateRequest creates the GetHealth request.
+func (client *DeploymentManagementClient) getHealthCreateRequest(ctx context.Context, options *DeploymentManagementClientGetHealthOptions) (*policy.Request, error) {
+	req, err := runtime.NewRequest(ctx, http.MethodGet, client.endpoint)
+	if err != nil {
+		return nil, err
+	}
+	req.Raw().Header["Accept"] = []string{"application/json"}
+	return req, nil
+}
+
+// getHealthHandleResponse handles the GetHealth response.
+func (client *DeploymentManagementClient) getHealthHandleResponse(resp *http.Response) (DeploymentManagementClientGetHealthResponse, error) {
+	result := DeploymentManagementClientGetHealthResponse{}
+	if err := runtime.UnmarshalAsJSON(resp, &result.GetHealthResponse); err != nil {
+		return DeploymentManagementClientGetHealthResponse{}, err
+	}
+	return result, nil
+}
+
 // GetInvokedDeploymentOperation - Gets the state of a command operation that's been invoked
 // If the operation fails it returns an *azcore.ResponseError type.
 //
