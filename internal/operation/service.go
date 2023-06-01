@@ -104,10 +104,13 @@ func (service *operationService) first() (*model.InvokedOperation, error) {
 }
 
 func (service *operationService) new(i *model.InvokedOperation) (*model.InvokedOperation, error) {
-	result := service.db.Create(i)
+	tx := service.db.Begin()
+	result := tx.Create(i)
 	if result.Error != nil {
+		tx.Rollback()
 		return nil, result.Error
 	}
+	tx.Commit()
 	return i, nil
 }
 
