@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/mapper"
 )
@@ -26,7 +25,7 @@ func Index(c echo.Context) error {
 	return c.String(http.StatusOK, "Marketplace Offer Deployment Manager.")
 }
 
-func NewHealthCheckHandler(appConfig *config.AppConfig) echo.HandlerFunc {
+func NewHealthCheckHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		handler := getHealthCheckHandler{
 		}
