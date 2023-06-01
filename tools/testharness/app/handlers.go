@@ -108,6 +108,30 @@ func Redeploy(c echo.Context) error {
 	return json
 }
 
+func HealthStatus(c echo.Context) error {
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println("Got the credentials")
+
+	log.Printf("Calling NewClient with endpoint %s", getClientEndpoint())
+	client, err := sdk.NewClient(getClientEndpoint(), cred, nil)
+	if err != nil {
+		log.Panicln(err)
+	}
+	log.Println("Got the client")
+	ctx := context.Background()
+	res, err := client.HealthStatus(ctx)
+	if err != nil {
+		log.Println(err)
+	}
+	json := c.JSON(http.StatusOK, res)
+	log.Printf("HealthStatus response - %s", json)
+
+	return json
+}
+
 func CreateDeployment(c echo.Context) error {
 	location = getLocation()
 	resourceGroup = getResourceGroup()
