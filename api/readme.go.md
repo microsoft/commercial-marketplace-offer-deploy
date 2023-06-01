@@ -6,7 +6,7 @@ These settings apply only when `--go` is specified on the command line.
 use: "@autorest.go@4.0.0-preview.49"
 license-header: MICROSOFT_MIT_NO_VERSION
 go: true
-clear-output-folder: true
+clear-output-folder: false
 export-clients: false
 go-export-clients: false
 output-folder: $(go-sdk-folder)
