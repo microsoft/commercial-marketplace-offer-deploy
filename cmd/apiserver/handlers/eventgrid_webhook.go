@@ -13,7 +13,6 @@ import (
 	"github.com/labstack/echo/v4"
 	eg "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventhook"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventsfiltering"
 	filter "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventsfiltering"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
@@ -109,7 +108,7 @@ func (h *eventGridWebHook) handleFailedDeployment(ctx context.Context, resources
 			}
 
 			exists := invokedOperation != nil
-			operation := &operation.Operation{}
+			var operation *operation.Operation
 
 			if exists {
 				operation, err = h.operationRepository.First(invokedOperation.ID)
@@ -125,6 +124,10 @@ func (h *eventGridWebHook) handleFailedDeployment(ctx context.Context, resources
 					i.DeploymentId = deployment.ID
 					return nil
 				})
+				if err != nil {
+					log.Errorf("Failed to create operation: %s", err.Error())
+					continue
+				}
 			}
 
 			err = operation.Schedule()
@@ -217,7 +220,7 @@ func newWebHookEventMessageFactory(subscriptionId string, db *gorm.DB, credentia
 	return eventhook.NewEventHookMessageFactory(client, db), nil
 }
 
-func newEventsFilter(subscriptionId string, credential azcore.TokenCredential) (eventsfiltering.EventGridEventFilter, error) {
+func newEventsFilter(subscriptionId string, credential azcore.TokenCredential) (filter.EventGridEventFilter, error) {
 	// TODO: probably should come from db as configurable at runtime
 	includeKeys := []string{
 		string(deployment.LookupTagKeyEvents),
@@ -225,13 +228,13 @@ func newEventsFilter(subscriptionId string, credential azcore.TokenCredential) (
 		string(deployment.LookupTagKeyName),
 		string(deployment.LookupTagKeyStageId),
 	}
-	resourceClient, err := eventsfiltering.NewAzureResourceClient(subscriptionId, credential)
+	resourceClient, err := filter.NewAzureResourceClient(subscriptionId, credential)
 	if err != nil {
 		return nil, err
 	}
 
-	provider := eventsfiltering.NewEventGridEventResourceProvider(resourceClient)
-	filter := eventsfiltering.NewTagsFilter(includeKeys, provider)
+	provider := filter.NewEventGridEventResourceProvider(resourceClient)
+	filter := filter.NewTagsFilter(includeKeys, provider)
 	return filter, nil
 }
 
