@@ -63,7 +63,11 @@ func create(options eventGridRegistrationTaskOptions) tasks.Task {
 		log.Infof("System topic created: %s", manager.GetSystemTopicName())
 
 		subscriptionName := getSubscriptionName(resourceId.ResourceGroupName)
-		result, err := manager.CreateEventSubscription(ctx, subscriptionName, options.EndpointUrl)
+		subscriptionUrl := options.EndpointUrl
+
+		log.Debugf("trying to create EventGrid subscription [%s] with endpoint [%s]", subscriptionName, subscriptionUrl)
+
+		result, err := manager.CreateEventSubscription(ctx, subscriptionName, subscriptionUrl)
 		if err != nil {
 			log.Errorf("EventGrid subscription [%s] failed with error: %s", subscriptionName, err)
 			return err
