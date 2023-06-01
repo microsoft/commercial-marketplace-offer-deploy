@@ -47,3 +47,4 @@ type ListResponse struct {
 type GetResponse struct {
 	Deployment *Deployment
 }
+
