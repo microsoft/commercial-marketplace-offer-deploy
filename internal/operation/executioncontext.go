@@ -2,6 +2,8 @@ package operation
 
 import (
 	"context"
+
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 )
 
 // Context object for interacting with an operation execution
@@ -39,8 +41,12 @@ func (c *ExecutionContext) Retry() error {
 	return c.operation.Retry()
 }
 
-func (c *ExecutionContext) Value(v any) {
-	c.operation.Value(v)
+func (c *ExecutionContext) Value(v any) error {
+	return c.operation.Value(v)
+}
+
+func (c *ExecutionContext) Attribute(key model.AttributeKey, v any) error {
+	return c.operation.Attribute(key, v)
 }
 
 func (c *ExecutionContext) Operation() *Operation {

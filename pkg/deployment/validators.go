@@ -28,11 +28,11 @@ type DryRunValidationInput struct {
 }
 
 func (i DryRunValidationInput) GetParams() map[string]interface{} {
-	return i.azureDeployment.GetParams()
+	return i.azureDeployment.GetParameters()
 }
 
 func (i DryRunValidationInput) GetTemplateParams() map[string]interface{} {
-	return i.azureDeployment.GetTemplateParams()
+	return i.azureDeployment.GetParametersFromTemplate()
 }
 
 type ValidatorFunc func(input DryRunValidationInput) (*sdk.DryRunError, error)

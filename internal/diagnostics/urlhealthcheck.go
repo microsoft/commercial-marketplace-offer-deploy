@@ -48,8 +48,10 @@ func (c *serviceUrlHealthCheck) Check(ctx context.Context) HealthCheckResult {
 func (c *serviceUrlHealthCheck) getResult(ctx context.Context) HealthCheckResult {
 	statusCode := 0
 
+	log.Debugf("Checking URL [%s]", c.options.Url)
 	response, err := http.Get(c.options.Url)
 	if err != nil {
+		log.Errorf("Url Health Check error [%s]: %s", c.options.Url, err.Error())
 		return HealthCheckResult{
 			Description: fmt.Sprintf("Error while checking %s", c.options.Url),
 			Status:      HealthCheckStatusUnhealthy,

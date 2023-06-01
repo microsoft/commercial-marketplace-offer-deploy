@@ -9,11 +9,12 @@ import (
 )
 
 type operationMessageHandler struct {
-	operationFactory operation.Factory
+	operationFactory operation.Repository
 }
 
 func (h *operationMessageHandler) Handle(message *messaging.ExecuteInvokedOperation, context messaging.MessageHandlerContext) error {
-	operation, err := h.operationFactory.Create(context.Context(), message.OperationId)
+	h.operationFactory.WithContext(context.Context())
+	operation, err := h.operationFactory.First(message.OperationId)
 	if err != nil {
 		return err
 	}
@@ -23,7 +24,7 @@ func (h *operationMessageHandler) Handle(message *messaging.ExecuteInvokedOperat
 func NewOperationsMessageHandler(appConfig *config.AppConfig) *operationMessageHandler {
 	handler := &operationMessageHandler{}
 
-	operationFactory, err := operation.NewOperationFactory(appConfig, &operations.OperationFuncProvider{})
+	operationFactory, err := operation.NewRepository(appConfig, &operations.OperationFuncProvider{})
 	if err != nil {
 		log.Errorf("Error creating operations message handler: %s", err)
 		return nil

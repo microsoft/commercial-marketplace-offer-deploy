@@ -2,7 +2,7 @@ package operations
 
 import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
-	deployments "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -11,21 +11,27 @@ type retryOperation struct {
 
 func (op *retryOperation) Do(context *operation.ExecutionContext) error {
 	azureRedeployment := op.mapToAzureRedeployment(context)
-
-	result, err := deployments.Redeploy(context.Context(), azureRedeployment)
+	deployer, err := op.newDeployer(azureRedeployment.SubscriptionId)
+	if err != nil {
+		return err
+	}
+	result, err := deployer.Redeploy(context.Context(), azureRedeployment)
 	context.Value(result)
 
 	if err != nil {
 		return err
 	}
-	context.Value(result)
 	return nil
 }
 
-func (op *retryOperation) mapToAzureRedeployment(context *operation.ExecutionContext) deployments.AzureRedeployment {
+func (op *retryOperation) newDeployer(subscriptionId string) (deployment.Deployer, error) {
+	return deployment.NewDeployer(deployment.DeploymentTypeARM, subscriptionId)
+}
+
+func (op *retryOperation) mapToAzureRedeployment(context *operation.ExecutionContext) deployment.AzureRedeployment {
 	dep := context.Operation().Deployment()
 
-	azureRedeployment := deployments.AzureRedeployment{
+	azureRedeployment := deployment.AzureRedeployment{
 		SubscriptionId:    dep.SubscriptionId,
 		Location:          dep.Location,
 		ResourceGroupName: dep.ResourceGroup,

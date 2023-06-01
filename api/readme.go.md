@@ -3,14 +3,15 @@
 These settings apply only when `--go` is specified on the command line.
 
 ``` yaml $(go)
-go:
-    license-header: MICROSOFT_MIT_NO_VERSION
-    clear-output-folder: false
-    export-clients: true
-    output-folder: $(go-sdk-folder)
-    use: "@autorest.go@4.0.0-preview.46"
-    file-prefix: zz_generated_
-    verbose: true
+use: "@autorest.go@4.0.0-preview.49"
+license-header: MICROSOFT_MIT_NO_VERSION
+go: true
+clear-output-folder: false
+export-clients: false
+go-export-clients: false
+output-folder: $(go-sdk-folder)
+file-prefix: zz_generated_
+verbose: true
 ```
 
 ### Tag: preview-2023-03-01 and go

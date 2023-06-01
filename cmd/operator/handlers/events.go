@@ -19,7 +19,7 @@ type eventsMessageHandler struct {
 
 func (h *eventsMessageHandler) Handle(message *sdk.EventHookMessage, context messaging.MessageHandlerContext) error {
 	bytes, _ := json.Marshal(message)
-	log.WithField("eventHookMessage", string(bytes)).Debug("Events Handler excuting")
+	log.WithField("eventHookMessage", string(bytes)).Trace("Events Handler excuting")
 
 	err := h.publisher.Publish(message)
 	return err

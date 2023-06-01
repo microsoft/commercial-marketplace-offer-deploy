@@ -1,7 +1,6 @@
 package operations
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -27,11 +26,12 @@ func (op *retryStageOperation) Do(context *operation.ExecutionContext) error {
 	}
 
 	redeployment := op.mapToAzureRedeployment(parent, stage)
-	if redeployment == nil {
-		return errors.New("unable to map to AzureRedeployment")
+	deployer, err := op.newDeployer(redeployment.SubscriptionId)
+	if err != nil {
+		return err
 	}
 
-	result, err := deployment.Redeploy(context.Context(), *redeployment)
+	result, err := deployer.Redeploy(context.Context(), redeployment)
 	if err != nil {
 		return err
 	}
@@ -50,17 +50,21 @@ func (op *retryStageOperation) getStageId(context *operation.ExecutionContext) (
 	return stageId, nil
 }
 
-func (exe *retryStageOperation) mapToAzureRedeployment(dep *model.Deployment, stage *model.Stage) *deployment.AzureRedeployment {
-	azureRedeployment := &deployment.AzureRedeployment{
+func (op *retryStageOperation) newDeployer(subscriptionId string) (deployment.Deployer, error) {
+	return deployment.NewDeployer(deployment.DeploymentTypeARM, subscriptionId)
+}
+
+func (op *retryStageOperation) mapToAzureRedeployment(dep *model.Deployment, stage *model.Stage) deployment.AzureRedeployment {
+	azureRedeployment := deployment.AzureRedeployment{
 		SubscriptionId:    dep.SubscriptionId,
 		Location:          dep.Location,
 		ResourceGroupName: dep.ResourceGroup,
-		DeploymentName:    stage.DeploymentName,
+		DeploymentName:    stage.AzureDeploymentName,
 	}
 	return azureRedeployment
 }
 
-func (exe *retryStageOperation) findStage(deployment *model.Deployment, stageId uuid.UUID) *model.Stage {
+func (op *retryStageOperation) findStage(deployment *model.Deployment, stageId uuid.UUID) *model.Stage {
 	for _, stage := range deployment.Stages {
 		if stage.ID == stageId {
 			return &stage
