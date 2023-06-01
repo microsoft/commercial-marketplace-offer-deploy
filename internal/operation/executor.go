@@ -52,6 +52,7 @@ func (exe *executor) Execute(context *ExecutionContext) error {
 	err = exe.execute(context)
 
 	if err != nil {
+		context.Error(err)
 		err = context.Failed()
 
 		retryErr := context.Retry()

@@ -46,7 +46,7 @@ type serviceBusMessageSender struct {
 // TODO: need to get the message bus from configuration
 
 func NewServiceBusMessageSender(credential azcore.TokenCredential, options MessageSenderOptions) (MessageSender, error) {
-	log.Debugf("New Service Bus Message Sender options:\n %v", options)
+	log.Tracef("New Service Bus Message Sender options:\n %v", options)
 
 	client, err := azservicebus.NewClient(options.FullyQualifiedNamespace, credential, nil)
 	if err != nil {
@@ -81,7 +81,8 @@ func (s *serviceBusMessageSender) Send(ctx context.Context, queueName string, me
 		logger := log.WithFields(log.Fields{
 			"messageBody": string(body),
 		})
-		logger.Debug("sending message")
+
+		logger.Trace("sending message")
 
 		err = sender.SendMessage(ctx, &azservicebus.Message{
 			Body: body,
@@ -90,13 +91,13 @@ func (s *serviceBusMessageSender) Send(ctx context.Context, queueName string, me
 		if err != nil {
 			logger.WithError(err).Error("failed to send message")
 		} else {
-			log.Debug("message sent")
+			log.Trace("message sent")
 		}
 
 		results = append(results, SendMessageResult{Success: err == nil, Error: err})
 	}
 
-	log.WithField("results", results).Debug("send message(s) complete")
+	log.WithField("results", results).Trace("send message(s) complete")
 
 	return results, nil
 }

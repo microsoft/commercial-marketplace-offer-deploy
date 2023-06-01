@@ -83,7 +83,7 @@ func getDryRunData(invokedOperation *model.InvokedOperation) any {
 		DeploymentId: int(invokedOperation.DeploymentId),
 		OperationId:  invokedOperation.ID,
 		Status:       resultStatus,
-		Attempts:     invokedOperation.Attempts,
+		Attempts:     int(invokedOperation.Attempts),
 		StartedAt:    invokedOperation.CreatedAt.UTC(),
 		CompletedAt:  invokedOperation.UpdatedAt.UTC(),
 	}

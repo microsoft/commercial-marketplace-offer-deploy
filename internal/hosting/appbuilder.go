@@ -77,7 +77,11 @@ func (b *AppBuilder) Build(configure ConfigureEchoFunc) *App {
 	//add middleware
 	b.app.server.Use(middleware.Logger())
 	b.app.server.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
-		log.WithField("body", string(reqBody)).Debug("Body Dump")
+		log.WithFields(log.Fields{
+			"method": c.Request().Method,
+			"url":    c.Request().URL,
+			"body":   string(reqBody),
+		}).Trace("Request")
 	}))
 
 	loggingConfig := b.app.config.GetLoggingOptions(b.app.name)

@@ -49,7 +49,7 @@ func (q *queue) Add(ctx context.Context, message *sdk.EventHookMessage) error {
 		log.Errorf("Error attempting toadd event message to queue [%s]: %v", q.queueName, err)
 		return err
 	} else {
-		log.Debugf("EventHook message sent [%s]", message.Id)
+		log.Tracef("EventHook message sent [%s]", message.Id)
 	}
 	if len(results) > 0 {
 		for _, result := range results {

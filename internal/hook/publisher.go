@@ -54,7 +54,7 @@ func (p *publisher) Publish(message *sdk.EventHookMessage) error {
 
 			sender := p.getSender(*hook)
 
-			log.Debugf("sending message [%s] to %s - '%s'", message.Id, message.HookId, hook.Callback)
+			log.Tracef("sending message [%s] to %s - '%s'", message.Id, message.HookId, hook.Callback)
 			err := sender.Send(ctx, &message)
 
 			if err != nil {

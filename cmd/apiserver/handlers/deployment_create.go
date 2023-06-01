@@ -60,7 +60,7 @@ func createResult(deployment *model.Deployment) *sdk.Deployment {
 		result.Stages = append(result.Stages, &sdk.DeploymentStage{
 			Name:           to.Ptr(stage.Name),
 			ID:             to.Ptr(stage.ID.String()),
-			DeploymentName: &stage.DeploymentName,
+			DeploymentName: &stage.AzureDeploymentName,
 			Retries:        to.Ptr(int32(stage.Retries)),
 		})
 	}
