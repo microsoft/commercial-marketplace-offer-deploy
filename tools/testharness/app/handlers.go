@@ -239,7 +239,10 @@ func DryRun(c echo.Context) error {
 	var ctx context.Context = context.Background()
 
 	log.Printf("About to call DryRunDeployment - paramsMap: %s", paramsMap)
-	res, err := client.DryRun(ctx, deploymentId, paramsMap)
+	options := &sdk.DryRunOptions{
+		Retries: 1,
+	}
+	res, err := client.DryRun(ctx, deploymentId, paramsMap, options)
 	if err != nil {
 		log.Println(err)
 	}
