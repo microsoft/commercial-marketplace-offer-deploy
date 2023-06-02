@@ -21,13 +21,15 @@ func GetOperation(operationType sdk.OperationType) (operation.OperationFunc, err
 
 	switch operationType {
 	case sdk.OperationDryRun:
-		operationFunc = NewdryRunOperation()
+		operationFunc = NewDryRunOperation()
 	case sdk.OperationDeploy:
 		operationFunc = NewDeploymentOperation()
 	case sdk.OperationRetry: //explicit retry
 		operationFunc = NewRetryOperation()
 	case sdk.OperationRetryStage:
 		operationFunc = NewRetryStageOperation()
+	case sdk.OperationCancel:
+		operationFunc = NewCancelOperation()
 	}
 
 	if operationFunc == nil {

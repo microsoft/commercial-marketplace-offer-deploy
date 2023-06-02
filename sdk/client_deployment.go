@@ -46,6 +46,18 @@ func (client *Client) Start(ctx context.Context, deploymentId int, templateParam
 	}, nil
 }
 
+func (client *Client) Cancel(ctx context.Context, deploymentId int) (*CancelDeploymentResponse, error) {
+	retries := DefaultRetries
+	response, err := client.invokeDeploymentOperation(ctx, false, OperationCancel, deploymentId, nil, retries)
+	if err != nil {
+		return nil, err
+	}
+	return &CancelDeploymentResponse{
+		Id:     uuid.MustParse(*response.ID),
+		IsCancelled: true,
+	}, nil
+}
+
 // Retries a deployment, regardless of the current status
 //
 //	id: deployment id

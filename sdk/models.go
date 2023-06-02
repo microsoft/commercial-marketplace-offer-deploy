@@ -48,3 +48,8 @@ type GetResponse struct {
 	Deployment *Deployment
 }
 
+type CancelDeploymentResponse struct {
+	Id         		uuid.UUID
+	IsCancelled 	bool
+}
+

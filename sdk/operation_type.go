@@ -10,6 +10,7 @@ const (
 	OperationRetry      OperationType = "retry"
 	OperationRetryStage OperationType = "retryStage"
 	OperationDryRun     OperationType = "dryRun"
+	OperationCancel	 	OperationType = "cancel"
 	OperationUnknown    OperationType = "unknown"
 )
 
@@ -29,6 +30,8 @@ func Type(o string) (OperationType, error) {
 		return OperationRetry, nil
 	case OperationRetryStage.String():
 		return OperationRetryStage, nil
+	case OperationCancel.String():
+		return OperationCancel, nil
 	default:
 		return OperationUnknown, fmt.Errorf("unknown operation type %s", o)
 	}

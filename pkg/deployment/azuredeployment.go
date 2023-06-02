@@ -80,6 +80,17 @@ type AzureDeploymentResult struct {
 	Status            ExecutionStatus
 }
 
+type AzureCancelDeployment struct {
+	SubscriptionId    string             `json:"subscriptionId"`
+	Location          string             `json:"location"`
+	ResourceGroupName string             `json:"resourceGroupName"`
+	DeploymentName    string             `json:"deploymentName"`
+}
+
+type AzureCancelDeploymentResult struct {
+	CancelSubmitted   bool 				 `json:"cancelSubmitted"`
+}
+
 type BeginAzureDeploymentResult struct {
 	CorrelationID *string     `json:"correlationId" mapstructure:"correlationId"`
 	ResumeToken   ResumeToken `json:"resumeToken" mapstructure:"resumeToken"`

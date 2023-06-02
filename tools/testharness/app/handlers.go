@@ -19,6 +19,39 @@ func SetCase(c echo.Context) error {
 	return c.String(http.StatusOK, fmt.Sprintf("Case set to %s", caseName))
 }
 
+func Cancel(c echo.Context) error {
+	deploymentId, err := strconv.Atoi(c.Param("deploymentId"))
+	if err != nil {
+		log.Println(err)
+	}
+
+	location = getLocation()
+	resourceGroup = getResourceGroup()
+	subscription = getSubscription()
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println("Got the credentials")
+
+	log.Printf("Calling NewClient with endpoint %s", getClientEndpoint())
+	client, err := sdk.NewClient(getClientEndpoint(), cred, nil)
+	if err != nil {
+		log.Panicln(err)
+	}
+	log.Println("Got the client")
+	ctx := context.Background()
+
+	res, err := client.Cancel(ctx, deploymentId)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return c.JSON(http.StatusOK, res)
+
+}
+
 func ReceiveEventHook(c echo.Context) error {
 	log.Print("Event Hook Received")
 	reader := c.Request().Body
