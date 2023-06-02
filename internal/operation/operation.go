@@ -22,6 +22,8 @@ func (o *Operation) Context() context.Context {
 }
 
 func (o *Operation) Running() error {
+	o.service.log.Info("Marking operation as running")
+
 	changed := o.InvokedOperation.Running()
 	if changed {
 		return o.service.saveChanges(true)
@@ -40,16 +42,22 @@ func (o *Operation) Value(v any) error {
 }
 
 func (o *Operation) Failed() error {
+	o.service.log.Info("Marking operation as failed")
+
 	o.InvokedOperation.Failed()
 	return o.service.saveChanges(true)
 }
 
 func (o *Operation) Success() error {
+	o.service.log.Info("Marking operation as success")
+
 	o.InvokedOperation.Success()
 	return o.service.saveChanges(true)
 }
 
 func (o *Operation) Schedule() error {
+	o.service.log.Info("Marking operation as scheduled")
+
 	err := o.InvokedOperation.Schedule()
 	if err != nil {
 		return err
@@ -77,7 +85,7 @@ func (o *Operation) Retry() error {
 	if !o.InvokedOperation.AttemptsExceeded() {
 		return nil
 	}
-
+	o.service.log.Info("Retrying operation")
 	return o.Schedule()
 }
 

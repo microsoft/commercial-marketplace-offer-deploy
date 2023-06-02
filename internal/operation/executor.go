@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
@@ -46,10 +45,12 @@ func (exe *executor) Execute(context *ExecutionContext) error {
 	err := context.Running()
 
 	if err != nil {
+		log.Errorf("error updating operation to running: %s", err.Error())
 		return err
 	}
 
-	err = exe.execute(context)
+	do := WithLogging(exe.operation)
+	err = do(context)
 
 	if err != nil {
 		context.Error(err)
@@ -69,18 +70,6 @@ func (exe *executor) Execute(context *ExecutionContext) error {
 	}
 
 	return nil
-}
-
-func (exe *executor) execute(context *ExecutionContext) error {
-	operationErrors := []string{}
-
-	operation := WithLogging(exe.operation)
-	err := operation(context)
-	if err != nil {
-		context.Error(err)
-		operationErrors = append(operationErrors, err.Error())
-	}
-	return utils.NewAggregateError(operationErrors)
 }
 
 // default operations executor that executions the operation(s) in sequence with logging and default retry logic
