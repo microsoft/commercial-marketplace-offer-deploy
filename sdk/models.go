@@ -8,6 +8,10 @@ type RetryOptions struct {
 	StageId uuid.UUID
 }
 
+type DryRunOptions struct {
+	Retries int
+}
+
 type StatusResponse struct {
 	// the instance id of the operation
 	Id           uuid.UUID
