@@ -16,6 +16,7 @@ import (
 	filter "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventsfiltering"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/diagnostics/audit"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
@@ -38,13 +39,13 @@ type eventGridWebHook struct {
 	stageQuery          *data.StageQuery
 	operationQuery      *data.InvokedOperationQuery
 	operationRepository operation.Repository
+	auditLog            audit.Log
 }
 
 // HTTP handler is the webook endpoint that receives event grid events
 // the validation middleware will handle validation requests first before this is reached
 func (h *eventGridWebHook) Handle(c echo.Context) error {
 	log.Debug("Received event grid webhook")
-
 	ctx := c.Request().Context()
 
 	events := []*eventgrid.Event{}
@@ -52,6 +53,8 @@ func (h *eventGridWebHook) Handle(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
+
+	h.audit(events)
 
 	resources := h.filter.Filter(ctx, matchAny, events)
 
@@ -71,6 +74,12 @@ func (h *eventGridWebHook) Handle(c echo.Context) error {
 	}
 
 	return c.String(http.StatusOK, "OK")
+}
+
+func (h *eventGridWebHook) audit(events []*eventgrid.Event) {
+	for _, event := range events {
+		h.auditLog.Append(event)
+	}
 }
 
 func (h *eventGridWebHook) handleFailedDeployment(ctx context.Context, resources eg.EventGridEventResources) error {
@@ -193,6 +202,11 @@ func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.T
 			errors = append(errors, err.Error())
 		}
 
+		auditLog, err := audit.NewAppendOnlyFileAuditLog(appConfig.GetLoggingOptions("eventgrid").FilePath)
+		if err != nil {
+			errors = append(errors, err.Error())
+		}
+
 		if len(errors) > 0 {
 			err = utils.NewAggregateError(errors)
 			log.Errorf("Failed to create event grid webhook handler: %s", err.Error())
@@ -205,6 +219,7 @@ func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.T
 			stageQuery:          data.NewStageQuery(db),
 			operationQuery:      data.NewInvokedOperationQuery(db),
 			operationRepository: repository,
+			auditLog:            auditLog,
 		}
 
 		return handler.Handle(c)
