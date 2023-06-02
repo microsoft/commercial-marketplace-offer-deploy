@@ -24,11 +24,8 @@ func (o *Operation) Context() context.Context {
 func (o *Operation) Running() error {
 	o.service.log.Info("Marking operation as running")
 
-	changed := o.InvokedOperation.Running()
-	if changed {
-		return o.service.saveChanges(true)
-	}
-	return nil
+	o.InvokedOperation.Running()
+	return o.service.saveChanges(true)
 }
 
 func (o *Operation) Attribute(key model.AttributeKey, v any) error {

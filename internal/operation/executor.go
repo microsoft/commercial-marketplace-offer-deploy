@@ -64,10 +64,8 @@ func (exe *executor) Execute(context *ExecutionContext) error {
 		return err
 	}
 
-	err = context.Success()
-	if err != nil {
-		log.Errorf("error updating invoked operation to success: %s", err.Error())
-	}
+	context.Success()
+	context.Complete()
 
 	return nil
 }

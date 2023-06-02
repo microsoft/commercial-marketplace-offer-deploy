@@ -2,6 +2,7 @@ package operation
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -60,26 +61,30 @@ func (service *operationService) saveChanges(notify bool) error {
 
 	if notify {
 		snapshot := service.operation.InvokedOperation
-		go func() {
-			err := service.notification(snapshot) // if the notification fails, save still happened
-			if err != nil {
-				service.log.Errorf("notify failed: %v", err)
-			}
-		}()
+		notificationId, err := service.publish(snapshot) // if the notification fails, save still happened
+		if err == nil {
+			service.operation.LatestResult().NotificationId = &notificationId
+			service.db.Save(service.operation.InvokedOperation)
+		}
 	}
 
 	return nil
 }
 
 // triggers a notification of the invoked operation's state
-func (service *operationService) notification(snapshot model.InvokedOperation) error {
+func (service *operationService) publish(snapshot model.InvokedOperation) (uuid.UUID, error) {
+	if service.operation.LatestResult().NotificationId != nil {
+		return uuid.Nil, errors.New("notification already sent")
+	}
+
 	message := service.getMessage(&snapshot)
-	err := service.notify(service.Context(), message)
+	notificationId, err := service.notify(service.Context(), message)
 	if err != nil {
 		service.log.Errorf("failed to add event message: %v", err)
-		return err
+		return notificationId, err
 	}
-	return nil
+
+	return notificationId, nil
 }
 
 func (service *operationService) dispatch() error {

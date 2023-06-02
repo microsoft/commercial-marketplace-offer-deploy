@@ -21,7 +21,7 @@ var (
 )
 
 // notify is the function signature for the event hook Add
-type NotifyFunc func(ctx context.Context, message *sdk.EventHookMessage) error
+type NotifyFunc func(ctx context.Context, message *sdk.EventHookMessage) (uuid.UUID, error)
 
 const eventsQueueName = string(messaging.QueueNameEvents)
 
@@ -30,7 +30,7 @@ const eventsQueueName = string(messaging.QueueNameEvents)
 // queue for adding hook messages to be published
 type Service interface {
 	// adds a message to the hooks queue
-	Notify(ctx context.Context, message *sdk.EventHookMessage) error
+	Notify(ctx context.Context, message *sdk.EventHookMessage) (uuid.UUID, error)
 }
 
 type service struct {
@@ -39,15 +39,25 @@ type service struct {
 }
 
 // notification
-func (q *service) Notify(ctx context.Context, message *sdk.EventHookMessage) error {
+func (q *service) Notify(ctx context.Context, message *sdk.EventHookMessage) (uuid.UUID, error) {
 	if message == nil {
-		return errors.New("message is nil")
+		return uuid.Nil, errors.New("message is nil")
+	}
+
+	id := uuid.New()
+
+	if message != nil {
+		if message.Id == uuid.Nil {
+			message.Id = id
+		} else {
+			id = message.Id
+		}
 	}
 
 	results, err := q.sender.Send(ctx, q.queueName, message)
 	if err != nil {
 		log.Errorf("Error attempting toadd event message to queue [%s]: %v", q.queueName, err)
-		return err
+		return uuid.Nil, err
 	} else {
 		log.Tracef("EventHook message sent [%s]", message.Id)
 	}
@@ -55,25 +65,18 @@ func (q *service) Notify(ctx context.Context, message *sdk.EventHookMessage) err
 		for _, result := range results {
 			if result.Error != nil {
 				log.Errorf("Error sending event message: %v", result.Error)
-				return result.Error
+				return uuid.Nil, result.Error
 			}
 		}
 	}
-	return nil
+	return id, nil
 }
 
 // enqueues a message to the event hooks service
-func Notify(ctx context.Context, message *sdk.EventHookMessage) error {
+func Notify(ctx context.Context, message *sdk.EventHookMessage) (uuid.UUID, error) {
 	if instance == nil {
-		return errors.New("hook queue not configured. call Configure() first")
+		return uuid.Nil, errors.New("hook queue not configured. call Configure() first")
 	}
-
-	if message != nil {
-		if message.Id == uuid.Nil {
-			message.Id = uuid.New()
-		}
-	}
-
 	return instance.Notify(ctx, message)
 }
 
