@@ -46,6 +46,7 @@ func (*appendOnlyFileAuditLog) write(entry any, file *os.File) error {
 	if err != nil {
 		return err
 	}
+	file.Write([]byte("\n"))
 	return nil
 }
 
