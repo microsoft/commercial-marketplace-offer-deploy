@@ -44,6 +44,7 @@ func (o *InvokedOperation) IsExecutable() ([]string, bool) {
 	if isRunning {
 		reasons = append(reasons, "operation is already running")
 	}
+
 	attemptsExceeded := o.AttemptsExceeded()
 	if attemptsExceeded {
 		reasons = append(reasons, fmt.Sprintf("operation has exceeded the maximum number of attempts (%d)", o.Retries))
@@ -65,21 +66,22 @@ func (o *InvokedOperation) IsScheduled() bool {
 }
 
 // increment the number of attempts and set the status to running
-func (o *InvokedOperation) Running() (error, bool) {
-	if o.IsRunning() { //already running, so do nothing
-		return nil, true
+// if it's in a state where it can be run.
+// return: returns true if status changed to running
+func (o *InvokedOperation) Running() bool {
+	if o.IsRunning() || o.AttemptsExceeded() { //already running, so do nothing
+		return false
+	}
+
+	if o.AttemptsExceeded() {
+		return false
 	}
 
 	o.incrementAttempts()
-
-	if o.AttemptsExceeded() {
-		return fmt.Errorf("cannot run operation, %d of %d attemps reached", +o.Attempts, o.Retries), false
-	}
-
 	o.Status = sdk.StatusRunning.String()
 	o.appendResult()
 
-	return nil, true
+	return true
 }
 
 func (o *InvokedOperation) LatestResult() *InvokedOperationResult {
@@ -136,11 +138,11 @@ func (o *InvokedOperation) AttemptsExceeded() bool {
 }
 
 func (o *InvokedOperation) IsRetry() bool {
-	return o.Attempts > 1
+	return !o.AttemptsExceeded() && o.Attempts > 1
 }
 
-func (io *InvokedOperation) IsRetriable() bool {
-	return !io.IsRunning() && !io.AttemptsExceeded()
+func (o *InvokedOperation) IsRetrying() bool {
+	return o.Status == string(sdk.StatusScheduled) && o.IsRetry()
 }
 
 // sets the status to failed for the operation and the latest attempt's result

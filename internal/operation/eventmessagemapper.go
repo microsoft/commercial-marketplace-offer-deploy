@@ -42,7 +42,7 @@ func getEventType(o *model.InvokedOperation) string {
 		verb = "Started"
 	} else if o.IsCompleted() {
 		verb = "Completed"
-	} else if o.IsRetriable() {
+	} else if o.IsRetry() {
 		verb = "Retried"
 	} else {
 		verb = "Completed"

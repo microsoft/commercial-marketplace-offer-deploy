@@ -65,9 +65,11 @@ func TestPublisherPublish(t *testing.T) {
 
 func getPublisher(url string) Publisher {
 	provider := newFakProvider(url)
-	publisher := NewEventHookPublisher(provider, NewRecorder(data.NewDatabase(&data.DatabaseOptions{
+	audit := NewAudit(data.NewDatabase(&data.DatabaseOptions{
 		UseInMemory: true,
-	}).Instance()))
+	}).Instance())
+
+	publisher := NewEventHookPublisher(provider, audit)
 	return publisher
 }
 

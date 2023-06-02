@@ -157,7 +157,7 @@ func (h *eventGridWebHook) add(ctx context.Context, messages []*sdk.EventHookMes
 	errors := []string{}
 	for _, message := range messages {
 		log.Debugf("Adding event hook message: %+v", message)
-		err := hook.Add(ctx, message)
+		err := hook.Notify(ctx, message)
 
 		if err != nil {
 			errors = append(errors, err.Error())

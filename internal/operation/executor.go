@@ -96,7 +96,7 @@ func WithLogging(operation OperationFunc) OperationFunc {
 	return func(context *ExecutionContext) error {
 		logger := log.WithFields(
 			log.Fields{
-				"context": context,
+				"operation": fmt.Sprintf("%+v", context.Operation()),
 			})
 		logger.Debug("Executing operation")
 		err := operation(context)

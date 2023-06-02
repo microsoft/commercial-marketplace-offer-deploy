@@ -22,12 +22,8 @@ func (o *Operation) Context() context.Context {
 }
 
 func (o *Operation) Running() error {
-	err, running := o.InvokedOperation.Running()
-
-	if err != nil {
-		return err
-	}
-	if !running {
+	changed := o.InvokedOperation.Running()
+	if changed {
 		return o.service.saveChanges(true)
 	}
 	return nil
@@ -59,14 +55,16 @@ func (o *Operation) Schedule() error {
 		return err
 	}
 
-	err = o.service.dispatch()
-	if err != nil {
-		return fmt.Errorf("failed to schedule operation: %v", err)
-	}
 	err = o.service.saveChanges(true)
 	if err != nil {
 		return fmt.Errorf("failed to save schedule changes for operation: %v", err)
 	}
+
+	err = o.service.dispatch()
+	if err != nil {
+		return fmt.Errorf("failed to schedule operation: %v", err)
+	}
+
 	return nil
 }
 
@@ -76,17 +74,11 @@ func (o *Operation) SaveChanges() error {
 
 // Attempts to trigger a retry of the operation, if the operation has a retriable state
 func (o *Operation) Retry() error {
-	if !o.InvokedOperation.IsRetriable() {
+	if !o.InvokedOperation.AttemptsExceeded() {
 		return nil
 	}
 
-	o.Schedule()
-
-	err := o.service.dispatch()
-	if err != nil {
-		return err
-	}
-	return nil
+	return o.Schedule()
 }
 
 // provides access to latest instance of associated deployment

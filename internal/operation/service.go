@@ -19,12 +19,12 @@ import (
 )
 
 type operationService struct {
-	ctx                 context.Context
-	db                  *gorm.DB
-	publishNotification hook.Notify
-	id                  uuid.UUID
-	sender              messaging.MessageSender
-	log                 *log.Entry
+	ctx    context.Context
+	db     *gorm.DB
+	notify hook.NotifyFunc
+	id     uuid.UUID
+	sender messaging.MessageSender
+	log    *log.Entry
 	// the reference of the operation
 	operation *Operation
 }
@@ -52,23 +52,29 @@ func (service *operationService) saveChanges(notify bool) error {
 
 	tx.Commit()
 
-	if notify {
-		service.notify() // if the notification failes, save still happened
-	}
-
 	if tx.Error != nil {
 		service.log.Errorf("saveChanges failed to commit transaction: %v", tx.Error)
 		tx.Rollback()
+		return tx.Error
 	}
 
-	return tx.Error
+	if notify {
+		snapshot := service.operation.InvokedOperation
+		go func() {
+			err := service.notification(snapshot) // if the notification fails, save still happened
+			if err != nil {
+				service.log.Errorf("notify failed: %v", err)
+			}
+		}()
+	}
+
+	return nil
 }
 
 // triggers a notification of the invoked operation's state
-func (service *operationService) notify() error {
-	message := service.getMessage()
-
-	err := service.publishNotification(service.Context(), message)
+func (service *operationService) notification(snapshot model.InvokedOperation) error {
+	message := service.getMessage(&snapshot)
+	err := service.notify(service.Context(), message)
 	if err != nil {
 		service.log.Errorf("failed to add event message: %v", err)
 		return err
@@ -146,8 +152,8 @@ func (service *operationService) withContext(ctx context.Context) {
 }
 
 // encapsulates the conversion of an invoked operation to an event hook message
-func (service *operationService) getMessage() *sdk.EventHookMessage {
-	return mapToMessage(&service.operation.InvokedOperation)
+func (service *operationService) getMessage(io *model.InvokedOperation) *sdk.EventHookMessage {
+	return mapToMessage(io)
 }
 
 func (service *operationService) deployment() *model.Deployment {
@@ -183,11 +189,11 @@ func newOperationService(appConfig *config.AppConfig) (*operationService, error)
 	ctx := context.Background()
 
 	return &operationService{
-		ctx:                 ctx,
-		db:                  data.NewDatabase(appConfig.GetDatabaseOptions()).Instance(),
-		sender:              sender,
-		publishNotification: hook.Add,
-		log:                 log.WithContext(ctx),
+		ctx:    ctx,
+		db:     data.NewDatabase(appConfig.GetDatabaseOptions()).Instance(),
+		sender: sender,
+		notify: hook.Notify,
+		log:    log.WithContext(ctx),
 	}, nil
 }
 

@@ -15,31 +15,31 @@ import (
 )
 
 var (
-	instance     Queue
+	instance     Service
 	instanceOnce sync.Once
 	instanceErr  error
 )
 
 // notify is the function signature for the event hook Add
-type Notify func(ctx context.Context, message *sdk.EventHookMessage) error
+type NotifyFunc func(ctx context.Context, message *sdk.EventHookMessage) error
 
 const eventsQueueName = string(messaging.QueueNameEvents)
 
 // This implementation is to make the semantics clear that this is the lifecycle of a hook message:
 // eventHookMessage --> added to queue --> received --> executed handler (events) --> publish the message using Publisher.Publish()
 // queue for adding hook messages to be published
-type Queue interface {
+type Service interface {
 	// adds a message to the hooks queue
-	Add(ctx context.Context, message *sdk.EventHookMessage) error
+	Notify(ctx context.Context, message *sdk.EventHookMessage) error
 }
 
-type queue struct {
+type service struct {
 	queueName string
 	sender    messaging.MessageSender
 }
 
-// Add implements Queue
-func (q *queue) Add(ctx context.Context, message *sdk.EventHookMessage) error {
+// notification
+func (q *service) Notify(ctx context.Context, message *sdk.EventHookMessage) error {
 	if message == nil {
 		return errors.New("message is nil")
 	}
@@ -63,7 +63,7 @@ func (q *queue) Add(ctx context.Context, message *sdk.EventHookMessage) error {
 }
 
 // enqueues a message to the event hooks service
-func Add(ctx context.Context, message *sdk.EventHookMessage) error {
+func Notify(ctx context.Context, message *sdk.EventHookMessage) error {
 	if instance == nil {
 		return errors.New("hook queue not configured. call Configure() first")
 	}
@@ -74,7 +74,7 @@ func Add(ctx context.Context, message *sdk.EventHookMessage) error {
 		}
 	}
 
-	return instance.Add(ctx, message)
+	return instance.Notify(ctx, message)
 }
 
 func Configure(appConfig *config.AppConfig) error {
@@ -96,17 +96,17 @@ func Configure(appConfig *config.AppConfig) error {
 			return
 		}
 
-		instance = NewEventHookQueue(sender)
+		instance = NewService(sender)
 	})
 	return instanceErr
 }
 
-func SetInstance(i Queue) {
+func SetInstance(i Service) {
 	instance = i
 }
 
-func NewEventHookQueue(messageSender messaging.MessageSender) Queue {
-	return &queue{
+func NewService(messageSender messaging.MessageSender) Service {
+	return &service{
 		queueName: eventsQueueName,
 		sender:    messageSender,
 	}
