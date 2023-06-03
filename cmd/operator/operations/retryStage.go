@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	log "github.com/sirupsen/logrus"
 )

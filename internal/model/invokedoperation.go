@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
@@ -28,13 +27,12 @@ type InvokedOperation struct {
 }
 
 type InvokedOperationResult struct {
-	Attempt        uint       `json:"attempt"`
-	Error          string     `json:"error"`
-	Value          any        `json:"value" gorm:"json"`
-	Status         string     `json:"status"`
-	StartedAt      time.Time  `json:"startedAt"`
-	CompletedAt    time.Time  `json:"completedAt"`
-	NotificationId *uuid.UUID `json:"notificationId" gorm:"type:uuid;"` // event hook message id
+	Attempt     uint      `json:"attempt"`
+	Error       string    `json:"error"`
+	Value       any       `json:"value" gorm:"json"`
+	Status      string    `json:"status"`
+	StartedAt   time.Time `json:"startedAt"`
+	CompletedAt time.Time `json:"completedAt"`
 }
 
 // can the operation be executed? if not, then reasons are returned

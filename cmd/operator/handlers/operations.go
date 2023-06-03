@@ -4,7 +4,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/operations"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	log "github.com/sirupsen/logrus"
 )
 

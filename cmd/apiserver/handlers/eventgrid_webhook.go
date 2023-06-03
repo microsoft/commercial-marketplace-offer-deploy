@@ -19,7 +19,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/diagnostics/audit"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/labstack/gommon/log"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
