@@ -16,12 +16,24 @@ services:
 
   modm:
     env_file: ../bin/.env.local
-    image: modm:latest
+    image: modmapi:latest
     volumes:
       - "${HOME}/.azure:/root/.azure"
       - "${HOME}/tmp:/tmp"
     ports:
       - 8080:8080
+    environment:
+      - GO_ENV=development
+      - MODM_PUBLIC_BASE_URL=${MODM_PUBLIC_BASE_URL}
+    networks:
+      - web
+  
+  modmoperator:
+    env_file: ../bin/.env
+    image: modmoperator:latest
+    volumes:
+      - "${HOME}/.azure:/root/.azure"
+      - "${HOME}/tmp:/tmp"
     environment:
       - GO_ENV=development
       - MODM_PUBLIC_BASE_URL=${MODM_PUBLIC_BASE_URL}

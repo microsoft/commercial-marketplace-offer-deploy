@@ -22,6 +22,7 @@ type Deployer interface {
 	Wait(ctx context.Context, resumeToken *ResumeToken) (*AzureDeploymentResult, error)
 
 	Redeploy(ctx context.Context, d AzureRedeployment) (*AzureDeploymentResult, error)
+	Cancel(ctx context.Context, d AzureCancelDeployment) (*AzureCancelDeploymentResult, error)
 
 	// gets the template type the deployer is set to
 	Type() DeploymentType

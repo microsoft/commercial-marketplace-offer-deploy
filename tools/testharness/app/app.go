@@ -25,5 +25,6 @@ func AddRoutes(e *echo.Echo) {
 	e.GET("/createeventhook", CreateEventHook)
 	e.GET("/dryrun/:deploymentId", DryRun)
 	e.GET("/redeploy/:deploymentId/:stageName", Redeploy)
+	e.GET("/cancel/:deploymentId", Cancel)
 	e.POST("/webhook", ReceiveEventHook)
 }

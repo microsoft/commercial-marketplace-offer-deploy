@@ -35,6 +35,19 @@ func (deployer *ArmDeployer) getParamsMapFromTemplate(template map[string]interf
 	return paramValues
 }
 
+func (deployer *ArmDeployer) Cancel(ctx context.Context, acd AzureCancelDeployment) (*AzureCancelDeploymentResult, error) {
+	log.Trace("Beginning Azure deployment cancellation")
+
+	_, err := deployer.client.Cancel(ctx, acd.ResourceGroupName, acd.DeploymentName, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return &AzureCancelDeploymentResult{
+		CancelSubmitted: true,
+	}, nil
+}
+
 func (deployer *ArmDeployer) Redeploy(ctx context.Context, ad AzureRedeployment) (*AzureDeploymentResult, error) {
 	b, err := json.MarshalIndent(ad, "", "  ")
 	if err != nil {
