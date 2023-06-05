@@ -4,8 +4,12 @@ import (
 	"errors"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 )
+
+const deploymentResourceTypeName = "Microsoft.Resources/deployments"
 
 type AzureTemplate map[string]interface{}
 type AzureTemplateParameters map[string]interface{}
@@ -20,6 +24,7 @@ type AzureDeployment struct {
 	Params            AzureTemplateParameters `json:"templateParams"`
 	Tags              map[string]*string      `json:"tags"`
 	ResumeToken       string                  `json:"resumeToken"`
+	OperationId       uuid.UUID               `json:"operationId"` //the modm operationId that triggered the deployment
 }
 
 func (ad *AzureDeployment) logger() *log.Entry {
@@ -28,6 +33,33 @@ func (ad *AzureDeployment) logger() *log.Entry {
 		"resourceGroupName": ad.ResourceGroupName,
 		"deploymentName":    ad.DeploymentName,
 	})
+}
+
+// gets the template
+func (ad *AzureDeployment) GetTemplate() map[string]interface{} {
+	if ad.Template == nil {
+		return nil
+	}
+	operationIdKey := string(LookupTagKeyOperationId)
+	template := ad.Template
+
+	// set the operationId on every nested template at level 1 of the parent template
+	if resourcesEntry, ok := template["resources"]; ok {
+		if resourcesMap, ok := resourcesEntry.(map[string]any); ok {
+			if len(resourcesMap) > 0 {
+				for _, resourceEntry := range resourcesMap {
+					if resourceMap, ok := resourceEntry.(map[string]any); ok {
+						if isDeploymentResourceType(resourceMap) {
+							if tagsMap, ok := resourceMap["tags"].(map[string]*string); ok {
+								tagsMap[operationIdKey] = to.Ptr(ad.OperationId.String())
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return template //return the modified copy
 }
 
 func (ad *AzureDeployment) GetParameters() map[string]interface{} {
@@ -81,14 +113,14 @@ type AzureDeploymentResult struct {
 }
 
 type AzureCancelDeployment struct {
-	SubscriptionId    string             `json:"subscriptionId"`
-	Location          string             `json:"location"`
-	ResourceGroupName string             `json:"resourceGroupName"`
-	DeploymentName    string             `json:"deploymentName"`
+	SubscriptionId    string `json:"subscriptionId"`
+	Location          string `json:"location"`
+	ResourceGroupName string `json:"resourceGroupName"`
+	DeploymentName    string `json:"deploymentName"`
 }
 
 type AzureCancelDeploymentResult struct {
-	CancelSubmitted   bool 				 `json:"cancelSubmitted"`
+	CancelSubmitted bool `json:"cancelSubmitted"`
 }
 
 type BeginAzureDeploymentResult struct {
@@ -100,4 +132,16 @@ type BeginAzureDeploymentResult struct {
 type ResumeToken struct {
 	SubscriptionId string `json:"subscriptionId" mapstructure:"subscriptionId"`
 	Value          string `json:"value" mapstructure:"value"`
+}
+
+func isDeploymentResourceType(resourceMap map[string]any) bool {
+	if resourceMap == nil {
+		return false
+	}
+	if typeEntry, ok := resourceMap["type"]; ok {
+		if typeValue, ok := typeEntry.(string); ok {
+			return typeValue == deploymentResourceTypeName
+		}
+	}
+	return false
 }

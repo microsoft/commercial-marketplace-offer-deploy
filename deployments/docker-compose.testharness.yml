@@ -29,7 +29,7 @@ services:
       - web
   
   modmoperator:
-    env_file: ../bin/.env
+    env_file: ../bin/.env.local
     image: modmoperator:latest
     volumes:
       - "${HOME}/.azure:/root/.azure"

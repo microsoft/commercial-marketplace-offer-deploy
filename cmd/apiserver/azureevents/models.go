@@ -90,7 +90,10 @@ func (r *ResourceEventSubject) CorrelationID() string {
 }
 
 func (r *ResourceEventSubject) Tags() map[string]*string {
-	return r.azureDeployment.Tags
+	if r.azureResource == nil {
+		return map[string]*string{}
+	}
+	return r.azureResource.Tags
 }
 
 func (r *ResourceEventSubject) LookupTags() deployment.LookupTags {
