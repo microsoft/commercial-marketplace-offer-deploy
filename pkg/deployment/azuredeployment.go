@@ -4,7 +4,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 )
@@ -45,13 +44,15 @@ func (ad *AzureDeployment) GetTemplate() map[string]interface{} {
 
 	// set the operationId on every nested template at level 1 of the parent template
 	if resourcesEntry, ok := template["resources"]; ok {
-		if resourcesMap, ok := resourcesEntry.(map[string]any); ok {
-			if len(resourcesMap) > 0 {
-				for _, resourceEntry := range resourcesMap {
+		if resources, ok := resourcesEntry.([]any); ok {
+			if len(resources) > 0 {
+				for _, resourceEntry := range resources {
 					if resourceMap, ok := resourceEntry.(map[string]any); ok {
 						if isDeploymentResourceType(resourceMap) {
-							if tagsMap, ok := resourceMap["tags"].(map[string]*string); ok {
-								tagsMap[operationIdKey] = to.Ptr(ad.OperationId.String())
+							if tagsEntry, ok := resourceMap["tags"]; ok {
+								if tagsMap, ok := tagsEntry.(map[string]any); ok {
+									tagsMap[operationIdKey] = ad.OperationId.String()
+								}
 							}
 						}
 					}
