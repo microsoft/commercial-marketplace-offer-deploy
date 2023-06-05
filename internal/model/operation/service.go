@@ -10,6 +10,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/mapper"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
@@ -153,7 +154,7 @@ func (service *operationService) withContext(ctx context.Context) {
 
 // encapsulates the conversion of an invoked operation to an event hook message
 func (service *operationService) getMessage(io *model.InvokedOperation) *sdk.EventHookMessage {
-	return mapToMessage(io)
+	return mapper.MapInvokedOperation(io)
 }
 
 func (service *operationService) deployment() *model.Deployment {

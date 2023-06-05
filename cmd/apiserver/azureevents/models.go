@@ -9,7 +9,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/google/uuid"
-	"github.com/iancoleman/strcase"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
@@ -49,6 +49,8 @@ type ResourceEventSubject struct {
 	// the azure deployment resource instance
 	azureDeployment *armresources.DeploymentExtended
 
+	operation *operation.Operation
+
 	// the lookup tags for the resource
 	tags deployment.LookupTags
 }
@@ -71,6 +73,15 @@ func NewResourceEventSubject(eventData *ResourceEventData, eventMessage *eventgr
 // region public methods
 func (r *ResourceEventSubject) Resource() *armresources.GenericResource {
 	return r.azureResource
+}
+
+// the associated operation that this event is related to
+//
+//	remarks:
+//		- for example, this would be the "deploy" operation for a deployment
+//		- the resource could still be the Stage but the parent would be the deployment
+func (r *ResourceEventSubject) Operation() *operation.Operation {
+	return r.operation
 }
 
 func (r *ResourceEventSubject) AzureDeployment() *armresources.DeploymentExtended {
@@ -105,21 +116,21 @@ func (r *ResourceEventSubject) SetLookupTags(tags deployment.LookupTags) {
 }
 
 // whether the subject of the event is an azure deployment resource
-func (r *ResourceEventSubject) IsAzureDeployment() bool {
+func (r *ResourceEventSubject) IsResourceTypeDeployment() bool {
 	if r.azureResource == nil || r.azureResource.Type == nil || *r.azureResource.Type == "" {
 		return false
 	}
 	return *r.azureResource.Type == azureDeploymentResourceType
 }
 
-func (r *ResourceEventSubject) IsDeployment() bool {
+func (r *ResourceEventSubject) IsAzureDeployment() bool {
 	return r.azureDeployment != nil
 }
 
 //endregion public methods
 
 func (r *ResourceEventSubject) DeploymentId() (*int, error) {
-	if !r.IsDeployment() {
+	if !r.IsAzureDeployment() {
 		return nil, errors.New("resource is not a deployment")
 	}
 
@@ -140,14 +151,14 @@ func (r *ResourceEventSubject) DeploymentId() (*int, error) {
 }
 
 func (r *ResourceEventSubject) IsParentDeployment() bool {
-	if !r.IsDeployment() {
+	if !r.IsAzureDeployment() {
 		return false
 	}
 	return strings.HasPrefix(*r.azureResource.Name, deployment.LookupPrefix)
 }
 
 func (r *ResourceEventSubject) IsStage() bool {
-	if !r.IsDeployment() || r.IsParentDeployment() {
+	if !r.IsAzureDeployment() || r.IsParentDeployment() {
 		return false
 	}
 	return true
@@ -158,29 +169,49 @@ func (r *ResourceEventSubject) IsFailedStage() bool {
 }
 
 // get the modm id of the deployment object, which is the stage id
-func (r *ResourceEventSubject) StageId() (uuid.UUID, error) {
+func (r *ResourceEventSubject) StageId() (*uuid.UUID, error) {
 	if r.IsStage() {
 		if value, ok := r.azureDeployment.Tags[string(deployment.LookupTagKeyId)]; ok {
 			if value != nil && *value != "" {
 				id, err := uuid.Parse(*value)
 				if err == nil {
-					return id, nil
+					return &id, nil
 				}
 			}
 		}
 	}
-	return uuid.Nil, errors.New("resource is not a stage")
+	return nil, errors.New("resource is not a stage")
 }
 
 func (r *ResourceEventSubject) GetStatus() string {
 	eventType := *r.Message.EventType
+	status := sdk.StatusSuccess.String()
 
-	switch eventType {
-	case azureEventTypeResourceWriteFailure:
-		return sdk.StatusFailed.String()
-	case azureEventTypeResourceWriteSuccess:
-		return sdk.StatusSuccess.String()
-	default:
-		return strcase.ToCamel(eventType)
+	if strings.Contains(eventType, "Failure") {
+		status = sdk.StatusFailed.String()
 	}
+	return status
+}
+
+func (r *ResourceEventSubject) GetType() string {
+	if !r.IsAzureDeployment() {
+		// for anything we receive that isn't a deployment resource, we default to generic event type
+		return string(sdk.EventTypeDeploymentEventReceived)
+	}
+
+	//default to deployment event
+	prefix := "deployment"
+	suffix := "Completed"
+
+	if r.IsStage() {
+		prefix = "stage"
+	}
+
+	operation := r.Operation()
+	if operation != nil {
+		if operation.IsRetry() {
+			suffix = "Retried"
+		}
+	}
+	return prefix + suffix
 }

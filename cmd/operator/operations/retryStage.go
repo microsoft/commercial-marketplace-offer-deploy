@@ -63,6 +63,7 @@ func (op *retryStageOperation) mapToAzureRedeployment(operation *operation.Opera
 		Location:          dep.Location,
 		ResourceGroupName: dep.ResourceGroup,
 		DeploymentName:    stage.AzureDeploymentName,
+		OperationId:       operation.ID,
 		Tags: map[string]*string{
 			string(deployment.LookupTagKeyStageId):     to.Ptr(stage.ID.String()),
 			string(deployment.LookupTagKeyOperationId): to.Ptr(operation.ID.String()),

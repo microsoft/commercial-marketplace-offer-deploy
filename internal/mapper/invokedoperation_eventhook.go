@@ -1,4 +1,4 @@
-package operation
+package mapper
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 
 // performs mapping of the invoked operation to the correct event hook message
 
-func mapToMessage(invokedOperation *model.InvokedOperation) *sdk.EventHookMessage {
+func MapInvokedOperation(invokedOperation *model.InvokedOperation) *sdk.EventHookMessage {
 	message := &sdk.EventHookMessage{
 		Status: invokedOperation.Status,
 		Type:   getEventType(invokedOperation),
@@ -113,6 +113,7 @@ func getDeploymentData(invokedOperation *model.InvokedOperation) any {
 		deploymentData := &sdk.DeploymentEventData{
 			DeploymentId: int(invokedOperation.DeploymentId),
 			OperationId:  invokedOperation.ID,
+			StartedAt:    invokedOperation.CreatedAt.UTC(),
 		}
 
 		if invokedOperation.IsRetry() {
@@ -123,6 +124,10 @@ func getDeploymentData(invokedOperation *model.InvokedOperation) any {
 
 		if len(invokedOperation.LatestResult().Error) > 0 {
 			deploymentData.Message = fmt.Sprintf("%s. Error: %s", deploymentData.Message, invokedOperation.LatestResult().Error)
+		}
+
+		if invokedOperation.IsCompleted() {
+			deploymentData.CompletedAt = invokedOperation.UpdatedAt.UTC()
 		}
 
 		data = deploymentData

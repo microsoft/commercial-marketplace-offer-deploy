@@ -43,6 +43,8 @@ func Test_InvokedOperation_MarkRunning_Increments_Attempts(t *testing.T) {
 	op.Running()
 	assert.Equal(t, uint(1), op.Attempts)
 	assert.Len(t, op.Results, 1)
+	_, ok := op.Results[uint(1)]
+	assert.Equal(t, true, ok)
 }
 
 //endregion running

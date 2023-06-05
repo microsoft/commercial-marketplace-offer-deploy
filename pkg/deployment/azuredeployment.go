@@ -101,6 +101,7 @@ type AzureRedeployment struct {
 	ResourceGroupName string             `json:"resourceGroupName"`
 	DeploymentName    string             `json:"deploymentName"`
 	Tags              map[string]*string `json:"tags"`
+	OperationId       uuid.UUID          `json:"operationId"` //the modm operationId that triggered the deployment
 }
 
 type AzureDeploymentResult struct {

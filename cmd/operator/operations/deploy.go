@@ -71,6 +71,7 @@ func (op *deployeOperation) mapAzureDeployment(invokedOperation *operation.Opera
 		DeploymentName:    d.GetAzureDeploymentName(),
 		Template:          d.Template,
 		Params:            invokedOperation.Parameters,
+		OperationId:       invokedOperation.ID,
 		Tags: map[string]*string{
 			string(deployment.LookupTagKeyDeploymentId): to.Ptr(strconv.Itoa(int(invokedOperation.DeploymentId))),
 			string(deployment.LookupTagKeyOperationId):  to.Ptr(invokedOperation.ID.String()),

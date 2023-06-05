@@ -2,10 +2,14 @@ package azureevents
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
+	"github.com/google/uuid"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/structure"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -18,12 +22,14 @@ type ResourceEventSubjectFactory interface {
 }
 
 type factory struct {
-	resourceClient AzureResourceClient
+	resourceClient      AzureResourceClient
+	operationRepository operation.Repository
 }
 
-func NewResourceEventSubjectFactory(resourceClient AzureResourceClient) ResourceEventSubjectFactory {
+func NewResourceEventSubjectFactory(resourceClient AzureResourceClient, operationRepository operation.Repository) ResourceEventSubjectFactory {
 	return &factory{
-		resourceClient: resourceClient,
+		resourceClient:      resourceClient,
+		operationRepository: operationRepository,
 	}
 }
 
@@ -44,7 +50,18 @@ func (m *factory) Create(ctx context.Context, events []*eventgrid.Event) []*Reso
 			} else {
 				subject.azureDeployment = azureDeployment
 			}
-			// we now have the ability here, to grab the operation --> then the deployment --> stage
+
+			operationId, err := m.getOperationId(subject)
+			if err != nil {
+				log.Warnf("error: %v", err)
+				continue
+			}
+			operation, err := m.operationRepository.First(operationId)
+			if err != nil {
+				log.Warnf("error: %v", err)
+				continue
+			}
+			subject.operation = operation
 		}
 
 		result = append(result, subject)
@@ -75,6 +92,19 @@ func (m *factory) newSubject(ctx context.Context, event *eventgrid.Event) (*Reso
 
 	subject, err := NewResourceEventSubject(eventData, event, azureResource)
 	return subject, err
+}
+
+func (m *factory) getOperationId(subject *ResourceEventSubject) (uuid.UUID, error) {
+	value, ok := subject.azureResource.Tags[string(deployment.LookupTagKeyOperationId)]
+	if ok && value != nil {
+		operationId, err := uuid.Parse(*value)
+		if err != nil {
+			return uuid.Nil, err
+		}
+		return operationId, nil
+	}
+
+	return uuid.Nil, errors.New("operationId not found")
 }
 
 func (m *factory) getEventData(event *eventgrid.Event) (*ResourceEventData, error) {

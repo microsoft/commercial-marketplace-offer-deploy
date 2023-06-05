@@ -73,6 +73,14 @@ func (o *InvokedOperation) IsScheduled() bool {
 	return o.Status == sdk.StatusScheduled.String()
 }
 
+func (o *InvokedOperation) CompletedAt() (*time.Time, error) {
+	if !o.IsCompleted() {
+		return nil, fmt.Errorf("operation is not completed")
+	}
+	completedAt := o.LatestResult().CompletedAt
+	return &completedAt, nil
+}
+
 // increment the number of attempts and set the status to running
 // if it's in a state where it can be run.
 // return: returns true if status changed to running
@@ -175,10 +183,12 @@ func (o *InvokedOperation) setStatus(status string) error {
 
 	o.Status = status // track the latest status
 
-	result := o.LatestResult()
-	result.Status = status
-	result.CompletedAt = time.Now().UTC()
-
+	//anything but schedule, update the results
+	if status != string(sdk.StatusScheduled) {
+		result := o.LatestResult()
+		result.Status = status
+		result.CompletedAt = time.Now().UTC()
+	}
 	return nil
 }
 

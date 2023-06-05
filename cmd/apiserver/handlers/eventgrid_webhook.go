@@ -84,7 +84,7 @@ func (h *eventGridWebHook) audit(events []*eventgrid.Event) {
 
 func (h *eventGridWebHook) handleFailedDeployment(ctx context.Context, resources []*azureevents.ResourceEventSubject) error {
 	for _, resource := range resources {
-		if !resource.IsDeployment() {
+		if !resource.IsAzureDeployment() {
 			continue
 		}
 
@@ -100,13 +100,13 @@ func (h *eventGridWebHook) handleFailedDeployment(ctx context.Context, resources
 
 			correlationId := resource.CorrelationID()
 
-			deployment, stage, err := h.stageQuery.Execute(stageId)
+			deployment, stage, err := h.stageQuery.Execute(*stageId)
 			if err != nil {
 				log.Errorf("Failed to get deployment and stage: %s", err.Error())
 				continue
 			}
 
-			invokedOperation, err := h.operationQuery.First(stageId, correlationId)
+			invokedOperation, err := h.operationQuery.First(*stageId, correlationId)
 			if err != nil {
 				log.Errorf("Failed to get invoked operation: %s", err.Error())
 				continue
@@ -188,7 +188,7 @@ func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.T
 			errors = append(errors, err.Error())
 		}
 
-		eventsFilter, err := newEventsFilter(appConfig.Azure.SubscriptionId, credential)
+		eventsFilter, err := newEventsFilter(appConfig, credential)
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
@@ -231,7 +231,7 @@ func newWebHookEventMessageFactory(subscriptionId string, db *gorm.DB, credentia
 	return eventhook.NewEventHookMessageFactory(client, db), nil
 }
 
-func newEventsFilter(subscriptionId string, credential azcore.TokenCredential) (filter.EventGridEventFilter, error) {
+func newEventsFilter(appConfig *config.AppConfig, credential azcore.TokenCredential) (filter.EventGridEventFilter, error) {
 	// TODO: probably should come from db as configurable at runtime
 	includeKeys := []string{
 		string(deployment.LookupTagKeyEvents),
@@ -239,12 +239,17 @@ func newEventsFilter(subscriptionId string, credential azcore.TokenCredential) (
 		string(deployment.LookupTagKeyName),
 		string(deployment.LookupTagKeyStageId),
 	}
-	resourceClient, err := filter.NewAzureResourceClient(subscriptionId, credential)
+	resourceClient, err := filter.NewAzureResourceClient(appConfig.Azure.SubscriptionId, credential)
 	if err != nil {
 		return nil, err
 	}
 
-	provider := filter.NewResourceEventSubjectFactory(resourceClient)
+	operationRepository, err := operation.NewRepository(appConfig, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	provider := filter.NewResourceEventSubjectFactory(resourceClient, operationRepository)
 	filter := filter.NewTagsFilter(includeKeys, provider)
 	return filter, nil
 }
