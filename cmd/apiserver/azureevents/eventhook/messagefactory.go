@@ -7,12 +7,11 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/google/uuid"
-	eg "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/azureevents"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/structure"
@@ -21,7 +20,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// this factory is intented to create a list of WebHookEventMessages from a list of EventGridEventResources
+// this factory is intented to create a list of WebHookEventMessages from a list of ResourceEventSubjects
 // so the messages can be relayed via queue to be published to MODM consumer webhook subscription
 type EventHookMessageFactory struct {
 	client    *armresources.DeploymentsClient
@@ -37,13 +36,13 @@ func NewEventHookMessageFactory(client *armresources.DeploymentsClient, db *gorm
 	}
 }
 
-// Creates a list of messages from a list of EventGridEventResource
-func (f *EventHookMessageFactory) Create(ctx context.Context, resources []*eg.EventGridEventResource) []*sdk.EventHookMessage {
+// Creates a list of messages from a list of ResourceEventSubject
+func (f *EventHookMessageFactory) Create(ctx context.Context, resources []*azureevents.ResourceEventSubject) []*sdk.EventHookMessage {
 	messages := []*sdk.EventHookMessage{}
 	for _, item := range resources {
 		message, err := f.convert(item)
 		if err != nil {
-			log.Errorf("failed to convert EventGridEventResource to WebHookEventMessage: %s", err.Error())
+			log.Errorf("failed to convert ResourceEventSubject to WebHookEventMessage: %s", err.Error())
 			continue
 		}
 
@@ -55,8 +54,8 @@ func (f *EventHookMessageFactory) Create(ctx context.Context, resources []*eg.Ev
 
 //region private methods
 
-// converts an EventGridEventResource to a WebHookEventMessage so it can be relayed via queue to be published to MODM consumer hook registration
-func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*sdk.EventHookMessage, error) {
+// converts an ResourceEventSubject to a WebHookEventMessage so it can be relayed via queue to be published to MODM consumer hook registration
+func (f *EventHookMessageFactory) convert(item *azureevents.ResourceEventSubject) (*sdk.EventHookMessage, error) {
 	deployment, err := f.getRelatedDeployment(item)
 	if err != nil {
 		return nil, err
@@ -67,7 +66,7 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*sdk
 		return nil, err
 	}
 
-	eventData := eg.ResourceEventData{}
+	eventData := azureevents.ResourceEventData{}
 	structure.Decode(item.Message.Data, &eventData)
 
 	// get related operation
@@ -88,22 +87,24 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*sdk
 	message := &sdk.EventHookMessage{
 		Id:     messageId,
 		Status: item.GetStatus(),
-		Type:   f.getEventHookType(*item.Resource.Name, deployment),
+		Type:   f.getEventHookType(*item.Resource().Name, deployment),
 		Data:   data,
 	}
 
 	// if this is a stage completed event, we need to set the stageId
 	if message.Type == string(sdk.EventTypeStageCompleted) {
 		for _, stage := range deployment.Stages {
-			if *item.Resource.Name == stage.AzureDeploymentName {
+			if *item.Resource().Name == stage.AzureDeploymentName {
 				data.StageId = to.Ptr(stage.ID)
 			}
 		}
 	}
 
 	var stageId uuid.UUID
-	if item.Tags[d.LookupTagKeyStageId] != nil {
-		value := *item.Tags[d.LookupTagKeyStageId]
+	lookupTags := item.LookupTags()
+
+	if lookupTags[d.LookupTagKeyStageId] != nil {
+		value := *lookupTags[d.LookupTagKeyStageId]
 		stageId, _ = uuid.Parse(value)
 	}
 	message.SetSubject(deployment.ID, &stageId)
@@ -115,15 +116,12 @@ func (f *EventHookMessageFactory) convert(item *eg.EventGridEventResource) (*sdk
 //
 //	remarks: the correlationId cannot be used to lookup the stage, since the stage will be a child deployment of the parent, and its correlationId still related to the parent
 //			 that started the deployment
-func (f *EventHookMessageFactory) getRelatedDeployment(item *eg.EventGridEventResource) (*model.Deployment, error) {
-	eventData := eg.ResourceEventData{}
+func (f *EventHookMessageFactory) getRelatedDeployment(item *azureevents.ResourceEventSubject) (*model.Deployment, error) {
+	eventData := azureevents.ResourceEventData{}
 	structure.Decode(item.Message.Data, &eventData)
 
 	correlationId := eventData.CorrelationID
-	resourceId, err := arm.ParseResourceID(*item.Resource.ID)
-	if err != nil {
-		return nil, err
-	}
+	resourceId := item.ResourceID()
 
 	pager := f.client.NewListByResourceGroupPager(resourceId.ResourceGroupName, nil)
 	deploymentId, err := f.lookupDeploymentId(context.Background(), correlationId, pager)

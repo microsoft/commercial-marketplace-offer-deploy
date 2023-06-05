@@ -11,9 +11,9 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
 	"github.com/labstack/echo/v4"
-	eg "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventhook"
-	filter "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventsfiltering"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/azureevents"
+	filter "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/azureevents"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/azureevents/eventhook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/diagnostics/audit"
@@ -82,14 +82,14 @@ func (h *eventGridWebHook) audit(events []*eventgrid.Event) {
 	}
 }
 
-func (h *eventGridWebHook) handleFailedDeployment(ctx context.Context, resources eg.EventGridEventResources) error {
+func (h *eventGridWebHook) handleFailedDeployment(ctx context.Context, resources []*azureevents.ResourceEventSubject) error {
 	for _, resource := range resources {
 		if !resource.IsDeployment() {
 			continue
 		}
 
 		if resource.IsFailedStage() {
-			log.Debugf("Handling failed stage: %v", resource.Deployment)
+			log.Debugf("Handling failed stage: %v", resource.AzureDeployment())
 			stageId, err := resource.StageId()
 			if err != nil {
 				log.Errorf("Failed to get stage id: %s", err.Error())
@@ -98,11 +98,7 @@ func (h *eventGridWebHook) handleFailedDeployment(ctx context.Context, resources
 
 			log.Debugf("Handling stageId: %v", stageId)
 
-			correlationId, err := resource.CorrelationID()
-			if err != nil {
-				log.Errorf("Failed to get correlation id: %s", err.Error())
-				continue
-			}
+			correlationId := resource.CorrelationID()
 
 			deployment, stage, err := h.stageQuery.Execute(stageId)
 			if err != nil {
@@ -110,7 +106,7 @@ func (h *eventGridWebHook) handleFailedDeployment(ctx context.Context, resources
 				continue
 			}
 
-			invokedOperation, err := h.operationQuery.First(stageId, *correlationId)
+			invokedOperation, err := h.operationQuery.First(stageId, correlationId)
 			if err != nil {
 				log.Errorf("Failed to get invoked operation: %s", err.Error())
 				continue
@@ -128,7 +124,7 @@ func (h *eventGridWebHook) handleFailedDeployment(ctx context.Context, resources
 				operation, err = h.operationRepository.New(sdk.OperationRetryStage, func(i *model.InvokedOperation) error {
 					i.Parameters = make(map[string]any)
 					i.Parameters[string(model.ParameterKeyStageId)] = stageId
-					i.Attribute(model.AttributeKeyCorrelationId, *correlationId)
+					i.Attribute(model.AttributeKeyCorrelationId, correlationId)
 					i.Retries = uint(stage.Retries)
 					i.DeploymentId = deployment.ID
 					return nil
@@ -148,7 +144,7 @@ func (h *eventGridWebHook) handleFailedDeployment(ctx context.Context, resources
 	return nil
 }
 
-func (h *eventGridWebHook) sendEventHookMessages(ctx context.Context, resources eg.EventGridEventResources) error {
+func (h *eventGridWebHook) sendEventHookMessages(ctx context.Context, resources []*azureevents.ResourceEventSubject) error {
 	messages := h.messageFactory.Create(ctx, resources)
 	log.Debugf("Event Hook messages total: %d", len(messages))
 
@@ -248,7 +244,7 @@ func newEventsFilter(subscriptionId string, credential azcore.TokenCredential) (
 		return nil, err
 	}
 
-	provider := filter.NewEventGridEventResourceProvider(resourceClient)
+	provider := filter.NewResourceEventSubjectFactory(resourceClient)
 	filter := filter.NewTagsFilter(includeKeys, provider)
 	return filter, nil
 }

@@ -6,7 +6,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/labstack/echo/v4"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/subscriptionvalidation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/azureevents/subscriptionvalidation"
 )
 
 // EventGridSubscriptionValidationMiddleware is a middleware that validates the event grid subscription
