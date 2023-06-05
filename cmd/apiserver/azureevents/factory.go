@@ -44,13 +44,6 @@ func (m *factory) Create(ctx context.Context, events []*eventgrid.Event) []*Reso
 		}
 
 		if subject.IsAzureDeployment() {
-			azureDeployment, err := m.resourceClient.GetDeployment(ctx, subject.ResourceID())
-			if err != nil {
-				log.Warnf("error: %v", err)
-			} else {
-				subject.azureDeployment = azureDeployment
-			}
-
 			operationId, err := m.getOperationId(subject)
 			if err != nil {
 				log.Warnf("error: %v", err)
@@ -91,6 +84,17 @@ func (m *factory) newSubject(ctx context.Context, event *eventgrid.Event) (*Reso
 	}
 
 	subject, err := NewResourceEventSubject(eventData, event, azureResource)
+
+	if subject.IsResourceTypeDeployment() {
+		log.Debugf("getting azure deployment for resource: %s", subject.ResourceID())
+		azureDeployment, err := m.resourceClient.GetDeployment(ctx, subject.ResourceID())
+		if err != nil {
+			log.Warnf("could not set azure deployment on event subject: %v", err)
+		} else {
+			subject.azureDeployment = azureDeployment
+		}
+	}
+
 	return subject, err
 }
 
