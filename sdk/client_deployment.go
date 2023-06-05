@@ -12,8 +12,8 @@ const DefaultRetries = 3
 
 // Performs a dry run of a deployment and returns the verification results
 // returns: verification results
-func (client *Client) DryRun(ctx context.Context, deploymentId int, templateParameters map[string]interface{}) (*InvokeDryRunResponse, error) {
-	retries := DefaultRetries
+func (client *Client) DryRun(ctx context.Context, deploymentId int, templateParameters map[string]interface{}, options *DryRunOptions) (*InvokeDryRunResponse, error) {
+	retries := options.Retries
 	response, err := client.invokeDeploymentOperation(ctx, true, OperationDryRun, deploymentId, templateParameters, retries)
 	if err != nil {
 		return nil, err
@@ -43,6 +43,18 @@ func (client *Client) Start(ctx context.Context, deploymentId int, templateParam
 	return &StartDeploymentResponse{
 		Id:     uuid.MustParse(*response.ID),
 		Status: *response.Status,
+	}, nil
+}
+
+func (client *Client) Cancel(ctx context.Context, deploymentId int) (*CancelDeploymentResponse, error) {
+	retries := DefaultRetries
+	response, err := client.invokeDeploymentOperation(ctx, false, OperationCancel, deploymentId, nil, retries)
+	if err != nil {
+		return nil, err
+	}
+	return &CancelDeploymentResponse{
+		Id:     uuid.MustParse(*response.ID),
+		IsCancelled: true,
 	}, nil
 }
 

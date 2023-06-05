@@ -105,7 +105,7 @@ func (exe *dryRunOperation) getAzureDeployment(operation *operation.Operation) (
 
 //region factory
 
-func NewdryRunOperation() operation.OperationFunc {
+func NewDryRunOperation() operation.OperationFunc {
 	dryRunOperation := &dryRunOperation{
 		dryRun:     deployment.DryRun,
 		retryDelay: 5 * time.Second,
