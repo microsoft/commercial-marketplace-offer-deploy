@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
@@ -15,6 +16,7 @@ const DefaultNumberOfRetries = 3
 //		attributes - specify information about or that control the operation's use and behavior
 type InvokedOperation struct {
 	BaseWithGuidPrimaryKey
+	ParentID     *uuid.UUID                       `json:"parentId" gorm:"type:uuid"`
 	Name         string                           `json:"name"`
 	DeploymentId uint                             `json:"deploymentId"`
 	Attributes   []InvokedOperationAttribute      `json:"attributes"`
