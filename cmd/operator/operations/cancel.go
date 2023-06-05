@@ -1,12 +1,12 @@
 package operations
 
 import (
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 )
 
 type cancelOperation struct {
-	cancel     operation.OperationFunc
+	cancel operation.OperationFunc
 }
 
 func (op *cancelOperation) Do(context *operation.ExecutionContext) error {
@@ -16,7 +16,7 @@ func (op *cancelOperation) Do(context *operation.ExecutionContext) error {
 func (op *cancelOperation) do(context *operation.ExecutionContext) error {
 	azureCancelDeployment := op.mapToAzureCancel(context.Operation())
 	ctx := context.Context()
-	
+
 	deployer, err := op.newDeployer(azureCancelDeployment.SubscriptionId)
 	if err != nil {
 		return err
@@ -39,9 +39,9 @@ func (op *cancelOperation) newDeployer(subscriptionId string) (deployment.Deploy
 func (op *cancelOperation) mapToAzureCancel(invokedOperation *operation.Operation) deployment.AzureCancelDeployment {
 	d := invokedOperation.Deployment()
 	return deployment.AzureCancelDeployment{
-		SubscriptionId: 		d.SubscriptionId,
-		ResourceGroupName:  	d.ResourceGroup,
-		DeploymentName:      	d.GetAzureDeploymentName(),
+		SubscriptionId:    d.SubscriptionId,
+		ResourceGroupName: d.ResourceGroup,
+		DeploymentName:    d.GetAzureDeploymentName(),
 	}
 }
 
