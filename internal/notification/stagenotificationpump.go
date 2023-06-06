@@ -28,6 +28,7 @@ func (p *StageNotificationPump) Start() {
 				p.isRunning = false
 				return
 			default:
+				// do we want to read all unsent notifications at once to reduce db calls?
 				notification, ok := p.read()
 				if !ok {
 					time.Sleep(30 * time.Second)
