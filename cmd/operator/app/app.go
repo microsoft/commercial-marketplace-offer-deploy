@@ -51,8 +51,7 @@ func addMessageReceivers(builder *hosting.AppBuilder, appConfig *config.AppConfi
 
 func getStageNotificationService(appConfig *config.AppConfig) *notification.StageNotificationService {
 	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
-
-	pump := notification.NewStageNotificationPump()
+	pump := notification.NewStageNotificationPump(db, notification.SleepDurationPumpDefault)
 
 	handlerFactory := func() (*notification.StageNotificationHandler, error) {
 		credential := hosting.GetAzureCredential()
@@ -63,6 +62,7 @@ func getStageNotificationService(appConfig *config.AppConfig) *notification.Stag
 
 		return notification.NewStageNotificationHandler(db, client), nil
 	}
+
 	return notification.NewStageNotificationService(pump, handlerFactory)
 }
 

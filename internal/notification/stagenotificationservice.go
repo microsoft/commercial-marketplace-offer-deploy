@@ -27,7 +27,7 @@ func NewStageNotificationService(pump *StageNotificationPump, handlerFactory Sta
 
 // stub out hosting.Service interface on StageNotificationService
 func (s *StageNotificationService) Start() {
-	s.pump.Receive = s.receive
+	s.pump.SetReceiver(s.receive)
 	s.pump.Start()
 
 	go s.start()
