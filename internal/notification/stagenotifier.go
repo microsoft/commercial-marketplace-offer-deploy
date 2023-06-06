@@ -5,10 +5,12 @@ import (
 	"gorm.io/gorm"
 )
 
+// dispatch notifications for stages
 type StageNotifier interface {
 	Notify(notification *model.StageNotification) error
 }
 
+// default implementation of the stage notifier
 type stageNotifier struct {
 	db *gorm.DB
 }
