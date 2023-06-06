@@ -3,6 +3,8 @@ package log
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -26,14 +28,15 @@ type InsightsConfig struct {
 	Version string
 }
 
-func ConfigureLogging(config *LoggingOptions) {	
+func ConfigureLogging(config *LoggingOptions) {
 	logrus.SetOutput(os.Stdout)
 	logrus.SetReportCaller(true)
 
 	formatter := &logrus.TextFormatter{
-		FullTimestamp:   true,
-		TimestampFormat: "2006-01-02 15:04:05",
-		DisableQuote:    true,
+		FullTimestamp:    true,
+		TimestampFormat:  "2006-01-02 15:04:05",
+		DisableQuote:     true,
+		CallerPrettyfier: CallerFormattingFunc,
 	}
 	logrus.SetFormatter(formatter)
 
@@ -55,7 +58,7 @@ func ConfigureLogging(config *LoggingOptions) {
 	if len(config.FilePath) > 0 {
 		stacktraceHook := &StacktraceHook{
 			innerHook: &FileHook{
-				fileName: config.FilePath,
+				fileName:  config.FilePath,
 				Formatter: formatter,
 			},
 		}
@@ -64,18 +67,24 @@ func ConfigureLogging(config *LoggingOptions) {
 }
 
 func getLogorusLevel(level string) logrus.Level {
-    switch strings.ToLower(level) {
-    case "debug":
-        return logrus.DebugLevel
-    case "info":
-        return logrus.InfoLevel
-    case "warn":
-        return logrus.WarnLevel
-    case "error":
-        return logrus.ErrorLevel
+	switch strings.ToLower(level) {
+	case "debug":
+		return logrus.DebugLevel
+	case "info":
+		return logrus.InfoLevel
+	case "warn":
+		return logrus.WarnLevel
+	case "error":
+		return logrus.ErrorLevel
 	case "trace":
 		return logrus.TraceLevel
-    default:
-        return logrus.InfoLevel
-    }
+	default:
+		return logrus.InfoLevel
+	}
+}
+
+func CallerFormattingFunc(frame *runtime.Frame) (function string, file string) {
+	function = frame.Function
+	file = fmt.Sprintf("%s:%d", filepath.Base(frame.File), frame.Line)
+	return
 }
