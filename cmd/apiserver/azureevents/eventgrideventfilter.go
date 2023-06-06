@@ -1,11 +1,10 @@
-package eventsfiltering
+package azureevents
 
 import (
 	"context"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
-	eg "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid"
 	d "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	log "github.com/sirupsen/logrus"
 )
@@ -14,16 +13,16 @@ import (
 type EventGridEventFilter interface {
 	// filters the event grid events by matching ANY of the filter tags
 	// matchAny: at least 1 tag must match for the resource that the event grid event is for
-	Filter(ctx context.Context, matchAny d.LookupTags, events []*eventgrid.Event) eg.EventGridEventResources
+	Filter(ctx context.Context, matchAny d.LookupTags, events []*eventgrid.Event) []*ResourceEventSubject
 }
 
 // creates a new tag filter
 //
 //	tags: the tags that will be used to return results (not filter on)
-func NewTagsFilter(includeKeys []string, provider EventGridEventResourceProvider) EventGridEventFilter {
+func NewTagsFilter(includeKeys []string, provider ResourceEventSubjectFactory) EventGridEventFilter {
 	return &tagsFilter{
 		includeKeys: includeKeys,
-		provider:    provider,
+		factory:     provider,
 	}
 }
 
@@ -31,17 +30,17 @@ func NewTagsFilter(includeKeys []string, provider EventGridEventResourceProvider
 type tagsFilter struct {
 	//search for keys that will cause the filter results to include these tags by key
 	includeKeys []string
-	provider    EventGridEventResourceProvider
+	factory     ResourceEventSubjectFactory
 }
 
 // Filter implements ResourceFilter
-func (f *tagsFilter) Filter(ctx context.Context, matchAny d.LookupTags, events []*eventgrid.Event) eg.EventGridEventResources {
-	mappedItems := f.provider.Get(ctx, events)
-	items := []*eg.EventGridEventResource{}
+func (f *tagsFilter) Filter(ctx context.Context, matchAny d.LookupTags, events []*eventgrid.Event) []*ResourceEventSubject {
+	mappedItems := f.factory.Create(ctx, events)
+	items := []*ResourceEventSubject{}
 
 	for _, item := range mappedItems {
-		if matches, ok := f.match(matchAny, item.Resource.Tags); ok {
-			item.Tags = matches
+		if matches, ok := f.match(matchAny, item.Tags()); ok {
+			item.SetLookupTags(matches)
 			items = append(items, item)
 		}
 

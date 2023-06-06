@@ -79,6 +79,8 @@ type DeploymentEventData struct {
 	CorrelationId *uuid.UUID `json:"correlationId,omitempty" mapstructure:"correlationId"`
 	Attempts      int        `json:"attempts,omitempty" mapstructure:"attempts"`
 	Message       string     `json:"message,omitempty" mapstructure:"message"`
+	StartedAt     time.Time  `json:"startedAt,omitempty" mapstructure:"startedAt"`
+	CompletedAt   time.Time  `json:"completedAt,omitempty" mapstructure:"completedAt"`
 }
 
 func (m *EventHookMessage) DeploymentId() (uint, error) {

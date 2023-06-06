@@ -1,4 +1,4 @@
-package operation
+package mapper
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 
 // performs mapping of the invoked operation to the correct event hook message
 
-func mapToMessage(invokedOperation *model.InvokedOperation) *sdk.EventHookMessage {
+func MapInvokedOperation(invokedOperation *model.InvokedOperation) *sdk.EventHookMessage {
 	message := &sdk.EventHookMessage{
 		Status: invokedOperation.Status,
 		Type:   getEventType(invokedOperation),
@@ -23,23 +23,32 @@ func mapToMessage(invokedOperation *model.InvokedOperation) *sdk.EventHookMessag
 	return message
 }
 
-func getEventType(invokedOperation *model.InvokedOperation) string {
-	eventType := ""
+func getEventType(o *model.InvokedOperation) string {
+	noun := ""
 
-	if invokedOperation.Name == sdk.OperationDeploy.String() {
-		eventType = string(sdk.EventTypeDeploymentCompleted)
-		if invokedOperation.Attempts > 1 {
-			eventType = string(sdk.EventTypeDeploymentRetried)
-		}
-	} else if invokedOperation.Name == sdk.OperationRetry.String() {
-		eventType = string(sdk.EventTypeDeploymentRetried)
-	} else if invokedOperation.Name == sdk.OperationDryRun.String() {
-		eventType = string(sdk.EventTypeDryRunCompleted)
-	} else if invokedOperation.Name == sdk.OperationRetryStage.String() {
-		return string(sdk.EventTypeStageRetried)
+	if o.Name == sdk.OperationDeploy.String() || o.Name == sdk.OperationRetry.String() {
+		noun = "deployment"
+	} else if o.Name == sdk.OperationDryRun.String() {
+		noun = "dryRun"
+	} else if o.Name == sdk.OperationRetryStage.String() {
+		noun = "stage"
 	}
 
-	return eventType
+	verb := ""
+
+	if o.IsScheduled() {
+		verb = "Scheduled"
+	} else if o.IsRunning() {
+		verb = "Started"
+	} else if o.IsCompleted() {
+		verb = "Completed"
+	} else if o.IsRetry() {
+		verb = "Retried"
+	} else {
+		verb = "Completed"
+	}
+
+	return noun + verb
 }
 
 func getEventData(invokedOperation *model.InvokedOperation) any {
@@ -104,6 +113,7 @@ func getDeploymentData(invokedOperation *model.InvokedOperation) any {
 		deploymentData := &sdk.DeploymentEventData{
 			DeploymentId: int(invokedOperation.DeploymentId),
 			OperationId:  invokedOperation.ID,
+			StartedAt:    invokedOperation.CreatedAt.UTC(),
 		}
 
 		if invokedOperation.IsRetry() {
@@ -114,6 +124,10 @@ func getDeploymentData(invokedOperation *model.InvokedOperation) any {
 
 		if len(invokedOperation.LatestResult().Error) > 0 {
 			deploymentData.Message = fmt.Sprintf("%s. Error: %s", deploymentData.Message, invokedOperation.LatestResult().Error)
+		}
+
+		if invokedOperation.IsCompleted() {
+			deploymentData.CompletedAt = invokedOperation.UpdatedAt.UTC()
 		}
 
 		data = deploymentData

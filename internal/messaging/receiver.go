@@ -91,6 +91,8 @@ func (r *serviceBusReceiver) Start() {
 					}
 					err = receiver.CompleteMessage(r.ctx, message, nil)
 					if err != nil {
+						log.Errorf("Error completing message: %v", err)
+
 						var sbErr *azservicebus.Error
 						if errors.As(err, &sbErr) && sbErr.Code == azservicebus.CodeLockLost {
 							// The message lock has expired. This isn't fatal for the client, but it does mean

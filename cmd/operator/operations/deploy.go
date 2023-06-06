@@ -5,7 +5,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 )
 
@@ -71,6 +71,7 @@ func (op *deployeOperation) mapAzureDeployment(invokedOperation *operation.Opera
 		DeploymentName:    d.GetAzureDeploymentName(),
 		Template:          d.Template,
 		Params:            invokedOperation.Parameters,
+		OperationId:       invokedOperation.ID,
 		Tags: map[string]*string{
 			string(deployment.LookupTagKeyDeploymentId): to.Ptr(strconv.Itoa(int(invokedOperation.DeploymentId))),
 			string(deployment.LookupTagKeyOperationId):  to.Ptr(invokedOperation.ID.String()),

@@ -36,7 +36,7 @@
         "mode": "Incremental",
         "parameters": {
           "name": {
-            "value": "bobjacbicepsa"
+            "value": "[parameters('testName')]"
           },
           "location": {
             "value": "[resourceGroup().location]"

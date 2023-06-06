@@ -1,4 +1,4 @@
-package eventsfiltering
+package azureevents
 
 import (
 	"context"

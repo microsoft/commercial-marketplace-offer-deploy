@@ -4,12 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/google/uuid"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/mapper"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
@@ -18,22 +15,22 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type operationService struct {
-	ctx                 context.Context
-	db                  *gorm.DB
-	publishNotification hook.Notify
-	id                  uuid.UUID
-	sender              messaging.MessageSender
-	log                 *log.Entry
+type OperationService struct {
+	ctx    context.Context
+	db     *gorm.DB
+	notify hook.NotifyFunc
+	id     uuid.UUID
+	sender messaging.MessageSender
+	log    *log.Entry
 	// the reference of the operation
 	operation *Operation
 }
 
-func (service *operationService) Context() context.Context {
+func (service *OperationService) Context() context.Context {
 	return service.ctx
 }
 
-func (service *operationService) saveChanges(notify bool) error {
+func (service *OperationService) saveChanges(notify bool) error {
 	tx := service.db.WithContext(service.ctx).Begin()
 
 	// could be an issue with starting the tx
@@ -52,31 +49,37 @@ func (service *operationService) saveChanges(notify bool) error {
 
 	tx.Commit()
 
-	if notify {
-		service.notify() // if the notification failes, save still happened
-	}
-
 	if tx.Error != nil {
 		service.log.Errorf("saveChanges failed to commit transaction: %v", tx.Error)
 		tx.Rollback()
+		return tx.Error
 	}
 
-	return tx.Error
-}
-
-// triggers a notification of the invoked operation's state
-func (service *operationService) notify() error {
-	message := service.getMessage()
-
-	err := service.publishNotification(service.Context(), message)
-	if err != nil {
-		service.log.Errorf("failed to add event message: %v", err)
-		return err
+	if notify {
+		snapshot := service.operation.InvokedOperation
+		id, err := service.publish(snapshot) // if the notification fails, save still happened
+		if err == nil {
+			service.log.Infof("notification published [%v]", id)
+			service.db.Save(service.operation.InvokedOperation)
+		}
 	}
+
 	return nil
 }
 
-func (service *operationService) dispatch() error {
+// triggers a notification of the invoked operation's state
+func (service *OperationService) publish(snapshot model.InvokedOperation) (uuid.UUID, error) {
+	message := service.getMessage(&snapshot)
+	notificationId, err := service.notify(service.Context(), message)
+	if err != nil {
+		service.log.Errorf("failed to publish event notification: %v", err)
+		return notificationId, err
+	}
+
+	return notificationId, nil
+}
+
+func (service *OperationService) dispatch() error {
 	message := messaging.ExecuteInvokedOperation{OperationId: service.id}
 
 	results, err := service.sender.Send(service.Context(), string(messaging.QueueNameOperations), message)
@@ -90,7 +93,7 @@ func (service *operationService) dispatch() error {
 	return nil
 }
 
-func (service *operationService) first() (*model.InvokedOperation, error) {
+func (service *OperationService) first() (*model.InvokedOperation, error) {
 	record := &model.InvokedOperation{}
 	result := service.db.Preload(clause.Associations).First(record, service.id)
 
@@ -104,7 +107,7 @@ func (service *operationService) first() (*model.InvokedOperation, error) {
 	return record, nil
 }
 
-func (service *operationService) new(i *model.InvokedOperation) (*model.InvokedOperation, error) {
+func (service *OperationService) new(i *model.InvokedOperation) (*model.InvokedOperation, error) {
 	tx := service.db.Begin()
 	result := tx.Create(i)
 	if result.Error != nil {
@@ -117,7 +120,7 @@ func (service *operationService) new(i *model.InvokedOperation) (*model.InvokedO
 
 // initializes and returns the single instance of InvokedOperation by the context's id
 // if the id is invalid and an instance cannot be found, returns an error
-func (service *operationService) initialize(id uuid.UUID) (*Operation, error) {
+func (service *OperationService) initialize(id uuid.UUID) (*Operation, error) {
 	service.id = id
 	service.log = service.log.WithFields(log.Fields{
 		"invokedOperationId": id,
@@ -140,17 +143,17 @@ func (service *operationService) initialize(id uuid.UUID) (*Operation, error) {
 	return service.operation, nil
 }
 
-func (service *operationService) withContext(ctx context.Context) {
+func (service *OperationService) withContext(ctx context.Context) {
 	service.ctx = ctx
 	service.log = service.log.WithContext(ctx)
 }
 
 // encapsulates the conversion of an invoked operation to an event hook message
-func (service *operationService) getMessage() *sdk.EventHookMessage {
-	return mapToMessage(&service.operation.InvokedOperation)
+func (service *OperationService) getMessage(io *model.InvokedOperation) *sdk.EventHookMessage {
+	return mapper.MapInvokedOperation(io)
 }
 
-func (service *operationService) deployment() *model.Deployment {
+func (service *OperationService) deployment() *model.Deployment {
 	deployment := &model.Deployment{}
 	result := service.db.First(deployment, service.operation.DeploymentId)
 
@@ -161,37 +164,15 @@ func (service *operationService) deployment() *model.Deployment {
 }
 
 // constructor factory of operation service
-func newOperationService(appConfig *config.AppConfig) (*operationService, error) {
-	credential, err := getAzureCredential()
-	if err != nil {
-		log.Errorf("Error creating Azure credential for hook.Queue: %v", err)
-		return nil, err
-	}
-
-	sender, err := messaging.NewServiceBusMessageSender(credential, messaging.MessageSenderOptions{
-		SubscriptionId:          appConfig.Azure.SubscriptionId,
-		Location:                appConfig.Azure.Location,
-		ResourceGroupName:       appConfig.Azure.ResourceGroupName,
-		FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
-	})
-
-	if err != nil {
-		log.Errorf("Error creating message sender: %v", err)
-		return nil, err
-	}
+func NewService(db *gorm.DB, sender messaging.MessageSender, notify hook.NotifyFunc) (*OperationService, error) {
 
 	ctx := context.Background()
 
-	return &operationService{
-		ctx:                 ctx,
-		db:                  data.NewDatabase(appConfig.GetDatabaseOptions()).Instance(),
-		sender:              sender,
-		publishNotification: hook.Add,
-		log:                 log.WithContext(ctx),
+	return &OperationService{
+		ctx:    ctx,
+		db:     db,
+		sender: sender,
+		notify: notify,
+		log:    log.WithContext(ctx),
 	}, nil
-}
-
-func getAzureCredential() (azcore.TokenCredential, error) {
-	credential, err := azidentity.NewDefaultAzureCredential(nil)
-	return credential, err
 }

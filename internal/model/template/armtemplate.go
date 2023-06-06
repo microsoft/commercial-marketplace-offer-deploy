@@ -1,4 +1,4 @@
-package mapper
+package template
 
 import (
 	"strconv"
@@ -10,37 +10,37 @@ import (
 const deploymentResourceTypeName = "Microsoft.Resources/deployments"
 const DefaultNoRetries = 0
 
-type armTemplateResource struct {
+type ArmTemplate struct {
+	Resources []ArmTemplateResource `mapstructure:"resources"`
+}
+
+type ArmTemplateResource struct {
 	Name string            `mapstructure:"name"`
 	Type string            `mapstructure:"type"`
 	Tags map[string]string `mapstructure:"tags"`
 }
 
-type armTemplate struct {
-	Resources []armTemplateResource `mapstructure:"resources"`
-}
-
-func (resource *armTemplateResource) isDeploymentResourceType() bool {
+func (resource *ArmTemplateResource) IsDeploymentResourceType() bool {
 	return resource.Type == deploymentResourceTypeName
 }
 
-func (resource *armTemplateResource) getId() uuid.UUID {
+func (resource *ArmTemplateResource) GetId() uuid.UUID {
 	defaultValue := uuid.NewString()
-	value := resource.getTagValue(deployment.LookupTagKeyId, defaultValue)
+	value := resource.GetTagValue(deployment.LookupTagKeyId, defaultValue)
 	return uuid.MustParse(value)
 }
 
-func (resource *armTemplateResource) getName() string {
+func (resource *ArmTemplateResource) GetName() string {
 	defaultValue := resource.Name
-	return resource.getTagValue(deployment.LookupTagKeyName, defaultValue)
+	return resource.GetTagValue(deployment.LookupTagKeyName, defaultValue)
 }
 
 // gets a stage's default retry value via modm tag. If the value is not an integer, the default is used.
 //
 //	default: DefaultNoRetries
-func (resource *armTemplateResource) getRetries() uint {
+func (resource *ArmTemplateResource) GetRetries() uint {
 	defaultValue := DefaultNoRetries
-	value := resource.getTagValue(deployment.LookupTagKeyRetry, strconv.Itoa(defaultValue))
+	value := resource.GetTagValue(deployment.LookupTagKeyRetry, strconv.Itoa(defaultValue))
 
 	if intValue, err := strconv.ParseInt(value, 10, 32); err == nil {
 		return uint(intValue)
@@ -48,7 +48,7 @@ func (resource *armTemplateResource) getRetries() uint {
 	return uint(defaultValue)
 }
 
-func (resource *armTemplateResource) getTagValue(key deployment.LookupTagKey, defaultValue string) string {
+func (resource *ArmTemplateResource) GetTagValue(key deployment.LookupTagKey, defaultValue string) string {
 	if resource.Tags != nil {
 		if value, exists := resource.Tags[string(key)]; exists {
 			return value

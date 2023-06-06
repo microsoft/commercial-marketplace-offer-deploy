@@ -38,7 +38,8 @@ func NewEventsMessageHandler(appConfig *config.AppConfig, credential azcore.Toke
 
 func newWebHookPublisher(db *gorm.DB) hook.Publisher {
 	subscriptionsProvider := hook.NewEventHooksProvider(db)
-	publisher := hook.NewEventHookPublisher(subscriptionsProvider)
+	audit := hook.NewAudit(db)
+	publisher := hook.NewEventHookPublisher(subscriptionsProvider, audit)
 	return publisher
 }
 

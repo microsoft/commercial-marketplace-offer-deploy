@@ -13,7 +13,7 @@ type OperationFunc func(context *ExecutionContext) error
 // remarks: Invoked Operation decorator+visitor
 type Operation struct {
 	model.InvokedOperation
-	service *operationService
+	service *OperationService
 	do      OperationFunc
 }
 
@@ -22,15 +22,17 @@ func (o *Operation) Context() context.Context {
 }
 
 func (o *Operation) Running() error {
-	err, running := o.InvokedOperation.Running()
+	o.service.log.Info("Marking operation as running")
 
-	if err != nil {
-		return err
-	}
-	if !running {
-		return o.service.saveChanges(true)
-	}
-	return nil
+	o.InvokedOperation.Running()
+	return o.service.saveChanges(true)
+}
+
+func (o *Operation) Complete() error {
+	o.service.log.Info("Marking operation as complete")
+
+	o.InvokedOperation.Complete()
+	return o.service.saveChanges(false)
 }
 
 func (o *Operation) Attribute(key model.AttributeKey, v any) error {
@@ -44,29 +46,37 @@ func (o *Operation) Value(v any) error {
 }
 
 func (o *Operation) Failed() error {
+	o.service.log.Info("Marking operation as failed")
+
 	o.InvokedOperation.Failed()
 	return o.service.saveChanges(true)
 }
 
 func (o *Operation) Success() error {
+	o.service.log.Info("Marking operation as success")
+
 	o.InvokedOperation.Success()
 	return o.service.saveChanges(true)
 }
 
 func (o *Operation) Schedule() error {
+	o.service.log.Info("Marking operation as scheduled")
+
 	err := o.InvokedOperation.Schedule()
 	if err != nil {
 		return err
+	}
+
+	err = o.service.saveChanges(true)
+	if err != nil {
+		return fmt.Errorf("failed to save schedule changes for operation: %v", err)
 	}
 
 	err = o.service.dispatch()
 	if err != nil {
 		return fmt.Errorf("failed to schedule operation: %v", err)
 	}
-	err = o.service.saveChanges(true)
-	if err != nil {
-		return fmt.Errorf("failed to save schedule changes for operation: %v", err)
-	}
+
 	return nil
 }
 
@@ -76,17 +86,11 @@ func (o *Operation) SaveChanges() error {
 
 // Attempts to trigger a retry of the operation, if the operation has a retriable state
 func (o *Operation) Retry() error {
-	if !o.InvokedOperation.IsRetriable() {
+	if !o.InvokedOperation.AttemptsExceeded() {
 		return nil
 	}
-
-	o.Schedule()
-
-	err := o.service.dispatch()
-	if err != nil {
-		return err
-	}
-	return nil
+	o.service.log.Info("Retrying operation")
+	return o.Schedule()
 }
 
 // provides access to latest instance of associated deployment

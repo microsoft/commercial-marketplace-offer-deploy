@@ -21,8 +21,7 @@ function run_modm() {
     arg_build=$1
     
     if [ "$arg_build" = "build" ]  || [ "$arg_build" = "true" ]; then
-      #build_image modm ./build/package/Dockerfile
-      build_image modmapi ./build/package/Dockerfile.apiserver
+      build_image modmapiserver ./build/package/Dockerfile.apiserver
       build_image modmoperator ./build/package/Dockerfile.operator
     fi
 
@@ -39,7 +38,7 @@ function run_testharness() {
     if [ "$arg_build" = "build" ]  || [ "$arg_build" = "true" ]; then
       pushd ../
       #build_image modm ./build/package/Dockerfile
-      build_image modmapi ./build/package/Dockerfile.apiserver
+      build_image modmapiserver ./build/package/Dockerfile.apiserver
       build_image modmoperator ./build/package/Dockerfile.operator
       build_image testharness ./build/package/Dockerfile.testharness
       popd

@@ -19,11 +19,16 @@ type Publisher interface {
 
 type publisher struct {
 	provider EventHooksProvider
+	audit    *EventHookAudit
 	senders  map[uuid.UUID]hookSender
 }
 
-func NewEventHookPublisher(subscriptionsProvider EventHooksProvider) Publisher {
-	publisher := &publisher{senders: map[uuid.UUID]hookSender{}, provider: subscriptionsProvider}
+func NewEventHookPublisher(subscriptionsProvider EventHooksProvider, recorder *EventHookAudit) Publisher {
+	publisher := &publisher{
+		senders:  map[uuid.UUID]hookSender{},
+		provider: subscriptionsProvider,
+		audit:    recorder,
+	}
 
 	return publisher
 }
@@ -59,6 +64,8 @@ func (p *publisher) Publish(message *sdk.EventHookMessage) error {
 
 			if err != nil {
 				log.Errorf("error posting to callback '%s' [%s]", hook.Callback, hook.Name)
+			} else {
+				p.audit.Log(message)
 			}
 		}(i)
 	}

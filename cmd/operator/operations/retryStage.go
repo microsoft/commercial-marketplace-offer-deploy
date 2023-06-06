@@ -3,9 +3,10 @@ package operations
 import (
 	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	log "github.com/sirupsen/logrus"
 )
@@ -25,7 +26,7 @@ func (op *retryStageOperation) Do(context *operation.ExecutionContext) error {
 		return fmt.Errorf("stage not found for deployment %v and stageId %v", parent.ID, stageId)
 	}
 
-	redeployment := op.mapToAzureRedeployment(parent, stage)
+	redeployment := op.mapToAzureRedeployment(context.Operation(), stage)
 	deployer, err := op.newDeployer(redeployment.SubscriptionId)
 	if err != nil {
 		return err
@@ -54,12 +55,19 @@ func (op *retryStageOperation) newDeployer(subscriptionId string) (deployment.De
 	return deployment.NewDeployer(deployment.DeploymentTypeARM, subscriptionId)
 }
 
-func (op *retryStageOperation) mapToAzureRedeployment(dep *model.Deployment, stage *model.Stage) deployment.AzureRedeployment {
+func (op *retryStageOperation) mapToAzureRedeployment(operation *operation.Operation, stage *model.Stage) deployment.AzureRedeployment {
+	dep := operation.Deployment()
+
 	azureRedeployment := deployment.AzureRedeployment{
 		SubscriptionId:    dep.SubscriptionId,
 		Location:          dep.Location,
 		ResourceGroupName: dep.ResourceGroup,
 		DeploymentName:    stage.AzureDeploymentName,
+		OperationId:       operation.ID,
+		Tags: map[string]*string{
+			string(deployment.LookupTagKeyStageId):     to.Ptr(stage.ID.String()),
+			string(deployment.LookupTagKeyOperationId): to.Ptr(operation.ID.String()),
+		},
 	}
 	return azureRedeployment
 }

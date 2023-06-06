@@ -86,7 +86,7 @@ func createInstance(dsn string, models ...interface{}) (*gorm.DB, error) {
 		return nil, fmt.Errorf("could not open and connect to database at %s: %w", dsn, err)
 	}
 
-	if err := db.AutoMigrate(&model.Deployment{}, &model.Stage{}, &model.EventHook{}, &model.InvokedOperation{}, &model.InvokedOperationAttribute{}); err != nil {
+	if err := db.AutoMigrate(&model.Deployment{}, &model.Stage{}, &model.EventHook{}, &model.EventHookAuditEntry{}, &model.InvokedOperation{}, &model.InvokedOperationAttribute{}); err != nil {
 		return nil, fmt.Errorf("could not migrate models %T: %w", models, err)
 	}
 

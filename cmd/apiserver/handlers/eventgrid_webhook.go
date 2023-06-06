@@ -8,17 +8,20 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
 	"github.com/labstack/echo/v4"
-	eg "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventhook"
-	filter "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/eventgrid/eventsfiltering"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/azureevents"
+	filter "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/azureevents"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/azureevents/eventhook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/diagnostics/audit"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
@@ -38,13 +41,13 @@ type eventGridWebHook struct {
 	stageQuery          *data.StageQuery
 	operationQuery      *data.InvokedOperationQuery
 	operationRepository operation.Repository
+	auditLog            audit.Log
 }
 
 // HTTP handler is the webook endpoint that receives event grid events
 // the validation middleware will handle validation requests first before this is reached
 func (h *eventGridWebHook) Handle(c echo.Context) error {
 	log.Debug("Received event grid webhook")
-
 	ctx := c.Request().Context()
 
 	events := []*eventgrid.Event{}
@@ -52,6 +55,8 @@ func (h *eventGridWebHook) Handle(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
+
+	h.audit(events)
 
 	resources := h.filter.Filter(ctx, matchAny, events)
 
@@ -73,14 +78,20 @@ func (h *eventGridWebHook) Handle(c echo.Context) error {
 	return c.String(http.StatusOK, "OK")
 }
 
-func (h *eventGridWebHook) handleFailedDeployment(ctx context.Context, resources eg.EventGridEventResources) error {
+func (h *eventGridWebHook) audit(events []*eventgrid.Event) {
+	for _, event := range events {
+		h.auditLog.Append(event)
+	}
+}
+
+func (h *eventGridWebHook) handleFailedDeployment(ctx context.Context, resources []*azureevents.ResourceEventSubject) error {
 	for _, resource := range resources {
-		if !resource.IsDeployment() {
+		if !resource.IsAzureDeployment() {
 			continue
 		}
 
 		if resource.IsFailedStage() {
-			log.Debugf("Handling failed stage: %v", resource.Deployment)
+			log.Debugf("Handling failed stage: %v", resource.AzureDeployment())
 			stageId, err := resource.StageId()
 			if err != nil {
 				log.Errorf("Failed to get stage id: %s", err.Error())
@@ -89,19 +100,15 @@ func (h *eventGridWebHook) handleFailedDeployment(ctx context.Context, resources
 
 			log.Debugf("Handling stageId: %v", stageId)
 
-			correlationId, err := resource.CorrelationID()
-			if err != nil {
-				log.Errorf("Failed to get correlation id: %s", err.Error())
-				continue
-			}
+			correlationId := resource.CorrelationID()
 
-			deployment, stage, err := h.stageQuery.Execute(stageId)
+			deployment, stage, err := h.stageQuery.Execute(*stageId)
 			if err != nil {
 				log.Errorf("Failed to get deployment and stage: %s", err.Error())
 				continue
 			}
 
-			invokedOperation, err := h.operationQuery.First(stageId, *correlationId)
+			invokedOperation, err := h.operationQuery.First(*stageId, correlationId)
 			if err != nil {
 				log.Errorf("Failed to get invoked operation: %s", err.Error())
 				continue
@@ -119,7 +126,7 @@ func (h *eventGridWebHook) handleFailedDeployment(ctx context.Context, resources
 				operation, err = h.operationRepository.New(sdk.OperationRetryStage, func(i *model.InvokedOperation) error {
 					i.Parameters = make(map[string]any)
 					i.Parameters[string(model.ParameterKeyStageId)] = stageId
-					i.Attribute(model.AttributeKeyCorrelationId, *correlationId)
+					i.Attribute(model.AttributeKeyCorrelationId, correlationId)
 					i.Retries = uint(stage.Retries)
 					i.DeploymentId = deployment.ID
 					return nil
@@ -139,7 +146,7 @@ func (h *eventGridWebHook) handleFailedDeployment(ctx context.Context, resources
 	return nil
 }
 
-func (h *eventGridWebHook) sendEventHookMessages(ctx context.Context, resources eg.EventGridEventResources) error {
+func (h *eventGridWebHook) sendEventHookMessages(ctx context.Context, resources []*azureevents.ResourceEventSubject) error {
 	messages := h.messageFactory.Create(ctx, resources)
 	log.Debugf("Event Hook messages total: %d", len(messages))
 
@@ -157,7 +164,7 @@ func (h *eventGridWebHook) add(ctx context.Context, messages []*sdk.EventHookMes
 	errors := []string{}
 	for _, message := range messages {
 		log.Debugf("Adding event hook message: %+v", message)
-		err := hook.Add(ctx, message)
+		_, err := hook.Notify(ctx, message)
 
 		if err != nil {
 			errors = append(errors, err.Error())
@@ -183,12 +190,38 @@ func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.T
 			errors = append(errors, err.Error())
 		}
 
-		eventsFilter, err := newEventsFilter(appConfig.Azure.SubscriptionId, credential)
+		credential, err := azidentity.NewDefaultAzureCredential(nil)
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		repository, err := operation.NewRepository(appConfig, nil)
+		sender, err := messaging.NewServiceBusMessageSender(credential, messaging.MessageSenderOptions{
+			SubscriptionId:          appConfig.Azure.SubscriptionId,
+			Location:                appConfig.Azure.Location,
+			ResourceGroupName:       appConfig.Azure.ResourceGroupName,
+			FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
+		})
+
+		if err != nil {
+			errors = append(errors, err.Error())
+		}
+
+		service, err := operation.NewService(db, sender, hook.Notify)
+		if err != nil {
+			errors = append(errors, err.Error())
+		}
+
+		repository, err := operation.NewRepository(service, nil)
+		if err != nil {
+			errors = append(errors, err.Error())
+		}
+
+		eventsFilter, err := newEventsFilter(appConfig, credential, repository)
+		if err != nil {
+			errors = append(errors, err.Error())
+		}
+
+		auditLog, err := audit.NewAppendOnlyFileAuditLog(appConfig.GetLoggingOptions("eventgrid").FilePath)
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
@@ -205,6 +238,7 @@ func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.T
 			stageQuery:          data.NewStageQuery(db),
 			operationQuery:      data.NewInvokedOperationQuery(db),
 			operationRepository: repository,
+			auditLog:            auditLog,
 		}
 
 		return handler.Handle(c)
@@ -220,7 +254,7 @@ func newWebHookEventMessageFactory(subscriptionId string, db *gorm.DB, credentia
 	return eventhook.NewEventHookMessageFactory(client, db), nil
 }
 
-func newEventsFilter(subscriptionId string, credential azcore.TokenCredential) (filter.EventGridEventFilter, error) {
+func newEventsFilter(appConfig *config.AppConfig, credential azcore.TokenCredential, repo operation.Repository) (filter.EventGridEventFilter, error) {
 	// TODO: probably should come from db as configurable at runtime
 	includeKeys := []string{
 		string(deployment.LookupTagKeyEvents),
@@ -228,12 +262,12 @@ func newEventsFilter(subscriptionId string, credential azcore.TokenCredential) (
 		string(deployment.LookupTagKeyName),
 		string(deployment.LookupTagKeyStageId),
 	}
-	resourceClient, err := filter.NewAzureResourceClient(subscriptionId, credential)
+	resourceClient, err := filter.NewAzureResourceClient(appConfig.Azure.SubscriptionId, credential)
 	if err != nil {
 		return nil, err
 	}
 
-	provider := filter.NewEventGridEventResourceProvider(resourceClient)
+	provider := filter.NewResourceEventSubjectFactory(resourceClient, repo)
 	filter := filter.NewTagsFilter(includeKeys, provider)
 	return filter, nil
 }

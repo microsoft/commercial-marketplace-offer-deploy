@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/stretchr/testify/assert"
@@ -64,7 +65,11 @@ func TestPublisherPublish(t *testing.T) {
 
 func getPublisher(url string) Publisher {
 	provider := newFakProvider(url)
-	publisher := NewEventHookPublisher(provider)
+	audit := NewAudit(data.NewDatabase(&data.DatabaseOptions{
+		UseInMemory: true,
+	}).Instance())
+
+	publisher := NewEventHookPublisher(provider, audit)
 	return publisher
 }
 

@@ -16,7 +16,7 @@ services:
 
   modm:
     env_file: ../bin/.env.local
-    image: modmapi:latest
+    image: modmapiserver:latest
     volumes:
       - "${HOME}/.azure:/root/.azure"
       - "${HOME}/tmp:/tmp"
@@ -28,8 +28,8 @@ services:
     networks:
       - web
   
-  modmoperator:
-    env_file: ../bin/.env
+  operator:
+    env_file: ../bin/.env.local
     image: modmoperator:latest
     volumes:
       - "${HOME}/.azure:/root/.azure"

@@ -1,6 +1,7 @@
 package deployment
 
 import (
+	"fmt"
 	"path/filepath"
 	"testing"
 
@@ -8,6 +9,28 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/stretchr/testify/assert"
 )
+
+const (
+	taggedDeploymentPath = "../../test/testdata/taggeddeployment/"
+)
+
+func Test_AzureDeployment_GetTemplate(t *testing.T) {
+	template, err := utils.ReadJson(filepath.Join(taggedDeploymentPath, "mainTemplate.json"))
+	assert.NotNil(t, template)
+	assert.NoError(t, err)
+
+	azureDeployment := &AzureDeployment{
+		Template:    template,
+		OperationId: uuid.New(),
+	}
+	result := azureDeployment.GetTemplate()
+	strResult := fmt.Sprintf("Map: %v", result)
+
+	assert.NotNil(t, result)
+	assert.Contains(t, strResult, string(LookupTagKeyOperationId))
+	assert.Contains(t, strResult, azureDeployment.OperationId.String())
+
+}
 
 func TestStartDeployment(t *testing.T) {
 	fullPath := filepath.Join("../../test/testdata/nameviolation/nestedfailure", "mainTemplate.json")

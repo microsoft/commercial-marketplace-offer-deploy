@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
@@ -15,6 +16,7 @@ const DefaultNumberOfRetries = 3
 //		attributes - specify information about or that control the operation's use and behavior
 type InvokedOperation struct {
 	BaseWithGuidPrimaryKey
+	ParentID     *uuid.UUID                       `json:"parentId" gorm:"type:uuid"`
 	Name         string                           `json:"name"`
 	DeploymentId uint                             `json:"deploymentId"`
 	Attributes   []InvokedOperationAttribute      `json:"attributes"`
@@ -22,28 +24,32 @@ type InvokedOperation struct {
 	Attempts     uint                             `json:"attempts"`
 	Parameters   map[string]any                   `json:"parameters" gorm:"json"`
 	Results      map[uint]*InvokedOperationResult `json:"results" gorm:"json"`
-
-	// the current or final status of the operation
-	Status string `json:"status"`
+	Status       string                           `json:"status"` // the current or final status of the operation
+	Completed    bool                             `json:"completed"`
 }
 
 type InvokedOperationResult struct {
 	Attempt     uint      `json:"attempt"`
 	Error       string    `json:"error"`
 	Value       any       `json:"value" gorm:"json"`
+	Status      string    `json:"status"`
 	StartedAt   time.Time `json:"startedAt"`
 	CompletedAt time.Time `json:"completedAt"`
-	Status      string    `json:"status"`
 }
 
 // can the operation be executed? if not, then reasons are returned
 func (o *InvokedOperation) IsExecutable() ([]string, bool) {
 	reasons := []string{}
 
+	if o.IsCompleted() {
+		reasons = append(reasons, "operation already completed on [%s]", o.LatestResult().CompletedAt.String())
+	}
+
 	isRunning := o.IsRunning()
 	if isRunning {
 		reasons = append(reasons, "operation is already running")
 	}
+
 	attemptsExceeded := o.AttemptsExceeded()
 	if attemptsExceeded {
 		reasons = append(reasons, fmt.Sprintf("operation has exceeded the maximum number of attempts (%d)", o.Retries))
@@ -51,30 +57,47 @@ func (o *InvokedOperation) IsExecutable() ([]string, bool) {
 	return reasons, (!isRunning && !attemptsExceeded)
 }
 
+func (o *InvokedOperation) IsRetry() bool {
+	return !o.IsCompleted() && o.Attempts > 1
+}
+
 func (o *InvokedOperation) IsRunning() bool {
 	return o.Status == sdk.StatusRunning.String()
 }
 
+func (o *InvokedOperation) IsCompleted() bool {
+	return o.Completed
+}
+
+func (o *InvokedOperation) IsScheduled() bool {
+	return o.Status == sdk.StatusScheduled.String()
+}
+
+func (o *InvokedOperation) CompletedAt() (*time.Time, error) {
+	if !o.IsCompleted() {
+		return nil, fmt.Errorf("operation is not completed")
+	}
+	completedAt := o.LatestResult().CompletedAt
+	return &completedAt, nil
+}
+
 // increment the number of attempts and set the status to running
-func (o *InvokedOperation) Running() (error, bool) {
-	if o.IsRunning() { //already running, so do nothing
-		return nil, true
+// if it's in a state where it can be run.
+// return: returns true if status changed to running
+func (o *InvokedOperation) Running() {
+	if o.IsRunning() || o.AttemptsExceeded() { //already running, so do nothing
+		return
 	}
 
-	o.Attempts++
-
-	if o.AttemptsExceeded() {
-		return fmt.Errorf("cannot run operation, %d of %d attemps reached", +o.Attempts, o.Retries), false
-	}
-
-	o.Status = sdk.StatusRunning.String()
-	o.appendResult()
-
-	return nil, true
+	o.incrementAttempts()
+	o.setStatus(sdk.StatusRunning.String())
 }
 
 func (o *InvokedOperation) LatestResult() *InvokedOperationResult {
 	if len(o.Results) == 0 {
+		return o.appendResult()
+	}
+	if _, ok := o.Results[o.Attempts]; !ok {
 		return o.appendResult()
 	}
 	return o.Results[o.Attempts]
@@ -123,41 +146,57 @@ func (o *InvokedOperation) AttributeValue(key AttributeKey) (any, bool) {
 }
 
 func (o *InvokedOperation) AttemptsExceeded() bool {
-	return o.Attempts > o.Retries
+	return o.Attempts >= o.Retries
 }
 
-func (o *InvokedOperation) IsRetry() bool {
-	return o.Attempts > 1
-}
-
-func (io *InvokedOperation) IsRetriable() bool {
-	attemptsExceeded := io.Attempts >= io.Retries
-	return !io.IsRunning() && !attemptsExceeded
+func (o *InvokedOperation) IsRetrying() bool {
+	return o.Status == string(sdk.StatusScheduled) && (!o.AttemptsExceeded() && o.Attempts > 1)
 }
 
 // sets the status to failed for the operation and the latest attempt's result
-func (o *InvokedOperation) Failed() {
-	o.setStatus(sdk.StatusFailed.String())
+func (o *InvokedOperation) Failed() error {
+	return o.setStatus(sdk.StatusFailed.String())
 }
 
 // sets the status to success for the operation and the latest attempt's result
-func (o *InvokedOperation) Success() {
-	o.setStatus(sdk.StatusSuccess.String())
+func (o *InvokedOperation) Success() error {
+	return o.setStatus(sdk.StatusSuccess.String())
+}
+
+func (o *InvokedOperation) Complete() {
+	o.Completed = true
+	o.LatestResult().CompletedAt = time.Now().UTC()
 }
 
 func (o *InvokedOperation) Schedule() error {
 	if o.AttemptsExceeded() {
 		return fmt.Errorf("cannot schedule operation, %d of %d attemps reached", o.Attempts, o.Retries)
 	}
-	o.setStatus(sdk.StatusScheduled.String())
+	return o.setStatus(sdk.StatusScheduled.String())
+}
+
+func (o *InvokedOperation) setStatus(status string) error {
+	// if the operation is complete, the status cannot be set
+	if o.IsCompleted() {
+		return fmt.Errorf("cannot set status to %s, operation is already complete", status)
+	}
+
+	o.Status = status // track the latest status
+
+	//anything but schedule, update the results
+	if status != string(sdk.StatusScheduled) {
+		result := o.LatestResult()
+		result.Status = status
+		result.CompletedAt = time.Now().UTC()
+	}
 	return nil
 }
 
-func (o *InvokedOperation) setStatus(status string) {
-	o.Status = status
-	result := o.LatestResult()
-	result.Status = status
-	result.CompletedAt = time.Now().UTC()
+func (o *InvokedOperation) incrementAttempts() {
+	if o.AttemptsExceeded() || o.IsCompleted() {
+		return
+	}
+	o.Attempts++
 }
 
 func (o *InvokedOperation) appendResult() *InvokedOperationResult {

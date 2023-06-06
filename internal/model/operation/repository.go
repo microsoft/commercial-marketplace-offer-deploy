@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
@@ -26,7 +25,7 @@ type Repository interface {
 }
 
 type repository struct {
-	service  *operationService
+	service  *OperationService
 	provider OperationFuncProvider
 }
 
@@ -88,12 +87,7 @@ func (repo *repository) First(id uuid.UUID) (*Operation, error) {
 // NewRepository creates a new operation factory
 // appConfig: application configuration
 // provider: operation function provider, optional if the operation is not going to be executed and you want to interact with the operation
-func NewRepository(appConfig *config.AppConfig, provider OperationFuncProvider) (Repository, error) {
-	service, err := newOperationService(appConfig)
-	if err != nil {
-		return nil, err
-	}
-
+func NewRepository(service *OperationService, provider OperationFuncProvider) (Repository, error) {
 	repo := &repository{
 		service:  service,
 		provider: provider,
