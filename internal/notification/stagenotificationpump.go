@@ -77,10 +77,11 @@ func (p *StageNotificationPump) read() (*model.StageNotification, bool) {
 	return record, true
 }
 
-func NewStageNotificationPump(db *gorm.DB, sleepDuration time.Duration) *StageNotificationPump {
+func NewStageNotificationPump(db *gorm.DB, sleepDuration time.Duration, receiver ReceiveNotificationFunc) *StageNotificationPump {
 	return &StageNotificationPump{
-		db:            db,
-		sleepDuration: sleepDuration,
-		stopChannel:   make(chan bool),
+		db:            		db,
+		sleepDuration: 		sleepDuration,
+		stopChannel:   		make(chan bool),
+		receive: 	 		receiver,
 	}
 }
