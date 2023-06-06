@@ -69,7 +69,7 @@ func (s *StageNotificationService) receive(notification *model.StageNotification
 	}
 
 	id := notification.ID
-	done := make(chan stageNotificationHandlerResult)
+	done := make(chan stageNotificationHandlerResult, 2)
 
 	s.results[id] = done
 
