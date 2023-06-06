@@ -1,6 +1,7 @@
 package operation
 
 import (
+	"context"
 	"testing"
 
 	"github.com/google/uuid"
@@ -76,7 +77,7 @@ type fakeStageNotifier struct {
 	notification *model.StageNotification
 }
 
-func (f *fakeStageNotifier) Notify(notification *model.StageNotification) error {
+func (f *fakeStageNotifier) Notify(ctx context.Context, notification *model.StageNotification) error {
 	f.received = true
 	f.notification = notification
 	return nil
