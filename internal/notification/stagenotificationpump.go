@@ -2,17 +2,18 @@ package notification
 
 import (
 	"time"
+
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
 type StageNotificationPump struct {
-	db      			*gorm.DB
-	Receive 			ReceiveNotificationFunc
-	isRunning 			bool
-	stopChannel 		chan bool
-	sleepDuration 		time.Duration
+	db            *gorm.DB
+	Receive       ReceiveNotificationFunc
+	isRunning     bool
+	stopChannel   chan bool
+	sleepDuration time.Duration
 }
 
 type ReceiveNotificationFunc func(notification *model.StageNotification) error
@@ -39,7 +40,7 @@ func (p *StageNotificationPump) Start() {
 				}
 
 				err := p.Receive(notification)
-				if err != nil {				
+				if err != nil {
 					log.Error(err)
 					continue
 				}
@@ -67,9 +68,9 @@ func (p *StageNotificationPump) read() (*model.StageNotification, bool) {
 
 func NewStageNotificationPump(db *gorm.DB, sleepDuration time.Duration, receive ReceiveNotificationFunc) *StageNotificationPump {
 	return &StageNotificationPump{
-		db: db,
+		db:            db,
 		sleepDuration: sleepDuration,
-		stopChannel: make(chan bool),
-		Receive: receive,
+		stopChannel:   make(chan bool),
+		Receive:       receive,
 	}
 }
