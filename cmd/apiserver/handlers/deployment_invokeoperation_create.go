@@ -8,8 +8,12 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
@@ -111,7 +115,30 @@ func (h *invokeDeploymentOperation) getParameters(c echo.Context) (uint, *sdk.In
 
 func NewInvokeDeploymentOperationHandler(appConfig *config.AppConfig, credential azcore.TokenCredential) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		repository, err := operation.NewRepository(appConfig, nil)
+		db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
+
+		credential, err := azidentity.NewDefaultAzureCredential(nil)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+
+		sender, err := messaging.NewServiceBusMessageSender(credential, messaging.MessageSenderOptions{
+			SubscriptionId:          appConfig.Azure.SubscriptionId,
+			Location:                appConfig.Azure.Location,
+			ResourceGroupName:       appConfig.Azure.ResourceGroupName,
+			FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
+		})
+
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+
+		service, err := operation.NewService(db, sender, hook.Notify)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+
+		repository, err := operation.NewRepository(service, nil)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}

@@ -13,7 +13,7 @@ type OperationFunc func(context *ExecutionContext) error
 // remarks: Invoked Operation decorator+visitor
 type Operation struct {
 	model.InvokedOperation
-	service *operationService
+	service *OperationService
 	do      OperationFunc
 }
 
@@ -26,6 +26,13 @@ func (o *Operation) Running() error {
 
 	o.InvokedOperation.Running()
 	return o.service.saveChanges(true)
+}
+
+func (o *Operation) Complete() error {
+	o.service.log.Info("Marking operation as complete")
+
+	o.InvokedOperation.Complete()
+	return o.service.saveChanges(false)
 }
 
 func (o *Operation) Attribute(key model.AttributeKey, v any) error {

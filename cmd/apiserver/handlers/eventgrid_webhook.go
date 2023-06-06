@@ -8,6 +8,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
 	"github.com/labstack/echo/v4"
@@ -18,6 +19,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/diagnostics/audit"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
@@ -188,12 +190,33 @@ func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.T
 			errors = append(errors, err.Error())
 		}
 
-		eventsFilter, err := newEventsFilter(appConfig, credential)
+		credential, err := azidentity.NewDefaultAzureCredential(nil)
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		repository, err := operation.NewRepository(appConfig, nil)
+		sender, err := messaging.NewServiceBusMessageSender(credential, messaging.MessageSenderOptions{
+			SubscriptionId:          appConfig.Azure.SubscriptionId,
+			Location:                appConfig.Azure.Location,
+			ResourceGroupName:       appConfig.Azure.ResourceGroupName,
+			FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
+		})
+
+		if err != nil {
+			errors = append(errors, err.Error())
+		}
+
+		service, err := operation.NewService(db, sender, hook.Notify)
+		if err != nil {
+			errors = append(errors, err.Error())
+		}
+
+		repository, err := operation.NewRepository(service, nil)
+		if err != nil {
+			errors = append(errors, err.Error())
+		}
+
+		eventsFilter, err := newEventsFilter(appConfig, credential, repository)
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
@@ -231,7 +254,7 @@ func newWebHookEventMessageFactory(subscriptionId string, db *gorm.DB, credentia
 	return eventhook.NewEventHookMessageFactory(client, db), nil
 }
 
-func newEventsFilter(appConfig *config.AppConfig, credential azcore.TokenCredential) (filter.EventGridEventFilter, error) {
+func newEventsFilter(appConfig *config.AppConfig, credential azcore.TokenCredential, repo operation.Repository) (filter.EventGridEventFilter, error) {
 	// TODO: probably should come from db as configurable at runtime
 	includeKeys := []string{
 		string(deployment.LookupTagKeyEvents),
@@ -244,12 +267,7 @@ func newEventsFilter(appConfig *config.AppConfig, credential azcore.TokenCredent
 		return nil, err
 	}
 
-	operationRepository, err := operation.NewRepository(appConfig, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	provider := filter.NewResourceEventSubjectFactory(resourceClient, operationRepository)
+	provider := filter.NewResourceEventSubjectFactory(resourceClient, repo)
 	filter := filter.NewTagsFilter(includeKeys, provider)
 	return filter, nil
 }
