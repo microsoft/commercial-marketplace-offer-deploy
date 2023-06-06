@@ -2,35 +2,35 @@ package notification
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	log "github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 )
 
 type StageNotificationService struct {
-	ctx               context.Context
-	deploymentsClient *armresources.DeploymentsClient
-	notify            hook.NotifyFunc
-	pump              *StageNotificationPump
-	notifications     map[uint]*model.StageNotification
-	db                *gorm.DB
-	log               *log.Entry
+	ctx            context.Context
+	pump           *StageNotificationPump
+	handlerFactory StageNotificationHandlerFactoryFunc
+	results        map[uint]chan stageNotificationHandlerResult
+	log            *log.Entry
 }
 
-func NewStageNotificationService() *StageNotificationService {
+func NewStageNotificationService(pump *StageNotificationPump, handlerFactory StageNotificationHandlerFactoryFunc) *StageNotificationService {
 	return &StageNotificationService{
-		log: log.WithFields(log.Fields{}),
+		ctx:            context.Background(),
+		pump:           pump,
+		handlerFactory: handlerFactory,
+		log:            log.WithFields(log.Fields{}),
+		results:        make(map[uint]chan stageNotificationHandlerResult),
 	}
 }
 
 // stub out hosting.Service interface on StageNotificationService
 func (s *StageNotificationService) Start() {
+	s.pump.SetReceiver(s.receive)
 	s.pump.Start()
+
+	go s.start()
 }
 
 func (s *StageNotificationService) Stop() {
@@ -38,18 +38,47 @@ func (s *StageNotificationService) Stop() {
 }
 
 func (s *StageNotificationService) GetName() string {
-	return ""
+	return "Stage Notification Service"
 }
 
-// get by correlationId
-func (s *StageNotificationService) getAzureDeploymentResources(notification *model.StageNotification) []*armresources.DeploymentExtended {
-	filter := fmt.Sprintf("correlationId eq '%s'", notification.CorrelationId.String())
-	response := s.deploymentsClient.NewListByResourceGroupPager(notification.ResourceGroupName, &armresources.DeploymentsClientListByResourceGroupOptions{
-		Filter: to.Ptr(filter),
-	})
+func (s *StageNotificationService) start() {
+	for {
+		// loop over s.results
+		// if done, remove from map
+		for _, done := range s.results {
+			select {
+			case result := <-done:
+				s.log.Infof("Stage notification [%d] handler completed", result.Id)
 
-	//TODO: add pager loop and collect all deployments
-	response.NextPage(s.ctx)
+				if result.Error != nil {
+					s.log.Errorf("Error handling stage notification %d: %s", result.Id, result.Error)
+				}
+				delete(s.results, result.Id)
+				return
+			default:
+				continue
+			}
+		}
+	}
+}
+
+func (s *StageNotificationService) receive(notification *model.StageNotification) error {
+	handler, err := s.handlerFactory()
+	if err != nil {
+		return err
+	}
+
+	id := notification.ID
+	done := make(chan stageNotificationHandlerResult, 2)
+
+	s.results[id] = done
+
+	context := &stageNotificationHandlerContext{
+		ctx:          s.ctx,
+		notification: notification,
+		done:         done,
+	}
+	go handler.Handle(context)
 
 	return nil
 }

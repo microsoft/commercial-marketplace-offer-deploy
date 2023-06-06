@@ -2,22 +2,34 @@ package notification
 
 import (
 	"time"
+
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
+const SleepDurationPumpDefault = 30 * time.Second
+
 type StageNotificationPump struct {
-	db      			*gorm.DB
-	Receive 			ReceiveNotificationFunc
-	isRunning 			bool
-	stopChannel 		chan bool
-	sleepDuration 		time.Duration
+	db            *gorm.DB
+	receive       ReceiveNotificationFunc
+	isRunning     bool
+	stopChannel   chan bool
+	sleepDuration time.Duration
 }
 
 type ReceiveNotificationFunc func(notification *model.StageNotification) error
 
+func (p *StageNotificationPump) SetReceiver(receive ReceiveNotificationFunc) {
+	p.receive = receive
+}
+
 func (p *StageNotificationPump) Start() {
+	if p.receive == nil {
+		log.Error("ReceiveNotificationFunc not set")
+		return
+	}
+
 	if p.isRunning {
 		return
 	}
@@ -38,8 +50,8 @@ func (p *StageNotificationPump) Start() {
 					continue
 				}
 
-				err := p.Receive(notification)
-				if err != nil {				
+				err := p.receive(notification)
+				if err != nil {
 					log.Error(err)
 					continue
 				}
@@ -65,11 +77,10 @@ func (p *StageNotificationPump) read() (*model.StageNotification, bool) {
 	return record, true
 }
 
-func NewStageNotificationPump(db *gorm.DB, sleepDuration time.Duration, receive ReceiveNotificationFunc) *StageNotificationPump {
+func NewStageNotificationPump(db *gorm.DB, sleepDuration time.Duration) *StageNotificationPump {
 	return &StageNotificationPump{
-		db: db,
+		db:            db,
 		sleepDuration: sleepDuration,
-		stopChannel: make(chan bool),
-		Receive: receive,
+		stopChannel:   make(chan bool),
 	}
 }
