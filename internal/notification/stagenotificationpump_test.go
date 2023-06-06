@@ -16,6 +16,33 @@ func TestReadNotificationPump(t *testing.T) {
 
 }
 
+func TestStageNotificationPump_receiver_function_not_called(t *testing.T) {
+	mockDB := getDatabase()
+
+	var receiverCalled bool
+	receiver := func(notification *model.StageNotification) error {
+		receiverCalled = true
+		return nil
+	}
+
+	record := &model.StageNotification{
+		Done: true,
+		OperationId: uuid.New(),
+		CorrelationId: uuid.New(),
+		ResourceGroupName: "test",
+	}
+	mockDB.Save(record)
+
+	pump := NewStageNotificationPump(mockDB, 10 * time.Second, receiver)
+	
+	pump.Start()
+
+	time.Sleep(15 * time.Second)
+
+	// Assert that the receiver function was called
+	assert.False(t, receiverCalled)
+}
+
 func TestStageNotificationPump_receiver_function_called(t *testing.T) {
 	mockDB := getDatabase()
 
