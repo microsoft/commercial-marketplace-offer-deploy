@@ -1,6 +1,7 @@
 package operation
 
 import (
+	"context"
 	"testing"
 
 	"github.com/google/uuid"
@@ -22,7 +23,7 @@ func Test_Service_notifyForStages_Only_Thats_Running(t *testing.T) {
 
 	err := service.notifyForStages()
 	assert.NotNil(t, err)
-	assert.NotEqual(t, err.Error(), "not a running deployment operation")
+	assert.NotEqual(t, err.Error(), "not a running deployment operation or not first attempt")
 }
 
 func Test_Service_notifyForStage(t *testing.T) {
@@ -48,6 +49,8 @@ func Test_Service_notifyForStage(t *testing.T) {
 			InvokedOperation: model.InvokedOperation{
 				Status:       sdk.StatusRunning.String(),
 				DeploymentId: 1,
+				Retries:      1,
+				Attempts:     1,
 				Attributes: []model.InvokedOperationAttribute{
 					model.NewAttribute(model.AttributeKeyCorrelationId, correlationId),
 				},
@@ -76,7 +79,7 @@ type fakeStageNotifier struct {
 	notification *model.StageNotification
 }
 
-func (f *fakeStageNotifier) Notify(notification *model.StageNotification) error {
+func (f *fakeStageNotifier) Notify(ctx context.Context, notification *model.StageNotification) error {
 	f.received = true
 	f.notification = notification
 	return nil

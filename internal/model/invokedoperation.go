@@ -62,6 +62,10 @@ func (o *InvokedOperation) IsRetry() bool {
 	return !o.IsCompleted() && o.Attempts > 1
 }
 
+func (o *InvokedOperation) IsFirstAttempt() bool {
+	return !o.IsCompleted() && o.Attempts == 1
+}
+
 func (o *InvokedOperation) IsRunning() bool {
 	return o.Status == sdk.StatusRunning.String()
 }

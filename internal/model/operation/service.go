@@ -75,8 +75,8 @@ func (service *OperationService) notifyForStages() error {
 	op := service.operation.InvokedOperation
 
 	// only handle scheduled deployment operations, where we want to notify of stages getting scheduled
-	if !op.IsRunning() {
-		return errors.New("not a running deployment operation")
+	if !op.IsRunning() && !op.IsFirstAttempt() {
+		return errors.New("not a running deployment operation or not first attempt")
 	}
 
 	correlationId, err := op.CorrelationId()
@@ -115,7 +115,7 @@ func (service *OperationService) notifyForStages() error {
 		})
 	}
 
-	err = service.stageNotifier.Notify(notification)
+	err = service.stageNotifier.Notify(service.ctx, notification)
 	return err
 }
 
@@ -216,15 +216,16 @@ func (service *OperationService) deployment() *model.Deployment {
 }
 
 // constructor factory of operation service
-func NewService(db *gorm.DB, sender messaging.MessageSender, notify hook.NotifyFunc) (*OperationService, error) {
+func NewService(db *gorm.DB, sender messaging.MessageSender, notify hook.NotifyFunc, stageNotifier notification.StageNotifier) (*OperationService, error) {
 
 	ctx := context.Background()
 
 	return &OperationService{
-		ctx:    ctx,
-		db:     db,
-		sender: sender,
-		notify: notify,
-		log:    log.WithContext(ctx),
+		ctx:           ctx,
+		db:            db,
+		sender:        sender,
+		notify:        notify,
+		log:           log.WithContext(ctx),
+		stageNotifier: stageNotifier,
 	}, nil
 }

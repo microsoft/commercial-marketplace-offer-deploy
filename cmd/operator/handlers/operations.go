@@ -8,6 +8,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/notification"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -62,7 +63,7 @@ func newOperationService(appConfig *config.AppConfig) (*operation.OperationServi
 		return nil, err
 	}
 
-	service, err := operation.NewService(db, sender, hook.Notify)
+	service, err := operation.NewService(db, sender, hook.Notify, notification.NewStageNotifier(db))
 	if err != nil {
 		return nil, err
 	}
