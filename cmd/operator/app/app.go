@@ -8,6 +8,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/diagnostics"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/notification"
 )
 
 func BuildApp(configurationFilePath string) *hosting.App {
@@ -40,6 +41,10 @@ func addMessageReceivers(builder *hosting.AppBuilder, appConfig *config.AppConfi
 	eventsReceiver, operationsReceiver := getMessageReceivers(appConfig)
 	builder.AddService(eventsReceiver)
 	builder.AddService(operationsReceiver)
+
+	stageNotificationService := notification.NewStageNotificationService()
+	builder.AddService(stageNotificationService)
+
 }
 
 func getMessageReceivers(appConfig *config.AppConfig) (messaging.MessageReceiver, messaging.MessageReceiver) {
