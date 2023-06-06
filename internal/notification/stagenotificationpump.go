@@ -44,6 +44,12 @@ func (p *StageNotificationPump) Start() {
 	}()
 }
 
+func (p *StageNotificationPump) Stop() {
+	if p.isRunning {
+		p.stopChannel <- true
+	}
+}
+
 func (p *StageNotificationPump) read() (*model.StageNotification, bool) {
 	//write gorm query to read from database where Done is false
 	record := &model.StageNotification{}

@@ -34,7 +34,7 @@ func (s *StageNotificationService) Start() {
 }
 
 func (s *StageNotificationService) Stop() {
-
+	s.pump.Stop()
 }
 
 func (s *StageNotificationService) GetName() string {
