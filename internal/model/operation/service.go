@@ -75,8 +75,8 @@ func (service *OperationService) notifyForStages() error {
 	op := service.operation.InvokedOperation
 
 	// only handle scheduled deployment operations, where we want to notify of stages getting scheduled
-	if !op.IsRunning() {
-		return errors.New("not a running deployment operation")
+	if !op.IsRunning() && !op.IsFirstAttempt() {
+		return errors.New("not a running deployment operation or not first attempt")
 	}
 
 	correlationId, err := op.CorrelationId()
