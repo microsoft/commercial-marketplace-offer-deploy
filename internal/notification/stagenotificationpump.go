@@ -8,11 +8,14 @@ import (
 )
 
 type StageNotificationPump struct {
-	db      *gorm.DB
-	Receive func(notification *model.StageNotification) error
-	isRunning bool
-	stopChannel chan bool
+	db      			*gorm.DB
+	Receive 			ReceiveNotificationFunc
+	isRunning 			bool
+	stopChannel 		chan bool
+	sleepDuration 		time.Duration
 }
+
+type ReceiveNotificationFunc func(notification *model.StageNotification) error
 
 func (p *StageNotificationPump) Start() {
 	if p.isRunning {
@@ -31,7 +34,7 @@ func (p *StageNotificationPump) Start() {
 				// do we want to read all unsent notifications at once to reduce db calls?
 				notification, ok := p.read()
 				if !ok {
-					time.Sleep(30 * time.Second)
+					time.Sleep(p.sleepDuration)
 					continue
 				}
 
@@ -60,4 +63,13 @@ func (p *StageNotificationPump) read() (*model.StageNotification, bool) {
 		return nil, false
 	}
 	return record, true
+}
+
+func NewStageNotificationPump(db *gorm.DB, sleepDuration time.Duration, receive ReceiveNotificationFunc) *StageNotificationPump {
+	return &StageNotificationPump{
+		db: db,
+		sleepDuration: sleepDuration,
+		stopChannel: make(chan bool),
+		Receive: receive,
+	}
 }
