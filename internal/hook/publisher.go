@@ -57,8 +57,13 @@ func (p *publisher) Publish(message *sdk.EventHookMessage) error {
 			}
 			message.HookId = hook.ID
 
+			if p.audit.IsDuplicate(message) {
+				log.Tracef("skipping duplicate message [%s] to %s - '%s'", message.Id, message.HookId, hook.Callback)
+				return
+			}
+
 			sender := p.getSender(*hook)
-			// dedupe - hook id, type, status, subject
+			
 			log.Tracef("sending message [%s] to %s - '%s'", message.Id, message.HookId, hook.Callback)
 			err := sender.Send(ctx, &message)
 

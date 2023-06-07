@@ -13,6 +13,6 @@ type EventHook struct {
 // record for all event hook messages sent
 type EventHookAuditEntry struct {
 	gorm.Model
-	Source  string `json:"source"`
+	Hash  	string `json:"hash"`
 	Message any    `json:"message" gorm:"json"`
 }
