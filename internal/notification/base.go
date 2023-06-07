@@ -32,18 +32,19 @@ type NotificationHandler[T any] interface {
 type NotificationHandlerResult[T any] struct {
 	Notification *T
 	Error        error
+	Done         bool
 }
 
 type NotificationHandlerContext[T any] struct {
 	ctx          context.Context
-	done         chan NotificationHandlerResult[T]
+	channel      chan NotificationHandlerResult[T]
 	Notification *T
 }
 
 func NewNotificationHandlerContext[T any](ctx context.Context, notification *T) *NotificationHandlerContext[T] {
 	return &NotificationHandlerContext[T]{
 		ctx:          ctx,
-		done:         make(chan NotificationHandlerResult[T], 1),
+		channel:      make(chan NotificationHandlerResult[T], 1),
 		Notification: notification,
 	}
 }
@@ -52,12 +53,21 @@ func (c *NotificationHandlerContext[T]) Context() context.Context {
 	return c.ctx
 }
 
-func (c *NotificationHandlerContext[T]) Done(result NotificationHandlerResult[T]) {
-	c.done <- result
+func (c *NotificationHandlerContext[T]) Done() {
+	c.channel <- NotificationHandlerResult[T]{Done: true, Notification: c.Notification}
+}
+
+func (c *NotificationHandlerContext[T]) Error(err error) {
+	c.channel <- NotificationHandlerResult[T]{Done: false, Error: err, Notification: c.Notification}
+}
+
+// continue trying to process
+func (c *NotificationHandlerContext[T]) Continue() {
+	c.channel <- NotificationHandlerResult[T]{Done: false, Notification: c.Notification}
 }
 
 func (c *NotificationHandlerContext[T]) Channel() chan NotificationHandlerResult[T] {
-	return c.done
+	return c.channel
 }
 
 //endregion context

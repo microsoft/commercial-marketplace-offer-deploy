@@ -69,6 +69,24 @@ func (suite *handlerTestSuite) Test_StageNotificationHandler_getAzureDeployments
 	suite.Assert().Len(result, 2)
 }
 
+func (suite *handlerTestSuite) Test_StageNotificationHandler_Handle() {
+	settings, ok := suite.SettingsByName(suite.settingsName)
+	suite.Require().True(ok)
+
+	handler := &stageNotificationHandler{
+		db:                suite.db,
+		notify:            suite.notifyFunc,
+		deploymentsClient: suite.deploymentsClient,
+	}
+
+	result, err := handler.getAzureDeploymentResources(context.Background(), &model.StageNotification{
+		ResourceGroupName: settings.ResourceGroupName,
+		CorrelationId:     suite.correlationId,
+	})
+	suite.Assert().NoError(err)
+	suite.Assert().Len(result, 2)
+}
+
 //endregion tests
 
 func (suite *handlerTestSuite) setDeploymentsClient(settings azuresuite.AzureTestSettings) {

@@ -7,7 +7,7 @@ import (
 	"reflect"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
-	"github.com/labstack/gommon/log"
+	log "github.com/sirupsen/logrus"
 )
 
 //region message handler context

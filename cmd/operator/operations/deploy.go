@@ -111,7 +111,6 @@ func (service *deployeOperation) notifyForStages(context *operation.ExecutionCon
 		CorrelationId:     *correlationId,
 		ResourceGroupName: deployment.ResourceGroup,
 		Entries:           []model.StageNotificationEntry{},
-		Done:              false,
 	}
 
 	for _, stage := range deployment.Stages {

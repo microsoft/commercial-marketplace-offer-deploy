@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -20,6 +21,8 @@ type stageNotificationHandler struct {
 	deploymentsClient *armresources.DeploymentsClient
 }
 
+type provisioningStates map[uuid.UUID]armresources.ProvisioningState
+
 func NewStageNotificationHandler(db *gorm.DB, deploymentsClient *armresources.DeploymentsClient) NotificationHandler[model.StageNotification] {
 	return &stageNotificationHandler{
 		db:                db,
@@ -29,24 +32,65 @@ func NewStageNotificationHandler(db *gorm.DB, deploymentsClient *armresources.De
 }
 
 func (h *stageNotificationHandler) Handle(context *NotificationHandlerContext[model.StageNotification]) {
-	resources, err := h.getAzureDeploymentResources(context.ctx, context.Notification)
+	states, err := h.getStates(context.ctx, context.Notification)
 	if err != nil {
-		context.Done(NotificationHandlerResult[model.StageNotification]{
-			Notification: context.Notification,
-			Error:        err,
-		})
+		context.Error(err)
 		return
 	}
 
-	// TODO: handle the stage notifications until all are sent
-
-	for _, resource := range resources {
-		log.Debugf("Handle stage notification for deployment %s", *resource.Name)
+	if len(states) == 0 {
+		context.Continue()
+		return
 	}
 
-	context.Done(NotificationHandlerResult[model.StageNotification]{
-		Notification: context.Notification,
-	})
+	entries := context.Notification.Entries
+	for _, entry := range entries {
+		if !entry.IsSent {
+			state, ok := states[entry.StageId]
+			if !ok {
+				continue
+			}
+			if state != armresources.ProvisioningStateFailed && state != armresources.ProvisioningStateSucceeded {
+				id, err := h.notify(context.ctx, &entry.Message)
+				if err == nil {
+					log.Tracef("notification sent for stage [%s] with id [%s]", entry.StageId, id)
+					entry.Sent()
+				}
+			}
+		}
+	}
+
+	h.db.Save(&context.Notification)
+
+	if context.Notification.AllSent() {
+		context.Notification.Done()
+		context.Done()
+	}
+
+	context.Continue()
+}
+
+func (h *stageNotificationHandler) getStates(ctx context.Context, notification *model.StageNotification) (provisioningStates, error) {
+	resources, err := h.getAzureDeploymentResources(ctx, notification)
+	results := provisioningStates{}
+
+	if err != nil || len(resources) == 0 {
+		return results, err
+	}
+
+	for _, resource := range resources {
+		value, ok := resource.Tags[string(deployment.LookupTagKeyId)]
+		if !ok {
+			continue
+		}
+		stageId, err := uuid.Parse(*value)
+		if err != nil {
+			log.Warnf("failed to uuid parse [%v] as modm.id on resource [%s]", *value, *resource.Name)
+			continue
+		}
+		results[stageId] = armresources.ProvisioningState(*resource.Properties.ProvisioningState)
+	}
+	return results, nil
 }
 
 // get by correlationId

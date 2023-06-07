@@ -42,7 +42,7 @@ func (suite *serviceTestSuite) SetupTest() {
 			CorrelationId:     [16]byte{},
 			ResourceGroupName: "",
 			Entries:           []model.StageNotificationEntry{},
-			Done:              false,
+			IsDone:            false,
 		}
 		suite.T().Logf("Notification created, ID: %d", notification.ID)
 		return notification
@@ -105,9 +105,7 @@ func (h *fakeHandler) Handle(context *NotificationHandlerContext[model.StageNoti
 	delay := int(rand.Intn(5) + 1)
 	time.Sleep(time.Duration(delay) * time.Second)
 
-	context.Done(NotificationHandlerResult[model.StageNotification]{
-		Notification: context.Notification,
-	})
+	context.Done()
 }
 
 //endregion fakes

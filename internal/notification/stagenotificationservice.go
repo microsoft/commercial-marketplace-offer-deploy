@@ -46,16 +46,18 @@ func (s *StageNotificationService) start() {
 	for {
 		// loop over s.results
 		// if done, remove from map
-		for _, done := range s.channels {
+		for _, channel := range s.channels {
 			select {
-			case result := <-done:
+			case result := <-channel:
 				id := result.Notification.ID
-				s.log.Infof("Handler (notification [%d]) done", id)
+				s.log.Infof("Handler (notification [%d])", id)
 
 				if result.Error != nil {
 					s.log.Errorf("Error handling stage notification %d: %s", id, result.Error)
 				}
-				delete(s.channels, id)
+				if result.Done {
+					delete(s.channels, id)
+				}
 			default:
 				continue
 			}

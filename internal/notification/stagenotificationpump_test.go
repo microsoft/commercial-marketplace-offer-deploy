@@ -25,7 +25,7 @@ func TestStageNotificationPump_receiver_function_not_called(t *testing.T) {
 	}
 
 	record := &model.StageNotification{
-		Done:              true,
+		IsDone:            true,
 		OperationId:       uuid.New(),
 		CorrelationId:     uuid.New(),
 		ResourceGroupName: "test",
@@ -54,7 +54,7 @@ func TestStageNotificationPump_receiver_function_called(t *testing.T) {
 
 	// Create a test record with Done set to false
 	record := &model.StageNotification{
-		Done:              false,
+		IsDone:            false,
 		OperationId:       uuid.New(),
 		CorrelationId:     uuid.New(),
 		ResourceGroupName: "test",
@@ -82,7 +82,7 @@ func TestStageNotificationPump_read_unsent(t *testing.T) {
 
 	// Create a test record with Done set to false
 	expectedRecord := &model.StageNotification{
-		Done: false,
+		IsDone: false,
 		// Set other required fields if any
 	}
 	mockDB.Create(expectedRecord)
@@ -99,7 +99,7 @@ func TestStageNotificationPump_read_unsent(t *testing.T) {
 	assert.Equal(t, expectedRecord.Done, record.Done)
 
 	// Assert that Done field is false
-	assert.False(t, record.Done)
+	assert.False(t, record.IsDone)
 }
 
 func TestStageNotificationPump_read_sent(t *testing.T) {
@@ -112,7 +112,7 @@ func TestStageNotificationPump_read_sent(t *testing.T) {
 
 	// Create a test record with Done set to true
 	record := &model.StageNotification{
-		Done: true,
+		IsDone: true,
 		// Set other required fields if any
 	}
 	mockDB.Create(record)

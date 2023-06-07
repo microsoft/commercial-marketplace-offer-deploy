@@ -3,10 +3,10 @@ package operations
 import (
 	"fmt"
 
-	"github.com/labstack/gommon/log"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
+	log "github.com/sirupsen/logrus"
 )
 
 type OperationFuncProvider struct {
