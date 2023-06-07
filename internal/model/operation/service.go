@@ -155,7 +155,7 @@ func (service *OperationService) getMessage(io *model.InvokedOperation) *sdk.Eve
 
 func (service *OperationService) deployment() *model.Deployment {
 	deployment := &model.Deployment{}
-	result := service.db.First(deployment, service.operation.DeploymentId)
+	result := service.db.Preload("Stages").First(deployment, service.operation.DeploymentId)
 
 	if result.RowsAffected == 0 {
 		return nil

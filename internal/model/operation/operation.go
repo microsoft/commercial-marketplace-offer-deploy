@@ -25,7 +25,12 @@ func (o *Operation) Running() error {
 	o.service.log.Info("Marking operation as running")
 
 	o.InvokedOperation.Running()
-	return o.service.saveChanges(true)
+	err := o.service.saveChanges(true)
+	if err != nil {
+		o.service.log.Errorf("failed to save running changes for operation: %v", err)
+	}
+
+	return nil
 }
 
 func (o *Operation) Complete() error {

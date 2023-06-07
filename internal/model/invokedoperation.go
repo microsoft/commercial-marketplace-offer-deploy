@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -60,6 +61,10 @@ func (o *InvokedOperation) IsExecutable() ([]string, bool) {
 
 func (o *InvokedOperation) IsRetry() bool {
 	return !o.IsCompleted() && o.Attempts > 1
+}
+
+func (o *InvokedOperation) IsFirstAttempt() bool {
+	return !o.IsCompleted() && o.Attempts == 1
 }
 
 func (o *InvokedOperation) IsRunning() bool {
@@ -198,6 +203,19 @@ func (o *InvokedOperation) incrementAttempts() {
 		return
 	}
 	o.Attempts++
+}
+
+func (o *InvokedOperation) CorrelationId() (*uuid.UUID, error) {
+	value, ok := o.AttributeValue(AttributeKeyCorrelationId)
+	if !ok {
+		return nil, errors.New("no correlation id found for operation")
+	}
+	correlationIdString := fmt.Sprintf("%v", value)
+	correlationId, err := uuid.Parse(correlationIdString)
+	if err != nil {
+		return nil, err
+	}
+	return &correlationId, nil
 }
 
 func (o *InvokedOperation) appendResult() *InvokedOperationResult {

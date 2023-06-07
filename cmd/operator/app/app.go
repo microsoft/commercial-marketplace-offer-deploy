@@ -3,11 +3,15 @@ package app
 import (
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/operator/receivers"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/diagnostics"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/notification"
 )
 
 func BuildApp(configurationFilePath string) *hosting.App {
@@ -40,6 +44,27 @@ func addMessageReceivers(builder *hosting.AppBuilder, appConfig *config.AppConfi
 	eventsReceiver, operationsReceiver := getMessageReceivers(appConfig)
 	builder.AddService(eventsReceiver)
 	builder.AddService(operationsReceiver)
+
+	stageNotificationService := getStageNotificationService(appConfig)
+	builder.AddService(stageNotificationService)
+
+}
+
+func getStageNotificationService(appConfig *config.AppConfig) *notification.StageNotificationService {
+	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
+	pump := notification.NewStageNotificationPump(db, notification.SleepDurationPumpDefault)
+
+	handlerFactory := func() (notification.NotificationHandler[model.StageNotification], error) {
+		credential := hosting.GetAzureCredential()
+		client, err := armresources.NewDeploymentsClient(appConfig.Azure.SubscriptionId, credential, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		return notification.NewStageNotificationHandler(client), nil
+	}
+
+	return notification.NewStageNotificationService(db, pump, handlerFactory)
 }
 
 func getMessageReceivers(appConfig *config.AppConfig) (messaging.MessageReceiver, messaging.MessageReceiver) {
