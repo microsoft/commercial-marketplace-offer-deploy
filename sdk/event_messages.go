@@ -2,6 +2,8 @@ package sdk
 
 import (
 	"errors"
+	"fmt"
+	"hash/fnv"
 	"strconv"
 	"strings"
 	"time"
@@ -30,6 +32,15 @@ type EventHookMessage struct {
 	// /deployments/{deploymentId}/operations/{operationName}
 	Subject string `json:"subject,omitempty"`
 	Data    any    `json:"data,omitempty"`
+}
+
+func (m *EventHookMessage) GetHash() string {
+	hash := fnv.New32a()
+	hashString := fmt.Sprintf("%s%s%s%s", m.HookId, m.Type, m.Status, m.Subject)
+	hash.Write([]byte(hashString))
+	hashBytes := hash.Sum(nil)
+	hashValue := fmt.Sprintf("%x", hashBytes)
+	return hashValue
 }
 
 func (m *EventHookMessage) DryRunEventData() (*DryRunEventData, error) {
