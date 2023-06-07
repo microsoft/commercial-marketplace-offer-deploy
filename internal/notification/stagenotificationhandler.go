@@ -2,10 +2,9 @@ package notification
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
+	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	log "github.com/sirupsen/logrus"
@@ -45,18 +44,14 @@ func (h *stageNotificationHandler) Handle(context *NotificationHandlerContext[mo
 		log.Debugf("Handle stage notification for deployment %s", *resource.Name)
 	}
 
-	//finally after handling the entire set of notifications to send
-	context.done <- NotificationHandlerResult[model.StageNotification]{
+	context.Done(NotificationHandlerResult[model.StageNotification]{
 		Notification: context.Notification,
-	}
+	})
 }
 
 // get by correlationId
 func (h *stageNotificationHandler) getAzureDeploymentResources(ctx context.Context, notification *model.StageNotification) ([]*armresources.DeploymentExtended, error) {
-	filter := fmt.Sprintf("correlationId eq '%s'", notification.CorrelationId.String())
-	pager := h.deploymentsClient.NewListByResourceGroupPager(notification.ResourceGroupName, &armresources.DeploymentsClientListByResourceGroupOptions{
-		Filter: to.Ptr(filter),
-	})
+	pager := h.deploymentsClient.NewListByResourceGroupPager(notification.ResourceGroupName, nil)
 
 	resources := []*armresources.DeploymentExtended{}
 
@@ -66,9 +61,16 @@ func (h *stageNotificationHandler) getAzureDeploymentResources(ctx context.Conte
 			return nil, err
 		}
 		if nextResult.DeploymentListResult.Value != nil {
-			resources = append(resources, nextResult.DeploymentListResult.Value...)
+			for _, item := range nextResult.DeploymentListResult.Value {
+				if item.Properties.CorrelationID == nil {
+					continue
+				}
+
+				if uuid.MustParse(*item.Properties.CorrelationID) == notification.CorrelationId {
+					resources = append(resources, item)
+				}
+			}
 		}
 	}
-
 	return resources, nil
 }

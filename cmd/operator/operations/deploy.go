@@ -101,16 +101,17 @@ func (service *deployeOperation) notifyForStages(context *operation.ExecutionCon
 		return err
 	}
 
-	notification := &model.StageNotification{
-		OperationId:   op.ID,
-		CorrelationId: *correlationId,
-		Entries:       []model.StageNotificationEntry{},
-		Done:          false,
-	}
-
 	deployment := operation.Deployment()
 	if deployment == nil {
 		return errors.New("deployment not found")
+	}
+
+	notification := &model.StageNotification{
+		OperationId:       op.ID,
+		CorrelationId:     *correlationId,
+		ResourceGroupName: deployment.ResourceGroup,
+		Entries:           []model.StageNotificationEntry{},
+		Done:              false,
 	}
 
 	for _, stage := range deployment.Stages {

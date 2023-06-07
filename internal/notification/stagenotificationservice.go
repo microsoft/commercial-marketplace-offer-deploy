@@ -2,6 +2,7 @@ package notification
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	log "github.com/sirupsen/logrus"
@@ -11,7 +12,7 @@ type StageNotificationService struct {
 	ctx            context.Context
 	pump           NotificationPump[model.StageNotification]
 	handlerFactory NotificationHandlerFactoryFunc[model.StageNotification]
-	results        map[uint]chan NotificationHandlerResult[model.StageNotification]
+	channels       map[uint]chan NotificationHandlerResult[model.StageNotification]
 	log            *log.Entry
 }
 
@@ -21,7 +22,7 @@ func NewStageNotificationService(pump NotificationPump[model.StageNotification],
 		pump:           pump,
 		handlerFactory: handlerFactory,
 		log:            log.WithFields(log.Fields{}),
-		results:        make(map[uint]chan NotificationHandlerResult[model.StageNotification]),
+		channels:       make(map[uint]chan NotificationHandlerResult[model.StageNotification]),
 	}
 }
 
@@ -45,7 +46,7 @@ func (s *StageNotificationService) start() {
 	for {
 		// loop over s.results
 		// if done, remove from map
-		for _, done := range s.results {
+		for _, done := range s.channels {
 			select {
 			case result := <-done:
 				id := result.Notification.ID
@@ -54,7 +55,7 @@ func (s *StageNotificationService) start() {
 				if result.Error != nil {
 					s.log.Errorf("Error handling stage notification %d: %s", id, result.Error)
 				}
-				delete(s.results, id)
+				delete(s.channels, id)
 			default:
 				continue
 			}
@@ -63,15 +64,24 @@ func (s *StageNotificationService) start() {
 }
 
 func (s *StageNotificationService) receive(notification *model.StageNotification) error {
+	if s.isCurrentlyBeingHandled(notification.ID) {
+		return fmt.Errorf("already handling notification [%d]", notification.ID)
+	}
+
 	handler, err := s.handlerFactory()
 	if err != nil {
 		return err
 	}
 
 	context := NewNotificationHandlerContext[model.StageNotification](s.ctx, notification)
-	s.results[notification.ID] = context.Channel()
+	s.channels[notification.ID] = context.Channel()
 
 	go handler.Handle(context)
 
 	return nil
+}
+
+func (s *StageNotificationService) isCurrentlyBeingHandled(id uint) bool {
+	_, ok := s.channels[id]
+	return ok
 }

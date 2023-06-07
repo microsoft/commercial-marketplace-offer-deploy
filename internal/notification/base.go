@@ -43,7 +43,7 @@ type NotificationHandlerContext[T any] struct {
 func NewNotificationHandlerContext[T any](ctx context.Context, notification *T) *NotificationHandlerContext[T] {
 	return &NotificationHandlerContext[T]{
 		ctx:          ctx,
-		done:         make(chan NotificationHandlerResult[T], 2),
+		done:         make(chan NotificationHandlerResult[T], 1),
 		Notification: notification,
 	}
 }

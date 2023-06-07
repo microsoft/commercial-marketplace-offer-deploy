@@ -43,16 +43,13 @@ func (p *StageNotificationPump) Start() {
 			default:
 				// do we want to read all unsent notifications at once to reduce db calls?
 				notification, ok := p.read()
-				if !ok {
-					time.Sleep(p.sleepDuration)
-					continue
+				if ok {
+					err := p.receive(notification)
+					if err != nil {
+						log.Error(err)
+					}
 				}
-
-				err := p.receive(notification)
-				if err != nil {
-					log.Error(err)
-					continue
-				}
+				time.Sleep(p.sleepDuration)
 			}
 		}
 	}()
