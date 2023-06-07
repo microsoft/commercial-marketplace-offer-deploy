@@ -117,7 +117,11 @@ func (r *ResourceEventSubject) SetLookupTags(tags deployment.LookupTags) {
 
 // whether the subject of the event is an azure deployment resource
 func (r *ResourceEventSubject) IsResourceTypeDeployment() bool {
-	if r.azureResource == nil || r.azureResource.Type == nil || *r.azureResource.Type == "" {
+	if r.azureResource == nil {
+		return false
+	}
+
+	if r.azureResource.Type == nil || *r.azureResource.Type == "" {
 		return false
 	}
 	return *r.azureResource.Type == azureDeploymentResourceType
