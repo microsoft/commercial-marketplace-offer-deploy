@@ -13,7 +13,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/eventgrid/2018-01-01/eventgrid"
 	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/azureevents"
-	filter "github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/azureevents"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/cmd/apiserver/azureevents/eventhook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
@@ -37,7 +36,7 @@ var matchAny deployment.LookupTags = deployment.LookupTags{
 
 type eventGridWebHook struct {
 	messageFactory      *eventhook.EventHookMessageFactory
-	filter              filter.EventGridEventFilter
+	filter              azureevents.EventGridEventFilter
 	stageQuery          *data.StageQuery
 	operationQuery      *data.InvokedOperationQuery
 	operationRepository operation.Repository
@@ -254,7 +253,7 @@ func newWebHookEventMessageFactory(subscriptionId string, db *gorm.DB, credentia
 	return eventhook.NewEventHookMessageFactory(client, db), nil
 }
 
-func newEventsFilter(appConfig *config.AppConfig, credential azcore.TokenCredential, repo operation.Repository) (filter.EventGridEventFilter, error) {
+func newEventsFilter(appConfig *config.AppConfig, credential azcore.TokenCredential, repo operation.Repository) (azureevents.EventGridEventFilter, error) {
 	// TODO: probably should come from db as configurable at runtime
 	includeKeys := []string{
 		string(deployment.LookupTagKeyEvents),
@@ -262,13 +261,13 @@ func newEventsFilter(appConfig *config.AppConfig, credential azcore.TokenCredent
 		string(deployment.LookupTagKeyName),
 		string(deployment.LookupTagKeyStageId),
 	}
-	resourceClient, err := filter.NewAzureResourceClient(appConfig.Azure.SubscriptionId, credential)
+	resourceClient, err := azureevents.NewAzureResourceClient(appConfig.Azure.SubscriptionId, credential)
 	if err != nil {
 		return nil, err
 	}
 
-	provider := filter.NewResourceEventSubjectFactory(resourceClient, repo)
-	filter := filter.NewTagsFilter(includeKeys, provider)
+	provider := azureevents.NewResourceEventSubjectFactory(resourceClient, repo)
+	filter := azureevents.NewTagsFilter(includeKeys, provider)
 	return filter, nil
 }
 
