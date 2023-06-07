@@ -7,6 +7,8 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/notification"
@@ -155,9 +157,12 @@ func (op *deployeOperation) mapAzureDeployment(invokedOperation *operation.Opera
 	}
 }
 
-func NewDeploymentOperation() operation.OperationFunc {
+func NewDeploymentOperation(appConfig *config.AppConfig) operation.OperationFunc {
+	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
+
 	operation := &deployeOperation{
 		retryOperation: NewRetryOperation(),
+		stageNotifier:  notification.NewStageNotifier(db),
 	}
 	return operation.do
 }

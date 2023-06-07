@@ -4,18 +4,26 @@ import (
 	"fmt"
 
 	"github.com/labstack/gommon/log"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
 type OperationFuncProvider struct {
+	appConfig *config.AppConfig
+}
+
+func NewOperationFuncProvider(appConfig *config.AppConfig) *OperationFuncProvider {
+	return &OperationFuncProvider{
+		appConfig: appConfig,
+	}
 }
 
 func (p *OperationFuncProvider) Get(operationType sdk.OperationType) (operation.OperationFunc, error) {
-	return GetOperation(operationType)
+	return GetOperation(operationType, p.appConfig)
 }
 
-func GetOperation(operationType sdk.OperationType) (operation.OperationFunc, error) {
+func GetOperation(operationType sdk.OperationType, appConfig *config.AppConfig) (operation.OperationFunc, error) {
 	var operationFunc operation.OperationFunc
 	log.Debugf("Creating executor for operation type: %s", string(operationType))
 
@@ -23,7 +31,7 @@ func GetOperation(operationType sdk.OperationType) (operation.OperationFunc, err
 	case sdk.OperationDryRun:
 		operationFunc = NewDryRunOperation()
 	case sdk.OperationDeploy:
-		operationFunc = NewDeploymentOperation()
+		operationFunc = NewDeploymentOperation(appConfig)
 	case sdk.OperationRetry: //explicit retry
 		operationFunc = NewRetryOperation()
 	case sdk.OperationRetryStage:
