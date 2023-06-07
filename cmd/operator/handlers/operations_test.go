@@ -36,7 +36,7 @@ func (suite *operationsTestSuite) SetupSuite() {
 	suite.hookService = fake.NewFakeHookService(suite.T())
 	suite.sender = fake.NewFakeMessageSender(suite.T())
 
-	service, err := operation.NewService(suite.db, suite.sender, suite.hookService.Notify, nil)
+	service, err := operation.NewService(suite.db, suite.sender, suite.hookService.Notify)
 	suite.Assert().NoError(err)
 
 	suite.service = service

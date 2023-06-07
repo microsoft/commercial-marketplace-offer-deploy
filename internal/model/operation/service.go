@@ -2,16 +2,13 @@ package operation
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/mapper"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/notification"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -26,8 +23,7 @@ type OperationService struct {
 	sender messaging.MessageSender
 	log    *log.Entry
 	// the reference of the operation
-	operation     *Operation
-	stageNotifier notification.StageNotifier
+	operation *Operation
 }
 
 func (service *OperationService) Context() context.Context {
@@ -69,71 +65,6 @@ func (service *OperationService) saveChanges(notify bool) error {
 	}
 
 	return nil
-}
-
-func (service *OperationService) notifyForStages() error {
-	service.log.WithFields(log.Fields{
-		"attempts": service.operation.Attempts,
-		"status":   service.operation.Status,
-	}).Info("notifying for stages")
-
-	op := service.operation.InvokedOperation
-
-	service.log.WithFields(log.Fields{
-		"attributesLength": len(op.Attributes),
-	}).Info("operation attributes information")
-
-	for _, attr := range op.Attributes {
-		//log attr key and value
-		service.log.WithFields(log.Fields{
-			"key":   attr.Key,
-			"value": attr.Value,
-		}).Info("operation attribute")
-	}
-
-	// only handle scheduled deployment operations, where we want to notify of stages getting scheduled
-	if !op.IsRunning() && !op.IsFirstAttempt() {
-		return errors.New("not a running deployment operation or not first attempt")
-	}
-
-	correlationId, err := op.CorrelationId()
-	if err != nil {
-		return err
-	}
-
-	notification := &model.StageNotification{
-		OperationId:   op.ID,
-		CorrelationId: *correlationId,
-		Entries:       []model.StageNotificationEntry{},
-		Done:          false,
-	}
-
-	deployment := service.deployment()
-	if deployment == nil {
-		return errors.New("deployment not found")
-	}
-
-	for _, stage := range deployment.Stages {
-		notification.Entries = append(notification.Entries, model.StageNotificationEntry{
-			StageId: stage.ID,
-			Message: sdk.EventHookMessage{
-				Id:     uuid.New(),
-				Type:   string(sdk.EventTypeStageStarted),
-				Status: sdk.StatusRunning.String(),
-				Data: sdk.DeploymentEventData{
-					DeploymentId:  int(deployment.ID),
-					StageId:       &stage.ID,
-					OperationId:   op.ID,
-					CorrelationId: correlationId,
-					Attempts:      1,
-					StartedAt:     time.Now().UTC(),
-				},
-			},
-		})
-	}
-
-	err = service.stageNotifier.Notify(service.ctx, notification)
-	return err
 }
 
 // triggers a notification of the invoked operation's state
@@ -233,16 +164,15 @@ func (service *OperationService) deployment() *model.Deployment {
 }
 
 // constructor factory of operation service
-func NewService(db *gorm.DB, sender messaging.MessageSender, notify hook.NotifyFunc, stageNotifier notification.StageNotifier) (*OperationService, error) {
+func NewService(db *gorm.DB, sender messaging.MessageSender, notify hook.NotifyFunc) (*OperationService, error) {
 
 	ctx := context.Background()
 
 	return &OperationService{
-		ctx:           ctx,
-		db:            db,
-		sender:        sender,
-		notify:        notify,
-		log:           log.WithContext(ctx),
-		stageNotifier: stageNotifier,
+		ctx:    ctx,
+		db:     db,
+		sender: sender,
+		notify: notify,
+		log:    log.WithContext(ctx),
 	}, nil
 }

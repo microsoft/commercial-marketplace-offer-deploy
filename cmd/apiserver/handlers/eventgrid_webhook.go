@@ -22,7 +22,6 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/notification"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
@@ -207,7 +206,7 @@ func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.T
 			errors = append(errors, err.Error())
 		}
 
-		service, err := operation.NewService(db, sender, hook.Notify, notification.NewStageNotifier(db))
+		service, err := operation.NewService(db, sender, hook.Notify)
 		if err != nil {
 			errors = append(errors, err.Error())
 		}

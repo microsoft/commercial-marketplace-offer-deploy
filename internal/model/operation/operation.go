@@ -30,10 +30,6 @@ func (o *Operation) Running() error {
 		o.service.log.Errorf("failed to save running changes for operation: %v", err)
 	}
 
-	err = o.service.notifyForStages()
-	if err != nil {
-		o.service.log.Errorf("failed to notify for stages: %v", err)
-	}
 	return nil
 }
 

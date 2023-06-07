@@ -16,7 +16,6 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/notification"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
@@ -134,7 +133,7 @@ func NewInvokeDeploymentOperationHandler(appConfig *config.AppConfig, credential
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
 
-		service, err := operation.NewService(db, sender, hook.Notify, notification.NewStageNotifier(db))
+		service, err := operation.NewService(db, sender, hook.Notify)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
