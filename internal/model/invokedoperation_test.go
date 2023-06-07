@@ -135,9 +135,11 @@ func Test_InvokedOperation_CorrelationId_Attrs_Null(t *testing.T) {
 		},
 	}
 
+	operation.Attributes = nil
+
 	resultId, err := operation.CorrelationId()
 	t.Logf("error: %v", err)
 
-	assert.Error(t, err)
-	assert.Equal(t, correlationId, *resultId)
+	assert.Error(t, err, "no correlation id found for operation")
+	assert.Nil(t, resultId)
 }
