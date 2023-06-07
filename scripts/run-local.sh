@@ -28,7 +28,7 @@ function run_modm() {
     start_ngrok_background
 
     compose_file=./deployments/docker-compose.standalone.yml
-    docker compose -f $compose_file up 
+    docker compose -f $compose_file -p modm up 
 }
 
 function run_testharness() {
@@ -47,7 +47,7 @@ function run_testharness() {
     start_ngrok_background
 
     compose_file=../deployments/docker-compose.testharness.yml
-    docker compose -f $compose_file up 
+    docker compose -f $compose_file -p modm up 
 }
 
 function run_docker_cleanup() {
