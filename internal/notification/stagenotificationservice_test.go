@@ -1,6 +1,7 @@
 package notification
 
 import (
+	"math/rand"
 	"testing"
 	"time"
 
@@ -16,6 +17,8 @@ type serviceTestSuite struct {
 	db             *gorm.DB
 	handlerFactory StageNotificationHandlerFactoryFunc
 	pump           NotificationPump[model.StageNotification]
+
+	notification *model.StageNotification
 }
 
 // entry point for running the test suite
@@ -30,13 +33,25 @@ func (suite *serviceTestSuite) SetupSuite() {
 }
 
 func (suite *serviceTestSuite) SetupTest() {
+	suite.notification = &model.StageNotification{
+		Model: gorm.Model{
+			ID: uint(rand.Int()),
+		},
+		OperationId:       [16]byte{},
+		CorrelationId:     [16]byte{},
+		ResourceGroupName: "",
+		Entries:           []model.StageNotificationEntry{},
+		Done:              false,
+	}
+	suite.T().Logf("Test setup with ID: %d", suite.notification.ID)
 }
 
 //tests
 
-func (suite *serviceTestSuite) TestStart() {
+func (suite *serviceTestSuite) Test_Start_Stop_Is_Wired_Up() {
 	service := NewStageNotificationService(suite.pump, suite.handlerFactory)
 	service.Start()
+	service.Stop()
 }
 
 // handler factory method on suite
@@ -47,29 +62,29 @@ func (suite *serviceTestSuite) fakeHandlerFactory() StageNotificationHandlerFact
 }
 
 func (suite *serviceTestSuite) fakePump() NotificationPump[model.StageNotification] {
-	return &fakePump{t: suite.T()}
+	return &fakePump{suite: suite}
 }
 
 //region fakes
 
 type fakePump struct {
-	t        *testing.T
+	suite    *serviceTestSuite
 	receiver NotificationPumpReceiveFunc[model.StageNotification]
 }
 
 func (p *fakePump) Start() {
-	p.t.Log("fake pump started")
+	p.suite.T().Log("fake pump started")
 
 	time.Sleep(5 * time.Second)
-	p.receiver(&model.StageNotification{})
+	p.receiver(p.suite.notification)
 }
 
 func (p *fakePump) Stop() {
-	p.t.Log("fake pump stopped")
+	p.suite.T().Log("fake pump stopped")
 }
 
 func (p *fakePump) SetReceiver(receiver NotificationPumpReceiveFunc[model.StageNotification]) {
-	p.t.Log("fake pump receiver set")
+	p.suite.T().Log("fake pump receiver set")
 	p.receiver = receiver
 }
 
@@ -78,7 +93,7 @@ type fakeHandler struct {
 }
 
 func (h *fakeHandler) Handle(context *NotificationHandlerContext[model.StageNotification]) {
-	h.t.Log("fake handler called")
+	h.t.Logf("fake handler called with ID: %d", context.Notification.ID)
 	context.Done(NotificationHandlerResult[model.StageNotification]{
 		Notification: context.Notification,
 	})
