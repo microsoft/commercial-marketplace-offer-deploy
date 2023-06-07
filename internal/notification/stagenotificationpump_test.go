@@ -12,7 +12,6 @@ import (
 )
 
 func TestReadNotificationPump(t *testing.T) {
-	
 
 }
 
@@ -26,15 +25,15 @@ func TestStageNotificationPump_receiver_function_not_called(t *testing.T) {
 	}
 
 	record := &model.StageNotification{
-		Done: true,
-		OperationId: uuid.New(),
-		CorrelationId: uuid.New(),
+		Done:              true,
+		OperationId:       uuid.New(),
+		CorrelationId:     uuid.New(),
 		ResourceGroupName: "test",
 	}
 	mockDB.Save(record)
 
-	pump := NewStageNotificationPump(mockDB, 10 * time.Second, receiver)
-	
+	pump := NewStageNotificationPump(mockDB, 10*time.Second, receiver)
+
 	pump.Start()
 
 	time.Sleep(15 * time.Second)
@@ -54,15 +53,15 @@ func TestStageNotificationPump_receiver_function_called(t *testing.T) {
 
 	// Create a test record with Done set to false
 	record := &model.StageNotification{
-		Done: false,
-		OperationId: uuid.New(),
-		CorrelationId: uuid.New(),
+		Done:              false,
+		OperationId:       uuid.New(),
+		CorrelationId:     uuid.New(),
 		ResourceGroupName: "test",
 	}
 	mockDB.Save(record)
 
-	pump := NewStageNotificationPump(mockDB, 10 * time.Second, receiver)
-	
+	pump := NewStageNotificationPump(mockDB, 10*time.Second, receiver)
+
 	pump.Start()
 
 	time.Sleep(15 * time.Second)
@@ -123,7 +122,6 @@ func TestStageNotificationPump_read_sent(t *testing.T) {
 	assert.False(t, found)
 	assert.Nil(t, result)
 }
-
 
 func getDatabase() *gorm.DB {
 	database := data.NewDatabase(&data.DatabaseOptions{UseInMemory: true}).Instance()
