@@ -14,7 +14,7 @@ services:
     networks:
       - web
 
-  modm:
+  apiserver:
     env_file: ../bin/.env.local
     image: modmapiserver:latest
     volumes:

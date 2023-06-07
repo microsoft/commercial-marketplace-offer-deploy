@@ -9,12 +9,9 @@
     }
   },
   "parameters": {
-    "aapName": {
-      "type": "string",
-      "defaultValue": "[format('aap{0}', uniqueString(utcNow(), resourceGroup().id))]"
-    },
     "testName": {
-      "type": "string"
+      "type": "string",
+       "defaultValue": "[format('modmteststo0{0}', substring(uniqueString(utcNow()), 0, 5))]"
     }
   },
   "resources": [
