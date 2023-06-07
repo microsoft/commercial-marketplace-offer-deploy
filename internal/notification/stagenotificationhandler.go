@@ -12,40 +12,30 @@ import (
 	"gorm.io/gorm"
 )
 
-type StageNotificationHandlerFactoryFunc func() (*StageNotificationHandler, error)
+type StageNotificationHandlerFactoryFunc = NotificationHandlerFactoryFunc[model.StageNotification]
 
-type stageNotificationHandlerContext struct {
-	ctx          context.Context
-	notification *model.StageNotification
-	done         chan stageNotificationHandlerResult
-}
-
-type stageNotificationHandlerResult struct {
-	Id    uint
-	Error error
-}
-
-type StageNotificationHandler struct {
+// package internal implementation of notification handler
+type stageNotificationHandler struct {
 	db                *gorm.DB
 	notify            hook.NotifyFunc
 	deploymentsClient *armresources.DeploymentsClient
 }
 
-func NewStageNotificationHandler(db *gorm.DB, deploymentsClient *armresources.DeploymentsClient) *StageNotificationHandler {
-	return &StageNotificationHandler{
+func NewStageNotificationHandler(db *gorm.DB, deploymentsClient *armresources.DeploymentsClient) NotificationHandler[model.StageNotification] {
+	return &stageNotificationHandler{
 		db:                db,
 		deploymentsClient: deploymentsClient,
 		notify:            hook.Notify,
 	}
 }
 
-func (h *StageNotificationHandler) Handle(context *stageNotificationHandlerContext) {
-	resources, err := h.getAzureDeploymentResources(context.ctx, context.notification)
+func (h *stageNotificationHandler) Handle(context *NotificationHandlerContext[model.StageNotification]) {
+	resources, err := h.getAzureDeploymentResources(context.ctx, context.Notification)
 	if err != nil {
-		context.done <- stageNotificationHandlerResult{
-			Id:    context.notification.ID,
-			Error: err,
-		}
+		context.Done(NotificationHandlerResult[model.StageNotification]{
+			Notification: context.Notification,
+			Error:        err,
+		})
 		return
 	}
 
@@ -56,13 +46,13 @@ func (h *StageNotificationHandler) Handle(context *stageNotificationHandlerConte
 	}
 
 	//finally after handling the entire set of notifications to send
-	context.done <- stageNotificationHandlerResult{
-		Id: context.notification.ID,
+	context.done <- NotificationHandlerResult[model.StageNotification]{
+		Notification: context.Notification,
 	}
 }
 
 // get by correlationId
-func (h *StageNotificationHandler) getAzureDeploymentResources(ctx context.Context, notification *model.StageNotification) ([]*armresources.DeploymentExtended, error) {
+func (h *stageNotificationHandler) getAzureDeploymentResources(ctx context.Context, notification *model.StageNotification) ([]*armresources.DeploymentExtended, error) {
 	filter := fmt.Sprintf("correlationId eq '%s'", notification.CorrelationId.String())
 	pager := h.deploymentsClient.NewListByResourceGroupPager(notification.ResourceGroupName, &armresources.DeploymentsClientListByResourceGroupOptions{
 		Filter: to.Ptr(filter),

@@ -9,19 +9,19 @@ import (
 
 type StageNotificationService struct {
 	ctx            context.Context
-	pump           *StageNotificationPump
-	handlerFactory StageNotificationHandlerFactoryFunc
-	results        map[uint]chan stageNotificationHandlerResult
+	pump           NotificationPump[model.StageNotification]
+	handlerFactory NotificationHandlerFactoryFunc[model.StageNotification]
+	results        map[uint]chan NotificationHandlerResult[model.StageNotification]
 	log            *log.Entry
 }
 
-func NewStageNotificationService(pump *StageNotificationPump, handlerFactory StageNotificationHandlerFactoryFunc) *StageNotificationService {
+func NewStageNotificationService(pump NotificationPump[model.StageNotification], handlerFactory StageNotificationHandlerFactoryFunc) *StageNotificationService {
 	return &StageNotificationService{
 		ctx:            context.Background(),
 		pump:           pump,
 		handlerFactory: handlerFactory,
 		log:            log.WithFields(log.Fields{}),
-		results:        make(map[uint]chan stageNotificationHandlerResult),
+		results:        make(map[uint]chan NotificationHandlerResult[model.StageNotification]),
 	}
 }
 
@@ -30,7 +30,7 @@ func (s *StageNotificationService) Start() {
 	s.pump.SetReceiver(s.receive)
 	s.pump.Start()
 
-	go s.start()
+	s.start()
 }
 
 func (s *StageNotificationService) Stop() {
@@ -48,12 +48,13 @@ func (s *StageNotificationService) start() {
 		for _, done := range s.results {
 			select {
 			case result := <-done:
-				s.log.Infof("Stage notification [%d] handler completed", result.Id)
+				id := result.Notification.ID
+				s.log.Infof("Stage notification [%d] handler completed", id)
 
 				if result.Error != nil {
-					s.log.Errorf("Error handling stage notification %d: %s", result.Id, result.Error)
+					s.log.Errorf("Error handling stage notification %d: %s", id, result.Error)
 				}
-				delete(s.results, result.Id)
+				delete(s.results, id)
 				return
 			default:
 				continue
@@ -68,16 +69,9 @@ func (s *StageNotificationService) receive(notification *model.StageNotification
 		return err
 	}
 
-	id := notification.ID
-	done := make(chan stageNotificationHandlerResult, 2)
+	context := NewNotificationHandlerContext[model.StageNotification](s.ctx, notification)
+	s.results[notification.ID] = context.Channel()
 
-	s.results[id] = done
-
-	context := &stageNotificationHandlerContext{
-		ctx:          s.ctx,
-		notification: notification,
-		done:         done,
-	}
 	go handler.Handle(context)
 
 	return nil

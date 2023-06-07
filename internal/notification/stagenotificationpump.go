@@ -12,15 +12,13 @@ const SleepDurationPumpDefault = 30 * time.Second
 
 type StageNotificationPump struct {
 	db            *gorm.DB
-	receive       ReceiveNotificationFunc
+	receive       NotificationPumpReceiveFunc[model.StageNotification]
 	isRunning     bool
 	stopChannel   chan bool
 	sleepDuration time.Duration
 }
 
-type ReceiveNotificationFunc func(notification *model.StageNotification) error
-
-func (p *StageNotificationPump) SetReceiver(receive ReceiveNotificationFunc) {
+func (p *StageNotificationPump) SetReceiver(receive NotificationPumpReceiveFunc[model.StageNotification]) {
 	p.receive = receive
 }
 
@@ -77,11 +75,10 @@ func (p *StageNotificationPump) read() (*model.StageNotification, bool) {
 	return record, true
 }
 
-func NewStageNotificationPump(db *gorm.DB, sleepDuration time.Duration, receiver ReceiveNotificationFunc) *StageNotificationPump {
+func NewStageNotificationPump(db *gorm.DB, sleepDuration time.Duration) *StageNotificationPump {
 	return &StageNotificationPump{
-		db:            		db,
-		sleepDuration: 		sleepDuration,
-		stopChannel:   		make(chan bool),
-		receive: 	 		receiver,
+		db:            db,
+		sleepDuration: sleepDuration,
+		stopChannel:   make(chan bool),
 	}
 }

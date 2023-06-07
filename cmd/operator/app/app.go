@@ -10,6 +10,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/diagnostics"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hosting"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/notification"
 )
 
@@ -53,7 +54,7 @@ func getStageNotificationService(appConfig *config.AppConfig) *notification.Stag
 	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
 	pump := notification.NewStageNotificationPump(db, notification.SleepDurationPumpDefault)
 
-	handlerFactory := func() (*notification.StageNotificationHandler, error) {
+	handlerFactory := func() (notification.NotificationHandler[model.StageNotification], error) {
 		credential := hosting.GetAzureCredential()
 		client, err := armresources.NewDeploymentsClient(appConfig.Azure.SubscriptionId, credential, nil)
 		if err != nil {

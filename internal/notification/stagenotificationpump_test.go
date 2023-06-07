@@ -32,7 +32,8 @@ func TestStageNotificationPump_receiver_function_not_called(t *testing.T) {
 	}
 	mockDB.Save(record)
 
-	pump := NewStageNotificationPump(mockDB, 10*time.Second, receiver)
+	pump := NewStageNotificationPump(mockDB, 10*time.Second)
+	pump.SetReceiver(receiver)
 
 	pump.Start()
 
@@ -60,7 +61,8 @@ func TestStageNotificationPump_receiver_function_called(t *testing.T) {
 	}
 	mockDB.Save(record)
 
-	pump := NewStageNotificationPump(mockDB, 10*time.Second, receiver)
+	pump := NewStageNotificationPump(mockDB, 10*time.Second)
+	pump.SetReceiver(receiver)
 
 	pump.Start()
 
