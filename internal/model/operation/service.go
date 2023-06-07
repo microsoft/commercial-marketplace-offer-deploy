@@ -72,7 +72,20 @@ func (service *OperationService) saveChanges(notify bool) error {
 }
 
 func (service *OperationService) notifyForStages() error {
+	service.log.WithFields(log.Fields{
+		"attempts": service.operation.Attempts,
+		"status":   service.operation.Status,
+	}).Info("notifying for stages")
+
 	op := service.operation.InvokedOperation
+
+	for _, attr := range op.Attributes {
+		//log attr key and value
+		service.log.WithFields(log.Fields{
+			"key":   attr.Key,
+			"value": attr.Value,
+		}).Info("operation attribute")
+	}
 
 	// only handle scheduled deployment operations, where we want to notify of stages getting scheduled
 	if !op.IsRunning() && !op.IsFirstAttempt() {

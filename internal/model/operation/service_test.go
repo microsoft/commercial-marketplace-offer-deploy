@@ -2,6 +2,7 @@ package operation
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
@@ -11,6 +12,32 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func Test_Service_first(t *testing.T) {
+	db := data.NewDatabase(&data.DatabaseOptions{UseInMemory: true}).Instance()
+	correlationId := uuid.New()
+
+	service := &OperationService{
+		db: db,
+		operation: &Operation{
+			InvokedOperation: model.InvokedOperation{
+				Status: sdk.StatusRunning.String(),
+				Attributes: []model.InvokedOperationAttribute{
+					model.NewAttribute(model.AttributeKeyCorrelationId, correlationId.String()),
+				},
+			},
+		},
+	}
+
+	db.Save(&service.operation.InvokedOperation)
+
+	service.id = service.operation.ID
+
+	result, err := service.first()
+	assert.NoError(t, err)
+	assert.Len(t, result.Attributes, 1)
+	assert.Equal(t, correlationId.String(), fmt.Sprintf("%s", result.Attributes[0].Value))
+}
 
 func Test_Service_notifyForStages_Only_Thats_Running(t *testing.T) {
 	service := &OperationService{
