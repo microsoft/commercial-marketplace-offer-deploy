@@ -41,7 +41,8 @@ type InvokedOperationResult struct {
 func (o *InvokedOperation) IsExecutable() ([]string, bool) {
 	reasons := []string{}
 
-	if o.IsCompleted() {
+	isCompleted := o.IsCompleted()
+	if isCompleted {
 		reasons = append(reasons, "operation already completed on [%s]", o.LatestResult().CompletedAt.String())
 	}
 
@@ -54,7 +55,7 @@ func (o *InvokedOperation) IsExecutable() ([]string, bool) {
 	if attemptsExceeded {
 		reasons = append(reasons, fmt.Sprintf("operation has exceeded the maximum number of attempts (%d)", o.Retries))
 	}
-	return reasons, (!isRunning && !attemptsExceeded)
+	return reasons, (isCompleted && !isRunning && !attemptsExceeded)
 }
 
 func (o *InvokedOperation) IsRetry() bool {
