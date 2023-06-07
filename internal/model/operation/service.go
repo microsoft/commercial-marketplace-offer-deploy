@@ -79,6 +79,10 @@ func (service *OperationService) notifyForStages() error {
 
 	op := service.operation.InvokedOperation
 
+	service.log.WithFields(log.Fields{
+		"attributesLength": len(op.Attributes),
+	}).Info("operation attributes information")
+
 	for _, attr := range op.Attributes {
 		//log attr key and value
 		service.log.WithFields(log.Fields{

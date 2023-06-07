@@ -9,6 +9,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,7 +19,8 @@ func Test_Service_first(t *testing.T) {
 	correlationId := uuid.New()
 
 	service := &OperationService{
-		db: db,
+		db:  db,
+		log: log.WithContext(context.Background()),
 		operation: &Operation{
 			InvokedOperation: model.InvokedOperation{
 				Status: sdk.StatusRunning.String(),
@@ -41,6 +43,7 @@ func Test_Service_first(t *testing.T) {
 
 func Test_Service_notifyForStages_Only_Thats_Running(t *testing.T) {
 	service := &OperationService{
+		log: log.WithContext(context.Background()),
 		operation: &Operation{
 			InvokedOperation: model.InvokedOperation{
 				Status: sdk.StatusRunning.String(),
@@ -71,7 +74,8 @@ func Test_Service_notifyForStage(t *testing.T) {
 	correlationId := uuid.New()
 
 	service := &OperationService{
-		db: db,
+		db:  db,
+		log: log.WithContext(context.Background()),
 		operation: &Operation{
 			InvokedOperation: model.InvokedOperation{
 				Status:       sdk.StatusRunning.String(),
