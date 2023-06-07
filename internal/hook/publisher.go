@@ -58,7 +58,7 @@ func (p *publisher) Publish(message *sdk.EventHookMessage) error {
 			message.HookId = hook.ID
 
 			sender := p.getSender(*hook)
-
+			// dedupe - hook id, type, status, subject
 			log.Tracef("sending message [%s] to %s - '%s'", message.Id, message.HookId, hook.Callback)
 			err := sender.Send(ctx, &message)
 
