@@ -18,7 +18,7 @@ type serviceTestSuite struct {
 	handlerFactory StageNotificationHandlerFactoryFunc
 	pump           NotificationPump[model.StageNotification]
 
-	notification *model.StageNotification
+	notificationFactoryFunc func(id uint) *model.StageNotification
 }
 
 // entry point for running the test suite
@@ -33,24 +33,29 @@ func (suite *serviceTestSuite) SetupSuite() {
 }
 
 func (suite *serviceTestSuite) SetupTest() {
-	suite.notification = &model.StageNotification{
-		Model: gorm.Model{
-			ID: uint(rand.Int()),
-		},
-		OperationId:       [16]byte{},
-		CorrelationId:     [16]byte{},
-		ResourceGroupName: "",
-		Entries:           []model.StageNotificationEntry{},
-		Done:              false,
+	suite.notificationFactoryFunc = func(id uint) *model.StageNotification {
+		notification := &model.StageNotification{
+			Model: gorm.Model{
+				ID: id,
+			},
+			OperationId:       [16]byte{},
+			CorrelationId:     [16]byte{},
+			ResourceGroupName: "",
+			Entries:           []model.StageNotificationEntry{},
+			Done:              false,
+		}
+		suite.T().Logf("Notification created, ID: %d", notification.ID)
+		return notification
 	}
-	suite.T().Logf("Test setup with ID: %d", suite.notification.ID)
 }
 
 //tests
 
 func (suite *serviceTestSuite) Test_Start_Stop_Is_Wired_Up() {
 	service := NewStageNotificationService(suite.pump, suite.handlerFactory)
-	service.Start()
+
+	go service.Start()
+	time.Sleep(15 * time.Second)
 	service.Stop()
 }
 
@@ -75,8 +80,10 @@ type fakePump struct {
 func (p *fakePump) Start() {
 	p.suite.T().Log("fake pump started")
 
-	time.Sleep(5 * time.Second)
-	p.receiver(p.suite.notification)
+	for i := 1; i <= 3; i++ {
+		n := p.suite.notificationFactoryFunc(uint(i))
+		p.receiver(n)
+	}
 }
 
 func (p *fakePump) Stop() {
@@ -94,6 +101,10 @@ type fakeHandler struct {
 
 func (h *fakeHandler) Handle(context *NotificationHandlerContext[model.StageNotification]) {
 	h.t.Logf("fake handler called with ID: %d", context.Notification.ID)
+
+	delay := int(rand.Intn(5) + 1)
+	time.Sleep(time.Duration(delay) * time.Second)
+
 	context.Done(NotificationHandlerResult[model.StageNotification]{
 		Notification: context.Notification,
 	})

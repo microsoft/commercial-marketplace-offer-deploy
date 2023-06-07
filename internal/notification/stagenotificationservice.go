@@ -49,13 +49,12 @@ func (s *StageNotificationService) start() {
 			select {
 			case result := <-done:
 				id := result.Notification.ID
-				s.log.Infof("Stage notification [%d] handler completed", id)
+				s.log.Infof("Handler (notification [%d]) done", id)
 
 				if result.Error != nil {
 					s.log.Errorf("Error handling stage notification %d: %s", id, result.Error)
 				}
 				delete(s.results, id)
-				return
 			default:
 				continue
 			}
