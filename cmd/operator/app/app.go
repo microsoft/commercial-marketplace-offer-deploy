@@ -61,10 +61,10 @@ func getStageNotificationService(appConfig *config.AppConfig) *notification.Stag
 			return nil, err
 		}
 
-		return notification.NewStageNotificationHandler(db, client), nil
+		return notification.NewStageNotificationHandler(client), nil
 	}
 
-	return notification.NewStageNotificationService(pump, handlerFactory)
+	return notification.NewStageNotificationService(db, pump, handlerFactory)
 }
 
 func getMessageReceivers(appConfig *config.AppConfig) (messaging.MessageReceiver, messaging.MessageReceiver) {
