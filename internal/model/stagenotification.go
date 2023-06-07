@@ -37,9 +37,9 @@ func (n *StageNotification) Done() {
 // whether all entries have been sent
 func (n *StageNotification) AllSent() bool {
 	for _, entry := range n.Entries {
-		if entry.IsSent {
+		if !entry.IsSent {
 			return false
 		}
 	}
-	return false
+	return true
 }

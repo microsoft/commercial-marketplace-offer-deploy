@@ -31,17 +31,19 @@ func NewStageNotificationHandler(deploymentsClient *armresources.DeploymentsClie
 func (h *stageNotificationHandler) Handle(context *NotificationHandlerContext[model.StageNotification]) {
 	states, err := h.getStates(context.ctx, context.Notification)
 	if err != nil {
+		log.Errorf("failed to get states for notification [%s]", context.Notification.CorrelationId)
 		context.Error(err)
 		return
 	}
 
+	log.Tracef("total Stage Deployment states found: %d", len(states))
 	if len(states) == 0 {
 		context.Continue()
 		return
 	}
 
 	entries := context.Notification.Entries
-	for _, entry := range entries {
+	for index, entry := range entries {
 		if !entry.IsSent {
 			state, ok := states[entry.StageId]
 			if !ok {
@@ -55,9 +57,12 @@ func (h *stageNotificationHandler) Handle(context *NotificationHandlerContext[mo
 				}
 			}
 		}
+		entries[index] = entry
 	}
 
 	if context.Notification.AllSent() {
+		log.Tracef("all notifications sent for [%d]. Marking done", context.Notification.ID)
+
 		context.Notification.Done()
 		context.Done()
 		return
