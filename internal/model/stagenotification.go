@@ -15,13 +15,13 @@ type StageNotification struct {
 	CorrelationId     uuid.UUID                `json:"correlationId" gorm:"type:uuid;not null"`
 	ResourceGroupName string                   `json:"resourceGroupName" gorm:"not null"`
 	Entries           []StageNotificationEntry `json:"entries" gorm:"json"`
-	IsDone            bool                     `json:"done" gorm:"not null"`
+	IsDone            bool                     `json:"isDone" gorm:"not null"`
 }
 
 type StageNotificationEntry struct {
 	StageId uuid.UUID            `json:"stageId" gorm:"uuid;not null"`
 	Message sdk.EventHookMessage `json:"message" gorm:"json;not null"`
-	IsSent  bool                 `json:"sent" gorm:"not null"`
+	IsSent  bool                 `json:"isSent" gorm:"not null"`
 	SentAt  *time.Time           `json:"sentAt" gorm:"null"`
 }
 

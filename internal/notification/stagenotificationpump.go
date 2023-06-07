@@ -24,7 +24,7 @@ func (p *StageNotificationPump) SetReceiver(receive NotificationPumpReceiveFunc[
 
 func (p *StageNotificationPump) Start() {
 	if p.receive == nil {
-		log.Error("ReceiveNotificationFunc not set")
+		log.Error("pump has not receiver set")
 		return
 	}
 
@@ -32,7 +32,10 @@ func (p *StageNotificationPump) Start() {
 		return
 	}
 
+	time.Sleep(p.sleepDuration)
 	p.isRunning = true
+
+	log.Tracef("Starting StageNotificationPump with sleep duration %v", p.sleepDuration)
 
 	go func() {
 		for {
@@ -64,7 +67,7 @@ func (p *StageNotificationPump) Stop() {
 func (p *StageNotificationPump) read() (*model.StageNotification, bool) {
 	//write gorm query to read from database where Done is false
 	record := &model.StageNotification{}
-	tx := p.db.Where("done = ?", false).First(record)
+	tx := p.db.Where("is_done = ?", false).First(record)
 
 	if tx.RowsAffected == 0 {
 		return nil, false
