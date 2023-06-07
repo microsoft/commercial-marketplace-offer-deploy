@@ -9,23 +9,20 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	log "github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 )
 
 type StageNotificationHandlerFactoryFunc = NotificationHandlerFactoryFunc[model.StageNotification]
 
 // package internal implementation of notification handler
 type stageNotificationHandler struct {
-	db                *gorm.DB
 	notify            hook.NotifyFunc
 	deploymentsClient *armresources.DeploymentsClient
 }
 
 type provisioningStates map[uuid.UUID]armresources.ProvisioningState
 
-func NewStageNotificationHandler(db *gorm.DB, deploymentsClient *armresources.DeploymentsClient) NotificationHandler[model.StageNotification] {
+func NewStageNotificationHandler(deploymentsClient *armresources.DeploymentsClient) NotificationHandler[model.StageNotification] {
 	return &stageNotificationHandler{
-		db:                db,
 		deploymentsClient: deploymentsClient,
 		notify:            hook.Notify,
 	}
@@ -60,11 +57,10 @@ func (h *stageNotificationHandler) Handle(context *NotificationHandlerContext[mo
 		}
 	}
 
-	h.db.Save(&context.Notification)
-
 	if context.Notification.AllSent() {
 		context.Notification.Done()
 		context.Done()
+		return
 	}
 
 	context.Continue()

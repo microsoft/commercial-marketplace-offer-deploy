@@ -6,23 +6,21 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/google/uuid"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/test/azuresuite"
 	"github.com/stretchr/testify/suite"
-	"gorm.io/gorm"
 )
 
 type handlerTestSuite struct {
 	azuresuite.AzureTestSuite
-	db                *gorm.DB
 	notifyFunc        hook.NotifyFunc
 	deploymentsClient *armresources.DeploymentsClient
 	correlationId     uuid.UUID
 	settingsName      string
+	notification      *model.StageNotification
 }
 
 func TestStageNotificationHandler(t *testing.T) {
@@ -35,8 +33,6 @@ func (suite *handlerTestSuite) SetupSuite() {
 	settings, key := suite.NewSettings()
 	suite.settingsName = key
 
-	suite.db = data.NewDatabase(&data.DatabaseOptions{UseInMemory: true}).Instance()
-
 	suite.notifyFunc = func(ctx context.Context, message *sdk.EventHookMessage) (uuid.UUID, error) {
 		suite.T().Logf("NotifyFunc called with message: %v", message)
 		return uuid.New(), nil
@@ -47,6 +43,27 @@ func (suite *handlerTestSuite) SetupSuite() {
 
 	// now create a deployment
 	suite.deployTemplate(settings)
+
+	// this id comes from testdata/ value in the template.json file
+	stageId := uuid.MustParse("31e9f9a0-9fd2-4294-a0a3-0101246d9700")
+
+	suite.notification = &model.StageNotification{
+		ResourceGroupName: settings.ResourceGroupName,
+		CorrelationId:     suite.correlationId,
+		Entries: []model.StageNotificationEntry{
+			{
+				StageId: stageId,
+				Message: sdk.EventHookMessage{
+					Type:   string(sdk.EventTypeStageStarted),
+					Status: string(sdk.StatusRunning),
+					Data: sdk.DeploymentEventData{
+						DeploymentId: 1,
+						StageId:      &stageId,
+					},
+				},
+			},
+		},
+	}
 }
 
 //region tests
@@ -56,7 +73,6 @@ func (suite *handlerTestSuite) Test_StageNotificationHandler_getAzureDeployments
 	suite.Require().True(ok)
 
 	handler := &stageNotificationHandler{
-		db:                suite.db,
 		notify:            suite.notifyFunc,
 		deploymentsClient: suite.deploymentsClient,
 	}
@@ -70,21 +86,19 @@ func (suite *handlerTestSuite) Test_StageNotificationHandler_getAzureDeployments
 }
 
 func (suite *handlerTestSuite) Test_StageNotificationHandler_Handle() {
-	settings, ok := suite.SettingsByName(suite.settingsName)
-	suite.Require().True(ok)
-
 	handler := &stageNotificationHandler{
-		db:                suite.db,
 		notify:            suite.notifyFunc,
 		deploymentsClient: suite.deploymentsClient,
 	}
 
-	result, err := handler.getAzureDeploymentResources(context.Background(), &model.StageNotification{
-		ResourceGroupName: settings.ResourceGroupName,
-		CorrelationId:     suite.correlationId,
-	})
-	suite.Assert().NoError(err)
-	suite.Assert().Len(result, 2)
+	context := NewNotificationHandlerContext[model.StageNotification](context.Background(), suite.notification)
+
+	channel := context.Channel()
+
+	go handler.Handle(context)
+	<-channel
+
+	suite.Assert().True(context.Notification.IsDone)
 }
 
 //endregion tests

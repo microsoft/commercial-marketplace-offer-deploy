@@ -6,19 +6,22 @@ import (
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 type StageNotificationService struct {
 	ctx            context.Context
+	db             *gorm.DB
 	pump           NotificationPump[model.StageNotification]
 	handlerFactory NotificationHandlerFactoryFunc[model.StageNotification]
 	channels       map[uint]chan NotificationHandlerResult[model.StageNotification]
 	log            *log.Entry
 }
 
-func NewStageNotificationService(pump NotificationPump[model.StageNotification], handlerFactory StageNotificationHandlerFactoryFunc) *StageNotificationService {
+func NewStageNotificationService(db *gorm.DB, pump NotificationPump[model.StageNotification], handlerFactory StageNotificationHandlerFactoryFunc) *StageNotificationService {
 	return &StageNotificationService{
 		ctx:            context.Background(),
+		db:             db,
 		pump:           pump,
 		handlerFactory: handlerFactory,
 		log:            log.WithFields(log.Fields{}),
@@ -56,6 +59,8 @@ func (s *StageNotificationService) start() {
 					s.log.Errorf("Error handling stage notification %d: %s", id, result.Error)
 				}
 				if result.Done {
+					result.Notification.Done()
+					s.db.Save(result.Notification)
 					delete(s.channels, id)
 				}
 			default:

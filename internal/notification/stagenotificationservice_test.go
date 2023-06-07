@@ -52,7 +52,7 @@ func (suite *serviceTestSuite) SetupTest() {
 //tests
 
 func (suite *serviceTestSuite) Test_Start_Stop_Is_Wired_Up() {
-	service := NewStageNotificationService(suite.pump, suite.handlerFactory)
+	service := NewStageNotificationService(suite.db, suite.pump, suite.handlerFactory)
 
 	go service.Start()
 	time.Sleep(15 * time.Second)
