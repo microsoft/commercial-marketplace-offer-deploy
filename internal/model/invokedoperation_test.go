@@ -3,6 +3,7 @@ package model
 import (
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	"github.com/stretchr/testify/assert"
 )
@@ -122,4 +123,21 @@ func Test_InvokedOperation_Will_Not_Exceed_Retries(t *testing.T) {
 		op.Schedule()
 	}
 	assert.Len(t, op.Results, int(op.Retries))
+}
+
+func Test_InvokedOperation_CorrelationId_Attrs_Null(t *testing.T) {
+	correlationId := uuid.New()
+
+	operation := &InvokedOperation{
+		Status: sdk.StatusRunning.String(),
+		Attributes: []InvokedOperationAttribute{
+			NewAttribute(AttributeKeyCorrelationId, correlationId),
+		},
+	}
+
+	resultId, err := operation.CorrelationId()
+	t.Logf("error: %v", err)
+
+	assert.Error(t, err)
+	assert.Equal(t, correlationId, *resultId)
 }
