@@ -21,3 +21,5 @@ func (r *EventHookAudit) Log(message *sdk.EventHookMessage) {
 func NewAudit(db *gorm.DB) *EventHookAudit {
 	return &EventHookAudit{db: db}
 }
+
+
