@@ -8,7 +8,7 @@ import (
 )
 
 // a executable operation with an execution context
-type OperationFunc func(context *ExecutionContext) error
+type OperationFunc func(context ExecutionContext) error
 
 // remarks: Invoked Operation decorator+visitor
 type Operation struct {
@@ -37,7 +37,7 @@ func (o *Operation) Complete() error {
 	o.service.log.Info("Marking operation as complete")
 
 	o.InvokedOperation.Complete()
-	return o.service.saveChanges(false)
+	return o.service.saveChanges(true)
 }
 
 func (o *Operation) Attribute(key model.AttributeKey, v any) error {
@@ -54,14 +54,14 @@ func (o *Operation) Failed() error {
 	o.service.log.Info("Marking operation as failed")
 
 	o.InvokedOperation.Failed()
-	return o.service.saveChanges(true)
+	return o.saveChangesWithoutNotification()
 }
 
 func (o *Operation) Success() error {
 	o.service.log.Info("Marking operation as success")
 
 	o.InvokedOperation.Success()
-	return o.service.saveChanges(true)
+	return o.saveChangesWithoutNotification()
 }
 
 func (o *Operation) Schedule() error {
@@ -91,8 +91,8 @@ func (o *Operation) SaveChanges() error {
 
 // Attempts to trigger a retry of the operation, if the operation has a retriable state
 func (o *Operation) Retry() error {
-	if !o.InvokedOperation.AttemptsExceeded() {
-		return nil
+	if o.InvokedOperation.AttemptsExceeded() {
+		return o.Complete()
 	}
 	o.service.log.Info("Retrying operation")
 	return o.Schedule()

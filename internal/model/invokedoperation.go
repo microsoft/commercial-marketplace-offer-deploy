@@ -99,6 +99,16 @@ func (o *InvokedOperation) Running() {
 	o.setStatus(sdk.StatusRunning.String())
 }
 
+func (o *InvokedOperation) FirstResult() *InvokedOperationResult {
+	if len(o.Results) == 0 {
+		return o.appendResult()
+	}
+	if _, ok := o.Results[1]; !ok {
+		return o.appendResult()
+	}
+	return o.Results[1]
+}
+
 func (o *InvokedOperation) LatestResult() *InvokedOperationResult {
 	if len(o.Results) == 0 {
 		return o.appendResult()
@@ -152,7 +162,7 @@ func (o *InvokedOperation) AttributeValue(key AttributeKey) (any, bool) {
 }
 
 func (o *InvokedOperation) AttemptsExceeded() bool {
-	return o.Attempts >= o.Retries
+	return o.Attempts > o.Retries
 }
 
 func (o *InvokedOperation) IsRetrying() bool {

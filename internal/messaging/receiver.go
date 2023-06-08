@@ -89,7 +89,9 @@ func (r *serviceBusReceiver) Start() {
 					if err != nil {
 						log.Error(err)
 					}
+
 					err = receiver.CompleteMessage(r.ctx, message, nil)
+
 					if err != nil {
 						log.Errorf("Error completing message: %v", err)
 

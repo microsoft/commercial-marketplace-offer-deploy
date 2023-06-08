@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/tools/testharness/audit"
 )
 
 // TODO: this needs to go and pull from .env
@@ -14,6 +15,7 @@ var (
 	clientEndpoint = "http://localhost:8080"
 	env            = loadEnvironmentVariables()
 	deployment     *sdk.Deployment
+	messageAudit   = audit.NewAppendOnlyFileAuditLog("/tmp/testharness.eventhookmessages.txt")
 )
 
 func AddRoutes(e *echo.Echo) {
