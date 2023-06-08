@@ -57,7 +57,11 @@ func TestGetHashIsNotEqual(t *testing.T) {
 func TestGetDeploymentIdUsingDataOnMessage(t *testing.T) {
 	message := EventHookMessage{
 		Subject: "",
-		Data:    DeploymentEventData{DeploymentId: 1},
+		Data: DeploymentEventData{
+			EventData: EventData{
+				DeploymentId: 1,
+			},
+		},
 	}
 
 	deploymentId, err := message.DeploymentId()
@@ -70,10 +74,12 @@ func Test_EventHookMessage_DryRunEventData_Marshaling(t *testing.T) {
 		Subject: "",
 		Type:    EventTypeDryRunCompleted.String(),
 		Data: DryRunEventData{
-			DeploymentId: 1,
-			OperationId:  uuid.New(),
-			Attempts:     1,
-			Status:       StatusFailed.String(),
+			EventData: EventData{
+				DeploymentId: 1,
+				OperationId:  uuid.New(),
+				Attempts:     1,
+			},
+			Status: StatusFailed.String(),
 			Errors: []DryRunError{
 				{
 					Code:           to.Ptr("code"),
@@ -102,10 +108,12 @@ func Test_EventHookMessage_DryRunEventData_Fails_With_WrongType(t *testing.T) {
 		Subject: "",
 		Type:    "anything but dryRunCompleted",
 		Data: DryRunEventData{
-			DeploymentId: 1,
-			OperationId:  uuid.New(),
-			Attempts:     1,
-			Status:       StatusFailed.String(),
+			EventData: EventData{
+				DeploymentId: 1,
+				OperationId:  uuid.New(),
+				Attempts:     1,
+			},
+			Status: StatusFailed.String(),
 			Errors: []DryRunError{
 				{
 					AdditionalInfo: []*ErrorAdditionalInfo{},
@@ -143,9 +151,11 @@ func Test_EventHookMessage_DeploymentEventData_Marshaling(t *testing.T) {
 			Subject: "",
 			Type:    eventType.String(),
 			Data: DeploymentEventData{
-				DeploymentId: 1,
-				OperationId:  uuid.New(),
-				Attempts:     1,
+				EventData: EventData{
+					DeploymentId: 1,
+					OperationId:  uuid.New(),
+					Attempts:     1,
+				},
 			},
 		}
 

@@ -69,32 +69,41 @@ func getEventData(invokedOperation *model.InvokedOperation) any {
 
 func getRetryData(operation *model.InvokedOperation) any {
 	return &sdk.DeploymentEventData{
-		DeploymentId: int(operation.DeploymentId),
-		OperationId:  operation.ID,
-		Message:      fmt.Sprintf("Retry deployment %s", operation.Status),
+		EventData: sdk.EventData{
+			DeploymentId: int(operation.DeploymentId),
+			OperationId:  operation.ID,
+		},
+		Message: fmt.Sprintf("Retry deployment %s", operation.Status),
 	}
 }
 
 func getRetryStageData(operation *model.InvokedOperation) any {
 	return &sdk.DeploymentEventData{
-		DeploymentId: int(operation.DeploymentId),
-		StageId:      to.Ptr(uuid.MustParse(operation.Parameters["stageId"].(string))),
-		OperationId:  operation.ID,
-		Message:      fmt.Sprintf("Retry deployment %s", operation.Status),
+		EventData: sdk.EventData{
+			DeploymentId: int(operation.DeploymentId),
+			OperationId:  operation.ID,
+		},
+		StageId: to.Ptr(uuid.MustParse(operation.Parameters["stageId"].(string))),
+		Message: fmt.Sprintf("Retry deployment %s", operation.Status),
 	}
 }
 
 func getDryRunData(invokedOperation *model.InvokedOperation) any {
 	resultStatus := sdk.StatusError.String()
-	result := invokedOperation.LatestResult().Value
+
+	firstResult := invokedOperation.FirstResult()
+	latestResult := invokedOperation.LatestResult()
+	result := latestResult.Value
 
 	data := &sdk.DryRunEventData{
-		DeploymentId: int(invokedOperation.DeploymentId),
-		OperationId:  invokedOperation.ID,
-		Status:       resultStatus,
-		Attempts:     int(invokedOperation.Attempts),
-		StartedAt:    invokedOperation.CreatedAt.UTC(),
-		CompletedAt:  invokedOperation.UpdatedAt.UTC(),
+		EventData: sdk.EventData{
+			DeploymentId: int(invokedOperation.DeploymentId),
+			OperationId:  invokedOperation.ID,
+			Attempts:     int(invokedOperation.Attempts),
+			StartedAt:    firstResult.StartedAt.UTC(),
+			CompletedAt:  latestResult.CompletedAt.UTC(),
+		},
+		Status: resultStatus,
 	}
 
 	if result != nil {
@@ -111,9 +120,19 @@ func getDeploymentData(invokedOperation *model.InvokedOperation) any {
 
 	if invokedOperation.Name == "deploy" {
 		deploymentData := &sdk.DeploymentEventData{
-			DeploymentId: int(invokedOperation.DeploymentId),
-			OperationId:  invokedOperation.ID,
-			StartedAt:    invokedOperation.CreatedAt.UTC(),
+			EventData: sdk.EventData{
+				DeploymentId: int(invokedOperation.DeploymentId),
+				OperationId:  invokedOperation.ID,
+			},
+		}
+
+		if invokedOperation.IsScheduled() {
+			deploymentData.ScheduledAt = invokedOperation.CreatedAt.UTC()
+		} else if invokedOperation.IsRunning() {
+			firstResult := invokedOperation.FirstResult()
+			if firstResult != nil {
+				deploymentData.StartedAt = firstResult.StartedAt.UTC()
+			}
 		}
 
 		if invokedOperation.IsRetry() {
@@ -127,7 +146,7 @@ func getDeploymentData(invokedOperation *model.InvokedOperation) any {
 		}
 
 		if invokedOperation.IsCompleted() {
-			deploymentData.CompletedAt = invokedOperation.UpdatedAt.UTC()
+			deploymentData.CompletedAt = invokedOperation.LatestResult().CompletedAt.UTC()
 		}
 
 		data = deploymentData

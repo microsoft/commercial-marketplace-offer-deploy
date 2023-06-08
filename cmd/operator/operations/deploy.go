@@ -121,12 +121,14 @@ func (service *deployeOperation) notifyForStages(context operation.ExecutionCont
 				Type:   string(sdk.EventTypeStageStarted),
 				Status: sdk.StatusRunning.String(),
 				Data: sdk.DeploymentEventData{
-					DeploymentId:  int(deployment.ID),
+					EventData: sdk.EventData{
+						DeploymentId: int(deployment.ID),
+						OperationId:  op.ID,
+						Attempts:     1,
+						StartedAt:    time.Now().UTC(),
+					},
 					StageId:       &stage.ID,
-					OperationId:   op.ID,
 					CorrelationId: correlationId,
-					Attempts:      1,
-					StartedAt:     time.Now().UTC(),
 				},
 			},
 		})
