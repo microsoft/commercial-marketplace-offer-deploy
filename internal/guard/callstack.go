@@ -1,4 +1,4 @@
-package utils
+package guard
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ func GetCallstack() string {
 	for {
 		frame, more := frames.Next()
 		readFrames++
-		
+
 		if readFrames > 2 {
 			callStack += fmt.Sprintf("%s:%d %s\n", frame.File, frame.Line, frame.Function)
 		}
