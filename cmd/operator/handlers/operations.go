@@ -32,13 +32,13 @@ func NewOperationsMessageHandler(appConfig *config.AppConfig) *operationMessageH
 		return nil
 	}
 
-	operationFactory, err := operation.NewRepository(service, operations.NewOperationFuncProvider(appConfig))
+	repository, err := operation.NewRepository(service, operations.NewOperationFuncProvider(appConfig))
 	if err != nil {
 		log.Errorf("Error creating operations message handler: %s", err)
 		return nil
 	}
 
-	handler.repository = operationFactory
+	handler.repository = repository
 
 	return handler
 }
