@@ -31,9 +31,8 @@ func IsPointerNil(ptr interface{}) bool {
 
 	v := value.IsNil()
 	if v {
-		log.Tracef("%s is nil", value)
 		callStack := GetCallstack()
-		log.Trace(callStack)
+		log.WithField("stacktrace", callStack).Errorf("%s is nil", value)
 	}
 
 	return value.IsNil()
