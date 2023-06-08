@@ -85,7 +85,7 @@ func getRetryStageData(operation *model.InvokedOperation) any {
 }
 
 func getDryRunData(invokedOperation *model.InvokedOperation) any {
-	resultStatus := sdk.StatusError.String()
+	resultStatus := invokedOperation.Status
 	result := invokedOperation.LatestResult().Value
 
 	data := &sdk.DryRunEventData{
