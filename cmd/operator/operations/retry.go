@@ -9,7 +9,7 @@ import (
 type retryOperation struct {
 }
 
-func (op *retryOperation) Do(context *operation.ExecutionContext) error {
+func (op *retryOperation) Do(context operation.ExecutionContext) error {
 	azureRedeployment := op.mapToAzureRedeployment(context)
 	deployer, err := op.newDeployer(azureRedeployment.SubscriptionId)
 	if err != nil {
@@ -28,7 +28,7 @@ func (op *retryOperation) newDeployer(subscriptionId string) (deployment.Deploye
 	return deployment.NewDeployer(deployment.DeploymentTypeARM, subscriptionId)
 }
 
-func (op *retryOperation) mapToAzureRedeployment(context *operation.ExecutionContext) deployment.AzureRedeployment {
+func (op *retryOperation) mapToAzureRedeployment(context operation.ExecutionContext) deployment.AzureRedeployment {
 	dep := context.Operation().Deployment()
 
 	azureRedeployment := deployment.AzureRedeployment{

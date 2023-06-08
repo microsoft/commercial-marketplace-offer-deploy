@@ -62,7 +62,7 @@ func (suite *operationsTestSuite) Test_Handle_Completes_Operation_When_No_Error_
 	suite.Assert().NoError(err)
 
 	handler := &operationMessageHandler{
-		operationFactory: operationFactory,
+		repository: operationFactory,
 	}
 
 	handler.Handle(&messaging.ExecuteInvokedOperation{
@@ -90,7 +90,7 @@ type fakeOperationFuncProvider struct {
 }
 
 func (f *fakeOperationFuncProvider) Get(operationType sdk.OperationType) (operation.OperationFunc, error) {
-	return func(context *operation.ExecutionContext) error {
+	return func(context operation.ExecutionContext) error {
 		f.t.Logf("Executing operation %s", operationType)
 		return nil
 	}, nil

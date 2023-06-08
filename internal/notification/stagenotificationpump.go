@@ -65,6 +65,10 @@ func (p *StageNotificationPump) Stop() {
 }
 
 func (p *StageNotificationPump) read() (*model.StageNotification, bool) {
+	if !p.any() {
+		return nil, false
+	}
+
 	//write gorm query to read from database where Done is false
 	record := &model.StageNotification{}
 	tx := p.db.Where("is_done = ?", false).First(record)
@@ -73,6 +77,12 @@ func (p *StageNotificationPump) read() (*model.StageNotification, bool) {
 		return nil, false
 	}
 	return record, true
+}
+
+func (p *StageNotificationPump) any() bool {
+	var count int64
+	p.db.Model(&model.StageNotification{}).Where("is_done = ?", false).Count(&count)
+	return count > 0
 }
 
 func NewStageNotificationPump(db *gorm.DB, sleepDuration time.Duration) *StageNotificationPump {

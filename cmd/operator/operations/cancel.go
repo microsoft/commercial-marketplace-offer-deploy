@@ -9,11 +9,11 @@ type cancelOperation struct {
 	cancel operation.OperationFunc
 }
 
-func (op *cancelOperation) Do(context *operation.ExecutionContext) error {
+func (op *cancelOperation) Do(context operation.ExecutionContext) error {
 	return op.do(context)
 }
 
-func (op *cancelOperation) do(context *operation.ExecutionContext) error {
+func (op *cancelOperation) do(context operation.ExecutionContext) error {
 	azureCancelDeployment := op.mapToAzureCancel(context.Operation())
 	ctx := context.Context()
 

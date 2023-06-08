@@ -27,7 +27,7 @@ type DryRunFunc func(context.Context, *deployment.AzureDeployment) (*sdk.DryRunR
 // Executor is the interface for the actual execution of a logically invoked operation from the API
 // Requestor --> invoke this operation --> enqueue --> executor --> execute the operation
 type Executor interface {
-	Execute(context *ExecutionContext) error
+	Execute(context ExecutionContext) error
 }
 
 // default implementation of an operation executor
@@ -36,7 +36,7 @@ type executor struct {
 }
 
 // default implementation for executing an operation
-func (exe *executor) Execute(context *ExecutionContext) error {
+func (exe *executor) Execute(context ExecutionContext) error {
 	if reasons, ok := context.Operation().IsExecutable(); !ok {
 		log.Infof("Operation is not in an executable state: %s", reasons)
 		return nil
@@ -80,7 +80,7 @@ func NewExecutor(operation OperationFunc) Executor {
 }
 
 func WithLogging(operation OperationFunc) OperationFunc {
-	return func(context *ExecutionContext) error {
+	return func(context ExecutionContext) error {
 		logger := log.WithFields(
 			log.Fields{
 				"operation": fmt.Sprintf("%+v", context.Operation()),
