@@ -152,7 +152,7 @@ func (o *InvokedOperation) AttributeValue(key AttributeKey) (any, bool) {
 }
 
 func (o *InvokedOperation) AttemptsExceeded() bool {
-	return o.Attempts >= o.Retries
+	return o.Attempts > o.Retries
 }
 
 func (o *InvokedOperation) IsRetrying() bool {
