@@ -8,7 +8,7 @@ import (
 )
 
 // a executable operation with an execution context
-type OperationFunc func(context *ExecutionContext) error
+type OperationFunc func(context ExecutionContext) error
 
 // remarks: Invoked Operation decorator+visitor
 type Operation struct {

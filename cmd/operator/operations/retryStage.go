@@ -13,7 +13,7 @@ import (
 
 type retryStageOperation struct{}
 
-func (op *retryStageOperation) Do(context *operation.ExecutionContext) error {
+func (op *retryStageOperation) Do(context operation.ExecutionContext) error {
 	stageId, err := op.getStageId(context)
 	if err != nil {
 		return err
@@ -41,7 +41,7 @@ func (op *retryStageOperation) Do(context *operation.ExecutionContext) error {
 	return nil
 }
 
-func (op *retryStageOperation) getStageId(context *operation.ExecutionContext) (uuid.UUID, error) {
+func (op *retryStageOperation) getStageId(context operation.ExecutionContext) (uuid.UUID, error) {
 	stageId, err := uuid.Parse(context.Operation().Parameters["stageId"].(string))
 
 	if err != nil {

@@ -23,7 +23,7 @@ type deployeOperation struct {
 }
 
 // the operation to execute
-func (op *deployeOperation) Do(context *operation.ExecutionContext) error {
+func (op *deployeOperation) Do(context operation.ExecutionContext) error {
 	operation, err := op.getOperation(context)
 	if err != nil {
 		return err
@@ -31,7 +31,7 @@ func (op *deployeOperation) Do(context *operation.ExecutionContext) error {
 	return operation(context)
 }
 
-func (op *deployeOperation) getOperation(context *operation.ExecutionContext) (operation.OperationFunc, error) {
+func (op *deployeOperation) getOperation(context operation.ExecutionContext) (operation.OperationFunc, error) {
 	do := op.do
 
 	if context.Operation().IsRetry() { // this is a retry if so
@@ -40,7 +40,7 @@ func (op *deployeOperation) getOperation(context *operation.ExecutionContext) (o
 	return do, nil
 }
 
-func (op *deployeOperation) do(context *operation.ExecutionContext) error {
+func (op *deployeOperation) do(context operation.ExecutionContext) error {
 	azureDeployment := op.mapAzureDeployment(context.Operation())
 	deployer, err := op.newDeployer(azureDeployment.SubscriptionId)
 	if err != nil {
@@ -69,7 +69,7 @@ func (op *deployeOperation) do(context *operation.ExecutionContext) error {
 	return nil
 }
 
-func (service *deployeOperation) notifyForStages(context *operation.ExecutionContext) error {
+func (service *deployeOperation) notifyForStages(context operation.ExecutionContext) error {
 	operation := context.Operation()
 
 	log.WithFields(log.Fields{

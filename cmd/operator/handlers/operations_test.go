@@ -90,7 +90,7 @@ type fakeOperationFuncProvider struct {
 }
 
 func (f *fakeOperationFuncProvider) Get(operationType sdk.OperationType) (operation.OperationFunc, error) {
-	return func(context *operation.ExecutionContext) error {
+	return func(context operation.ExecutionContext) error {
 		f.t.Logf("Executing operation %s", operationType)
 		return nil
 	}, nil

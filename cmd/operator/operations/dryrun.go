@@ -13,7 +13,7 @@ type dryRunOperation struct {
 	log    *log.Entry
 }
 
-func (exe *dryRunOperation) Do(context *operation.ExecutionContext) error {
+func (exe *dryRunOperation) Do(context operation.ExecutionContext) error {
 	azureDeployment, err := exe.getAzureDeployment(context.Operation())
 	if err != nil {
 		return err
@@ -53,6 +53,7 @@ func (exe *dryRunOperation) getAzureDeployment(operation *operation.Operation) (
 func NewDryRunOperation() operation.OperationFunc {
 	dryRunOperation := &dryRunOperation{
 		dryRun: deployment.DryRun,
+		log:    log.WithField("operation", "dryrun"),
 	}
 	return dryRunOperation.Do
 }
