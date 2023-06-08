@@ -37,7 +37,7 @@ func (o *Operation) Complete() error {
 	o.service.log.Info("Marking operation as complete")
 
 	o.InvokedOperation.Complete()
-	return o.service.saveChanges(false)
+	return o.service.saveChanges(true)
 }
 
 func (o *Operation) Attribute(key model.AttributeKey, v any) error {
@@ -54,14 +54,14 @@ func (o *Operation) Failed() error {
 	o.service.log.Info("Marking operation as failed")
 
 	o.InvokedOperation.Failed()
-	return o.service.saveChanges(true)
+	return o.saveChangesWithoutNotification()
 }
 
 func (o *Operation) Success() error {
 	o.service.log.Info("Marking operation as success")
 
 	o.InvokedOperation.Success()
-	return o.service.saveChanges(true)
+	return o.saveChangesWithoutNotification()
 }
 
 func (o *Operation) Schedule() error {

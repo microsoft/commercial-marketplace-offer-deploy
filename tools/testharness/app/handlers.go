@@ -54,8 +54,13 @@ func Cancel(c echo.Context) error {
 
 func ReceiveEventHook(c echo.Context) error {
 	log.Print("Event Hook Received")
-	reader := c.Request().Body
-	return c.Stream(http.StatusOK, "application/json", reader)
+
+	message := &sdk.EventHookMessage{}
+	c.Bind(message)
+
+	messageAudit.Append(message)
+
+	return c.String(http.StatusOK, "Event Hook Received")
 }
 
 func CreateEventHook(c echo.Context) error {

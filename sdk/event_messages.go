@@ -69,29 +69,26 @@ func (m *EventHookMessage) DeploymentEventData() (*DeploymentEventData, error) {
 }
 
 // Event data for a message
+type EventData struct {
+	DeploymentId int        `json:"deploymentId" mapstructure:"deploymentId"`
+	OperationId  uuid.UUID  `json:"operationId" mapstructure:"operationId"`
+	Attempts     int        `json:"attempts" mapstructure:"attempts"`
+	ScheduledAt  *time.Time `json:"scheduledAt,omitempty" mapstructure:"scheduledAt"`
+	StartedAt    *time.Time `json:"startedAt,omitempty" mapstructure:"startedAt"`
+	CompletedAt  *time.Time `json:"completedAt,omitempty" mapstructure:"completedAt"`
+}
 
 type DryRunEventData struct {
-	DeploymentId int           `json:"deploymentId" mapstructure:"deploymentId"`
-	OperationId  uuid.UUID     `json:"operationId" mapstructure:"operationId"`
-	Attempts     int           `json:"attempts" mapstructure:"attempts"`
-	Status       string        `json:"status,omitempty" mapstructure:"status"`
-	Errors       []DryRunError `json:"errors,omitempty" mapstructure:"errors"`
-	StartedAt    time.Time     `json:"startedAt,omitempty" mapstructure:"startedAt"`
-	CompletedAt  time.Time     `json:"completedAt,omitempty" mapstructure:"completedAt"`
+	EventData
+	Status string        `json:"status,omitempty" mapstructure:"status"`
+	Errors []DryRunError `json:"errors,omitempty" mapstructure:"errors"`
 }
 
 type DeploymentEventData struct {
-	DeploymentId int        `json:"deploymentId,omitempty" mapstructure:"deploymentId"`
-	StageId      *uuid.UUID `json:"stageId,omitempty" mapstructure:"stageId"`
-	OperationId  uuid.UUID  `json:"operationId,omitempty" mapstructure:"operationId"`
-
-	// the correlation ID used to track azure deployments. This may be nil if the particular event data is about something that
-	// happened inside MODM and not azure.
+	EventData
+	StageId       *uuid.UUID `json:"stageId,omitempty" mapstructure:"stageId"`
 	CorrelationId *uuid.UUID `json:"correlationId,omitempty" mapstructure:"correlationId"`
-	Attempts      int        `json:"attempts,omitempty" mapstructure:"attempts"`
 	Message       string     `json:"message,omitempty" mapstructure:"message"`
-	StartedAt     time.Time  `json:"startedAt,omitempty" mapstructure:"startedAt"`
-	CompletedAt   time.Time  `json:"completedAt,omitempty" mapstructure:"completedAt"`
 }
 
 func (m *EventHookMessage) DeploymentId() (uint, error) {

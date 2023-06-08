@@ -153,8 +153,10 @@ func (suite *handlerTestSuite) setupNotification(settings azuresuite.AzureTestSe
 					Type:   string(sdk.EventTypeStageStarted),
 					Status: string(sdk.StatusRunning),
 					Data: sdk.DeploymentEventData{
-						DeploymentId: 1,
-						StageId:      &stageId,
+						EventData: sdk.EventData{
+							DeploymentId: 1,
+						},
+						StageId: &stageId,
 					},
 				},
 			},

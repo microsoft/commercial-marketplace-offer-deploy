@@ -61,18 +61,30 @@ func (f *EventHookMessageFactory) convert(subject *azureevents.ResourceEventSubj
 	stageId, _ := subject.StageId()
 
 	data := sdk.DeploymentEventData{
-		DeploymentId:  int(deployment.ID),
-		OperationId:   operation.ID,
+		EventData: sdk.EventData{
+			DeploymentId: int(deployment.ID),
+			OperationId:  operation.ID,
+			Attempts:     int(operation.Attempts),
+		},
 		StageId:       stageId,
 		CorrelationId: to.Ptr(uuid.MustParse(subject.CorrelationID())),
-		Attempts:      int(operation.Attempts),
-		StartedAt:     operation.CreatedAt.UTC(),
-		CompletedAt:   operation.UpdatedAt.UTC(),
+	}
+
+	firstAttempt := operation.LatestResult()
+	if firstAttempt != nil {
+		data.CompletedAt = to.Ptr(firstAttempt.CompletedAt.UTC())
+	}
+
+	latestAttempt := operation.LatestResult()
+	if latestAttempt != nil {
+		data.CompletedAt = to.Ptr(latestAttempt.CompletedAt.UTC())
 	}
 
 	if operation.IsCompleted() {
-		completedAt, _ := operation.CompletedAt()
-		data.CompletedAt = *completedAt
+		completedAt, err := operation.CompletedAt()
+		if err == nil && completedAt != nil {
+			data.CompletedAt = completedAt
+		}
 	}
 
 	message := &sdk.EventHookMessage{
