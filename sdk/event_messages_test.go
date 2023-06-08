@@ -19,6 +19,41 @@ func TestGetDeploymentIdUsingSubjectOnMessage(t *testing.T) {
 	assert.Equal(t, uint(1234), deploymentId)
 }
 
+func TestGetHashIsEqual(t *testing.T) {
+	message1 := EventHookMessage{
+		HookId:  uuid.New(),
+		Type:    "type",
+		Status:  "status",
+		Subject: "subject",
+	}
+
+	message2 := EventHookMessage{
+		HookId:  message1.HookId,
+		Type:    message1.Type,
+		Status:  message1.Status,
+		Subject: message1.Subject,
+	}
+
+	assert.Equal(t, message1.GetHash(), message2.GetHash())
+}
+
+func TestGetHashIsNotEqual(t *testing.T) {
+	message1 := EventHookMessage{
+		HookId:  uuid.New(),
+		Type:    "type",
+		Status:  "status",
+		Subject: "subject",
+	}
+	message2 := EventHookMessage{
+		HookId:  uuid.New(),
+		Type:    message1.Type,
+		Status:  message1.Status,
+		Subject: message1.Subject,
+	}
+
+	assert.NotEqual(t, message1.GetHash(), message2.GetHash())
+}
+
 func TestGetDeploymentIdUsingDataOnMessage(t *testing.T) {
 	message := EventHookMessage{
 		Subject: "",
