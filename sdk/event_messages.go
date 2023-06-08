@@ -70,12 +70,12 @@ func (m *EventHookMessage) DeploymentEventData() (*DeploymentEventData, error) {
 
 // Event data for a message
 type EventData struct {
-	DeploymentId int       `json:"deploymentId" mapstructure:"deploymentId"`
-	OperationId  uuid.UUID `json:"operationId" mapstructure:"operationId"`
-	Attempts     int       `json:"attempts" mapstructure:"attempts"`
-	ScheduledAt  time.Time `json:"scheduledAt,omitempty" mapstructure:"scheduledAt"`
-	StartedAt    time.Time `json:"startedAt,omitempty" mapstructure:"startedAt"`
-	CompletedAt  time.Time `json:"completedAt,omitempty" mapstructure:"completedAt"`
+	DeploymentId int        `json:"deploymentId" mapstructure:"deploymentId"`
+	OperationId  uuid.UUID  `json:"operationId" mapstructure:"operationId"`
+	Attempts     int        `json:"attempts" mapstructure:"attempts"`
+	ScheduledAt  *time.Time `json:"scheduledAt,omitempty" mapstructure:"scheduledAt"`
+	StartedAt    *time.Time `json:"startedAt,omitempty" mapstructure:"startedAt"`
+	CompletedAt  *time.Time `json:"completedAt,omitempty" mapstructure:"completedAt"`
 }
 
 type DryRunEventData struct {

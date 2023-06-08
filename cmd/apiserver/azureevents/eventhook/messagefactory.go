@@ -72,17 +72,19 @@ func (f *EventHookMessageFactory) convert(subject *azureevents.ResourceEventSubj
 
 	firstAttempt := operation.LatestResult()
 	if firstAttempt != nil {
-		data.CompletedAt = firstAttempt.CompletedAt.UTC()
+		data.CompletedAt = to.Ptr(firstAttempt.CompletedAt.UTC())
 	}
 
 	latestAttempt := operation.LatestResult()
 	if latestAttempt != nil {
-		data.CompletedAt = latestAttempt.CompletedAt.UTC()
+		data.CompletedAt = to.Ptr(latestAttempt.CompletedAt.UTC())
 	}
 
 	if operation.IsCompleted() {
-		completedAt, _ := operation.CompletedAt()
-		data.CompletedAt = *completedAt
+		completedAt, err := operation.CompletedAt()
+		if err == nil && completedAt != nil {
+			data.CompletedAt = completedAt
+		}
 	}
 
 	message := &sdk.EventHookMessage{

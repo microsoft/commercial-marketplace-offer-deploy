@@ -138,10 +138,6 @@ func getDeploymentData(invokedOperation *model.InvokedOperation) any {
 		data.Message = fmt.Sprintf("%s. Error: %s", data.Message, invokedOperation.LatestResult().Error)
 	}
 
-	if invokedOperation.IsCompleted() {
-		data.CompletedAt = invokedOperation.LatestResult().CompletedAt.UTC()
-	}
-
 	setTimestamps(&data.EventData, invokedOperation)
 
 	return data
@@ -149,17 +145,20 @@ func getDeploymentData(invokedOperation *model.InvokedOperation) any {
 
 func setTimestamps(data *sdk.EventData, operation *model.InvokedOperation) {
 	if operation.IsScheduled() {
-		data.ScheduledAt = operation.CreatedAt.UTC()
+		data.ScheduledAt = to.Ptr(operation.CreatedAt.UTC())
 	} else if operation.IsRunning() {
 		latest := operation.LatestResult()
 		if latest != nil {
-			data.StartedAt = latest.StartedAt.UTC()
+			data.StartedAt = to.Ptr(latest.StartedAt.UTC())
 		}
 	} else if operation.IsCompleted() {
 		first := operation.FirstResult()
 		if first != nil {
-			data.StartedAt = first.StartedAt.UTC()
+			data.StartedAt = to.Ptr(first.StartedAt.UTC())
 		}
-		data.CompletedAt = operation.LatestResult().CompletedAt.UTC()
+		latest := operation.LatestResult()
+		if latest != nil {
+			data.CompletedAt = to.Ptr(latest.CompletedAt.UTC())
+		}
 	}
 }

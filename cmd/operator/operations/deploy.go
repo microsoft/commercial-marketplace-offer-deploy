@@ -125,7 +125,7 @@ func (service *deployeOperation) notifyForStages(context operation.ExecutionCont
 						DeploymentId: int(deployment.ID),
 						OperationId:  op.ID,
 						Attempts:     1,
-						StartedAt:    time.Now().UTC(),
+						StartedAt:    to.Ptr(time.Now().UTC()),
 					},
 					StageId:       &stage.ID,
 					CorrelationId: correlationId,
