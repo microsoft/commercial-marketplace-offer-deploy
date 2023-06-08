@@ -2,7 +2,6 @@ package operations
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
@@ -10,12 +9,11 @@ import (
 )
 
 type dryRunOperation struct {
-	dryRun     operation.DryRunFunc
-	log        *log.Entry
-	retryDelay time.Duration
+	dryRun operation.DryRunFunc
+	log    *log.Entry
 }
 
-func (exe *dryRunOperation) Do(context *operation.ExecutionContext) error {
+func (exe *dryRunOperation) Do(context operation.ExecutionContext) error {
 	azureDeployment, err := exe.getAzureDeployment(context.Operation())
 	if err != nil {
 		return err
@@ -54,8 +52,8 @@ func (exe *dryRunOperation) getAzureDeployment(operation *operation.Operation) (
 
 func NewDryRunOperation() operation.OperationFunc {
 	dryRunOperation := &dryRunOperation{
-		dryRun:     deployment.DryRun,
-		retryDelay: 5 * time.Second,
+		dryRun: deployment.DryRun,
+		log:    log.WithField("operation", "dryrun"),
 	}
 	return dryRunOperation.Do
 }

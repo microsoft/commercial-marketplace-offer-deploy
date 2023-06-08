@@ -61,8 +61,11 @@ func (c *ExecutionContext) Operation() *Operation {
 	return c.operation
 }
 
-func newExecutionContext(operation *Operation) *ExecutionContext {
-	return &ExecutionContext{
+func newExecutionContext(operation *Operation) ExecutionContext {
+	if operation == nil {
+		log.Warn("execution context is being constructed with nil operation")
+	}
+	return ExecutionContext{
 		operation: operation,
 	}
 }

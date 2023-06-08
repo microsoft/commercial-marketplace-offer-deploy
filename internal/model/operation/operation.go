@@ -8,7 +8,7 @@ import (
 )
 
 // a executable operation with an execution context
-type OperationFunc func(context *ExecutionContext) error
+type OperationFunc func(context ExecutionContext) error
 
 // remarks: Invoked Operation decorator+visitor
 type Operation struct {
@@ -91,8 +91,8 @@ func (o *Operation) SaveChanges() error {
 
 // Attempts to trigger a retry of the operation, if the operation has a retriable state
 func (o *Operation) Retry() error {
-	if !o.InvokedOperation.AttemptsExceeded() {
-		return nil
+	if o.InvokedOperation.AttemptsExceeded() {
+		return o.Complete()
 	}
 	o.service.log.Info("Retrying operation")
 	return o.Schedule()

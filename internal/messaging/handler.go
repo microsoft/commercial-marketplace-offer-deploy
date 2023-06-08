@@ -42,6 +42,7 @@ type serviceBusMessageHandler struct {
 func (h *serviceBusMessageHandler) Handle(ctx context.Context, message *azservicebus.ReceivedMessage) error {
 	defer func() {
 		if r := recover(); r != nil {
+			log.Errorf("panic: %+v", r)
 			log.Errorf("Recovered from panic handling message type: %s", h.messageType.Name())
 		}
 	}()

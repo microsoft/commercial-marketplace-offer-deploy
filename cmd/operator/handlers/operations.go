@@ -12,12 +12,12 @@ import (
 )
 
 type operationMessageHandler struct {
-	operationFactory operation.Repository
+	repository operation.Repository
 }
 
 func (h *operationMessageHandler) Handle(message *messaging.ExecuteInvokedOperation, context messaging.MessageHandlerContext) error {
-	h.operationFactory.WithContext(context.Context())
-	operation, err := h.operationFactory.First(message.OperationId)
+	h.repository.WithContext(context.Context())
+	operation, err := h.repository.First(message.OperationId)
 	if err != nil {
 		return err
 	}
@@ -32,13 +32,13 @@ func NewOperationsMessageHandler(appConfig *config.AppConfig) *operationMessageH
 		return nil
 	}
 
-	operationFactory, err := operation.NewRepository(service, operations.NewOperationFuncProvider(appConfig))
+	repository, err := operation.NewRepository(service, operations.NewOperationFuncProvider(appConfig))
 	if err != nil {
 		log.Errorf("Error creating operations message handler: %s", err)
 		return nil
 	}
 
-	handler.operationFactory = operationFactory
+	handler.repository = repository
 
 	return handler
 }
