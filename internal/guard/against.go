@@ -29,11 +29,11 @@ func IsPointerNil(ptr interface{}) bool {
 		return false
 	}
 
-	v := value.IsNil()
-	if v {
+	isnil := value.IsNil()
+	if isnil {
 		callStack := GetCallstack()
 		log.WithField("stacktrace", callStack).Errorf("%s is nil", value)
 	}
 
-	return value.IsNil()
+	return isnil
 }
