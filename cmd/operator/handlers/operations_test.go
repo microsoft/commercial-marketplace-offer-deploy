@@ -62,7 +62,7 @@ func (suite *operationsTestSuite) Test_Handle_Completes_Operation_When_No_Error_
 	suite.Assert().NoError(err)
 
 	handler := &operationMessageHandler{
-		operationFactory: operationFactory,
+		repository: operationFactory,
 	}
 
 	handler.Handle(&messaging.ExecuteInvokedOperation{
