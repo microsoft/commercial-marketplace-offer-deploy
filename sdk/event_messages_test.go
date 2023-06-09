@@ -19,7 +19,7 @@ func TestGetDeploymentIdUsingSubjectOnMessage(t *testing.T) {
 	assert.Equal(t, uint(1234), deploymentId)
 }
 
-func TestGetHashIsEqual(t *testing.T) {
+func Test_HashCode_IsEqual(t *testing.T) {
 	message1 := EventHookMessage{
 		HookId:  uuid.New(),
 		Type:    "type",
@@ -34,10 +34,10 @@ func TestGetHashIsEqual(t *testing.T) {
 		Subject: message1.Subject,
 	}
 
-	assert.Equal(t, message1.GetHash(), message2.GetHash())
+	assert.Equal(t, message1.HashCode(), message2.HashCode())
 }
 
-func TestGetHashIsNotEqual(t *testing.T) {
+func Test_HashCode_IsNotEqual_With_Different_HookIds(t *testing.T) {
 	message1 := EventHookMessage{
 		HookId:  uuid.New(),
 		Type:    "type",
@@ -51,7 +51,25 @@ func TestGetHashIsNotEqual(t *testing.T) {
 		Subject: message1.Subject,
 	}
 
-	assert.NotEqual(t, message1.GetHash(), message2.GetHash())
+	assert.NotEqual(t, message1.HashCode(), message2.HashCode())
+}
+
+func Test_HashCode_IsNotEqual_With_Different_OperationIds(t *testing.T) {
+	message1 := EventHookMessage{
+		HookId:  uuid.New(),
+		Type:    "type",
+		Status:  "status",
+		Subject: "subject",
+		Data: EventData{
+			OperationId: uuid.New(),
+		},
+	}
+	message2 := message1
+	eventData2 := message2.Data.(EventData)
+	eventData2.OperationId = uuid.New()
+	message2.Data = eventData2
+
+	assert.NotEqual(t, message1.HashCode(), message2.HashCode())
 }
 
 func TestGetDeploymentIdUsingDataOnMessage(t *testing.T) {
@@ -67,6 +85,37 @@ func TestGetDeploymentIdUsingDataOnMessage(t *testing.T) {
 	deploymentId, err := message.DeploymentId()
 	assert.NoError(t, err)
 	assert.Equal(t, uint(1), deploymentId)
+}
+
+func Test_EventHookMessage_StageEventData_Marshaling(t *testing.T) {
+	data := StageEventData{
+		EventData: EventData{
+			DeploymentId: 1,
+			OperationId:  uuid.New(),
+			Attempts:     1,
+		},
+		CorrelationId: to.Ptr(uuid.New()),
+	}
+
+	original := EventHookMessage{
+		Subject: "",
+		Type:    EventTypeStageCompleted.String(),
+		Data:    data,
+	}
+
+	bytes, _ := json.MarshalIndent(original, "", "  ")
+	jsonString := string(bytes)
+
+	unmarshaled := &EventHookMessage{}
+	_ = json.Unmarshal([]byte(jsonString), unmarshaled)
+	t.Logf("marshaled: %+v", jsonString)
+
+	resultData, err := unmarshaled.StageEventData()
+	assert.NoError(t, err)
+
+	assert.Equal(t, 1, data.DeploymentId)
+	assert.Equal(t, data.OperationId, resultData.OperationId)
+	assert.Equal(t, *data.CorrelationId, *resultData.CorrelationId)
 }
 
 func Test_EventHookMessage_DryRunEventData_Marshaling(t *testing.T) {
@@ -89,12 +138,12 @@ func Test_EventHookMessage_DryRunEventData_Marshaling(t *testing.T) {
 		},
 	}
 
-	bytes, _ := json.Marshal(original)
+	bytes, _ := json.MarshalIndent(original, "", "  ")
 	jsonString := string(bytes)
 
 	unmarshaled := &EventHookMessage{}
 	_ = json.Unmarshal([]byte(jsonString), unmarshaled)
-	t.Logf("marshaled: %+v", unmarshaled)
+	t.Logf("marshaled: %+v", jsonString)
 
 	data, err := unmarshaled.DryRunEventData()
 	assert.NoError(t, err)
