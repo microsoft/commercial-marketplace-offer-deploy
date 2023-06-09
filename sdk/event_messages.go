@@ -71,13 +71,29 @@ type StageEventData struct {
 	Message           string     `json:"message,omitempty" mapstructure:"message"`
 }
 
-func (m *EventHookMessage) GetHash() string {
-	hash := fnv.New32a()
-	hashString := fmt.Sprintf("%s%s%s%s", m.HookId, m.Type, m.Status, m.Subject)
-	hash.Write([]byte(hashString))
-	hashBytes := hash.Sum(nil)
-	hashValue := fmt.Sprintf("%x", hashBytes)
-	return hashValue
+func (m *EventHookMessage) HashCode() string {
+	hash32 := fnv.New32a()
+
+	values := []string{
+		m.HookId.String(),
+		m.Type,
+		m.Status,
+		m.Subject,
+	}
+
+	if m.Data != nil {
+		eventData := &EventData{}
+		err := internal.Decode(m.Data, eventData)
+		if err == nil && eventData != nil {
+			values = append(values, eventData.OperationId.String())
+		}
+	}
+
+	value := strings.Join(values, "")
+	hash32.Write([]byte(value))
+
+	hash := fmt.Sprintf("%x", hash32.Sum(nil))
+	return hash
 }
 
 func (m *EventHookMessage) DryRunEventData() (*DryRunEventData, error) {
