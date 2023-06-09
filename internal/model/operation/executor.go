@@ -54,11 +54,15 @@ func (exe *executor) Execute(context ExecutionContext) error {
 
 	if err != nil {
 		context.Error(err)
-		err = context.Failed()
 
-		retryErr := context.Retry()
-		if retryErr != nil {
-			log.Errorf("attempt to retry operation caused error: %s", retryErr.Error())
+		if context.Operation().AttemptsExceeded() {
+			err = context.Failed()
+			context.Complete()
+		} else {
+			retryErr := context.Retry()
+			if retryErr != nil {
+				log.Errorf("attempt to retry operation caused error: %s", retryErr.Error())
+			}
 		}
 
 		return err

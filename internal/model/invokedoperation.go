@@ -121,6 +121,7 @@ func (o *InvokedOperation) LatestResult() *InvokedOperationResult {
 
 func (o *InvokedOperation) Error(err error) {
 	o.LatestResult().Error = err.Error()
+	o.setStatus(sdk.StatusError.String())
 }
 
 func (o *InvokedOperation) Value(v any) {
