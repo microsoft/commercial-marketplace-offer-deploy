@@ -114,23 +114,25 @@ func (service *deployeOperation) notifyForStages(context operation.ExecutionCont
 	}
 
 	for _, stage := range deployment.Stages {
+		message := sdk.EventHookMessage{
+			Id:     uuid.New(),
+			Type:   string(sdk.EventTypeStageStarted),
+			Status: sdk.StatusRunning.String(),
+			Data: sdk.StageEventData{
+				EventData: sdk.EventData{
+					DeploymentId: int(deployment.ID),
+					OperationId:  op.ID,
+					Attempts:     1,
+					StartedAt:    to.Ptr(time.Now().UTC()),
+				},
+				StageId:       to.Ptr(stage.ID),
+				CorrelationId: correlationId,
+			},
+		}
+		message.SetSubject(deployment.ID, to.Ptr(stage.ID))
 		notification.Entries = append(notification.Entries, model.StageNotificationEntry{
 			StageId: stage.ID,
-			Message: sdk.EventHookMessage{
-				Id:     uuid.New(),
-				Type:   string(sdk.EventTypeStageStarted),
-				Status: sdk.StatusRunning.String(),
-				Data: sdk.StageEventData{
-					EventData: sdk.EventData{
-						DeploymentId: int(deployment.ID),
-						OperationId:  op.ID,
-						Attempts:     1,
-						StartedAt:    to.Ptr(time.Now().UTC()),
-					},
-					StageId:       &stage.ID,
-					CorrelationId: correlationId,
-				},
-			},
+			Message: message,
 		})
 	}
 
