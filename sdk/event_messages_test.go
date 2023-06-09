@@ -89,12 +89,12 @@ func Test_EventHookMessage_DryRunEventData_Marshaling(t *testing.T) {
 		},
 	}
 
-	bytes, _ := json.Marshal(original)
+	bytes, _ := json.MarshalIndent(original, "", "  ")
 	jsonString := string(bytes)
 
 	unmarshaled := &EventHookMessage{}
 	_ = json.Unmarshal([]byte(jsonString), unmarshaled)
-	t.Logf("marshaled: %+v", unmarshaled)
+	t.Logf("marshaled: %+v", jsonString)
 
 	data, err := unmarshaled.DryRunEventData()
 	assert.NoError(t, err)

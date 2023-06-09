@@ -34,8 +34,8 @@ type StartOptions struct {
 }
 
 type StartDeploymentResponse struct {
-	Id     uuid.UUID
-	Status string
+	Id     uuid.UUID `json:"id"`
+	Status string    `json:"status"`
 }
 
 type RetryResponse struct {
@@ -53,7 +53,6 @@ type GetResponse struct {
 }
 
 type CancelDeploymentResponse struct {
-	Id         		uuid.UUID
-	IsCancelled 	bool
+	Id          uuid.UUID
+	IsCancelled bool
 }
-

@@ -53,7 +53,7 @@ func (client *Client) Cancel(ctx context.Context, deploymentId int) (*CancelDepl
 		return nil, err
 	}
 	return &CancelDeploymentResponse{
-		Id:     uuid.MustParse(*response.ID),
+		Id:          uuid.MustParse(*response.ID),
 		IsCancelled: true,
 	}, nil
 }

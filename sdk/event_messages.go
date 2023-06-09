@@ -51,20 +51,20 @@ type EventData struct {
 }
 
 type DryRunEventData struct {
-	EventData
-	Status string        `json:"status,omitempty" mapstructure:"status"`
-	Errors []DryRunError `json:"errors,omitempty" mapstructure:"errors"`
+	EventData `mapstructure:",squash"`
+	Status    string        `json:"status,omitempty" mapstructure:"status"`
+	Errors    []DryRunError `json:"errors,omitempty" mapstructure:"errors"`
 }
 
 type DeploymentEventData struct {
-	EventData
+	EventData     `mapstructure:",squash"`
 	StageId       *uuid.UUID `json:"stageId,omitempty" mapstructure:"stageId"`
 	CorrelationId *uuid.UUID `json:"correlationId,omitempty" mapstructure:"correlationId"`
 	Message       string     `json:"message,omitempty" mapstructure:"message"`
 }
 
 type StageEventData struct {
-	EventData
+	EventData         `mapstructure:",squash"`
 	ParentOperationId *uuid.UUID `json:"parentOperationId,omitempty" mapstructure:"parentOperationId"`
 	StageId           *uuid.UUID `json:"stageId,omitempty" mapstructure:"stageId"`
 	CorrelationId     *uuid.UUID `json:"correlationId,omitempty" mapstructure:"correlationId"`
@@ -128,7 +128,7 @@ func decode[TData any](typePrefix string, m *EventHookMessage) (*TData, error) {
 	var data *TData
 	err := internal.Decode(m.Data, &data)
 	if err != nil {
-		return nil, errors.New("data is not of type DeploymentEventData")
+		return nil, fmt.Errorf("unable to decode data for type %T", *new(TData))
 	}
 	return data, nil
 }

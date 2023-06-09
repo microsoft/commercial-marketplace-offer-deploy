@@ -12,8 +12,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -32,18 +34,27 @@ func TestStartDeployment(t *testing.T) {
 		if r.Method == "POST" {
 			w.WriteHeader(http.StatusOK)
 			w.Header().Set("Content-Type", "application/json")
-			w.Write([]byte(`{"id": "test-id"}`))
+
+			resp := InvokedDeploymentOperationResponse{
+				InvokedOperation: &InvokedOperation{
+					ID:     to.Ptr(uuid.New().String()),
+					Status: to.Ptr("scheduled"),
+				},
+			}
+			bytes, _ := json.Marshal(resp)
+
+			w.Write(bytes)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}
-		//log.Printf("request: %+v", r)
+
 		assert.Equal(t, "1", strings.Split(r.RequestURI, "/")[2])
 
-		//get something from templateparams and assert that it is in the request body
-		equals := reflect.DeepEqual(templateParameters, received)
-		assert.True(t, equals)
-		//create a utilty function to compare the two maps
+		t.Logf("params: %+v", templateParameters)
+		t.Logf("received: %+v", received["parameters"])
 
+		equals := reflect.DeepEqual(templateParameters, received["parameters"])
+		assert.True(t, equals)
 	}))
 	defer ts.Close()
 
