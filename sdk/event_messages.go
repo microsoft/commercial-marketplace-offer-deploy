@@ -12,6 +12,12 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk/internal"
 )
 
+const (
+	EventDataTypePrefixDeployment = "deployment"
+	EventDataTypePrefixStage      = "stage"
+	EventDataTypePrefixDryRun     = "dryRun"
+)
+
 // subscription model for MODM webhook events
 type EventHookMessage struct {
 	// the ID of the message
@@ -32,40 +38,6 @@ type EventHookMessage struct {
 	// /deployments/{deploymentId}/operations/{operationName}
 	Subject string `json:"subject,omitempty"`
 	Data    any    `json:"data,omitempty"`
-}
-
-func (m *EventHookMessage) GetHash() string {
-	hash := fnv.New32a()
-	hashString := fmt.Sprintf("%s%s%s%s", m.HookId, m.Type, m.Status, m.Subject)
-	hash.Write([]byte(hashString))
-	hashBytes := hash.Sum(nil)
-	hashValue := fmt.Sprintf("%x", hashBytes)
-	return hashValue
-}
-
-func (m *EventHookMessage) DryRunEventData() (*DryRunEventData, error) {
-	if m.Type != EventTypeDryRunCompleted.String() {
-		return nil, errors.New("message type is not dryRunCompleted")
-	}
-
-	var data *DryRunEventData
-	err := internal.Decode(m.Data, &data)
-	if err != nil {
-		return nil, errors.New("data is not of type DryRunEventData")
-	}
-	return data, nil
-}
-
-func (m *EventHookMessage) DeploymentEventData() (*DeploymentEventData, error) {
-	if strings.HasPrefix(m.Type, "deployment") {
-		var data *DeploymentEventData
-		err := internal.Decode(m.Data, &data)
-		if err != nil {
-			return nil, errors.New("data is not of type DeploymentEventData")
-		}
-		return data, nil
-	}
-	return nil, errors.New("message event type is not deployment*")
 }
 
 // Event data for a message
@@ -91,6 +63,35 @@ type DeploymentEventData struct {
 	Message       string     `json:"message,omitempty" mapstructure:"message"`
 }
 
+type StageEventData struct {
+	EventData
+	ParentOperationId *uuid.UUID `json:"parentOperationId,omitempty" mapstructure:"parentOperationId"`
+	StageId           *uuid.UUID `json:"stageId,omitempty" mapstructure:"stageId"`
+	CorrelationId     *uuid.UUID `json:"correlationId,omitempty" mapstructure:"correlationId"`
+	Message           string     `json:"message,omitempty" mapstructure:"message"`
+}
+
+func (m *EventHookMessage) GetHash() string {
+	hash := fnv.New32a()
+	hashString := fmt.Sprintf("%s%s%s%s", m.HookId, m.Type, m.Status, m.Subject)
+	hash.Write([]byte(hashString))
+	hashBytes := hash.Sum(nil)
+	hashValue := fmt.Sprintf("%x", hashBytes)
+	return hashValue
+}
+
+func (m *EventHookMessage) DryRunEventData() (*DryRunEventData, error) {
+	return decode[DryRunEventData](EventDataTypePrefixDryRun, m)
+}
+
+func (m *EventHookMessage) StageEventData() (*StageEventData, error) {
+	return decode[StageEventData](EventDataTypePrefixStage, m)
+}
+
+func (m *EventHookMessage) DeploymentEventData() (*DeploymentEventData, error) {
+	return decode[DeploymentEventData](EventDataTypePrefixDeployment, m)
+}
+
 func (m *EventHookMessage) DeploymentId() (uint, error) {
 	if data, ok := m.Data.(DeploymentEventData); ok {
 		return uint(data.DeploymentId), nil
@@ -113,4 +114,21 @@ func (m *EventHookMessage) SetSubject(deploymentId uint, stageId *uuid.UUID) {
 	if stageId != nil {
 		m.Subject += "/stages/" + stageId.String()
 	}
+}
+
+func decode[TData any](typePrefix string, m *EventHookMessage) (*TData, error) {
+	if m == nil {
+		return nil, errors.New("message is nil for type " + typePrefix)
+	}
+
+	if !strings.HasPrefix(m.Type, typePrefix) {
+		return nil, errors.New("message event type is not " + typePrefix + "*")
+	}
+
+	var data *TData
+	err := internal.Decode(m.Data, &data)
+	if err != nil {
+		return nil, errors.New("data is not of type DeploymentEventData")
+	}
+	return data, nil
 }
