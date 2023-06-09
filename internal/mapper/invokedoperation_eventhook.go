@@ -52,44 +52,40 @@ func getEventType(o *model.InvokedOperation) string {
 }
 
 func getEventData(invokedOperation *model.InvokedOperation) any {
+
 	if invokedOperation.Name == sdk.OperationDeploy.String() {
 		return getDeploymentData(invokedOperation)
 	}
+
 	if invokedOperation.Name == sdk.OperationDryRun.String() {
 		return getDryRunData(invokedOperation)
 	}
+
 	if invokedOperation.Name == sdk.OperationRetry.String() {
 		return getRetryData(invokedOperation)
 	}
+
 	if invokedOperation.Name == sdk.OperationRetryStage.String() {
 		return getRetryStageData(invokedOperation)
 	}
+
 	return nil
 }
 
 func getRetryData(invokedOperation *model.InvokedOperation) any {
 	data := &sdk.DeploymentEventData{
-		EventData: sdk.EventData{
-			DeploymentId: int(invokedOperation.DeploymentId),
-			OperationId:  invokedOperation.ID,
-		},
-		Message: fmt.Sprintf("Retry deployment %s", invokedOperation.Status),
+		EventData: getBaseEventData(invokedOperation),
+		Message:   fmt.Sprintf("Retry deployment %s", invokedOperation.Status),
 	}
-	setTimestamps(&data.EventData, invokedOperation)
-
 	return data
 }
 
 func getRetryStageData(invokedOperation *model.InvokedOperation) any {
 	data := &sdk.DeploymentEventData{
-		EventData: sdk.EventData{
-			DeploymentId: int(invokedOperation.DeploymentId),
-			OperationId:  invokedOperation.ID,
-		},
-		StageId: to.Ptr(uuid.MustParse(invokedOperation.Parameters["stageId"].(string))),
-		Message: fmt.Sprintf("Retry deployment %s", invokedOperation.Status),
+		EventData: getBaseEventData(invokedOperation),
+		StageId:   to.Ptr(uuid.MustParse(invokedOperation.Parameters["stageId"].(string))),
+		Message:   fmt.Sprintf("Retry deployment %s", invokedOperation.Status),
 	}
-	setTimestamps(&data.EventData, invokedOperation)
 	return data
 }
 
@@ -98,12 +94,8 @@ func getDryRunData(invokedOperation *model.InvokedOperation) any {
 	latestResult := invokedOperation.LatestResult()
 
 	data := &sdk.DryRunEventData{
-		EventData: sdk.EventData{
-			DeploymentId: int(invokedOperation.DeploymentId),
-			OperationId:  invokedOperation.ID,
-			Attempts:     int(invokedOperation.Attempts),
-		},
-		Status: resultStatus,
+		EventData: getBaseEventData(invokedOperation),
+		Status:    resultStatus,
 	}
 
 	if latestResult != nil {
@@ -116,16 +108,12 @@ func getDryRunData(invokedOperation *model.InvokedOperation) any {
 		}
 	}
 
-	setTimestamps(&data.EventData, invokedOperation)
 	return data
 }
 
 func getDeploymentData(invokedOperation *model.InvokedOperation) any {
 	data := &sdk.DeploymentEventData{
-		EventData: sdk.EventData{
-			DeploymentId: int(invokedOperation.DeploymentId),
-			OperationId:  invokedOperation.ID,
-		},
+		EventData: getBaseEventData(invokedOperation),
 	}
 
 	if invokedOperation.IsRetry() {
@@ -138,9 +126,18 @@ func getDeploymentData(invokedOperation *model.InvokedOperation) any {
 		data.Message = fmt.Sprintf("%s. Error: %s", data.Message, invokedOperation.LatestResult().Error)
 	}
 
-	setTimestamps(&data.EventData, invokedOperation)
-
 	return data
+}
+
+func getBaseEventData(invokedOperation *model.InvokedOperation) sdk.EventData {
+	base := &sdk.EventData{
+		DeploymentId: int(invokedOperation.DeploymentId),
+		OperationId:  invokedOperation.ID,
+		Attempts:     int(invokedOperation.Attempts),
+	}
+	setTimestamps(base, invokedOperation)
+
+	return *base
 }
 
 func setTimestamps(data *sdk.EventData, operation *model.InvokedOperation) {
