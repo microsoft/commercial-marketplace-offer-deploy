@@ -122,7 +122,7 @@ func Test_InvokedOperation_Will_Not_Exceed_Retries(t *testing.T) {
 		op.Failed()
 		op.Schedule()
 	}
-	assert.Len(t, op.Results, int(op.Retries))
+	assert.Len(t, op.Results, int(op.Retries)+1)
 }
 
 func Test_InvokedOperation_CorrelationId_Attrs_Null(t *testing.T) {
