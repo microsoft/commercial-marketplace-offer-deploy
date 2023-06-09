@@ -52,10 +52,12 @@ func (h *stageNotificationHandler) Handle(context *NotificationHandlerContext[mo
 	for index, entry := range entries {
 		if !entry.IsSent {
 			state, ok := states[entry.StageId]
+			log.Tracef("state for stage [%s] is [%v]. ok is %v", entry.StageId, state, ok)
+
 			if !ok {
 				continue
 			}
-			if state.provisiningState != armresources.ProvisioningStateFailed && state.provisiningState != armresources.ProvisioningStateSucceeded {
+			if state.provisiningState != armresources.ProvisioningStateAccepted && state.provisiningState != armresources.ProvisioningStateNotSpecified {
 				message := entry.Message
 				data, err := message.StageEventData()
 				if err != nil {
@@ -106,6 +108,7 @@ func (h *stageNotificationHandler) getStates(ctx context.Context, notification *
 			timestamp:        resource.Properties.Timestamp,
 		}
 	}
+	log.Trace("getStates: ", results)
 	return results, nil
 }
 

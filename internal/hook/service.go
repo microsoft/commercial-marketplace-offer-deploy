@@ -2,6 +2,7 @@ package hook
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"sync"
 
@@ -53,7 +54,10 @@ func (q *service) Notify(ctx context.Context, message *sdk.EventHookMessage) (uu
 			id = message.Id
 		}
 	}
-
+	marshalledJson, err := json.Marshal(message)
+	if err == nil {
+		log.Tracef("Inside Notify sending message to queue: %s", string(marshalledJson))
+	}
 	results, err := q.sender.Send(ctx, q.queueName, message)
 	if err != nil {
 		log.Errorf("Error attempting toadd event message to queue [%s]: %v", q.queueName, err)
