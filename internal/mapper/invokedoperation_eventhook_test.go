@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
@@ -65,4 +66,31 @@ func Test_getBaseEventData_sets_ids_and_attempts(t *testing.T) {
 	assert.Equal(t, invokedOperation.ID, result.OperationId)
 	assert.Equal(t, invokedOperation.DeploymentId, uint(result.DeploymentId))
 	assert.Equal(t, invokedOperation.Attempts, uint(result.Attempts))
+}
+
+func Test_getBaseEventData_Subject_has_stageId_when_stage_operation_and_stageId_param_exists(t *testing.T) {
+	stageId := uuid.New().String()
+
+	operation := model.InvokedOperation{
+		BaseWithGuidPrimaryKey: model.BaseWithGuidPrimaryKey{
+			ID: uuid.New(),
+		},
+		Name:         sdk.OperationDeploy.String(),
+		DeploymentId: uint(1),
+		Attempts:     uint(1),
+		Parameters: map[string]interface{}{
+			string(model.ParameterKeyStageId): stageId,
+		},
+	}
+
+	result := MapInvokedOperation(&operation)
+
+	assert.Contains(t, result.Subject, "deployments/1")
+	assert.NotContains(t, result.Subject, fmt.Sprintf("stages/%s", stageId))
+
+	operation2 := operation
+	operation2.Name = sdk.OperationRetryStage.String()
+	result = MapInvokedOperation(&operation2)
+
+	assert.Contains(t, result.Subject, fmt.Sprintf("stages/%s", stageId))
 }

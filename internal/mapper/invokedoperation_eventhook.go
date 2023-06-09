@@ -2,6 +2,7 @@ package mapper
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
@@ -18,9 +19,22 @@ func MapInvokedOperation(invokedOperation *model.InvokedOperation) *sdk.EventHoo
 		Error:  invokedOperation.LatestResult().Error,
 		Data:   getEventData(invokedOperation),
 	}
-	message.SetSubject(uint(invokedOperation.DeploymentId), nil)
-
+	setSubject(message, invokedOperation)
 	return message
+}
+
+func setSubject(m *sdk.EventHookMessage, o *model.InvokedOperation) {
+	deploymentId := uint(o.DeploymentId)
+
+	if strings.Contains(strings.ToLower(o.Name), "stage") {
+		value, ok := o.Parameters[string(model.ParameterKeyStageId)]
+		if ok {
+			stageId := uuid.MustParse(value.(string))
+			m.SetSubject(deploymentId, to.Ptr(stageId))
+		}
+	} else {
+		m.SetSubject(deploymentId, nil)
+	}
 }
 
 func getEventType(o *model.InvokedOperation) string {
@@ -53,22 +67,16 @@ func getEventType(o *model.InvokedOperation) string {
 
 func getEventData(invokedOperation *model.InvokedOperation) any {
 
-	if invokedOperation.Name == sdk.OperationDeploy.String() {
+	switch invokedOperation.Name {
+	case sdk.OperationDeploy.String():
 		return getDeploymentData(invokedOperation)
-	}
-
-	if invokedOperation.Name == sdk.OperationDryRun.String() {
+	case sdk.OperationDryRun.String():
 		return getDryRunData(invokedOperation)
-	}
-
-	if invokedOperation.Name == sdk.OperationRetry.String() {
+	case sdk.OperationRetry.String():
 		return getRetryData(invokedOperation)
-	}
-
-	if invokedOperation.Name == sdk.OperationRetryStage.String() {
+	case sdk.OperationRetryStage.String():
 		return getRetryStageData(invokedOperation)
 	}
-
 	return nil
 }
 
@@ -81,11 +89,24 @@ func getRetryData(invokedOperation *model.InvokedOperation) any {
 }
 
 func getRetryStageData(invokedOperation *model.InvokedOperation) any {
-	data := &sdk.DeploymentEventData{
+	stageId := uuid.MustParse(invokedOperation.Parameters["stageId"].(string))
+
+	data := &sdk.StageEventData{
 		EventData: getBaseEventData(invokedOperation),
-		StageId:   to.Ptr(uuid.MustParse(invokedOperation.Parameters["stageId"].(string))),
-		Message:   fmt.Sprintf("Retry deployment %s", invokedOperation.Status),
+		StageId:   to.Ptr(stageId),
 	}
+
+	latestResult := invokedOperation.LatestResult()
+	if latestResult != nil {
+		if latestResult.Error != "" {
+			data.Message = fmt.Sprintf("Error: %s", latestResult.Error)
+		}
+	}
+
+	if invokedOperation.ParentID != nil {
+		data.ParentOperationId = invokedOperation.ParentID
+	}
+
 	return data
 }
 
@@ -135,6 +156,7 @@ func getBaseEventData(invokedOperation *model.InvokedOperation) sdk.EventData {
 		OperationId:  invokedOperation.ID,
 		Attempts:     int(invokedOperation.Attempts),
 	}
+
 	setTimestamps(base, invokedOperation)
 
 	return *base
