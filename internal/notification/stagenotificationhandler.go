@@ -2,6 +2,7 @@ package notification
 
 import (
 	"context"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/google/uuid"
@@ -19,7 +20,12 @@ type stageNotificationHandler struct {
 	deploymentsClient *armresources.DeploymentsClient
 }
 
-type provisioningStates map[uuid.UUID]armresources.ProvisioningState
+type resourceState struct {
+	provisiningState armresources.ProvisioningState
+	timestamp        *time.Time
+}
+
+type provisioningStates map[uuid.UUID]resourceState
 
 func NewStageNotificationHandler(deploymentsClient *armresources.DeploymentsClient) NotificationHandler[model.StageNotification] {
 	return &stageNotificationHandler{
@@ -46,10 +52,18 @@ func (h *stageNotificationHandler) Handle(context *NotificationHandlerContext[mo
 	for index, entry := range entries {
 		if !entry.IsSent {
 			state, ok := states[entry.StageId]
+			log.Tracef("state for stage [%s] is [%v]. ok is %v", entry.StageId, state, ok)
+
 			if !ok {
 				continue
 			}
-			if state != armresources.ProvisioningStateFailed && state != armresources.ProvisioningStateSucceeded {
+			if state.provisiningState != armresources.ProvisioningStateAccepted && state.provisiningState != armresources.ProvisioningStateNotSpecified {
+				message := entry.Message
+				data, err := message.StageEventData()
+				if err != nil {
+					log.Errorf("failed to get stage event data for stage [%s]", entry.StageId)
+				}
+				data.StartedAt = state.timestamp
 				id, err := h.notify(context.ctx, &entry.Message)
 				if err == nil {
 					log.Tracef("notification sent for stage [%s] with id [%s]", entry.StageId, id)
@@ -89,8 +103,12 @@ func (h *stageNotificationHandler) getStates(ctx context.Context, notification *
 			log.Warnf("failed to uuid parse [%v] as modm.id on resource [%s]", *value, *resource.Name)
 			continue
 		}
-		results[stageId] = armresources.ProvisioningState(*resource.Properties.ProvisioningState)
+		results[stageId] = resourceState{
+			provisiningState: armresources.ProvisioningState(*resource.Properties.ProvisioningState),
+			timestamp:        resource.Properties.Timestamp,
+		}
 	}
+	log.Trace("getStates: ", results)
 	return results, nil
 }
 
