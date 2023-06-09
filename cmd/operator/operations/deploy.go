@@ -106,6 +106,7 @@ func (service *deployeOperation) notifyForStages(context operation.ExecutionCont
 		return errors.New("deployment not found")
 	}
 
+
 	notification := &model.StageNotification{
 		OperationId:       op.ID,
 		CorrelationId:     *correlationId,
@@ -127,7 +128,7 @@ func (service *deployeOperation) notifyForStages(context operation.ExecutionCont
 						Attempts:     1,
 						StartedAt:    to.Ptr(time.Now().UTC()),
 					},
-					StageId:       &stage.ID,
+					StageId:       to.Ptr(stage.ID),
 					CorrelationId: correlationId,
 				},
 			},
