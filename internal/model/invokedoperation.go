@@ -161,6 +161,15 @@ func (o *InvokedOperation) AttributeValue(key AttributeKey) (any, bool) {
 	return nil, false
 }
 
+func (o *InvokedOperation) ParameterValue(key ParameterKey) (any, bool) {
+	for k, v := range o.Parameters {
+		if k == string(key) {
+			return v, true
+		}
+	}
+	return nil, false
+}
+
 func (o *InvokedOperation) AttemptsExceeded() bool {
 	return o.Attempts > o.Retries
 }

@@ -30,3 +30,8 @@ const (
 )
 
 type LookupTags map[LookupTagKey]*string
+
+type LookupTag struct {
+	Key   LookupTagKey
+	Value *string
+}
