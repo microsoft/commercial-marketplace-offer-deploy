@@ -60,7 +60,17 @@ func (finder *AzureDeploymentNameFinder) getName(ctx context.Context) (string, e
 					continue
 				}
 
-				if _, ok := (item.Tags)[string(deployment.LookupTagKeyOperationId)]; ok {
+				if value, ok := (item.Tags)[string(deployment.LookupTagKeyOperationId)]; ok {
+					id, err := uuid.Parse(*value)
+					if err != nil {
+						log.Warnf("Failed to parse operationId from deployment tags: %s", err.Error())
+						continue
+					}
+
+					if id != finder.operationId {
+						continue
+					}
+
 					name = *item.Name
 					log.WithFields(log.Fields{
 						"operationId":         finder.operationId,

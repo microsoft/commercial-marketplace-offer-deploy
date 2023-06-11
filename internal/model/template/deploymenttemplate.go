@@ -1,6 +1,9 @@
 package template
 
-import "github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
+import (
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
+	log "github.com/sirupsen/logrus"
+)
 
 type DeploymentTemplate struct {
 	source     map[string]any
@@ -31,6 +34,8 @@ func (t *DeploymentTemplate) Build() map[string]interface{} {
 	template := t.source
 
 	nestedTemplates := t.getNestedTemplates()
+	log.Tracef("total nested templates: %d", len(nestedTemplates))
+
 	if len(nestedTemplates) == 0 {
 		return template
 	}
