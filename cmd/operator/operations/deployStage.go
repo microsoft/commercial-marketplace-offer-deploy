@@ -4,6 +4,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/stage"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
 type nameFinderFactory func(context operation.ExecutionContext) (*operation.AzureDeploymentNameFinder, error)
@@ -51,6 +52,10 @@ func (op *deployStageOperation) wait(context operation.ExecutionContext, azureDe
 	}
 
 	context.Value(response)
+
+	if response.Status == sdk.StatusFailed {
+		return operation.NewError(context.Operation())
+	}
 
 	return nil
 }
