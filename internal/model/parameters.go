@@ -3,6 +3,6 @@ package model
 type ParameterKey string
 
 const (
-	ParameterKeyStageId             ParameterKey = "stageId"
-	ParameterKeyAzureDeploymentName ParameterKey = "azureDeploymentName"
+	ParameterKeyStageId            ParameterKey = "stageId"
+	ParameterKeyNestedTemplateName ParameterKey = "nestedTemplateName"
 )

@@ -86,13 +86,13 @@ func (op *deployOperation) mapAzureDeployment(parent *operation.Operation, stage
 	for _, stage := range d.Stages {
 		stageOperation := stages[stage.ID]
 
-		if azureDeploymentName, ok := stageOperation.ParameterValue(model.ParameterKeyAzureDeploymentName); ok {
-			if azureDeploymentNameString, ok := azureDeploymentName.(string); ok {
+		if nestedTemplateName, ok := stageOperation.ParameterValue(model.ParameterKeyNestedTemplateName); ok {
+			if value, ok := nestedTemplateName.(string); ok {
 				lookupTag := deployment.LookupTag{
 					Key:   deployment.LookupTagKeyOperationId,
 					Value: to.Ptr(stageOperation.ID.String()),
 				}
-				template.Tag(azureDeploymentNameString, lookupTag)
+				template.Tag(value, lookupTag)
 			}
 		}
 	}
