@@ -156,7 +156,7 @@ func (service *OperationManager) withContext(ctx context.Context) {
 
 // encapsulates the conversion of an invoked operation to an event hook message
 func (service *OperationManager) getMessage(io *model.InvokedOperation) *sdk.EventHookMessage {
-	if io.Status == string(sdk.StatusUnknown) {
+	if io.Status == string(sdk.StatusNone) {
 		return nil
 	}
 	return mapper.MapInvokedOperation(io)

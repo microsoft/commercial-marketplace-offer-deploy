@@ -119,6 +119,6 @@ func (poller *DeployStagePoller) mapProvisioningStateToStatus(state armresources
 	case armresources.ProvisioningStateCanceled:
 		return sdk.StatusCanceled
 	default:
-		return sdk.StatusUnknown
+		return sdk.StatusNone
 	}
 }

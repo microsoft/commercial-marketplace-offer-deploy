@@ -41,7 +41,7 @@ func (f *DeployStageOperationFactory) Create(parent *Operation) (DeployStageOper
 				o.ParentID = to.Ptr(parent.ID)
 				o.Retries = stage.Retries
 				o.Attempts = 0
-				o.Status = string(sdk.StatusUnknown)
+				o.Status = string(sdk.StatusNone)
 				o.DeploymentId = deployment.ID
 				o.Parameters = map[string]any{
 					string(model.ParameterKeyStageId):            stage.ID,

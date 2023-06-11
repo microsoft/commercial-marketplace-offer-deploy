@@ -15,10 +15,10 @@ const (
 	StatusCanceled Status = "canceled"
 	StatusError Status = "error"
 	StatusFailed Status = "failed"
+	StatusNone Status = "none"
 	StatusRunning Status = "running"
 	StatusScheduled Status = "scheduled"
 	StatusSuccess Status = "success"
-	StatusUnknown Status = "unknown"
 )
 
 // PossibleStatusValues returns the possible values for the Status const type.
@@ -27,10 +27,10 @@ func PossibleStatusValues() []Status {
 		StatusCanceled,
 		StatusError,
 		StatusFailed,
+		StatusNone,
 		StatusRunning,
 		StatusScheduled,
 		StatusSuccess,
-		StatusUnknown,
 	}
 }
 
