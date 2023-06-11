@@ -70,6 +70,8 @@ func getEventData(invokedOperation *model.InvokedOperation) any {
 	switch invokedOperation.Name {
 	case sdk.OperationDeploy.String():
 		return getDeploymentData(invokedOperation)
+	case sdk.OperationDeployStage.String():
+		return getDeployStageData(invokedOperation)
 	case sdk.OperationDryRun.String():
 		return getDryRunData(invokedOperation)
 	case sdk.OperationRetry.String():
@@ -85,6 +87,28 @@ func getRetryData(invokedOperation *model.InvokedOperation) any {
 		EventData: getBaseEventData(invokedOperation),
 		Message:   fmt.Sprintf("Retry deployment %s", invokedOperation.Status),
 	}
+	return data
+}
+
+func getDeployStageData(invokedOperation *model.InvokedOperation) any {
+	stageId := uuid.MustParse(invokedOperation.Parameters["stageId"].(string))
+
+	data := &sdk.StageEventData{
+		EventData: getBaseEventData(invokedOperation),
+		StageId:   to.Ptr(stageId),
+	}
+
+	latestResult := invokedOperation.LatestResult()
+	if latestResult != nil {
+		if latestResult.Error != "" {
+			data.Message = fmt.Sprintf("Error: %s", latestResult.Error)
+		}
+	}
+
+	if invokedOperation.ParentID != nil {
+		data.ParentOperationId = invokedOperation.ParentID
+	}
+
 	return data
 }
 
