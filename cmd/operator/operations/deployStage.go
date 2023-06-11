@@ -11,7 +11,23 @@ type deployStageOperation struct {
 }
 
 func (op *deployStageOperation) Do(context operation.ExecutionContext) error {
+	isFirstAttempt := context.Operation().IsFirstAttempt()
+	if isFirstAttempt {
+		err := op.wait(context)
+		if err != nil {
+			return err
+		}
+	} else { // retry the stage
+		retryStage := NewRetryStageOperation()
+		err := retryStage(context)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
+func (op *deployStageOperation) wait(context operation.ExecutionContext) error {
 	poller, err := op.pollerFactory.Create(context.Operation(), nil)
 	if err != nil {
 		return err
@@ -21,10 +37,9 @@ func (op *deployStageOperation) Do(context operation.ExecutionContext) error {
 		return err
 	}
 
-	if response.ProvisioningState != "Succeeded" {
+	if response.Status != "Succeeded" {
 		return operation.NewError(context.Operation())
 	}
-
 	return nil
 }
 

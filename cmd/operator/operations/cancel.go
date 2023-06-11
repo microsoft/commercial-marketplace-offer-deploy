@@ -6,7 +6,6 @@ import (
 )
 
 type cancelOperation struct {
-	cancel operation.OperationFunc
 }
 
 func (op *cancelOperation) Do(context operation.ExecutionContext) error {

@@ -18,6 +18,11 @@ To see additional help and options, run:
 
 ---
 
+to view the switches for go:
+```
+autorest --go --use=@autorest/go@4.0.0-preview.51 --help
+```
+
 ## Configuration
 
 ### Basic Information
@@ -30,6 +35,8 @@ data-plane: true
 override-client-name: "deploymentManagementClient"
 security: "AADToken"
 tag: preview-2023-03-01
+naming:
+  client: camel
 ```
 
 ### Tag: preview-2023-03-01

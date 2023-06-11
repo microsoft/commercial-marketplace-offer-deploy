@@ -9,6 +9,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -27,7 +28,7 @@ type DeployStagePoller struct {
 }
 
 type DeployStagePollerResponse struct {
-	ProvisioningState armresources.ProvisioningState `json:"provisioningState"`
+	Status sdk.Status `json:"status"`
 }
 
 type DeployStagePollerFactory struct {
@@ -89,7 +90,7 @@ func (poller *DeployStagePoller) PollUntilDone(ctx context.Context) (DeployStage
 			}
 			if poller.isInCompletedState(state) {
 				poller.done <- DeployStagePollerResponse{
-					ProvisioningState: state,
+					Status: poller.mapProvisioningStateToStatus(state),
 				}
 			}
 		case response := <-poller.done:
@@ -105,11 +106,24 @@ func (poller *DeployStagePoller) checkProvisioningState(ctx context.Context) (ar
 	}
 	state := response.DeploymentExtended.Properties.ProvisioningState
 	if state == nil {
-		return "", errors.New("provisioningState is nil")
+		return armresources.ProvisioningStateNotSpecified, errors.New("provisioningState is nil")
 	}
 	return *state, nil
 }
 
 func (poller *DeployStagePoller) isInCompletedState(state armresources.ProvisioningState) bool {
 	return state == armresources.ProvisioningStateSucceeded || state == armresources.ProvisioningStateFailed || state == armresources.ProvisioningStateCanceled
+}
+
+func (poller *DeployStagePoller) mapProvisioningStateToStatus(state armresources.ProvisioningState) sdk.Status {
+	switch state {
+	case armresources.ProvisioningStateSucceeded:
+		return sdk.StatusSuccess
+	case armresources.ProvisioningStateFailed:
+		return sdk.StatusFailed
+	case armresources.ProvisioningStateCanceled:
+		return sdk.StatusCanceled
+	default:
+		return sdk.StatusUnknown
+	}
 }

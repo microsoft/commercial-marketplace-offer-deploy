@@ -96,11 +96,12 @@
             "items": {
               "type": "string",
               "enum": [
-                "none",
+                "unknown",
                 "scheduled",
                 "running",
                 "success",
                 "failed",
+                "canceled",
                 "error"
               ],
               "default": "none",
