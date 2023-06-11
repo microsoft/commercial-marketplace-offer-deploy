@@ -2,6 +2,7 @@ package operations
 
 import (
 	"strconv"
+	"sync"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
@@ -85,29 +86,36 @@ func (op *deployOperation) createDeployStageOperations(parent *operation.Operati
 
 	deployment := parent.Deployment()
 
+	waitGroup := sync.WaitGroup{}
+	waitGroup.Add(len(deployment.Stages))
+
 	for _, stage := range deployment.Stages {
-		configure := func(stageOperation *model.InvokedOperation) error {
-			stageOperation.Name = string(sdk.OperationDeployStage)
-			stageOperation.ParentID = to.Ptr(parent.ID)
-			stageOperation.Retries = stage.Retries
-			stageOperation.Attempts = 0
-			stageOperation.Status = string(sdk.StatusUnknown)
-			stageOperation.DeploymentId = deployment.ID
-			stageOperation.Parameters = map[string]any{
-				string(model.ParameterKeyStageId): stage.ID,
+		go func(stage model.Stage) {
+			defer waitGroup.Done()
+
+			configure := func(stageOperation *model.InvokedOperation) error {
+				stageOperation.Name = string(sdk.OperationDeployStage)
+				stageOperation.ParentID = to.Ptr(parent.ID)
+				stageOperation.Retries = stage.Retries
+				stageOperation.Attempts = 0
+				stageOperation.Status = string(sdk.StatusUnknown)
+				stageOperation.DeploymentId = deployment.ID
+				stageOperation.Parameters = map[string]any{
+					string(model.ParameterKeyStageId): stage.ID,
+				}
+
+				return nil
 			}
 
-			return nil
-		}
-
-		stageOperation, err := op.operationRepository.New(sdk.OperationDeployStage, configure)
-		if err != nil {
-			log.Errorf("Failed to create deploy stage operation: %v", err)
-			continue
-		}
-		stageOperation.SaveChanges()
-		stageOperations[stage.ID] = stageOperation
+			stageOperation, err := op.operationRepository.New(sdk.OperationDeployStage, configure)
+			if err != nil {
+				log.Errorf("Failed to create deploy stage operation: %v", err)
+			}
+			stageOperation.SaveChanges()
+			stageOperations[stage.ID] = stageOperation
+		}(stage)
 	}
+	waitGroup.Wait()
 
 	return stageOperations
 }
