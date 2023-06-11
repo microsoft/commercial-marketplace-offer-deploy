@@ -2,6 +2,7 @@ package operations
 
 import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/stage"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
@@ -24,6 +25,10 @@ func (op *deployStageOperation) Do(context operation.ExecutionContext) error {
 	if err != nil {
 		return err
 	}
+
+	// save the deployment name to the operation so we can fetch it later
+	context.Operation().Attribute(model.AttributeKeyAzureDeploymentName, azureDeploymentName)
+	context.SaveChanges()
 
 	isFirstAttempt := context.Operation().IsFirstAttempt()
 	if isFirstAttempt {
