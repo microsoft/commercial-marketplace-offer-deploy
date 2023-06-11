@@ -44,7 +44,7 @@ func getEventType(o *model.InvokedOperation) string {
 		noun = "deployment"
 	} else if o.Name == sdk.OperationDryRun.String() {
 		noun = "dryRun"
-	} else if o.Name == sdk.OperationRetryStage.String() {
+	} else if o.Name == sdk.OperationRetryStage.String() || o.Name == sdk.OperationDeployStage.String() {
 		noun = "stage"
 	}
 

@@ -94,8 +94,7 @@ func (op *deployOperation) createDeployStageOperations(parent *operation.Operati
 			stageOperation.Status = string(sdk.StatusUnknown)
 			stageOperation.DeploymentId = deployment.ID
 			stageOperation.Parameters = map[string]any{
-				string(model.ParameterKeyStageId):             stage.ID,
-				string(model.ParameterKeyAzureDeploymentName): stage.AzureDeploymentName,
+				string(model.ParameterKeyStageId): stage.ID,
 			}
 
 			return nil

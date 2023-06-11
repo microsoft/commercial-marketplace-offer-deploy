@@ -2,6 +2,7 @@ package operation
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -70,6 +71,10 @@ func (service *OperationService) saveChanges(notify bool) error {
 // triggers a notification of the invoked operation's state
 func (service *OperationService) publish(snapshot model.InvokedOperation) (uuid.UUID, error) {
 	message := service.getMessage(&snapshot)
+	if message == nil {
+		service.log.Warnf("no message to publish for operation [%v]", snapshot.ID)
+		return uuid.Nil, errors.New("no message to publish")
+	}
 	notificationId, err := service.notify(service.Context(), message)
 	if err != nil {
 		service.log.Errorf("failed to publish event notification: %v", err)
@@ -151,6 +156,9 @@ func (service *OperationService) withContext(ctx context.Context) {
 
 // encapsulates the conversion of an invoked operation to an event hook message
 func (service *OperationService) getMessage(io *model.InvokedOperation) *sdk.EventHookMessage {
+	if io.Status == string(sdk.StatusUnknown) {
+		return nil
+	}
 	return mapper.MapInvokedOperation(io)
 }
 

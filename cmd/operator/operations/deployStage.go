@@ -6,14 +6,27 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/stage"
 )
 
+type nameFinderFactory func(context operation.ExecutionContext) (*operation.AzureDeploymentNameFinder, error)
+
 type deployStageOperation struct {
-	pollerFactory *stage.DeployStagePollerFactory
+	pollerFactory     *stage.DeployStagePollerFactory
+	nameFinderFactory nameFinderFactory
 }
 
 func (op *deployStageOperation) Do(context operation.ExecutionContext) error {
+	finder, err := op.nameFinderFactory(context)
+	if err != nil {
+		return err
+	}
+
+	azureDeploymentName, err := finder.Find(context.Context())
+	if err != nil {
+		return err
+	}
+
 	isFirstAttempt := context.Operation().IsFirstAttempt()
 	if isFirstAttempt {
-		err := op.wait(context)
+		err := op.wait(context, azureDeploymentName)
 		if err != nil {
 			return err
 		}
@@ -27,8 +40,8 @@ func (op *deployStageOperation) Do(context operation.ExecutionContext) error {
 	return nil
 }
 
-func (op *deployStageOperation) wait(context operation.ExecutionContext) error {
-	poller, err := op.pollerFactory.Create(context.Operation(), nil)
+func (op *deployStageOperation) wait(context operation.ExecutionContext, azureDeploymentName string) error {
+	poller, err := op.pollerFactory.Create(context.Operation(), azureDeploymentName, nil)
 	if err != nil {
 		return err
 	}
@@ -48,6 +61,9 @@ func NewDeployStageOperation(appConfig *config.AppConfig) operation.OperationFun
 
 	operation := &deployStageOperation{
 		pollerFactory: pollerFactory,
+		nameFinderFactory: func(context operation.ExecutionContext) (*operation.AzureDeploymentNameFinder, error) {
+			return operation.NewAzureDeploymentNameFinder(context.Operation())
+		},
 	}
 	return operation.Do
 }

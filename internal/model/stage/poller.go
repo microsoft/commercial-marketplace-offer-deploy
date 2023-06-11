@@ -7,7 +7,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
@@ -38,7 +37,7 @@ func NewDeployStagePollerFactory() *DeployStagePollerFactory {
 	return &DeployStagePollerFactory{}
 }
 
-func (factory *DeployStagePollerFactory) Create(operation *operation.Operation, options *DeployStagePollerOptions) (*DeployStagePoller, error) {
+func (factory *DeployStagePollerFactory) Create(operation *operation.Operation, azureDeploymentName string, options *DeployStagePollerOptions) (*DeployStagePoller, error) {
 	credential, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		return nil, err
@@ -64,18 +63,8 @@ func (factory *DeployStagePollerFactory) Create(operation *operation.Operation, 
 		ticker:            time.NewTicker(duration),
 		done:              make(chan DeployStagePollerResponse),
 		resourceGroupName: deployment.ResourceGroup,
-		deploymentName:    factory.getAzureDeploymentName(operation),
+		deploymentName:    azureDeploymentName,
 	}, nil
-}
-
-func (factory *DeployStagePollerFactory) getAzureDeploymentName(operation *operation.Operation) string {
-	parameterValue, ok := operation.ParameterValue(model.ParameterKeyAzureDeploymentName)
-	if ok {
-		if value, ok := parameterValue.(string); ok {
-			return value
-		}
-	}
-	return ""
 }
 
 func (poller *DeployStagePoller) PollUntilDone(ctx context.Context) (DeployStagePollerResponse, error) {
