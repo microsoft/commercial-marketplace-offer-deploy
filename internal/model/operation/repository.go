@@ -25,8 +25,8 @@ type Repository interface {
 }
 
 type repository struct {
-	managerTemplate *OperationManager //clone managers from this instance
-	provider        OperationFuncProvider
+	manager  *OperationManager //clone managers from this instance. It acts as the base manager
+	provider OperationFuncProvider
 }
 
 func (repo *repository) Provider(provider OperationFuncProvider) error {
@@ -38,7 +38,7 @@ func (repo *repository) Provider(provider OperationFuncProvider) error {
 }
 
 func (repo *repository) WithContext(ctx context.Context) {
-	repo.managerTemplate.withContext(ctx)
+	repo.manager.withContext(ctx)
 }
 
 // creates a new operation instance by type
@@ -57,7 +57,7 @@ func (repo *repository) New(operationType sdk.OperationType, configure Configure
 	instance.Name = operationType.String()
 	instance.ID = id
 
-	_, err := repo.managerTemplate.new(instance)
+	_, err := repo.manager.new(instance)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (repo *repository) New(operationType sdk.OperationType, configure Configure
 
 // Gets the instance of an operation by id, otherwise, nil and an error
 func (repo *repository) First(id uuid.UUID) (*Operation, error) {
-	manager := CloneManager(repo.managerTemplate)
+	manager := CloneManager(repo.manager)
 
 	operation, err := manager.initialize(id)
 	if err != nil {
@@ -91,8 +91,8 @@ func (repo *repository) First(id uuid.UUID) (*Operation, error) {
 // provider: operation function provider, optional if the operation is not going to be executed and you want to interact with the operation
 func NewRepository(manager *OperationManager, provider OperationFuncProvider) (Repository, error) {
 	repo := &repository{
-		managerTemplate: manager,
-		provider:        provider,
+		manager:  manager,
+		provider: provider,
 	}
 
 	return repo, nil
