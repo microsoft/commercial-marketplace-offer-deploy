@@ -27,7 +27,8 @@ type DeployStagePoller struct {
 }
 
 type DeployStagePollerResponse struct {
-	Status sdk.Status `json:"status"`
+	Status     sdk.Status                       `json:"status"`
+	Deployment *armresources.DeploymentExtended `json:"deployment"`
 }
 
 type DeployStagePollerFactory struct {
@@ -61,7 +62,7 @@ func (factory *DeployStagePollerFactory) Create(operation *operation.Operation, 
 	return &DeployStagePoller{
 		client:            client,
 		ticker:            time.NewTicker(duration),
-		done:              make(chan DeployStagePollerResponse),
+		done:              make(chan DeployStagePollerResponse, 1),
 		resourceGroupName: deployment.ResourceGroup,
 		deploymentName:    azureDeploymentName,
 	}, nil
@@ -71,33 +72,38 @@ func (poller *DeployStagePoller) PollUntilDone(ctx context.Context) (DeployStage
 	for {
 		select {
 		case <-poller.ticker.C:
-			state, err := poller.checkProvisioningState(ctx)
-			log.Tracef("provisioning state of stage deployment: %v", state)
+			log.Tracef("checking provisioning state of stage deployment [%s]", poller.deploymentName)
+
+			deployment, err := poller.checkProvisioningState(ctx)
+			log.Tracef("provisioning state of stage deployment: %s", *deployment.Properties.ProvisioningState)
 
 			if err != nil {
 				log.Errorf("failed to check provisioning state: %v", err)
 			}
-			if poller.isInCompletedState(state) {
+			if poller.isInCompletedState(*deployment.Properties.ProvisioningState) {
+				poller.ticker.Stop()
 				poller.done <- DeployStagePollerResponse{
-					Status: poller.mapProvisioningStateToStatus(state),
+					Status:     poller.mapProvisioningStateToStatus(*deployment.Properties.ProvisioningState),
+					Deployment: deployment,
 				}
 			}
 		case response := <-poller.done:
+			log.Tracef("poller is done [%s]", response.Status)
 			return response, nil
 		}
 	}
 }
 
-func (poller *DeployStagePoller) checkProvisioningState(ctx context.Context) (armresources.ProvisioningState, error) {
+func (poller *DeployStagePoller) checkProvisioningState(ctx context.Context) (*armresources.DeploymentExtended, error) {
 	response, err := poller.client.Get(ctx, poller.resourceGroupName, poller.deploymentName, nil)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	state := response.DeploymentExtended.Properties.ProvisioningState
 	if state == nil {
-		return armresources.ProvisioningStateNotSpecified, errors.New("provisioningState is nil")
+		return nil, errors.New("provisioningState is nil")
 	}
-	return *state, nil
+	return &response.DeploymentExtended, nil
 }
 
 func (poller *DeployStagePoller) isInCompletedState(state armresources.ProvisioningState) bool {

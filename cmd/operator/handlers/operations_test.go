@@ -20,7 +20,7 @@ type operationsTestSuite struct {
 
 	hookService  *fake.FakeHookService
 	sender       *fake.FakeMessageSender
-	service      *operation.OperationService
+	service      *operation.OperationManager
 	funcProvider operation.OperationFuncProvider
 
 	invokedOperation model.InvokedOperation
@@ -36,7 +36,7 @@ func (suite *operationsTestSuite) SetupSuite() {
 	suite.hookService = fake.NewFakeHookService(suite.T())
 	suite.sender = fake.NewFakeMessageSender(suite.T())
 
-	service, err := operation.NewService(suite.db, suite.sender, suite.hookService.Notify)
+	service, err := operation.NewManager(suite.db, suite.sender, suite.hookService.Notify)
 	suite.Assert().NoError(err)
 
 	suite.service = service

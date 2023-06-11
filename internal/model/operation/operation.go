@@ -13,7 +13,7 @@ type OperationFunc func(context ExecutionContext) error
 // remarks: Invoked Operation decorator+visitor
 type Operation struct {
 	model.InvokedOperation
-	service *OperationService
+	service *OperationManager
 	do      OperationFunc
 }
 

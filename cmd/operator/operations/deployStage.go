@@ -50,9 +50,8 @@ func (op *deployStageOperation) wait(context operation.ExecutionContext, azureDe
 		return err
 	}
 
-	if response.Status != "Succeeded" {
-		return operation.NewError(context.Operation())
-	}
+	context.Value(response)
+
 	return nil
 }
 

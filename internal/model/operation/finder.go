@@ -8,6 +8,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
+	log "github.com/sirupsen/logrus"
 )
 
 type AzureDeploymentNameFinder struct {
@@ -61,6 +62,10 @@ func (finder *AzureDeploymentNameFinder) getName(ctx context.Context) (string, e
 
 				if _, ok := (item.Tags)[string(deployment.LookupTagKeyOperationId)]; ok {
 					name = *item.Name
+					log.WithFields(log.Fields{
+						"operationId":         finder.operationId,
+						"azureDeploymentName": name,
+					}).Trace("Found deployment by operationId")
 					break
 				}
 			}

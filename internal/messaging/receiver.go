@@ -16,6 +16,8 @@ import (
 const banner = `
 🄶🄾🄻🄳🄴🄽 🅁🄴🄲🄴🄸🅅🄴🅁`
 
+const DefaultMaxMessages = 10
+
 type MessageReceiver interface {
 	Start()
 	Stop()
@@ -29,24 +31,26 @@ type MessageReceiverOptions struct {
 type ServiceBusMessageReceiverOptions struct {
 	MessageReceiverOptions
 	FullyQualifiedNamespace string
+	MaxMessages             int
 }
 
 //region servicebus receiver
 
 type serviceBusReceiver struct {
-	stopped    bool
-	stop       chan bool
-	ctx        context.Context
-	queueName  string
-	namespace  string
-	handler    ServiceBusMessageHandler
-	credential azcore.TokenCredential
-	logger     *log.Entry
+	stopped     bool
+	stop        chan bool
+	ctx         context.Context
+	queueName   string
+	namespace   string
+	handler     ServiceBusMessageHandler
+	credential  azcore.TokenCredential
+	logger      *log.Entry
+	maxMessages int
 }
 
 func (r *serviceBusReceiver) Start() {
 	fmt.Println(banner)
-	r.logger.Debug("Starting")
+	r.logger.Trace("Starting")
 
 	r.stopped = false
 	receiver, err := r.getQueueReceiver()
@@ -69,47 +73,71 @@ func (r *serviceBusReceiver) Start() {
 				if r.stopped {
 					break
 				}
-
-				var messages []*azservicebus.ReceivedMessage = []*azservicebus.ReceivedMessage{}
-				messages, err = receiver.ReceiveMessages(r.ctx, 1, nil)
-				if err != nil {
-					log.Errorf("%s - error receiving: %v", r.queueName, err)
-					continue
-				}
-
-				for _, message := range messages {
-					log.WithFields(log.Fields{
-						"queueName": r.queueName,
-						"messageId": message.MessageID,
-						"body":      string(message.Body),
-					}).Trace("Received message")
-
-					err := r.handler.Handle(r.ctx, message)
-
-					if err != nil {
-						log.Error(err)
-					}
-
-					err = receiver.CompleteMessage(r.ctx, message, nil)
-
-					if err != nil {
-						log.Errorf("Error completing message: %v", err)
-
-						var sbErr *azservicebus.Error
-						if errors.As(err, &sbErr) && sbErr.Code == azservicebus.CodeLockLost {
-							// The message lock has expired. This isn't fatal for the client, but it does mean
-							// that this message can be received by another Receiver (or potentially this one!).
-							log.Debug("Message lock expired\n")
-							// You can extend the message lock by calling receiver.RenewMessageLock(msg) before the
-							// message lock has expired.
-							continue
-						}
-					}
-					log.Tracef("Completed message [%s]", message.MessageID)
-				}
+				r.processMessages(receiver)
 			}
 		}
 	}
+}
+
+func (r *serviceBusReceiver) processMessages(receiver *azservicebus.Receiver) {
+	var messages []*azservicebus.ReceivedMessage = []*azservicebus.ReceivedMessage{}
+	messages, err := receiver.ReceiveMessages(r.ctx, r.maxMessages, nil)
+	if err != nil {
+		log.Errorf("%s - error receiving: %v", r.queueName, err)
+		return
+	}
+
+	log.Tracef("%s - received [%d] messages", r.queueName, len(messages))
+
+	// waitGroup := sync.WaitGroup{}
+	// waitGroup.Add(len(messages))
+
+	for _, message := range messages {
+		go func(message *azservicebus.ReceivedMessage) {
+			//defer waitGroup.Done()
+			err := r.executedHandler(receiver, message)
+			if err != nil {
+				log.Errorf("Error handling message: %v", err)
+			}
+		}(message)
+	}
+	//waitGroup.Wait()
+}
+
+func (r *serviceBusReceiver) executedHandler(receiver *azservicebus.Receiver, message *azservicebus.ReceivedMessage) error {
+	if message == nil {
+		return errors.New("message is nil")
+	}
+
+	log.WithFields(log.Fields{
+		"queueName": r.queueName,
+		"messageId": message.MessageID,
+		"body":      string(message.Body),
+	}).Trace("Received message")
+
+	err := r.handler.Handle(r.ctx, message)
+
+	if err != nil {
+		log.Error(err)
+	}
+
+	err = receiver.CompleteMessage(r.ctx, message, nil)
+
+	if err != nil {
+		log.Errorf("Error completing message: %v", err)
+
+		var sbErr *azservicebus.Error
+		if errors.As(err, &sbErr) && sbErr.Code == azservicebus.CodeLockLost {
+			// The message lock has expired. This isn't fatal for the client, but it does mean
+			// that this message can be received by another Receiver (or potentially this one!).
+			log.Warn("Message lock expired\n")
+			// You can extend the message lock by calling receiver.RenewMessageLock(msg) before the
+			// message lock has expired.
+		}
+		return err
+	}
+	log.Tracef("Completed message [%s]", message.MessageID)
+	return nil
 }
 
 func (r *serviceBusReceiver) Stop() {
@@ -153,15 +181,21 @@ func NewServiceBusReceiver(handler any, credential azcore.TokenCredential, optio
 		return nil, err
 	}
 
+	maxMessages := DefaultMaxMessages
+	if options.MaxMessages > 0 {
+		maxMessages = options.MaxMessages
+	}
+
 	receiver := serviceBusReceiver{
-		stop:       make(chan bool),
-		stopped:    true,
-		queueName:  options.QueueName,
-		namespace:  options.FullyQualifiedNamespace,
-		ctx:        context.Background(),
-		credential: credential,
-		handler:    serviceBusMessageHandler,
-		logger:     log.WithField("queue", options.QueueName),
+		stop:        make(chan bool),
+		stopped:     true,
+		queueName:   options.QueueName,
+		namespace:   options.FullyQualifiedNamespace,
+		ctx:         context.Background(),
+		credential:  credential,
+		handler:     serviceBusMessageHandler,
+		logger:      log.WithField("queue", options.QueueName),
+		maxMessages: maxMessages,
 	}
 	return &receiver, nil
 }

@@ -32,6 +32,8 @@ func GetOperation(operationType sdk.OperationType, appConfig *config.AppConfig) 
 		operationFunc = NewDryRunOperation()
 	case sdk.OperationDeploy:
 		operationFunc = NewDeployOperation(appConfig)
+	case sdk.OperationDeployStage:
+		operationFunc = NewDeployStageOperation(appConfig)
 	case sdk.OperationRetry: //explicit retry
 		operationFunc = NewRetryOperation()
 	case sdk.OperationRetryStage:

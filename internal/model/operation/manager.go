@@ -16,7 +16,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type OperationService struct {
+type OperationManager struct {
 	ctx    context.Context
 	db     *gorm.DB
 	notify hook.NotifyFunc
@@ -27,11 +27,11 @@ type OperationService struct {
 	operation *Operation
 }
 
-func (service *OperationService) Context() context.Context {
+func (service *OperationManager) Context() context.Context {
 	return service.ctx
 }
 
-func (service *OperationService) saveChanges(notify bool) error {
+func (service *OperationManager) saveChanges(notify bool) error {
 	tx := service.db.WithContext(service.ctx).Begin()
 
 	// could be an issue with starting the tx
@@ -69,7 +69,7 @@ func (service *OperationService) saveChanges(notify bool) error {
 }
 
 // triggers a notification of the invoked operation's state
-func (service *OperationService) publish(snapshot model.InvokedOperation) (uuid.UUID, error) {
+func (service *OperationManager) publish(snapshot model.InvokedOperation) (uuid.UUID, error) {
 	message := service.getMessage(&snapshot)
 	if message == nil {
 		service.log.Warnf("no message to publish for operation [%v]", snapshot.ID)
@@ -84,7 +84,7 @@ func (service *OperationService) publish(snapshot model.InvokedOperation) (uuid.
 	return notificationId, nil
 }
 
-func (service *OperationService) dispatch() error {
+func (service *OperationManager) dispatch() error {
 	message := messaging.ExecuteInvokedOperation{OperationId: service.id}
 
 	results, err := service.sender.Send(service.Context(), string(messaging.QueueNameOperations), message)
@@ -98,7 +98,7 @@ func (service *OperationService) dispatch() error {
 	return nil
 }
 
-func (service *OperationService) first() (*model.InvokedOperation, error) {
+func (service *OperationManager) first() (*model.InvokedOperation, error) {
 	record := &model.InvokedOperation{}
 	result := service.db.Preload(clause.Associations).First(record, service.id)
 
@@ -112,7 +112,7 @@ func (service *OperationService) first() (*model.InvokedOperation, error) {
 	return record, nil
 }
 
-func (service *OperationService) new(i *model.InvokedOperation) (*model.InvokedOperation, error) {
+func (service *OperationManager) new(i *model.InvokedOperation) (*model.InvokedOperation, error) {
 	tx := service.db.Begin()
 	result := tx.Create(i)
 	if result.Error != nil {
@@ -125,7 +125,7 @@ func (service *OperationService) new(i *model.InvokedOperation) (*model.InvokedO
 
 // initializes and returns the single instance of InvokedOperation by the context's id
 // if the id is invalid and an instance cannot be found, returns an error
-func (service *OperationService) initialize(id uuid.UUID) (*Operation, error) {
+func (service *OperationManager) initialize(id uuid.UUID) (*Operation, error) {
 	service.id = id
 	service.log = service.log.WithFields(log.Fields{
 		"invokedOperationId": id,
@@ -149,20 +149,20 @@ func (service *OperationService) initialize(id uuid.UUID) (*Operation, error) {
 	return service.operation, nil
 }
 
-func (service *OperationService) withContext(ctx context.Context) {
+func (service *OperationManager) withContext(ctx context.Context) {
 	service.ctx = ctx
 	service.log = service.log.WithContext(ctx)
 }
 
 // encapsulates the conversion of an invoked operation to an event hook message
-func (service *OperationService) getMessage(io *model.InvokedOperation) *sdk.EventHookMessage {
+func (service *OperationManager) getMessage(io *model.InvokedOperation) *sdk.EventHookMessage {
 	if io.Status == string(sdk.StatusUnknown) {
 		return nil
 	}
 	return mapper.MapInvokedOperation(io)
 }
 
-func (service *OperationService) deployment() *model.Deployment {
+func (service *OperationManager) deployment() *model.Deployment {
 	deployment := &model.Deployment{}
 	result := service.db.Preload("Stages").First(deployment, service.operation.DeploymentId)
 
@@ -173,15 +173,25 @@ func (service *OperationService) deployment() *model.Deployment {
 }
 
 // constructor factory of operation service
-func NewService(db *gorm.DB, sender messaging.MessageSender, notify hook.NotifyFunc) (*OperationService, error) {
+func NewManager(db *gorm.DB, sender messaging.MessageSender, notify hook.NotifyFunc) (*OperationManager, error) {
 
 	ctx := context.Background()
 
-	return &OperationService{
+	return &OperationManager{
 		ctx:    ctx,
 		db:     db,
 		sender: sender,
 		notify: notify,
 		log:    log.WithContext(ctx),
 	}, nil
+}
+
+func CloneManager(manager *OperationManager) *OperationManager {
+	return &OperationManager{
+		ctx:    manager.ctx,
+		db:     manager.db,
+		sender: manager.sender,
+		notify: manager.notify,
+		log:    log.WithContext(manager.ctx),
+	}
 }

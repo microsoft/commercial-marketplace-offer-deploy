@@ -58,7 +58,7 @@ func (op *deployOperation) do(context operation.ExecutionContext) error {
 
 	// now schedule the operations for all deployStage operations
 	for _, stageOperation := range deployStageOperations {
-		stageOperation.Schedule()
+		go stageOperation.Schedule()
 	}
 
 	token := beginResult.ResumeToken
@@ -181,7 +181,7 @@ func newOperationRepository(appConfig *config.AppConfig) (operation.Repository, 
 		return nil, err
 	}
 
-	service, err := operation.NewService(db, sender, hook.Notify)
+	service, err := operation.NewManager(db, sender, hook.Notify)
 	if err != nil {
 		return nil, err
 	}
