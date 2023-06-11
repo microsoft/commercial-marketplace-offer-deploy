@@ -89,6 +89,10 @@ func (op *deployOperation) createDeployStageOperations(parent *operation.Operati
 		configure := func(stageOperation *model.InvokedOperation) error {
 			stageOperation.Name = string(sdk.OperationDeployStage)
 			stageOperation.ParentID = to.Ptr(parent.ID)
+			stageOperation.Retries = stage.Retries
+			stageOperation.Attempts = 0
+			stageOperation.Status = string(sdk.StatusUnknown)
+			stageOperation.DeploymentId = deployment.ID
 			stageOperation.Parameters = map[string]any{
 				string(model.ParameterKeyStageId):             stage.ID,
 				string(model.ParameterKeyAzureDeploymentName): stage.AzureDeploymentName,
