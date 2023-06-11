@@ -81,5 +81,10 @@ func (finder *AzureDeploymentNameFinder) getName(ctx context.Context) (string, e
 			}
 		}
 	}
+
+	if name == "" {
+		log.WithField("operationId", finder.operationId).Warn("Failed to find deployment by operationId")
+		return name, errors.New("failed to find deployment by operationId")
+	}
 	return name, nil
 }
