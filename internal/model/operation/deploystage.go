@@ -45,7 +45,7 @@ func (f *DeployStageOperationFactory) Create(parent *Operation) (DeployStageOper
 				o.DeploymentId = deployment.ID
 				o.Parameters = map[string]any{
 					string(model.ParameterKeyStageId):            stage.ID,
-					string(model.ParameterKeyNestedTemplateName): stage.Name,
+					string(model.ParameterKeyNestedTemplateName): stage.AzureDeploymentName,
 				}
 
 				return nil
