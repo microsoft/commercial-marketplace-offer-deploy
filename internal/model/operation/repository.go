@@ -4,13 +4,20 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/google/uuid"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
 // configure the operation
 type Configure func(i *model.InvokedOperation) error
+
+type RepositoryFactory func() (Repository, error)
 
 type OperationFuncProvider interface {
 	Get(operationType sdk.OperationType) (OperationFunc, error)
@@ -96,4 +103,37 @@ func NewRepository(manager *OperationManager, provider OperationFuncProvider) (R
 	}
 
 	return repo, nil
+}
+
+func NewRepositoryFactory(appConfig *config.AppConfig) RepositoryFactory {
+	return func() (Repository, error) {
+		db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
+
+		credential, err := azidentity.NewDefaultAzureCredential(nil)
+		if err != nil {
+			return nil, err
+		}
+
+		sender, err := messaging.NewServiceBusMessageSender(credential, messaging.MessageSenderOptions{
+			SubscriptionId:          appConfig.Azure.SubscriptionId,
+			Location:                appConfig.Azure.Location,
+			ResourceGroupName:       appConfig.Azure.ResourceGroupName,
+			FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		service, err := NewManager(db, sender, hook.Notify)
+		if err != nil {
+			return nil, err
+		}
+
+		repository, err := NewRepository(service, nil)
+		if err != nil {
+			return nil, err
+		}
+		return repository, nil
+	}
 }

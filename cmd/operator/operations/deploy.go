@@ -2,26 +2,21 @@ package operations
 
 import (
 	"strconv"
-	"sync"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/google/uuid"
 	"github.com/labstack/gommon/log"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/template"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
 type deployOperation struct {
 	retryOperation      operation.OperationFunc
 	operationRepository operation.Repository
+	deployStageFactory  *operation.DeployStageOperationFactory
 }
 
 // the operation to execute
@@ -43,8 +38,10 @@ func (op *deployOperation) getOperation(context operation.ExecutionContext) (ope
 }
 
 func (op *deployOperation) do(context operation.ExecutionContext) error {
-
-	deployStageOperations := op.createDeployStageOperations(context.Operation())
+	deployStageOperations, err := op.deployStageFactory.Create(context.Operation())
+	if err != nil {
+		return err
+	}
 
 	azureDeployment := op.mapAzureDeployment(context.Operation(), deployStageOperations)
 	deployer, err := op.newDeployer(azureDeployment.SubscriptionId)
@@ -79,45 +76,6 @@ func (op *deployOperation) do(context operation.ExecutionContext) error {
 
 func (op *deployOperation) newDeployer(subscriptionId string) (deployment.Deployer, error) {
 	return deployment.NewDeployer(deployment.DeploymentTypeARM, subscriptionId)
-}
-
-func (op *deployOperation) createDeployStageOperations(parent *operation.Operation) map[uuid.UUID]*operation.Operation {
-	stageOperations := make(map[uuid.UUID]*operation.Operation)
-
-	deployment := parent.Deployment()
-
-	waitGroup := sync.WaitGroup{}
-	waitGroup.Add(len(deployment.Stages))
-
-	for _, stage := range deployment.Stages {
-		go func(stage model.Stage) {
-			defer waitGroup.Done()
-
-			configure := func(stageOperation *model.InvokedOperation) error {
-				stageOperation.Name = string(sdk.OperationDeployStage)
-				stageOperation.ParentID = to.Ptr(parent.ID)
-				stageOperation.Retries = stage.Retries
-				stageOperation.Attempts = 0
-				stageOperation.Status = string(sdk.StatusUnknown)
-				stageOperation.DeploymentId = deployment.ID
-				stageOperation.Parameters = map[string]any{
-					string(model.ParameterKeyStageId): stage.ID,
-				}
-
-				return nil
-			}
-
-			stageOperation, err := op.operationRepository.New(sdk.OperationDeployStage, configure)
-			if err != nil {
-				log.Errorf("Failed to create deploy stage operation: %v", err)
-			}
-			stageOperation.SaveChanges()
-			stageOperations[stage.ID] = stageOperation
-		}(stage)
-	}
-	waitGroup.Wait()
-
-	return stageOperations
 }
 
 func (op *deployOperation) mapAzureDeployment(parent *operation.Operation, stages map[uuid.UUID]*operation.Operation) deployment.AzureDeployment {
@@ -158,45 +116,19 @@ func (op *deployOperation) mapAzureDeployment(parent *operation.Operation, stage
 }
 
 func NewDeployOperation(appConfig *config.AppConfig) operation.OperationFunc {
-	repository, err := newOperationRepository(appConfig)
+	repositoryFactory := operation.NewRepositoryFactory(appConfig)
+	repository, err := repositoryFactory()
 	if err != nil {
 		log.Errorf("Failed to create deploy operation: %v", err)
 		return nil
 	}
+
+	deployStageFactory := operation.NewDeployStageOperationFactory(repository)
+
 	operation := &deployOperation{
 		retryOperation:      NewRetryOperation(),
 		operationRepository: repository,
+		deployStageFactory:  deployStageFactory,
 	}
 	return operation.Do
-}
-
-func newOperationRepository(appConfig *config.AppConfig) (operation.Repository, error) {
-	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
-
-	credential, err := azidentity.NewDefaultAzureCredential(nil)
-	if err != nil {
-		return nil, err
-	}
-
-	sender, err := messaging.NewServiceBusMessageSender(credential, messaging.MessageSenderOptions{
-		SubscriptionId:          appConfig.Azure.SubscriptionId,
-		Location:                appConfig.Azure.Location,
-		ResourceGroupName:       appConfig.Azure.ResourceGroupName,
-		FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	service, err := operation.NewManager(db, sender, hook.Notify)
-	if err != nil {
-		return nil, err
-	}
-
-	repository, err := operation.NewRepository(service, nil)
-	if err != nil {
-		return nil, err
-	}
-	return repository, nil
 }
