@@ -34,35 +34,6 @@ func (ad *AzureDeployment) logger() *log.Entry {
 	})
 }
 
-// gets the template
-func (ad *AzureDeployment) GetTemplate() map[string]interface{} {
-	if ad.Template == nil {
-		return nil
-	}
-	operationIdKey := string(LookupTagKeyOperationId)
-	template := ad.Template
-
-	// set the operationId on every nested template at level 1 of the parent template
-	if resourcesEntry, ok := template["resources"]; ok {
-		if resources, ok := resourcesEntry.([]any); ok {
-			if len(resources) > 0 {
-				for _, resourceEntry := range resources {
-					if resourceMap, ok := resourceEntry.(map[string]any); ok {
-						if isDeploymentResourceType(resourceMap) {
-							if tagsEntry, ok := resourceMap["tags"]; ok {
-								if tagsMap, ok := tagsEntry.(map[string]any); ok {
-									tagsMap[operationIdKey] = ad.OperationId.String()
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	return template //return the modified copy
-}
-
 func (ad *AzureDeployment) GetParameters() map[string]interface{} {
 	return getParams(ad.Params)
 }
