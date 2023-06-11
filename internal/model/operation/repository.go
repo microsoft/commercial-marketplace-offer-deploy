@@ -86,7 +86,7 @@ func (repo *repository) First(id uuid.UUID) (*Operation, error) {
 	return operation, nil
 }
 
-// NewRepository creates a new operation factory
+// NewRepository creates a new operation repository
 // appConfig: application configuration
 // provider: operation function provider, optional if the operation is not going to be executed and you want to interact with the operation
 func NewRepository(manager *OperationManager, provider OperationFuncProvider) (Repository, error) {
