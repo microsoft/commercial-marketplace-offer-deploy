@@ -5,21 +5,23 @@ type EventTypeName string
 
 // deployment event types
 const (
-	EventTypeDeploymentCreated   EventTypeName = "deploymentCreated"
-	EventTypeDeploymentUpdated   EventTypeName = "deploymentUpdated"
-	EventTypeDeploymentDeleted   EventTypeName = "deploymentDeleted"
-	EventTypeDeploymentScheduled EventTypeName = "deploymentScheduled"
-	EventTypeDeploymentStarted   EventTypeName = "deploymentStarted"
-	EventTypeDeploymentCompleted EventTypeName = "deploymentCompleted"
-	EventTypeDeploymentRetried   EventTypeName = "deploymentRetried"
+	EventTypeDeploymentCreated        EventTypeName = "deploymentCreated"
+	EventTypeDeploymentUpdated        EventTypeName = "deploymentUpdated"
+	EventTypeDeploymentDeleted        EventTypeName = "deploymentDeleted"
+	EventTypeDeploymentScheduled      EventTypeName = "deploymentScheduled"
+	EventTypeDeploymentRetryScheduled EventTypeName = "deploymentRetryScheduled"
+	EventTypeDeploymentStarted        EventTypeName = "deploymentStarted"
+	EventTypeDeploymentRetryStarted   EventTypeName = "deploymentRetryScheduled"
+	EventTypeDeploymentCompleted      EventTypeName = "deploymentCompleted"
 )
 
 // stage event types
 const (
-	EventTypeStageScheduled EventTypeName = "stageScheduled"
-	EventTypeStageStarted   EventTypeName = "stageStarted"
-	EventTypeStageCompleted EventTypeName = "stageCompleted"
-	EventTypeStageRetried   EventTypeName = "stageRetried"
+	EventTypeStageScheduled      EventTypeName = "stageScheduled"
+	EventTypeStageRetryScheduled EventTypeName = "stageRetryScheduled"
+	EventTypeStageStarted        EventTypeName = "stageStarted"
+	EventTypeStageRetryStarted   EventTypeName = "stageRetryStarted"
+	EventTypeStageCompleted      EventTypeName = "stageCompleted"
 )
 
 // dry run event types
@@ -45,13 +47,15 @@ func GetEventTypes() []string {
 		EventTypeDeploymentUpdated.String(),
 		EventTypeDeploymentDeleted.String(),
 		EventTypeDeploymentScheduled.String(),
+		EventTypeDeploymentRetryScheduled.String(),
 		EventTypeDeploymentStarted.String(),
+		EventTypeDeploymentRetryStarted.String(),
 		EventTypeDeploymentCompleted.String(),
-		EventTypeDeploymentRetried.String(),
 		EventTypeStageScheduled.String(),
+		EventTypeStageRetryScheduled.String(),
 		EventTypeStageStarted.String(),
+		EventTypeStageRetryStarted.String(),
 		EventTypeStageCompleted.String(),
-		EventTypeStageRetried.String(),
 		EventTypeDryRunSchedule.String(),
 		EventTypeDryRunStarted.String(),
 		EventTypeDryRunCompleted.String(),

@@ -51,16 +51,18 @@ func getEventType(o *model.InvokedOperation) string {
 
 	verb := ""
 
+	if o.IsRetry() {
+		verb = "Retry"
+	}
+
 	if o.IsScheduled() {
-		verb = "Scheduled"
+		verb += "Scheduled"
 	} else if o.IsRunning() {
-		verb = "Started"
+		verb += "Started"
 	} else if o.IsCompleted() {
-		verb = "Completed"
-	} else if o.IsRetry() {
-		verb = "Retried"
+		verb += "Completed"
 	} else {
-		verb = "Completed"
+		verb += "Completed"
 	}
 
 	return noun + verb
@@ -174,7 +176,7 @@ func getDeploymentData(invokedOperation *model.InvokedOperation) any {
 	}
 
 	if invokedOperation.IsRetry() {
-		data.Message = fmt.Sprintf("%s is being retried. Attempt %d of %d", invokedOperation.Name, invokedOperation.Attempts, invokedOperation.Retries)
+		data.Message = fmt.Sprintf("Operation failed, scheduling a retry. Attempt %d", invokedOperation.Attempts)
 	} else if invokedOperation.IsRunning() {
 		data.Message = fmt.Sprintf("%s started", invokedOperation.Name)
 	}
