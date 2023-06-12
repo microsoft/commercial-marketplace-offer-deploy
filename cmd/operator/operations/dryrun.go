@@ -29,7 +29,7 @@ func (task *dryRunTask) Run(context operation.ExecutionContext) error {
 }
 
 func (task *dryRunTask) Continue(context operation.ExecutionContext) error {
-	return nil
+	return task.Run(context)
 }
 
 func (task *dryRunTask) getAzureDeployment(operation *operation.Operation) (*deployment.AzureDeployment, error) {
