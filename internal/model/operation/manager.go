@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/mapper"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
@@ -17,12 +16,12 @@ import (
 )
 
 type OperationManager struct {
-	ctx    context.Context
-	db     *gorm.DB
-	notify hook.NotifyFunc
-	id     uuid.UUID
-	sender messaging.MessageSender
-	log    *log.Entry
+	ctx       context.Context
+	db        *gorm.DB
+	notify    hook.NotifyFunc
+	id        uuid.UUID
+	scheduler Scheduler
+	log       *log.Entry
 	// the reference of the operation
 	operation *Operation
 }
@@ -85,17 +84,7 @@ func (manager *OperationManager) publish(snapshot model.InvokedOperation) (uuid.
 }
 
 func (manager *OperationManager) dispatch() error {
-	message := messaging.ExecuteInvokedOperation{OperationId: manager.id}
-
-	results, err := manager.sender.Send(manager.Context(), string(messaging.QueueNameOperations), message)
-	if err != nil {
-		return err
-	}
-
-	if len(results) == 1 && results[0].Error != nil {
-		return results[0].Error
-	}
-	return nil
+	return manager.scheduler.Schedule(manager.ctx, manager.id)
 }
 
 func (manager *OperationManager) first() (*model.InvokedOperation, error) {
@@ -183,25 +172,25 @@ func (manager *OperationManager) deployment() *model.Deployment {
 }
 
 // constructor factory of operation service
-func NewManager(db *gorm.DB, sender messaging.MessageSender, notify hook.NotifyFunc) (*OperationManager, error) {
+func NewManager(db *gorm.DB, scheduler Scheduler, notify hook.NotifyFunc) (*OperationManager, error) {
 
 	ctx := context.Background()
 
 	return &OperationManager{
-		ctx:    ctx,
-		db:     db,
-		sender: sender,
-		notify: notify,
-		log:    log.WithContext(ctx),
+		ctx:       ctx,
+		db:        db,
+		scheduler: scheduler,
+		notify:    notify,
+		log:       log.WithContext(ctx),
 	}, nil
 }
 
 func CloneManager(manager *OperationManager) *OperationManager {
 	return &OperationManager{
-		ctx:    manager.ctx,
-		db:     manager.db,
-		sender: manager.sender,
-		notify: manager.notify,
-		log:    log.WithContext(manager.ctx),
+		ctx:       manager.ctx,
+		db:        manager.db,
+		scheduler: manager.scheduler,
+		notify:    manager.notify,
+		log:       log.WithContext(manager.ctx),
 	}
 }

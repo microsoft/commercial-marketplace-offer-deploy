@@ -20,6 +20,7 @@ type operationsTestSuite struct {
 
 	hookService  *fake.FakeHookService
 	sender       *fake.FakeMessageSender
+	scheduler    operation.Scheduler
 	service      *operation.OperationManager
 	funcProvider operation.OperationFuncProvider
 
@@ -36,7 +37,12 @@ func (suite *operationsTestSuite) SetupSuite() {
 	suite.hookService = fake.NewFakeHookService(suite.T())
 	suite.sender = fake.NewFakeMessageSender(suite.T())
 
-	service, err := operation.NewManager(suite.db, suite.sender, suite.hookService.Notify)
+	scheduler, err := operation.NewScheduler(suite.sender)
+	suite.Assert().NoError(err)
+
+	suite.scheduler = scheduler
+
+	service, err := operation.NewManager(suite.db, suite.scheduler, suite.hookService.Notify)
 	suite.Assert().NoError(err)
 
 	suite.service = service
@@ -65,7 +71,7 @@ func (suite *operationsTestSuite) Test_Handle_Completes_Operation_When_No_Error_
 		repository: operationFactory,
 	}
 
-	handler.Handle(&messaging.ExecuteInvokedOperation{
+	handler.Handle(&operation.ExecuteOperationCommand{
 		OperationId: suite.invokedOperation.ID,
 	}, messaging.MessageHandlerContext{
 		ReceivedMessage: nil,

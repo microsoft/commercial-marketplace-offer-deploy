@@ -20,7 +20,10 @@ func BuildApp(configurationFilePath string) *hosting.App {
 	addReadinessChecks(builder, appConfig)
 	addMessageReceivers(builder, appConfig)
 
+	builder.AddTask(newContinueOperationsTask(appConfig))
+
 	app := builder.Build(nil)
+
 	return app
 }
 

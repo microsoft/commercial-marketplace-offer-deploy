@@ -101,7 +101,10 @@ func (suite *operationExecuteTest) newFakes() {
 
 	sender := fake.NewFakeMessageSender(suite.T())
 
-	manager, err := NewManager(db, sender, notifyFake.Notify)
+	scheduler, err := NewScheduler(sender)
+	suite.Require().NoError(err)
+
+	manager, err := NewManager(db, scheduler, notifyFake.Notify)
 	suite.Require().NoError(err)
 
 	repository, err := NewRepository(manager, nil)

@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/labstack/gommon/log"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/stage"
@@ -141,24 +139,12 @@ func newOperationRepository(appConfig *config.AppConfig) (operation.Repository, 
 
 func newOperationManager(appConfig *config.AppConfig) (*operation.OperationManager, error) {
 	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
-
-	credential, err := azidentity.NewDefaultAzureCredential(nil)
+	scheduler, err := operation.NewSchedulerFromConfig(appConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	sender, err := messaging.NewServiceBusMessageSender(credential, messaging.MessageSenderOptions{
-		SubscriptionId:          appConfig.Azure.SubscriptionId,
-		Location:                appConfig.Azure.Location,
-		ResourceGroupName:       appConfig.Azure.ResourceGroupName,
-		FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	service, err := operation.NewManager(db, sender, hook.Notify)
+	service, err := operation.NewManager(db, scheduler, hook.Notify)
 	if err != nil {
 		return nil, err
 	}
