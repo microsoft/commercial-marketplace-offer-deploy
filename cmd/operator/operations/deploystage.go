@@ -56,6 +56,8 @@ func (op *deployStageOperation) Do(context operation.ExecutionContext) error {
 	return nil
 }
 
+// watches the parent deploy operation for failure or completed state
+// it will trigger a cancellation of the ctx on the execution context if the condition is met
 func (op *deployStageOperation) watchParentOperation(context operation.ExecutionContext) {
 	parentId := context.Operation().ParentID
 	if parentId == nil {
