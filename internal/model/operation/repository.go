@@ -20,7 +20,7 @@ type Configure func(i *model.InvokedOperation) error
 type RepositoryFactory func() (Repository, error)
 
 type OperationFuncProvider interface {
-	Get(operationType sdk.OperationType) (OperationFunc, error)
+	Get(operationType sdk.OperationType) (OperationTask, error)
 }
 
 // Operation factory
@@ -83,12 +83,12 @@ func (repo *repository) First(id uuid.UUID) (*Operation, error) {
 	}
 
 	if repo.provider != nil {
-		do, err := repo.provider.Get(sdk.OperationType(operation.Name))
+		task, err := repo.provider.Get(sdk.OperationType(operation.Name))
 
 		if err != nil {
 			return nil, err
 		}
-		operation.do = do
+		operation.task = task
 	}
 
 	return operation, nil

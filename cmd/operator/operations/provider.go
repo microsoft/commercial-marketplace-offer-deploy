@@ -9,41 +9,42 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type OperationFuncProvider struct {
+type OperationTaskProvider struct {
 	appConfig *config.AppConfig
 }
 
-func NewOperationFuncProvider(appConfig *config.AppConfig) *OperationFuncProvider {
-	return &OperationFuncProvider{
+func NewOperationTaskProvider(appConfig *config.AppConfig) *OperationTaskProvider {
+	return &OperationTaskProvider{
 		appConfig: appConfig,
 	}
 }
 
-func (p *OperationFuncProvider) Get(operationType sdk.OperationType) (operation.OperationFunc, error) {
-	return GetOperation(operationType, p.appConfig)
+func (p *OperationTaskProvider) Get(operationType sdk.OperationType) (operation.OperationTask, error) {
+	return GetOperationTask(operationType, p.appConfig)
 }
 
-func GetOperation(operationType sdk.OperationType, appConfig *config.AppConfig) (operation.OperationFunc, error) {
-	var operationFunc operation.OperationFunc
-	log.Debugf("Creating executor for operation type: %s", string(operationType))
+func GetOperationTask(operationType sdk.OperationType, appConfig *config.AppConfig) (operation.OperationTask, error) {
+	log.Tracef("Creating operation task for type: %s", string(operationType))
+
+	var task operation.OperationTask
 
 	switch operationType {
 	case sdk.OperationDryRun:
-		operationFunc = NewDryRunOperation()
+		task = NewDryRunTask()
 	case sdk.OperationDeploy:
-		operationFunc = NewDeployOperation(appConfig)
+		task = NewDeployTask(appConfig)
 	case sdk.OperationDeployStage:
-		operationFunc = NewDeployStageOperation(appConfig)
+		task = NewDeployStageOperation(appConfig)
 	case sdk.OperationRetry: //explicit retry
-		operationFunc = NewRetryOperation()
+		task = NewRetryTask()
 	case sdk.OperationRetryStage:
-		operationFunc = NewRetryStageOperation()
+		task = NewRetryStageTask()
 	case sdk.OperationCancel:
-		operationFunc = NewCancelOperation()
+		task = NewCancelTask()
 	}
 
-	if operationFunc == nil {
+	if task == nil {
 		return nil, fmt.Errorf("unknown operation. Unable to execute: %s", operationType)
 	}
-	return operationFunc, nil
+	return task, nil
 }

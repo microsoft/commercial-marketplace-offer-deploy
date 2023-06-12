@@ -6,10 +6,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type retryOperation struct {
+type retryTask struct {
 }
 
-func (op *retryOperation) Do(context operation.ExecutionContext) error {
+func (op *retryTask) Run(context operation.ExecutionContext) error {
 	azureRedeployment := op.mapToAzureRedeployment(context)
 	deployer, err := op.newDeployer(azureRedeployment.SubscriptionId)
 	if err != nil {
@@ -24,11 +24,15 @@ func (op *retryOperation) Do(context operation.ExecutionContext) error {
 	return nil
 }
 
-func (op *retryOperation) newDeployer(subscriptionId string) (deployment.Deployer, error) {
+func (task *retryTask) Continue(context operation.ExecutionContext) error {
+	return nil
+}
+
+func (op *retryTask) newDeployer(subscriptionId string) (deployment.Deployer, error) {
 	return deployment.NewDeployer(deployment.DeploymentTypeARM, subscriptionId)
 }
 
-func (op *retryOperation) mapToAzureRedeployment(context operation.ExecutionContext) deployment.AzureRedeployment {
+func (op *retryTask) mapToAzureRedeployment(context operation.ExecutionContext) deployment.AzureRedeployment {
 	dep := context.Operation().Deployment()
 
 	azureRedeployment := deployment.AzureRedeployment{
@@ -41,7 +45,6 @@ func (op *retryOperation) mapToAzureRedeployment(context operation.ExecutionCont
 	return azureRedeployment
 }
 
-func NewRetryOperation() operation.OperationFunc {
-	operation := &retryOperation{}
-	return operation.Do
+func NewRetryTask() operation.OperationTask {
+	return &retryTask{}
 }

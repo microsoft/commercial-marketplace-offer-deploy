@@ -89,9 +89,11 @@ type fakeOperationFuncProvider struct {
 	t *testing.T
 }
 
-func (f *fakeOperationFuncProvider) Get(operationType sdk.OperationType) (operation.OperationFunc, error) {
-	return func(context operation.ExecutionContext) error {
-		f.t.Logf("Executing operation %s", operationType)
-		return nil
-	}, nil
+func (f *fakeOperationFuncProvider) Get(operationType sdk.OperationType) (operation.OperationTask, error) {
+	return operation.NewOperationTask(operation.OperationTaskOptions{
+		Run: func(context operation.ExecutionContext) error {
+			f.t.Logf("Executing operation %s", operationType)
+			return nil
+		},
+	}), nil
 }
