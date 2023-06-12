@@ -1,29 +1,18 @@
 
 param location string = 'eastus'
-param suffix string = substring(uniqueString(utcNow()), 0, 5)
-
-param storageCount int = 5
+param unique string = substring(uniqueString(utcNow()), 0, 5)
 
 
-resource storageAccounts 'Microsoft.Storage/storageAccounts@2022-09-01' = [for i in range(0, storageCount): {
-  name: '${i}store${substring(uniqueString(resourceGroup().id), i, 5)}'
-  location: location
-  sku: {
-    name: 'Standard_LRS'
+module storageAcounts './modules/storageAccounts.bicep' = {
+  name: 'storageAccounts'
+  params:{
+    location: resourceGroup().location
   }
-  kind: 'Storage'
-}]
+}
 
-var dependsOnName = format('{0}{1}', 'storageAccounts-', suffix)
-
-resource storageAccountWithDependsOn 'Microsoft.Storage/storageAccounts@2022-09-01' = {
-  name: dependsOnName
-  location: location
-  sku: {
-    name: 'Standard_LRS'
-  }
-  kind: 'Storage'
+module dependsOn './modules/dependsOn.bicep' = {
+  name: 'dependsOnStorageAccounts'
   dependsOn: [
-    storageAccounts
+    storageAcounts
   ]
 }
