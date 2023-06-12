@@ -1,0 +1,57 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.17.1.54307",
+      "templateHash": "10604637444607268545"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "eastus"
+    },
+    "suffix": {
+      "type": "string",
+      "defaultValue": "[substring(uniqueString(utcNow()), 0, 5)]"
+    },
+    "storageCount": {
+      "type": "int",
+      "defaultValue": 5
+    }
+  },
+  "variables": {
+    "dependsOnName": "[format('{0}{1}', 'storageAccounts-', parameters('suffix'))]"
+  },
+  "resources": [
+    {
+      "copy": {
+        "name": "storageAccounts",
+        "count": "[length(range(0, parameters('storageCount')))]"
+      },
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2022-09-01",
+      "name": "[format('{0}storage{1}', range(0, parameters('storageCount'))[copyIndex()], uniqueString(resourceGroup().id))]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "Storage"
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2022-09-01",
+      "name": "[variables('dependsOnName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "Storage",
+      "dependsOn": [
+        "storageAccounts"
+      ]
+    }
+  ]
+}
