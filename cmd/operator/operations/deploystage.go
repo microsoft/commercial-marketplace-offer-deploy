@@ -37,7 +37,7 @@ func (op *deployStageOperation) Do(executionContext operation.ExecutionContext) 
 		return err
 	}
 
-	azureDeploymentName, err := finder.Find(executionContext.Context())
+	azureDeploymentName, err := finder.FindUntilDone(watcherCtx)
 	if err != nil {
 		return err
 	}

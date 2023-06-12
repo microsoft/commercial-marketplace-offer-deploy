@@ -3,6 +3,7 @@ package operation
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
@@ -11,9 +12,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type FinderResponse struct {
+	Name string
+}
 type AzureDeploymentNameFinder struct {
 	client            *armresources.DeploymentsClient
 	operationId       uuid.UUID
+	ticker			  *time.Ticker
+	done 			  chan FinderResponse
 	resourceGroupName string
 }
 
@@ -34,13 +40,35 @@ func NewAzureDeploymentNameFinder(operation *Operation) (*AzureDeploymentNameFin
 	}
 	return &AzureDeploymentNameFinder{
 		client:            client,
+		ticker:            time.NewTicker(10 * time.Second),
+		done:              make(chan FinderResponse),
 		resourceGroupName: deployment.ResourceGroup,
 		operationId:       operation.ID,
 	}, nil
 }
 
-func (finder *AzureDeploymentNameFinder) Find(ctx context.Context) (string, error) {
-	return finder.getName(ctx)
+func (finder *AzureDeploymentNameFinder) FindUntilDone(ctx context.Context) (string, error) {
+	for {
+		select {
+		case <-finder.ticker.C:
+			log.Tracef("Finding deployment name for operationId: %s", finder.operationId)
+			name, err := finder.getName(ctx)
+			if err != nil {
+				log.Errorf("Failed to find deployment name for operationId: %s", finder.operationId)
+			}
+			if len(name) > 0 {
+				finder.done <- FinderResponse{
+					Name: name,
+				}
+				return name, nil
+			}
+		case response := <-finder.done:
+			log.Tracef("Found deployment name for operationId: %s", finder.operationId)
+			return response.Name, nil
+		case <-ctx.Done():
+			return "", ctx.Err()
+		}
+	}
 }
 
 // get by correlationId
