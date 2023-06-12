@@ -156,7 +156,6 @@ func (service *OperationManager) initialize(id uuid.UUID) (*Operation, error) {
 		manager:          service,
 	}
 
-	service.log.Trace("operation service initialized.")
 	return service.operation, nil
 }
 
