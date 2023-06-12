@@ -1,29 +1,26 @@
 package operations
 
 import (
-	"errors"
 	"strconv"
-	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
+	"github.com/labstack/gommon/log"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/notification"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/template"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
-	log "github.com/sirupsen/logrus"
 )
 
-type deployeOperation struct {
-	retryOperation operation.OperationFunc
-	stageNotifier  notification.StageNotifier
+type deployOperation struct {
+	retryOperation      operation.OperationFunc
+	operationRepository operation.Repository
+	deployStageFactory  *operation.DeployStageOperationFactory
 }
 
 // the operation to execute
-func (op *deployeOperation) Do(context operation.ExecutionContext) error {
+func (op *deployOperation) Do(context operation.ExecutionContext) error {
 	operation, err := op.getOperation(context)
 	if err != nil {
 		return err
@@ -31,7 +28,7 @@ func (op *deployeOperation) Do(context operation.ExecutionContext) error {
 	return operation(context)
 }
 
-func (op *deployeOperation) getOperation(context operation.ExecutionContext) (operation.OperationFunc, error) {
+func (op *deployOperation) getOperation(context operation.ExecutionContext) (operation.OperationFunc, error) {
 	do := op.do
 
 	if context.Operation().IsRetry() { // this is a retry if so
@@ -40,8 +37,13 @@ func (op *deployeOperation) getOperation(context operation.ExecutionContext) (op
 	return do, nil
 }
 
-func (op *deployeOperation) do(context operation.ExecutionContext) error {
-	azureDeployment := op.mapAzureDeployment(context.Operation())
+func (op *deployOperation) do(context operation.ExecutionContext) error {
+	deployStageOperations, err := op.deployStageFactory.Create(context.Operation())
+	if err != nil {
+		return err
+	}
+
+	azureDeployment := op.mapAzureDeployment(context.Operation(), deployStageOperations)
 	deployer, err := op.newDeployer(azureDeployment.SubscriptionId)
 	if err != nil {
 		return err
@@ -52,12 +54,15 @@ func (op *deployeOperation) do(context operation.ExecutionContext) error {
 		return err
 	}
 
+	// now schedule the operations for all deployStage operations
+	for _, stageOperation := range deployStageOperations {
+		go stageOperation.Schedule()
+	}
+
 	token := beginResult.ResumeToken
 
 	context.Attribute(model.AttributeKeyResumeToken, token)
 	context.Attribute(model.AttributeKeyCorrelationId, *beginResult.CorrelationID)
-
-	op.notifyForStages(context)
 
 	result, err := deployer.Wait(context.Context(), &token)
 	context.Value(result)
@@ -69,104 +74,61 @@ func (op *deployeOperation) do(context operation.ExecutionContext) error {
 	return nil
 }
 
-func (service *deployeOperation) notifyForStages(context operation.ExecutionContext) error {
-	operation := context.Operation()
-
-	log.WithFields(log.Fields{
-		"attempts": operation.Attempts,
-		"status":   operation.Status,
-	}).Info("notifying for stages")
-
-	op := operation.InvokedOperation
-
-	log.WithFields(log.Fields{
-		"attributesLength": len(op.Attributes),
-	}).Info("operation attributes information")
-
-	for _, attr := range op.Attributes {
-		//log attr key and value
-		log.WithFields(log.Fields{
-			"key":   attr.Key,
-			"value": attr.Value,
-		}).Info("operation attribute")
-	}
-
-	// only handle scheduled deployment operations, where we want to notify of stages getting scheduled
-	if !op.IsRunning() && !op.IsFirstAttempt() {
-		return errors.New("not a running deployment operation or not first attempt")
-	}
-
-	correlationId, err := op.CorrelationId()
-	if err != nil {
-		return err
-	}
-
-	deployment := operation.Deployment()
-	if deployment == nil {
-		return errors.New("deployment not found")
-	}
-
-	notification := &model.StageNotification{
-		OperationId:       op.ID,
-		CorrelationId:     *correlationId,
-		ResourceGroupName: deployment.ResourceGroup,
-		Entries:           []model.StageNotificationEntry{},
-	}
-
-	for _, stage := range deployment.Stages {
-		message := sdk.EventHookMessage{
-			Id:     uuid.New(),
-			Type:   string(sdk.EventTypeStageStarted),
-			Status: sdk.StatusRunning.String(),
-			Data: sdk.StageEventData{
-				EventData: sdk.EventData{
-					DeploymentId: int(deployment.ID),
-					OperationId:  op.ID,
-					Attempts:     1,
-					StartedAt:    to.Ptr(time.Now().UTC()),
-				},
-				StageId:       to.Ptr(stage.ID),
-				CorrelationId: correlationId,
-			},
-		}
-		message.SetSubject(deployment.ID, to.Ptr(stage.ID))
-		notification.Entries = append(notification.Entries, model.StageNotificationEntry{
-			StageId: stage.ID,
-			Message: message,
-		})
-	}
-
-	err = service.stageNotifier.Notify(context.Context(), notification)
-	return err
-}
-
-func (op *deployeOperation) newDeployer(subscriptionId string) (deployment.Deployer, error) {
+func (op *deployOperation) newDeployer(subscriptionId string) (deployment.Deployer, error) {
 	return deployment.NewDeployer(deployment.DeploymentTypeARM, subscriptionId)
 }
 
-func (op *deployeOperation) mapAzureDeployment(invokedOperation *operation.Operation) deployment.AzureDeployment {
-	d := invokedOperation.Deployment()
+func (op *deployOperation) mapAzureDeployment(parent *operation.Operation, stages map[uuid.UUID]*operation.Operation) deployment.AzureDeployment {
+	d := parent.Deployment()
 
-	return deployment.AzureDeployment{
+	template := template.NewDeploymentTemplate(d.Template)
+
+	for _, stage := range d.Stages {
+		stageOperation := stages[stage.ID]
+
+		if nestedTemplateName, ok := stageOperation.ParameterValue(model.ParameterKeyNestedTemplateName); ok {
+			if value, ok := nestedTemplateName.(string); ok {
+				lookupTag := deployment.LookupTag{
+					Key:   deployment.LookupTagKeyOperationId,
+					Value: to.Ptr(stageOperation.ID.String()),
+				}
+				template.Tag(value, lookupTag)
+			}
+		}
+	}
+
+	builtTemplate := template.Build()
+
+	azureDeployment := deployment.AzureDeployment{
 		SubscriptionId:    d.SubscriptionId,
 		ResourceGroupName: d.ResourceGroup,
 		DeploymentName:    d.GetAzureDeploymentName(),
-		Template:          d.Template,
-		Params:            invokedOperation.Parameters,
-		OperationId:       invokedOperation.ID,
+		Template:          builtTemplate,
+		Params:            parent.Parameters,
+		OperationId:       parent.ID,
 		Tags: map[string]*string{
-			string(deployment.LookupTagKeyDeploymentId): to.Ptr(strconv.Itoa(int(invokedOperation.DeploymentId))),
-			string(deployment.LookupTagKeyOperationId):  to.Ptr(invokedOperation.ID.String()),
+			string(deployment.LookupTagKeyDeploymentId): to.Ptr(strconv.Itoa(int(parent.DeploymentId))),
+			string(deployment.LookupTagKeyOperationId):  to.Ptr(parent.ID.String()),
 		},
 	}
+
+	return azureDeployment
 }
 
-func NewDeploymentOperation(appConfig *config.AppConfig) operation.OperationFunc {
-	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
-
-	operation := &deployeOperation{
-		retryOperation: NewRetryOperation(),
-		stageNotifier:  notification.NewStageNotifier(db),
+func NewDeployOperation(appConfig *config.AppConfig) operation.OperationFunc {
+	repositoryFactory := operation.NewRepositoryFactory(appConfig)
+	repository, err := repositoryFactory()
+	if err != nil {
+		log.Errorf("Failed to create deploy operation: %v", err)
+		return nil
 	}
-	return operation.do
+
+	deployStageFactory := operation.NewDeployStageOperationFactory(repository)
+
+	operation := &deployOperation{
+		retryOperation:      NewRetryOperation(),
+		operationRepository: repository,
+		deployStageFactory:  deployStageFactory,
+	}
+	return operation.Do
 }

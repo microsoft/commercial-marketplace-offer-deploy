@@ -6,6 +6,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
+	"github.com/labstack/gommon/log"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
@@ -44,22 +45,24 @@ func getEventType(o *model.InvokedOperation) string {
 		noun = "deployment"
 	} else if o.Name == sdk.OperationDryRun.String() {
 		noun = "dryRun"
-	} else if o.Name == sdk.OperationRetryStage.String() {
+	} else if o.Name == sdk.OperationRetryStage.String() || o.Name == sdk.OperationDeployStage.String() {
 		noun = "stage"
 	}
 
 	verb := ""
 
+	if o.IsRetry() {
+		verb = "Retry"
+	}
+
 	if o.IsScheduled() {
-		verb = "Scheduled"
+		verb += "Scheduled"
 	} else if o.IsRunning() {
-		verb = "Started"
+		verb += "Started"
 	} else if o.IsCompleted() {
-		verb = "Completed"
-	} else if o.IsRetry() {
-		verb = "Retried"
+		verb += "Completed"
 	} else {
-		verb = "Completed"
+		verb += "Completed"
 	}
 
 	return noun + verb
@@ -70,6 +73,8 @@ func getEventData(invokedOperation *model.InvokedOperation) any {
 	switch invokedOperation.Name {
 	case sdk.OperationDeploy.String():
 		return getDeploymentData(invokedOperation)
+	case sdk.OperationDeployStage.String():
+		return getDeployStageData(invokedOperation)
 	case sdk.OperationDryRun.String():
 		return getDryRunData(invokedOperation)
 	case sdk.OperationRetry.String():
@@ -85,6 +90,39 @@ func getRetryData(invokedOperation *model.InvokedOperation) any {
 		EventData: getBaseEventData(invokedOperation),
 		Message:   fmt.Sprintf("Retry deployment %s", invokedOperation.Status),
 	}
+	return data
+}
+
+func getDeployStageData(invokedOperation *model.InvokedOperation) any {
+	data := &sdk.StageEventData{
+		EventData: getBaseEventData(invokedOperation),
+	}
+
+	parameter, ok := invokedOperation.ParameterValue(model.ParameterKeyStageId)
+	if !ok {
+		log.Warnf("StageId parameter not found in invoked operation %s", invokedOperation.Name)
+		return data
+	}
+
+	stageId, err := uuid.Parse(parameter.(string))
+	if err != nil {
+		log.Warnf("StageId parameter is not a valid UUID in invoked operation %s", invokedOperation.Name)
+		return data
+	}
+
+	data.StageId = to.Ptr(stageId)
+
+	latestResult := invokedOperation.LatestResult()
+	if latestResult != nil {
+		if latestResult.Error != "" {
+			data.Message = fmt.Sprintf("Error: %s", latestResult.Error)
+		}
+	}
+
+	if invokedOperation.ParentID != nil {
+		data.ParentOperationId = invokedOperation.ParentID
+	}
+
 	return data
 }
 
@@ -138,7 +176,7 @@ func getDeploymentData(invokedOperation *model.InvokedOperation) any {
 	}
 
 	if invokedOperation.IsRetry() {
-		data.Message = fmt.Sprintf("%s is being retried. Attempt %d of %d", invokedOperation.Name, invokedOperation.Attempts, invokedOperation.Retries)
+		data.Message = fmt.Sprintf("Operation failed, scheduling a retry. Attempt %d", invokedOperation.Attempts)
 	} else if invokedOperation.IsRunning() {
 		data.Message = fmt.Sprintf("%s started", invokedOperation.Name)
 	}

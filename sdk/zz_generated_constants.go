@@ -12,6 +12,7 @@ package sdk
 type Status string
 
 const (
+	StatusCanceled Status = "canceled"
 	StatusError Status = "error"
 	StatusFailed Status = "failed"
 	StatusNone Status = "none"
@@ -23,6 +24,7 @@ const (
 // PossibleStatusValues returns the possible values for the Status const type.
 func PossibleStatusValues() []Status {
 	return []Status{	
+		StatusCanceled,
 		StatusError,
 		StatusFailed,
 		StatusNone,

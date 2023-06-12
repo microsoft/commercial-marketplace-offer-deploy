@@ -133,7 +133,7 @@ func NewInvokeDeploymentOperationHandler(appConfig *config.AppConfig, credential
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
 
-		service, err := operation.NewService(db, sender, hook.Notify)
+		service, err := operation.NewManager(db, sender, hook.Notify)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}

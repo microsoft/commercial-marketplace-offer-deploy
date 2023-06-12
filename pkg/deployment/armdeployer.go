@@ -128,7 +128,7 @@ func (deployer *ArmDeployer) Begin(ctx context.Context, azureDeployment AzureDep
 		azureDeployment.DeploymentName,
 		armresources.Deployment{
 			Properties: &armresources.DeploymentProperties{
-				Template:   azureDeployment.GetTemplate(),
+				Template:   azureDeployment.Template,
 				Parameters: azureDeployment.GetParameters(),
 				Mode:       to.Ptr(armresources.DeploymentModeIncremental),
 			},

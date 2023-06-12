@@ -8,8 +8,9 @@ import (
 type AttributeKey string
 
 const (
-	AttributeKeyCorrelationId AttributeKey = "correlationId"
-	AttributeKeyResumeToken   AttributeKey = "resumeToken"
+	AttributeKeyCorrelationId       AttributeKey = "correlationId"
+	AttributeKeyAzureDeploymentName AttributeKey = "azureDeploymentName"
+	AttributeKeyResumeToken         AttributeKey = "resumeToken"
 )
 
 type InvokedOperationAttribute struct {

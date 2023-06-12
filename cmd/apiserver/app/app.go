@@ -30,7 +30,7 @@ func BuildApp(configurationFilePath string) *hosting.App {
 		e.Use(middleware.EventGridWebHookSubscriptionValidation())
 	})
 
-	builder.AddTask(newEventGridRegistrationTask(appConfig))
+	//builder.AddTask(newEventGridRegistrationTask(appConfig))
 
 	return app
 }

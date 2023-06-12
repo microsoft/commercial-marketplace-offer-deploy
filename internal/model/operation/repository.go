@@ -4,13 +4,20 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/google/uuid"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
 // configure the operation
 type Configure func(i *model.InvokedOperation) error
+
+type RepositoryFactory func() (Repository, error)
 
 type OperationFuncProvider interface {
 	Get(operationType sdk.OperationType) (OperationFunc, error)
@@ -25,7 +32,7 @@ type Repository interface {
 }
 
 type repository struct {
-	service  *OperationService
+	manager  *OperationManager //clone managers from this instance. It acts as the base manager
 	provider OperationFuncProvider
 }
 
@@ -38,7 +45,7 @@ func (repo *repository) Provider(provider OperationFuncProvider) error {
 }
 
 func (repo *repository) WithContext(ctx context.Context) {
-	repo.service.withContext(ctx)
+	repo.manager.withContext(ctx)
 }
 
 // creates a new operation instance by type
@@ -57,7 +64,7 @@ func (repo *repository) New(operationType sdk.OperationType, configure Configure
 	instance.Name = operationType.String()
 	instance.ID = id
 
-	_, err := repo.service.new(instance)
+	_, err := repo.manager.new(instance)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +74,9 @@ func (repo *repository) New(operationType sdk.OperationType, configure Configure
 
 // Gets the instance of an operation by id, otherwise, nil and an error
 func (repo *repository) First(id uuid.UUID) (*Operation, error) {
-	operation, err := repo.service.initialize(id)
+	manager := CloneManager(repo.manager)
+
+	operation, err := manager.initialize(id)
 	if err != nil {
 		return nil, err
 	}
@@ -84,14 +93,47 @@ func (repo *repository) First(id uuid.UUID) (*Operation, error) {
 	return operation, nil
 }
 
-// NewRepository creates a new operation factory
+// NewRepository creates a new operation repository
 // appConfig: application configuration
 // provider: operation function provider, optional if the operation is not going to be executed and you want to interact with the operation
-func NewRepository(service *OperationService, provider OperationFuncProvider) (Repository, error) {
+func NewRepository(manager *OperationManager, provider OperationFuncProvider) (Repository, error) {
 	repo := &repository{
-		service:  service,
+		manager:  manager,
 		provider: provider,
 	}
 
 	return repo, nil
+}
+
+func NewRepositoryFactory(appConfig *config.AppConfig) RepositoryFactory {
+	return func() (Repository, error) {
+		db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
+
+		credential, err := azidentity.NewDefaultAzureCredential(nil)
+		if err != nil {
+			return nil, err
+		}
+
+		sender, err := messaging.NewServiceBusMessageSender(credential, messaging.MessageSenderOptions{
+			SubscriptionId:          appConfig.Azure.SubscriptionId,
+			Location:                appConfig.Azure.Location,
+			ResourceGroupName:       appConfig.Azure.ResourceGroupName,
+			FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		service, err := NewManager(db, sender, hook.Notify)
+		if err != nil {
+			return nil, err
+		}
+
+		repository, err := NewRepository(service, nil)
+		if err != nil {
+			return nil, err
+		}
+		return repository, nil
+	}
 }

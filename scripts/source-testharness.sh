@@ -2,6 +2,12 @@
 
 export testharness_url=http://localhost:8280
 
+function fresh() {
+    echo "Cleaning out"
+    rm -rf ./*.txt
+    rm -rf ./*.db
+}
+
 
 function testharness() {
     curl -s $testharness_url/

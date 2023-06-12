@@ -6,12 +6,13 @@ import "fmt"
 type OperationType string
 
 const (
-	OperationDeploy     OperationType = "deploy"
-	OperationRetry      OperationType = "retry"
-	OperationRetryStage OperationType = "retryStage"
-	OperationDryRun     OperationType = "dryRun"
-	OperationCancel	 	OperationType = "cancel"
-	OperationUnknown    OperationType = "unknown"
+	OperationDeploy      OperationType = "deploy"
+	OperationDeployStage OperationType = "deployStage"
+	OperationRetry       OperationType = "retry"
+	OperationRetryStage  OperationType = "retryStage"
+	OperationDryRun      OperationType = "dryRun"
+	OperationCancel      OperationType = "cancel"
+	OperationUnknown     OperationType = "unknown"
 )
 
 func (o OperationType) String() string {

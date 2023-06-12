@@ -13,31 +13,31 @@ type OperationFunc func(context ExecutionContext) error
 // remarks: Invoked Operation decorator+visitor
 type Operation struct {
 	model.InvokedOperation
-	service *OperationService
+	manager *OperationManager
 	do      OperationFunc
 }
 
 func (o *Operation) Context() context.Context {
-	return o.service.ctx
+	return o.manager.ctx
 }
 
 func (o *Operation) Running() error {
-	o.service.log.Info("Marking operation as running")
+	o.manager.log.Info("Marking operation as running")
 
 	o.InvokedOperation.Running()
-	err := o.service.saveChanges(true)
+	err := o.manager.saveChanges(true)
 	if err != nil {
-		o.service.log.Errorf("failed to save running changes for operation: %v", err)
+		o.manager.log.Errorf("failed to save running changes for operation: %v", err)
 	}
 
 	return nil
 }
 
 func (o *Operation) Complete() error {
-	o.service.log.Info("Marking operation as complete")
+	o.manager.log.Info("Marking operation as complete")
 
 	o.InvokedOperation.Complete()
-	return o.service.saveChanges(true)
+	return o.manager.saveChanges(true)
 }
 
 func (o *Operation) Attribute(key model.AttributeKey, v any) error {
@@ -51,33 +51,33 @@ func (o *Operation) Value(v any) error {
 }
 
 func (o *Operation) Failed() error {
-	o.service.log.Info("Marking operation as failed")
+	o.manager.log.Info("Marking operation as failed")
 
 	o.InvokedOperation.Failed()
 	return o.saveChangesWithoutNotification()
 }
 
 func (o *Operation) Success() error {
-	o.service.log.Info("Marking operation as success")
+	o.manager.log.Info("Marking operation as success")
 
 	o.InvokedOperation.Success()
 	return o.saveChangesWithoutNotification()
 }
 
 func (o *Operation) Schedule() error {
-	o.service.log.Info("Marking operation as scheduled")
+	o.manager.log.Info("Marking operation as scheduled")
 
 	err := o.InvokedOperation.Schedule()
 	if err != nil {
 		return err
 	}
 
-	err = o.service.saveChanges(true)
+	err = o.manager.saveChanges(true)
 	if err != nil {
 		return fmt.Errorf("failed to save schedule changes for operation: %v", err)
 	}
 
-	err = o.service.dispatch()
+	err = o.manager.dispatch()
 	if err != nil {
 		return fmt.Errorf("failed to schedule operation: %v", err)
 	}
@@ -94,13 +94,13 @@ func (o *Operation) Retry() error {
 	if o.InvokedOperation.AttemptsExceeded() {
 		return o.Complete()
 	}
-	o.service.log.Info("Retrying operation")
+	o.manager.log.Info("Retrying operation")
 	return o.Schedule()
 }
 
 // provides access to latest instance of associated deployment
 func (o *Operation) Deployment() *model.Deployment {
-	return o.service.deployment()
+	return o.manager.deployment()
 }
 
 // sets the operation's execution function
@@ -117,5 +117,5 @@ func (o *Operation) Execute() error {
 }
 
 func (o *Operation) saveChangesWithoutNotification() error {
-	return o.service.saveChanges(false)
+	return o.manager.saveChanges(false)
 }

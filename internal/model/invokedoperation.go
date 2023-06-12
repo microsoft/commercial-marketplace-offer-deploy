@@ -44,7 +44,7 @@ func (o *InvokedOperation) IsExecutable() ([]string, bool) {
 
 	isCompleted := o.IsCompleted()
 	if isCompleted {
-		reasons = append(reasons, "operation already completed on [%s]", o.LatestResult().CompletedAt.String())
+		reasons = append(reasons, fmt.Sprintf("operation already completed on [%s]", o.LatestResult().CompletedAt.String()))
 	}
 
 	isRunning := o.IsRunning()
@@ -157,6 +157,15 @@ func (o *InvokedOperation) AttributeValue(key AttributeKey) (any, bool) {
 	for _, attr := range o.Attributes {
 		if attr.Key == string(key) {
 			return attr.Value, true
+		}
+	}
+	return nil, false
+}
+
+func (o *InvokedOperation) ParameterValue(key ParameterKey) (any, bool) {
+	for k, v := range o.Parameters {
+		if k == string(key) {
+			return v, true
 		}
 	}
 	return nil, false

@@ -205,7 +205,7 @@ func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.T
 			errors = append(errors, err.Error())
 		}
 
-		service, err := operation.NewService(db, sender, hook.Notify)
+		service, err := operation.NewManager(db, sender, hook.Notify)
 		if err != nil {
 			errors = append(errors, err.Error())
 		}

@@ -36,8 +36,7 @@
       "apiVersion": "2020-10-01",
       "name": "[variables('deploymentName')]",
       "tags": {
-        "modm.id": "31e9f9a0-9fd2-4294-a0a3-0101246d9700",
-        "modm.stage.id": "31e9f9a0-9fd2-4294-a0a3-0101246d9700",
+        "modm.id": "4809d787-3dd4-45c9-a84a-215d0030c77b",
         "modm.name": "storageAccounts",
         "modm.events": "true",
         "modm.retry": "3"
@@ -165,7 +164,6 @@
       "name": "[variables('deploymentName2')]",
       "tags": {
         "modm.id": "22e9f9a0-9fd2-4294-a0a3-0101246d9700",
-        "modm.stage.id": "22e9f9a0-9fd2-4294-a0a3-0101246d9700",
         "modm.name": "storageAccounts2",
         "modm.events": "true",
         "modm.retry": "3"
@@ -293,7 +291,6 @@
       "name": "[variables('deploymentName3')]",
       "tags": {
         "modm.id": "33e9f9a0-9fd2-4294-a0a3-0101246d9700",
-        "modm.stage.id": "33e9f9a0-9fd2-4294-a0a3-0101246d9700",
         "modm.name": "storageAccounts3",
         "modm.events": "true",
         "modm.retry": "3"
@@ -421,7 +418,6 @@
       "name": "[variables('deploymentName4')]",
       "tags": {
         "modm.id": "44e9f9a0-9fd2-4294-a0a3-0101246d9700",
-        "modm.stage.id": "44e9f9a0-9fd2-4294-a0a3-0101246d9700",
         "modm.name": "storageAccounts4",
         "modm.events": "true",
         "modm.retry": "3"
@@ -549,7 +545,6 @@
       "name": "[variables('deploymentName5')]",
       "tags": {
         "modm.id": "55e9f9a0-9fd2-4294-a0a3-0101246d9700",
-        "modm.stage.id": "55e9f9a0-9fd2-4294-a0a3-0101246d9700",
         "modm.name": "storageAccounts5",
         "modm.events": "true",
         "modm.retry": "3"

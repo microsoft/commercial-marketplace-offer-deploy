@@ -26,7 +26,7 @@ func (suite *serviceTestSuite) SetupSuite() {
 }
 
 func (suite *serviceTestSuite) Test_OperationService_deployment() {
-	service := OperationService{
+	service := OperationManager{
 		db:  suite.db.Instance(),
 		log: log.WithField("test", "Test_OperationService_deployment"),
 	}

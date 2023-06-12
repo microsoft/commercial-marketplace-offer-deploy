@@ -43,7 +43,7 @@ func NewOperationsMessageHandler(appConfig *config.AppConfig) *operationMessageH
 	return handler
 }
 
-func newOperationService(appConfig *config.AppConfig) (*operation.OperationService, error) {
+func newOperationService(appConfig *config.AppConfig) (*operation.OperationManager, error) {
 	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
 
 	credential, err := azidentity.NewDefaultAzureCredential(nil)
@@ -62,7 +62,7 @@ func newOperationService(appConfig *config.AppConfig) (*operation.OperationServi
 		return nil, err
 	}
 
-	service, err := operation.NewService(db, sender, hook.Notify)
+	service, err := operation.NewManager(db, sender, hook.Notify)
 	if err != nil {
 		return nil, err
 	}

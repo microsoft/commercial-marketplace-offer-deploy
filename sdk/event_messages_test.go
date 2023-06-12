@@ -190,7 +190,6 @@ func Test_EventHookMessage_DeploymentEventData_Marshaling(t *testing.T) {
 		EventTypeDeploymentCreated,
 		EventTypeDeploymentDeleted,
 		EventTypeDeploymentEventReceived,
-		EventTypeDeploymentRetried,
 		EventTypeDeploymentUpdated,
 	}
 

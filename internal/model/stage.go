@@ -2,7 +2,7 @@ package model
 
 type Stage struct {
 	BaseWithGuidPrimaryKey
-	DeploymentID        uint   `json:"deploymentId"`
+	DeploymentID        uint   `json:"deploymentId" gorm:"primaryKey"`
 	Name                string `json:"name"`
 	AzureDeploymentName string `json:"azureDeploymentName"`
 
