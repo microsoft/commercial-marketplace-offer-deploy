@@ -49,9 +49,6 @@ func (exe *executor) Execute(executionContext ExecutionContext) error {
 		return err
 	}
 
-	_, done := context.WithCancel(executionContext.Context())
-	defer done()
-
 	do := WithLogging(exe.operation)
 	err = do(executionContext)
 

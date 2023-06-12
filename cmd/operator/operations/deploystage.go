@@ -1,6 +1,9 @@
 package operations
 
 import (
+	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
@@ -23,32 +26,35 @@ type deployStageOperation struct {
 	watcher           operation.OperationWatcher
 }
 
-func (op *deployStageOperation) Do(context operation.ExecutionContext) error {
-	op.watchParentOperation(context)
-
-	finder, err := op.nameFinderFactory(context)
+func (op *deployStageOperation) Do(executionContext operation.ExecutionContext) error {
+	watcherCtx, err := op.watchParentOperation(executionContext)
 	if err != nil {
 		return err
 	}
 
-	azureDeploymentName, err := finder.Find(context.Context())
+	finder, err := op.nameFinderFactory(executionContext)
+	if err != nil {
+		return err
+	}
+
+	azureDeploymentName, err := finder.Find(executionContext.Context())
 	if err != nil {
 		return err
 	}
 
 	// save the deployment name to the operation so we can fetch it later
-	context.Operation().Attribute(model.AttributeKeyAzureDeploymentName, azureDeploymentName)
-	context.SaveChanges()
+	executionContext.Operation().Attribute(model.AttributeKeyAzureDeploymentName, azureDeploymentName)
+	executionContext.SaveChanges()
 
-	isFirstAttempt := context.Operation().IsFirstAttempt()
+	isFirstAttempt := executionContext.Operation().IsFirstAttempt()
 	if isFirstAttempt {
-		err := op.wait(context, azureDeploymentName)
+		err := op.wait(executionContext, azureDeploymentName)
 		if err != nil {
 			return err
 		}
 	} else { // retry the stage
 		retryStage := NewRetryStageOperation()
-		err := retryStage(context)
+		err := retryStage(executionContext)
 		if err != nil {
 			return err
 		}
@@ -58,10 +64,10 @@ func (op *deployStageOperation) Do(context operation.ExecutionContext) error {
 
 // watches the parent deploy operation for failure or completed state
 // it will trigger a cancellation of the ctx on the execution context if the condition is met
-func (op *deployStageOperation) watchParentOperation(context operation.ExecutionContext) {
+func (op *deployStageOperation) watchParentOperation(context operation.ExecutionContext) (context.Context, error) {
 	parentId := context.Operation().ParentID
 	if parentId == nil {
-		return
+		return nil, errors.New("parent operation id is nil")
 	}
 	options := operation.OperationWatcherOptions{
 		Condition: func(operation model.InvokedOperation) bool {
@@ -69,7 +75,11 @@ func (op *deployStageOperation) watchParentOperation(context operation.Execution
 		},
 		Frequency: 5 * time.Second,
 	}
-	op.watcher.Watch(context.Context(), *parentId, options)
+	ctx, err := op.watcher.Watch(*parentId, options)
+	if err != nil {
+		return nil, fmt.Errorf("failed to start watcher for parent operation [%s]", *parentId)
+	}
+	return ctx, nil
 }
 
 func (op *deployStageOperation) wait(context operation.ExecutionContext, azureDeploymentName string) error {

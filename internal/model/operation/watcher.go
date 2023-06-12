@@ -19,7 +19,7 @@ type OperationWatcher interface {
 	// watch the operation with the given operation id for completion
 	// 	id: the operation id
 	//
-	Watch(ctx context.Context, id uuid.UUID, options OperationWatcherOptions) error
+	Watch(id uuid.UUID, options OperationWatcherOptions) (context.Context, error)
 }
 
 type operationWatcher struct {
@@ -39,14 +39,16 @@ func NewWatcher(repository Repository) OperationWatcher {
 	}
 }
 
-func (watcher *operationWatcher) Watch(ctx context.Context, id uuid.UUID, options OperationWatcherOptions) error {
+func (watcher *operationWatcher) Watch(id uuid.UUID, options OperationWatcherOptions) (context.Context, error) {
+	ctx := context.TODO()
+
 	exists := watcher.repository.Any(id)
 	if !exists {
-		return fmt.Errorf("failed to start watcher. operation not found for [%s]", id)
+		return ctx, fmt.Errorf("failed to start watcher. operation not found for [%s]", id)
 	}
 
 	if options.Condition == nil {
-		return fmt.Errorf("failed to start watcher. condition cannot be nil")
+		return ctx, fmt.Errorf("failed to start watcher. condition cannot be nil")
 	}
 
 	parameters := watchParameters{
@@ -57,7 +59,7 @@ func (watcher *operationWatcher) Watch(ctx context.Context, id uuid.UUID, option
 	}
 	go watcher.watch(parameters)
 
-	return nil
+	return ctx, nil
 }
 
 func (watcher *operationWatcher) watch(params watchParameters) {
