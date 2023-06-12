@@ -52,11 +52,16 @@ func (t *DeploymentTemplate) Build() map[string]interface{} {
 
 // adds lookup tags to a nested template
 func (t *DeploymentTemplate) addLookupTags(element nestedTemplateElement, lookupTags []deployment.LookupTag) {
-	if tagsEntry, ok := element["tags"]; ok {
-		if tagsMap, ok := tagsEntry.(map[string]any); ok {
-			for _, lookupTag := range lookupTags {
-				tagsMap[string(lookupTag.Key)] = lookupTag.Value
-			}
+	tagsEntry, ok := element["tags"]
+
+	if !ok {
+		element["tags"] = map[string]any{}
+		tagsEntry = element["tags"]
+	}
+
+	if tagsMap, ok := tagsEntry.(map[string]any); ok {
+		for _, lookupTag := range lookupTags {
+			tagsMap[string(lookupTag.Key)] = lookupTag.Value
 		}
 	}
 }
