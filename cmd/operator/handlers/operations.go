@@ -26,13 +26,13 @@ func (h *operationMessageHandler) Handle(message *messaging.ExecuteInvokedOperat
 
 func NewOperationsMessageHandler(appConfig *config.AppConfig) *operationMessageHandler {
 	handler := &operationMessageHandler{}
-	service, err := newOperationService(appConfig)
+	manager, err := newOperationManager(appConfig)
 	if err != nil {
 		log.Errorf("Error creating operations message handler: %s", err)
 		return nil
 	}
 
-	repository, err := operation.NewRepository(service, operations.NewOperationFuncProvider(appConfig))
+	repository, err := operation.NewRepository(manager, operations.NewOperationFuncProvider(appConfig))
 	if err != nil {
 		log.Errorf("Error creating operations message handler: %s", err)
 		return nil
@@ -43,7 +43,7 @@ func NewOperationsMessageHandler(appConfig *config.AppConfig) *operationMessageH
 	return handler
 }
 
-func newOperationService(appConfig *config.AppConfig) (*operation.OperationManager, error) {
+func newOperationManager(appConfig *config.AppConfig) (*operation.OperationManager, error) {
 	db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
 
 	credential, err := azidentity.NewDefaultAzureCredential(nil)
