@@ -5,12 +5,12 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
-	"github.com/labstack/gommon/log"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/template"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
+	log "github.com/sirupsen/logrus"
 )
 
 type deployTask struct {
@@ -29,11 +29,8 @@ func (task *deployTask) Run(context operation.ExecutionContext) error {
 }
 
 func (task *deployTask) Continue(context operation.ExecutionContext) error {
-	operation, err := task.getOperation(context)
-	if err != nil {
-		return err
-	}
-	return operation(context)
+	log.Tracef("deployTask.Continue: %v", context.Operation().Name)
+	return nil
 }
 
 func (task *deployTask) getOperation(context operation.ExecutionContext) (operation.OperationFunc, error) {

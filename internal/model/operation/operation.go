@@ -127,6 +127,7 @@ func (o *Operation) saveChangesWithoutNotification() error {
 
 func (o *Operation) getFunc() OperationFunc {
 	if o.IsContinuation() {
+		o.manager.log.Info("Operation identified as continuation. executing task.Continue")
 		return o.task.Continue
 	}
 	return o.task.Run
