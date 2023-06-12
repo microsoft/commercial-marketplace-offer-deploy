@@ -1,18 +1,18 @@
 
+param location string = 'eastus'
+param unique string = substring(uniqueString(utcNow()), 0, 5)
 
-param suffix string = substring(uniqueString(utcNow()), 0, 5)
 
-var storageAccountName = toLower(format('{0}{1}', 'storageAccounts-', suffix))
-
-resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
-  name: storageAccountName
-  location: location
-  sku: {
-    name: 'Standard_LRS'
+module storageAcounts './modules/storageAccounts.bicep' = {
+  name: 'storageAccounts'
+  params:{
+    location: resourceGroup().location
   }
-  kind: 'StorageV2'
-   properties: {
-     accessTier: 'Hot'
-   }
-  tags: resourceTags
+}
+
+module dependsOn './modules/dependsOn.bicep' = {
+  name: 'dependsOnStorageAccounts'
+  dependsOn: [
+    storageAcounts
+  ]
 }

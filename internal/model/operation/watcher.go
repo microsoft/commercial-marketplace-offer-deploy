@@ -47,19 +47,20 @@ func NewWatcher(repository Repository) OperationWatcher {
 func (watcher *operationWatcher) Watch(id uuid.UUID, options OperationWatcherOptions) (*OperationWatcherHandle, error) {
 	ctx, cancel := context.WithCancel(context.TODO())
 
-	exists := watcher.repository.Any(id)
-	if !exists {
-		return nil, fmt.Errorf("failed to start watcher. operation not found for [%s]", id)
-	}
-
-	if options.Condition == nil {
-		return nil, fmt.Errorf("failed to start watcher. condition cannot be nil")
-	}
-
 	handle := &OperationWatcherHandle{
 		Context: ctx,
 		Done:    cancel,
 	}
+
+	exists := watcher.repository.Any(id)
+	if !exists {
+		return handle, fmt.Errorf("failed to start watcher. operation not found for [%s]", id)
+	}
+
+	if options.Condition == nil {
+		return handle, fmt.Errorf("failed to start watcher. condition cannot be nil")
+	}
+
 	parameters := watchParameters{
 		OperationWatcherOptions: options,
 		ticker:                  time.NewTicker(options.Frequency),
@@ -68,10 +69,7 @@ func (watcher *operationWatcher) Watch(id uuid.UUID, options OperationWatcherOpt
 	}
 	go watcher.watch(parameters)
 
-	return &OperationWatcherHandle{
-		Context: ctx,
-		Done:    cancel,
-	}, nil
+	return handle, nil
 }
 
 func (watcher *operationWatcher) watch(params watchParameters) {
@@ -86,6 +84,7 @@ func (watcher *operationWatcher) watch(params watchParameters) {
 			}
 			evaluation := params.Condition(operation.InvokedOperation)
 			if evaluation {
+				ticker.Stop()
 				params.handle.Done()
 			}
 		case <-params.handle.Context.Done(): // if the context is cancelled, externally, then stop

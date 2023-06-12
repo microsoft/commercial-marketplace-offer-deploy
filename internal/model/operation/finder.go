@@ -18,8 +18,8 @@ type FinderResponse struct {
 type AzureDeploymentNameFinder struct {
 	client            *armresources.DeploymentsClient
 	operationId       uuid.UUID
-	ticker			  *time.Ticker
-	done 			  chan FinderResponse
+	ticker            *time.Ticker
+	done              chan FinderResponse
 	resourceGroupName string
 }
 
@@ -41,7 +41,7 @@ func NewAzureDeploymentNameFinder(operation *Operation) (*AzureDeploymentNameFin
 	return &AzureDeploymentNameFinder{
 		client:            client,
 		ticker:            time.NewTicker(10 * time.Second),
-		done:              make(chan FinderResponse, 0),
+		done:              make(chan FinderResponse, 1),
 		resourceGroupName: deployment.ResourceGroup,
 		operationId:       operation.ID,
 	}, nil
@@ -60,12 +60,16 @@ func (finder *AzureDeploymentNameFinder) FindUntilDone(ctx context.Context) (str
 				finder.done <- FinderResponse{
 					Name: name,
 				}
-				return name, nil
 			}
 		case response := <-finder.done:
-			log.Tracef("Found deployment name for operationId: %s", finder.operationId)
+			finder.ticker.Stop()
+			log.WithFields(log.Fields{
+				"operationId": finder.operationId,
+				"name":        response.Name,
+			}).Trace("name finder done")
 			return response.Name, nil
 		case <-ctx.Done():
+			finder.ticker.Stop()
 			return "", ctx.Err()
 		}
 	}
