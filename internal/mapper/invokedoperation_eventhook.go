@@ -6,6 +6,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
+	"github.com/labstack/gommon/log"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
@@ -91,12 +92,23 @@ func getRetryData(invokedOperation *model.InvokedOperation) any {
 }
 
 func getDeployStageData(invokedOperation *model.InvokedOperation) any {
-	stageId := uuid.MustParse(invokedOperation.Parameters["stageId"].(string))
-
 	data := &sdk.StageEventData{
 		EventData: getBaseEventData(invokedOperation),
-		StageId:   to.Ptr(stageId),
 	}
+
+	parameter, ok := invokedOperation.ParameterValue(model.ParameterKeyStageId)
+	if !ok {
+		log.Warnf("StageId parameter not found in invoked operation %s", invokedOperation.Name)
+		return data
+	}
+
+	stageId, err := uuid.Parse(parameter.(string))
+	if err != nil {
+		log.Warnf("StageId parameter is not a valid UUID in invoked operation %s", invokedOperation.Name)
+		return data
+	}
+
+	data.StageId = to.Ptr(stageId)
 
 	latestResult := invokedOperation.LatestResult()
 	if latestResult != nil {

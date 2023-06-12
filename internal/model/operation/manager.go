@@ -113,6 +113,11 @@ func (service *OperationManager) first() (*model.InvokedOperation, error) {
 }
 
 func (service *OperationManager) new(i *model.InvokedOperation) (*model.InvokedOperation, error) {
+
+	if i.Results == nil {
+		i.Results = make(map[uint]*model.InvokedOperationResult)
+	}
+
 	tx := service.db.Begin()
 	result := tx.Create(i)
 	if result.Error != nil {
@@ -142,7 +147,7 @@ func (service *OperationManager) initialize(id uuid.UUID) (*Operation, error) {
 
 	service.operation = &Operation{
 		InvokedOperation: *invokedOperation,
-		service:          service,
+		manager:          service,
 	}
 
 	service.log.Trace("operation service initialized.")

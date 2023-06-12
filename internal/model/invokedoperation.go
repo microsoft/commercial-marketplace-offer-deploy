@@ -44,7 +44,7 @@ func (o *InvokedOperation) IsExecutable() ([]string, bool) {
 
 	isCompleted := o.IsCompleted()
 	if isCompleted {
-		reasons = append(reasons, "operation already completed on [%s]", o.LatestResult().CompletedAt.String())
+		reasons = append(reasons, fmt.Sprintf("operation already completed on [%s]", o.LatestResult().CompletedAt.String()))
 	}
 
 	isRunning := o.IsRunning()
