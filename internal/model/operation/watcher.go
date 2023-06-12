@@ -19,7 +19,12 @@ type OperationWatcher interface {
 	// watch the operation with the given operation id for completion
 	// 	id: the operation id
 	//
-	Watch(id uuid.UUID, options OperationWatcherOptions) (context.Context, error)
+	Watch(id uuid.UUID, options OperationWatcherOptions) (*OperationWatcherHandle, error)
+}
+
+type OperationWatcherHandle struct {
+	Context context.Context
+	Done    context.CancelFunc
 }
 
 type operationWatcher struct {
@@ -28,7 +33,7 @@ type operationWatcher struct {
 
 type watchParameters struct {
 	OperationWatcherOptions
-	ctx    context.Context
+	handle *OperationWatcherHandle
 	id     uuid.UUID
 	ticker *time.Ticker
 }
@@ -39,31 +44,37 @@ func NewWatcher(repository Repository) OperationWatcher {
 	}
 }
 
-func (watcher *operationWatcher) Watch(id uuid.UUID, options OperationWatcherOptions) (context.Context, error) {
-	ctx := context.TODO()
+func (watcher *operationWatcher) Watch(id uuid.UUID, options OperationWatcherOptions) (*OperationWatcherHandle, error) {
+	ctx, cancel := context.WithCancel(context.TODO())
 
 	exists := watcher.repository.Any(id)
 	if !exists {
-		return ctx, fmt.Errorf("failed to start watcher. operation not found for [%s]", id)
+		return nil, fmt.Errorf("failed to start watcher. operation not found for [%s]", id)
 	}
 
 	if options.Condition == nil {
-		return ctx, fmt.Errorf("failed to start watcher. condition cannot be nil")
+		return nil, fmt.Errorf("failed to start watcher. condition cannot be nil")
 	}
 
+	handle := &OperationWatcherHandle{
+		Context: ctx,
+		Done:    cancel,
+	}
 	parameters := watchParameters{
 		OperationWatcherOptions: options,
 		ticker:                  time.NewTicker(options.Frequency),
-		ctx:                     ctx,
+		handle:                  handle,
 		id:                      id,
 	}
 	go watcher.watch(parameters)
 
-	return ctx, nil
+	return &OperationWatcherHandle{
+		Context: ctx,
+		Done:    cancel,
+	}, nil
 }
 
 func (watcher *operationWatcher) watch(params watchParameters) {
-	ctx, cancel := context.WithCancel(params.ctx)
 	ticker := params.ticker
 
 	for {
@@ -75,9 +86,9 @@ func (watcher *operationWatcher) watch(params watchParameters) {
 			}
 			evaluation := params.Condition(operation.InvokedOperation)
 			if evaluation {
-				cancel()
+				params.handle.Done()
 			}
-		case <-ctx.Done(): // if the context is cancelled, externally, then stop
+		case <-params.handle.Context.Done(): // if the context is cancelled, externally, then stop
 			ticker.Stop()
 		}
 	}

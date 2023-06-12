@@ -1,7 +1,6 @@
 package operations
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -27,7 +26,7 @@ type deployStageOperation struct {
 }
 
 func (op *deployStageOperation) Do(executionContext operation.ExecutionContext) error {
-	watcherCtx, err := op.watchParentOperation(executionContext)
+	watchHandle, err := op.watchParentOperation(executionContext)
 	if err != nil {
 		return err
 	}
@@ -37,7 +36,7 @@ func (op *deployStageOperation) Do(executionContext operation.ExecutionContext) 
 		return err
 	}
 
-	azureDeploymentName, err := finder.FindUntilDone(watcherCtx)
+	azureDeploymentName, err := finder.FindUntilDone(watchHandle.Context)
 	if err != nil {
 		return err
 	}
@@ -59,12 +58,15 @@ func (op *deployStageOperation) Do(executionContext operation.ExecutionContext) 
 			return err
 		}
 	}
+
+	watchHandle.Done()
+
 	return nil
 }
 
 // watches the parent deploy operation for failure or completed state
 // it will trigger a cancellation of the ctx on the execution context if the condition is met
-func (op *deployStageOperation) watchParentOperation(context operation.ExecutionContext) (context.Context, error) {
+func (op *deployStageOperation) watchParentOperation(context operation.ExecutionContext) (*operation.OperationWatcherHandle, error) {
 	parentId := context.Operation().ParentID
 	if parentId == nil {
 		return nil, errors.New("parent operation id is nil")
@@ -75,11 +77,11 @@ func (op *deployStageOperation) watchParentOperation(context operation.Execution
 		},
 		Frequency: 5 * time.Second,
 	}
-	ctx, err := op.watcher.Watch(*parentId, options)
+	handle, err := op.watcher.Watch(*parentId, options)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start watcher for parent operation [%s]", *parentId)
 	}
-	return ctx, nil
+	return handle, nil
 }
 
 func (op *deployStageOperation) wait(context operation.ExecutionContext, azureDeploymentName string) error {
