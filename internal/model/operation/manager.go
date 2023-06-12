@@ -128,6 +128,12 @@ func (service *OperationManager) new(i *model.InvokedOperation) (*model.InvokedO
 	return i, nil
 }
 
+func (service *OperationManager) any(id uuid.UUID) bool {
+	var count int64
+	service.db.Model(&model.InvokedOperation{}).Where("id = ?", id).Count(&count)
+	return count > 0
+}
+
 // initializes and returns the single instance of InvokedOperation by the context's id
 // if the id is invalid and an instance cannot be found, returns an error
 func (service *OperationManager) initialize(id uuid.UUID) (*Operation, error) {
@@ -150,7 +156,6 @@ func (service *OperationManager) initialize(id uuid.UUID) (*Operation, error) {
 		manager:          service,
 	}
 
-	service.log.Trace("operation service initialized.")
 	return service.operation, nil
 }
 

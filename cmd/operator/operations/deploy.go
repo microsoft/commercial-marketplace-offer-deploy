@@ -44,6 +44,10 @@ func (op *deployOperation) do(context operation.ExecutionContext) error {
 	}
 
 	azureDeployment := op.mapAzureDeployment(context.Operation(), deployStageOperations)
+
+	// save the built arm template to the operation's attributes so we have a snapshot of what was submitted
+	context.Attribute(model.AttributeKeyArmTemplate, azureDeployment.Template)
+
 	deployer, err := op.newDeployer(azureDeployment.SubscriptionId)
 	if err != nil {
 		return err

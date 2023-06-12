@@ -99,6 +99,15 @@ func (o *InvokedOperation) Running() {
 	o.setStatus(sdk.StatusRunning.String())
 }
 
+// whether the operation execution is being picked up where it last left off if interrupted
+func (o *InvokedOperation) IsContinuation() bool {
+	if o.IsCompleted() {
+		return false
+	}
+
+	return o.IsRunning() && !o.AttemptsExceeded()
+}
+
 func (o *InvokedOperation) FirstResult() *InvokedOperationResult {
 	if len(o.Results) == 0 {
 		return o.appendResult()

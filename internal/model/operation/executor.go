@@ -36,13 +36,13 @@ type executor struct {
 }
 
 // default implementation for executing an operation
-func (exe *executor) Execute(context ExecutionContext) error {
-	if reasons, ok := context.Operation().IsExecutable(); !ok {
+func (exe *executor) Execute(executionContext ExecutionContext) error {
+	if reasons, ok := executionContext.Operation().IsExecutable(); !ok {
 		log.Infof("Operation is not in an executable state: %s", reasons)
 		return nil
 	}
 
-	err := context.Running()
+	err := executionContext.Running()
 
 	if err != nil {
 		log.Errorf("error updating operation to running: %s", err.Error())
@@ -50,16 +50,16 @@ func (exe *executor) Execute(context ExecutionContext) error {
 	}
 
 	do := WithLogging(exe.operation)
-	err = do(context)
+	err = do(executionContext)
 
 	if err != nil {
-		context.Error(err)
+		executionContext.Error(err)
 
-		if context.Operation().AttemptsExceeded() {
-			err = context.Failed()
-			context.Complete()
+		if executionContext.Operation().AttemptsExceeded() {
+			err = executionContext.Failed()
+			executionContext.Complete()
 		} else {
-			retryErr := context.Retry()
+			retryErr := executionContext.Retry()
 			if retryErr != nil {
 				log.Errorf("attempt to retry operation caused error: %s", retryErr.Error())
 			}
@@ -68,8 +68,8 @@ func (exe *executor) Execute(context ExecutionContext) error {
 		return err
 	}
 
-	context.Success()
-	context.Complete()
+	executionContext.Success()
+	executionContext.Complete()
 
 	return nil
 }

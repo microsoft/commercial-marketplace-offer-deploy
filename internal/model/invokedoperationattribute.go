@@ -11,6 +11,7 @@ const (
 	AttributeKeyCorrelationId       AttributeKey = "correlationId"
 	AttributeKeyAzureDeploymentName AttributeKey = "azureDeploymentName"
 	AttributeKeyResumeToken         AttributeKey = "resumeToken"
+	AttributeKeyArmTemplate         AttributeKey = "armTemplate"
 )
 
 type InvokedOperationAttribute struct {
