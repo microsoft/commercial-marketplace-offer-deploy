@@ -14,6 +14,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/stage"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/threading"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
@@ -26,7 +27,7 @@ type deployStageOperation struct {
 }
 
 func (op *deployStageOperation) Do(executionContext operation.ExecutionContext) error {
-	watchHandle, err := op.watchParentOperation(executionContext)
+	token, err := op.watchParentOperation(executionContext)
 	if err != nil {
 		return err
 	}
@@ -36,7 +37,7 @@ func (op *deployStageOperation) Do(executionContext operation.ExecutionContext) 
 		return err
 	}
 
-	azureDeploymentName, err := finder.FindUntilDone(watchHandle.Context)
+	azureDeploymentName, err := finder.FindUntilDone(token.Context())
 	if err != nil {
 		return err
 	}
@@ -59,14 +60,14 @@ func (op *deployStageOperation) Do(executionContext operation.ExecutionContext) 
 		}
 	}
 
-	watchHandle.Done()
+	token.Cancel()
 
 	return nil
 }
 
 // watches the parent deploy operation for failure or completed state
 // it will trigger a cancellation of the ctx on the execution context if the condition is met
-func (op *deployStageOperation) watchParentOperation(context operation.ExecutionContext) (*operation.OperationWatcherHandle, error) {
+func (op *deployStageOperation) watchParentOperation(context operation.ExecutionContext) (threading.CancellationToken, error) {
 	parentId := context.Operation().ParentID
 	if parentId == nil {
 		return nil, errors.New("parent operation id is nil")
@@ -77,11 +78,11 @@ func (op *deployStageOperation) watchParentOperation(context operation.Execution
 		},
 		Frequency: 5 * time.Second,
 	}
-	handle, err := op.watcher.Watch(*parentId, options)
+	token, err := op.watcher.Watch(*parentId, options)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start watcher for parent operation [%s]", *parentId)
 	}
-	return handle, nil
+	return token, nil
 }
 
 func (op *deployStageOperation) wait(context operation.ExecutionContext, azureDeploymentName string) error {

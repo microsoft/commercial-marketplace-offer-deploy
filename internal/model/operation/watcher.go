@@ -1,13 +1,13 @@
 package operation
 
 import (
-	"context"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/gommon/log"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/threading"
 )
 
 type OperationWatcherOptions struct {
@@ -19,12 +19,7 @@ type OperationWatcher interface {
 	// watch the operation with the given operation id for completion
 	// 	id: the operation id
 	//
-	Watch(id uuid.UUID, options OperationWatcherOptions) (*OperationWatcherHandle, error)
-}
-
-type OperationWatcherHandle struct {
-	Context context.Context
-	Done    context.CancelFunc
+	Watch(id uuid.UUID, options OperationWatcherOptions) (threading.CancellationToken, error)
 }
 
 type operationWatcher struct {
@@ -33,7 +28,7 @@ type operationWatcher struct {
 
 type watchParameters struct {
 	OperationWatcherOptions
-	handle *OperationWatcherHandle
+	token  threading.CancellationToken
 	id     uuid.UUID
 	ticker *time.Ticker
 }
@@ -44,32 +39,27 @@ func NewWatcher(repository Repository) OperationWatcher {
 	}
 }
 
-func (watcher *operationWatcher) Watch(id uuid.UUID, options OperationWatcherOptions) (*OperationWatcherHandle, error) {
-	ctx, cancel := context.WithCancel(context.TODO())
-
-	handle := &OperationWatcherHandle{
-		Context: ctx,
-		Done:    cancel,
-	}
+func (watcher *operationWatcher) Watch(id uuid.UUID, options OperationWatcherOptions) (threading.CancellationToken, error) {
+	token := threading.NewToken()
 
 	exists := watcher.repository.Any(id)
 	if !exists {
-		return handle, fmt.Errorf("failed to start watcher. operation not found for [%s]", id)
+		return token, fmt.Errorf("failed to start watcher. operation not found for [%s]", id)
 	}
 
 	if options.Condition == nil {
-		return handle, fmt.Errorf("failed to start watcher. condition cannot be nil")
+		return token, fmt.Errorf("failed to start watcher. condition cannot be nil")
 	}
 
 	parameters := watchParameters{
 		OperationWatcherOptions: options,
 		ticker:                  time.NewTicker(options.Frequency),
-		handle:                  handle,
+		token:                   token,
 		id:                      id,
 	}
 	go watcher.watch(parameters)
 
-	return handle, nil
+	return token, nil
 }
 
 func (watcher *operationWatcher) watch(params watchParameters) {
@@ -85,9 +75,9 @@ func (watcher *operationWatcher) watch(params watchParameters) {
 			evaluation := params.Condition(operation.InvokedOperation)
 			if evaluation {
 				ticker.Stop()
-				params.handle.Done()
+				params.token.Cancel()
 			}
-		case <-params.handle.Context.Done(): // if the context is cancelled, externally, then stop
+		case <-params.token.Context().Done(): // if the context is cancelled, externally, then stop
 			ticker.Stop()
 		}
 	}
