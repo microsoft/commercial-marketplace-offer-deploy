@@ -92,7 +92,6 @@ func createInstance(dsn string, models ...interface{}) (*gorm.DB, error) {
 		&model.EventHookAuditEntry{},
 		&model.InvokedOperation{},
 		&model.InvokedOperationAttribute{},
-		&model.StageNotification{},
 	); err != nil {
 		return nil, fmt.Errorf("could not migrate models %T: %w", models, err)
 	}
