@@ -4,8 +4,9 @@ param suffix string = substring(uniqueString(utcNow()), 0, 5)
 
 param storageCount int = 5
 
+
 resource storageAccounts 'Microsoft.Storage/storageAccounts@2022-09-01' = [for i in range(0, storageCount): {
-  name: '${i}storage${uniqueString(resourceGroup().id)}'
+  name: '${i}store${substring(uniqueString(resourceGroup().id), i, 5)}'
   location: location
   sku: {
     name: 'Standard_LRS'
