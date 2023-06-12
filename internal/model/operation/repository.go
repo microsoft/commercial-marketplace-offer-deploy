@@ -27,6 +27,7 @@ type OperationFuncProvider interface {
 type Repository interface {
 	New(operationType sdk.OperationType, configure Configure) (*Operation, error)
 	First(id uuid.UUID) (*Operation, error)
+	Any(id uuid.UUID) bool
 	Provider(provider OperationFuncProvider) error
 	WithContext(ctx context.Context)
 }
@@ -91,6 +92,10 @@ func (repo *repository) First(id uuid.UUID) (*Operation, error) {
 	}
 
 	return operation, nil
+}
+
+func (repo *repository) Any(id uuid.UUID) bool {
+	return repo.manager.any(id)
 }
 
 // NewRepository creates a new operation repository
