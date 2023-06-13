@@ -64,6 +64,7 @@ func (m *CreateDeploymentMapper) getStages(templateInstance map[string]any) []mo
 				Name:                   resource.GetName(),
 				AzureDeploymentName:    resource.Name,
 				Retries:                resource.GetRetries(),
+				Attributes:             resource.GetPublisherAttributes(),
 			}
 			stages = append(stages, stage)
 		}
