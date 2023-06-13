@@ -2,6 +2,7 @@ package template
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
@@ -46,6 +47,18 @@ func (resource *ArmTemplateResource) GetRetries() uint {
 		return uint(intValue)
 	}
 	return uint(defaultValue)
+}
+
+func (resource *ArmTemplateResource) GetPublisherAttributes() map[string]string {
+	attrs := map[string]string{}
+	if resource.Tags != nil {
+		for key, value := range resource.Tags {
+			if strings.HasPrefix(key, string(deployment.LookupTagKeyPublisherPrefix)) {
+				attrs[key] = value
+			}
+		}
+	}
+	return attrs
 }
 
 func (resource *ArmTemplateResource) GetTagValue(key deployment.LookupTagKey, defaultValue string) string {

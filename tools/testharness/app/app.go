@@ -23,6 +23,7 @@ func AddRoutes(e *echo.Echo) {
 	e.GET("/status/:deploymentId/:operationName", GetStatus)
 	e.GET("/setcase/:caseName", SetCase)
 	e.GET("/createdeployment", CreateDeployment)
+	e.GET("/getdeployment/:deploymentId", GetDeployment)
 	e.GET("/startdeployment/:deploymentId", StartDeployment)
 	e.GET("/createeventhook", CreateEventHook)
 	e.GET("/dryrun/:deploymentId", DryRun)

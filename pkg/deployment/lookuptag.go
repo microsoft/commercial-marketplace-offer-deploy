@@ -2,6 +2,8 @@ package deployment
 
 const LookupPrefix = "modm."
 
+const LookupTagKeyPublisherPrefix = "publisher."
+
 type LookupTagKey string
 
 const (

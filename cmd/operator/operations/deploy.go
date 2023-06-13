@@ -75,6 +75,8 @@ func (task *deployTask) run(context operation.ExecutionContext) error {
 		return err
 	}
 
+	context.Running()
+
 	beginResult, err := deployer.Begin(context.Context(), azureDeployment)
 	if err != nil {
 		return err

@@ -19,6 +19,8 @@ func (task *dryRunTask) Run(context operation.ExecutionContext) error {
 		return err
 	}
 
+	context.Running()
+
 	result, err := task.dryRun(context.Context(), azureDeployment)
 	if err != nil {
 		return err

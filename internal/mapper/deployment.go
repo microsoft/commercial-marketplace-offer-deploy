@@ -24,14 +24,21 @@ func (m *DeploymentMapper) MapAll(deployments []model.Deployment) []sdk.Deployme
 
 func (m *DeploymentMapper) Map(deployment *model.Deployment) sdk.Deployment {
 	result := sdk.Deployment{
-		ID:   to.Ptr(int32(deployment.ID)),
-		Name: &deployment.Name,
+		ID:             to.Ptr(int32(deployment.ID)),
+		Name:           &deployment.Name,
+		Location:       to.Ptr(deployment.Location),
+		ResourceGroup:  to.Ptr(deployment.ResourceGroup),
+		SubscriptionID: to.Ptr(deployment.SubscriptionId),
+		Template:       to.Ptr(deployment.Template),
 	}
 
 	for _, stage := range deployment.Stages {
 		result.Stages = append(result.Stages, &sdk.DeploymentStage{
-			Name: to.Ptr(stage.Name),
-			ID:   to.Ptr(stage.ID.String()),
+			Name:           to.Ptr(stage.Name),
+			ID:             to.Ptr(stage.ID.String()),
+			Attributes:     stage.Attributes,
+			Retries:        to.Ptr(int32(stage.Retries)),
+			DeploymentName: to.Ptr(stage.AzureDeploymentName),
 		})
 	}
 	return result

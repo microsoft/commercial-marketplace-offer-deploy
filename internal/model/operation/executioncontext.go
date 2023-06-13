@@ -18,6 +18,14 @@ func (c *ExecutionContext) Context() context.Context {
 	return c.operation.Context()
 }
 
+func (c *ExecutionContext) IsExecutable() ([]string, bool) {
+	return c.operation.IsExecutable()
+}
+
+func (c *ExecutionContext) Pending() error {
+	return c.operation.Pending()
+}
+
 func (c *ExecutionContext) Running() error {
 	return c.operation.Running()
 }

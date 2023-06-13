@@ -27,6 +27,16 @@ function eventhook() {
     echo ""
 }
 
+function get() {
+    id=$1
+    if [[ -z "$id" ]]; then
+        id=$deployment_id
+    fi
+    echo "getting deployment [$id]"
+    curl -s $testharness_url/getdeployment/$id | jq .
+    echo ""
+}
+
 function create() {
     echo "Creating deployment"
     resp=$(curl -s $testharness_url/createdeployment | jq . -r)

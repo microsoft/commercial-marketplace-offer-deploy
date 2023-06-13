@@ -2,7 +2,7 @@
 param unique string = uniqueString(utcNow())
 
 
-var dependsOnName = format('{0}{1}', 'storageAccounts-', substring(unique, 0, 5))
+var dependsOnName = format('{0}{1}', 'storedep0', substring(unique, 0, 5))
 
 resource storageAccountWithDependsOn 'Microsoft.Storage/storageAccounts@2022-09-01' = {
   name: dependsOnName

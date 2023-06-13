@@ -37,15 +37,15 @@ type executor struct {
 
 // default implementation for executing an operation
 func (exe *executor) Execute(executionContext ExecutionContext) error {
-	if reasons, ok := executionContext.Operation().IsExecutable(); !ok {
+	if reasons, ok := executionContext.IsExecutable(); !ok {
 		log.Infof("Operation is not in an executable state: %s", reasons)
 		return nil
 	}
 
-	err := executionContext.Running()
+	err := executionContext.Pending()
 
 	if err != nil {
-		log.Errorf("error updating operation to running: %s", err.Error())
+		log.Errorf("error updating operation to pending: %s", err.Error())
 		return err
 	}
 

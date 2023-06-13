@@ -44,6 +44,8 @@ func (op *deployStageTask) Run(executionContext operation.ExecutionContext) erro
 	executionContext.Operation().Attribute(model.AttributeKeyAzureDeploymentName, azureDeploymentName)
 	executionContext.SaveChanges()
 
+	executionContext.Running()
+
 	isFirstAttempt := executionContext.Operation().IsFirstAttempt()
 	if isFirstAttempt {
 		err := op.wait(executionContext, azureDeploymentName)

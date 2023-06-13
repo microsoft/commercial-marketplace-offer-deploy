@@ -16,6 +16,7 @@ const (
 	StatusError Status = "error"
 	StatusFailed Status = "failed"
 	StatusNone Status = "none"
+	StatusPending Status = "pending"
 	StatusRunning Status = "running"
 	StatusScheduled Status = "scheduled"
 	StatusSuccess Status = "success"
@@ -28,6 +29,7 @@ func PossibleStatusValues() []Status {
 		StatusError,
 		StatusFailed,
 		StatusNone,
+		StatusPending,
 		StatusRunning,
 		StatusScheduled,
 		StatusSuccess,

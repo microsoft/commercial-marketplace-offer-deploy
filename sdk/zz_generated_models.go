@@ -42,9 +42,12 @@ type CreateEventHookResponse struct {
 
 type Deployment struct {
 	ID *int32 `json:"id,omitempty"`
+	Location *string `json:"location,omitempty"`
 	Name *string `json:"name,omitempty"`
+	ResourceGroup *string `json:"resourceGroup,omitempty"`
 	Stages []*DeploymentStage `json:"stages,omitempty"`
 	Status *string `json:"status,omitempty"`
+	SubscriptionID *string `json:"subscriptionId,omitempty"`
 
 	// Anything
 	Template any `json:"template,omitempty"`
@@ -130,6 +133,8 @@ type DeploymentManagementClientUpdateDeploymentOptions struct {
 }
 
 type DeploymentStage struct {
+	// custom publisher attributes for this stage
+	Attributes any `json:"attributes,omitempty"`
 	DeploymentName *string `json:"deploymentName,omitempty"`
 	ID *string `json:"id,omitempty"`
 	Name *string `json:"name,omitempty"`
