@@ -62,6 +62,7 @@ func createResult(deployment *model.Deployment) *sdk.Deployment {
 			ID:             to.Ptr(stage.ID.String()),
 			DeploymentName: &stage.AzureDeploymentName,
 			Retries:        to.Ptr(int32(stage.Retries)),
+			Attributes:     stage.Attributes,
 		})
 	}
 	return result
