@@ -490,6 +490,15 @@
         "status": {
           "type": "string"
         },
+        "location": {
+          "type": "string"
+        },
+        "resourceGroup": {
+          "type": "string"
+        },
+        "subscriptionId": {
+          "type": "string"
+        },
         "stages": {
           "type": "array",
           "items": {
@@ -517,6 +526,10 @@
         "retries": {
           "type": "integer",
           "description": "the default number of retries. can be set with tag modm.retry. defaults to 0."
+        },
+        "attributes": {
+          "type": "object",
+          "description": "custom publisher attributes for this stage"
         }
       }
     },
