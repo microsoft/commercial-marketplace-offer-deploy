@@ -1,6 +1,7 @@
 package operations
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
@@ -9,6 +10,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/template"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/structure"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 	log "github.com/sirupsen/logrus"
 )
@@ -21,7 +23,7 @@ type deployTask struct {
 
 // the operation to execute
 func (task *deployTask) Run(context operation.ExecutionContext) error {
-	operation, err := task.getOperation(context)
+	operation, err := task.getRun(context)
 	if err != nil {
 		return err
 	}
@@ -29,11 +31,27 @@ func (task *deployTask) Run(context operation.ExecutionContext) error {
 }
 
 func (task *deployTask) Continue(context operation.ExecutionContext) error {
-	log.Tracef("deployTask.Continue: %v", context.Operation().Name)
+	token, err := task.getResumeToken(context)
+	if err != nil {
+		return err
+	}
+
+	deployer, err := task.newDeployer(token.SubscriptionId)
+	if err != nil {
+		return err
+	}
+
+	result, err := deployer.Wait(context.Context(), token)
+	context.Value(result)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (task *deployTask) getOperation(context operation.ExecutionContext) (operation.OperationFunc, error) {
+func (task *deployTask) getRun(context operation.ExecutionContext) (operation.OperationFunc, error) {
 	run := task.run
 	if context.Operation().IsRetry() { // this is a retry if so
 		run = task.retryTask.Run
@@ -80,6 +98,25 @@ func (task *deployTask) run(context operation.ExecutionContext) error {
 	}
 
 	return nil
+}
+
+func (task *deployTask) getResumeToken(context operation.ExecutionContext) (*deployment.ResumeToken, error) {
+	attribute, ok := context.Operation().AttributeValue(model.AttributeKeyResumeToken)
+	if !ok {
+		return nil, errors.New("unable to continue deployment operation. missing resume token")
+	}
+
+	tokenMap, ok := attribute.(map[string]any)
+	if !ok {
+		return nil, errors.New("unable to continue deployment operation. resume token is in an invalid format")
+	}
+
+	token := &deployment.ResumeToken{}
+	err := structure.Decode(tokenMap, &token)
+	if err != nil {
+		return nil, err
+	}
+	return token, nil
 }
 
 func (task *deployTask) newDeployer(subscriptionId string) (deployment.Deployer, error) {
