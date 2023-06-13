@@ -170,6 +170,16 @@ func HealthStatus(c echo.Context) error {
 	return json
 }
 
+func GetDeployment(c echo.Context) error {
+	deploymentId, _ := strconv.Atoi(c.Param("deploymentId"))
+
+	cred, _ := azidentity.NewDefaultAzureCredential(nil)
+	client, _ := sdk.NewClient(getClientEndpoint(), cred, nil)
+
+	response, _ := client.Get(c.Request().Context(), deploymentId)
+	return c.JSON(http.StatusOK, response.Deployment)
+}
+
 func CreateDeployment(c echo.Context) error {
 	location = getLocation()
 	resourceGroup = getResourceGroup()

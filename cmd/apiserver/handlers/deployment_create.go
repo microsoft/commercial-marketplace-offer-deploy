@@ -52,8 +52,11 @@ func (h *createDeploymentHandler) Handle(c echo.Context) error {
 
 func createResult(deployment *model.Deployment) *sdk.Deployment {
 	result := &sdk.Deployment{
-		ID:   to.Ptr(int32(deployment.ID)),
-		Name: &deployment.Name,
+		ID:             to.Ptr(int32(deployment.ID)),
+		Name:           &deployment.Name,
+		Location:       to.Ptr(deployment.Location),
+		ResourceGroup:  to.Ptr(deployment.ResourceGroup),
+		SubscriptionID: to.Ptr(deployment.SubscriptionId),
 	}
 
 	for _, stage := range deployment.Stages {

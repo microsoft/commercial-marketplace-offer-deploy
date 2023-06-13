@@ -11,6 +11,7 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/mapper"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type getDeploymentHandler struct {
@@ -43,7 +44,7 @@ func (h *getDeploymentHandler) getDeploymentId(c echo.Context) (uint, error) {
 // method that gets a deployment struct by id
 func (h *getDeploymentHandler) getDeployment(id uint) (*model.Deployment, error) {
 	deployment := &model.Deployment{}
-	result := h.db.First(deployment, id)
+	result := h.db.Model(deployment).Preload(clause.Associations).First(deployment, id)
 	if result.Error != nil {
 		return nil, result.Error
 	}
