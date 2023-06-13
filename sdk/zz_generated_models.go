@@ -130,6 +130,8 @@ type DeploymentManagementClientUpdateDeploymentOptions struct {
 }
 
 type DeploymentStage struct {
+	// custom publisher attributes for this stage
+	Attributes any `json:"attributes,omitempty"`
 	DeploymentName *string `json:"deploymentName,omitempty"`
 	ID *string `json:"id,omitempty"`
 	Name *string `json:"name,omitempty"`
