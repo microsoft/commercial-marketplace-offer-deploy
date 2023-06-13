@@ -73,13 +73,15 @@ func (poller *DeployStagePoller) PollUntilDone(ctx context.Context) (DeployStage
 		select {
 		case <-poller.ticker.C:
 			log.Tracef("checking provisioning state of stage deployment [%s]", poller.deploymentName)
-
 			deployment, err := poller.checkProvisioningState(ctx)
-			log.Tracef("provisioning state of stage deployment: %s", *deployment.Properties.ProvisioningState)
-
 			if err != nil {
-				log.Errorf("failed to check provisioning state: %v", err)
+				log.WithFields(log.Fields{
+					"resourceGroupName": poller.resourceGroupName,
+					"deploymentName":    poller.deploymentName,
+				}).Errorf("failed to check provisioning state of stage deployment: %v", err)
+				continue
 			}
+
 			if poller.isInCompletedState(*deployment.Properties.ProvisioningState) {
 				poller.ticker.Stop()
 				poller.done <- DeployStagePollerResponse{
@@ -99,10 +101,15 @@ func (poller *DeployStagePoller) checkProvisioningState(ctx context.Context) (*a
 	if err != nil {
 		return nil, err
 	}
-	state := response.DeploymentExtended.Properties.ProvisioningState
-	if state == nil {
+
+	if response.DeploymentExtended.Properties == nil {
+		return nil, errors.New("properties is nil")
+	}
+
+	if response.DeploymentExtended.Properties.ProvisioningState == nil {
 		return nil, errors.New("provisioningState is nil")
 	}
+
 	return &response.DeploymentExtended, nil
 }
 
