@@ -34,7 +34,7 @@ func (op *retryStageTask) Run(context operation.ExecutionContext) error {
 }
 
 func (task *retryStageTask) Continue(context operation.ExecutionContext) error {
-	return nil
+	return task.Run(context)
 }
 
 func (op *retryStageTask) newDeployer(subscriptionId string) (deployment.Deployer, error) {
