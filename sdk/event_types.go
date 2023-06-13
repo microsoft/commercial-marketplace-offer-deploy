@@ -10,6 +10,7 @@ const (
 	EventTypeDeploymentDeleted        EventTypeName = "deploymentDeleted"
 	EventTypeDeploymentScheduled      EventTypeName = "deploymentScheduled"
 	EventTypeDeploymentRetryScheduled EventTypeName = "deploymentRetryScheduled"
+	EventTypeDeploymentPending        EventTypeName = "deploymentPending"
 	EventTypeDeploymentStarted        EventTypeName = "deploymentStarted"
 	EventTypeDeploymentRetryStarted   EventTypeName = "deploymentRetryScheduled"
 	EventTypeDeploymentCompleted      EventTypeName = "deploymentCompleted"
@@ -19,6 +20,7 @@ const (
 const (
 	EventTypeStageScheduled      EventTypeName = "stageScheduled"
 	EventTypeStageRetryScheduled EventTypeName = "stageRetryScheduled"
+	EventTypeStagePending        EventTypeName = "stagePending"
 	EventTypeStageStarted        EventTypeName = "stageStarted"
 	EventTypeStageRetryStarted   EventTypeName = "stageRetryStarted"
 	EventTypeStageCompleted      EventTypeName = "stageCompleted"
@@ -48,6 +50,7 @@ func GetEventTypes() []string {
 		EventTypeDeploymentDeleted.String(),
 		EventTypeDeploymentScheduled.String(),
 		EventTypeDeploymentRetryScheduled.String(),
+		EventTypeDeploymentPending.String(),
 		EventTypeDeploymentStarted.String(),
 		EventTypeDeploymentRetryStarted.String(),
 		EventTypeDeploymentCompleted.String(),
