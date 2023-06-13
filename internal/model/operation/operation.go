@@ -21,6 +21,18 @@ func (o *Operation) Context() context.Context {
 	return o.manager.ctx
 }
 
+func (o *Operation) Pending() error {
+	o.manager.log.Info("Marking operation as pending")
+
+	o.InvokedOperation.Pending()
+	err := o.manager.saveChanges(true)
+	if err != nil {
+		o.manager.log.Errorf("failed to save operation: %v", err)
+	}
+
+	return nil
+}
+
 func (o *Operation) Running() error {
 	o.manager.log.Info("Marking operation as running")
 

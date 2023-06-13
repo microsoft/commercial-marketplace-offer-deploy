@@ -57,6 +57,8 @@ func getEventType(o *model.InvokedOperation) string {
 
 	if o.IsScheduled() {
 		verb += "Scheduled"
+	} else if o.IsPending() {
+		verb += "Pending"
 	} else if o.IsRunning() {
 		verb += "Started"
 	} else if o.IsCompleted() {

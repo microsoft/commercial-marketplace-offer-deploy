@@ -98,6 +98,7 @@
               "enum": [
                 "none",
                 "scheduled",
+                "pending",
                 "running",
                 "success",
                 "failed",

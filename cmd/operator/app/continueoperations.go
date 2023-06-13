@@ -45,6 +45,6 @@ func newContinueOperationsTask(appConfig *config.AppConfig) tasks.Task {
 
 func getRunningOperationIds(db *gorm.DB) []uuid.UUID {
 	ids := []uuid.UUID{}
-	db.Model(&model.InvokedOperation{}).Where("status IN (?, ?)", sdk.StatusRunning, sdk.StatusScheduled).Select("id").Find(&ids)
+	db.Model(&model.InvokedOperation{}).Where("status IN (?, ?, ?)", sdk.StatusPending, sdk.StatusRunning, sdk.StatusScheduled).Select("id").Find(&ids)
 	return ids
 }

@@ -66,6 +66,10 @@ func (o *InvokedOperation) IsRunning() bool {
 	return o.Status == sdk.StatusRunning.String()
 }
 
+func (o *InvokedOperation) IsPending() bool {
+	return o.Status == sdk.StatusPending.String()
+}
+
 func (o *InvokedOperation) IsCompleted() bool {
 	return o.Completed
 }
@@ -80,6 +84,16 @@ func (o *InvokedOperation) CompletedAt() (*time.Time, error) {
 	}
 	completedAt := o.LatestResult().CompletedAt
 	return &completedAt, nil
+}
+
+// increment the number of attempts and set the status to running
+// if it's in a state where it can be run.
+// return: returns true if status changed to running
+func (o *InvokedOperation) Pending() {
+	if o.IsPending() || o.AttemptsExceeded() { //already pending, so do nothing
+		return
+	}
+	o.setStatus(sdk.StatusPending.String())
 }
 
 // increment the number of attempts and set the status to running

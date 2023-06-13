@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "4693589364875565319"
+      "templateHash": "3474082898736802922"
     }
   },
   "parameters": {
@@ -91,7 +91,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.17.1.54307",
-              "templateHash": "8231317605013061239"
+              "templateHash": "12608518181164035593"
             }
           },
           "parameters": {
@@ -101,7 +101,7 @@
             }
           },
           "variables": {
-            "dependsOnName": "[format('{0}{1}', 'storageAccounts-', substring(parameters('unique'), 0, 5))]"
+            "dependsOnName": "[format('{0}{1}', 'storedep0', substring(parameters('unique'), 0, 5))]"
           },
           "resources": [
             {
