@@ -64,7 +64,7 @@ func (op *deployStageTask) Run(executionContext operation.ExecutionContext) erro
 }
 
 func (op *deployStageTask) Continue(executionContext operation.ExecutionContext) error {
-	return nil
+	return op.Run(executionContext)
 }
 
 // watches the parent deploy operation for failure or completed state
