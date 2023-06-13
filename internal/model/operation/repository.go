@@ -20,7 +20,7 @@ type Configure func(i *model.InvokedOperation) error
 type RepositoryFactory func() (Repository, error)
 
 type OperationFuncProvider interface {
-	Get(operationType sdk.OperationType) (OperationFunc, error)
+	Get(operationType sdk.OperationType) (OperationTask, error)
 }
 
 // Operation factory
@@ -83,12 +83,12 @@ func (repo *repository) First(id uuid.UUID) (*Operation, error) {
 	}
 
 	if repo.provider != nil {
-		do, err := repo.provider.Get(sdk.OperationType(operation.Name))
+		task, err := repo.provider.Get(sdk.OperationType(operation.Name))
 
 		if err != nil {
 			return nil, err
 		}
-		operation.do = do
+		operation.task = task
 	}
 
 	return operation, nil
@@ -114,23 +114,12 @@ func NewRepositoryFactory(appConfig *config.AppConfig) RepositoryFactory {
 	return func() (Repository, error) {
 		db := data.NewDatabase(appConfig.GetDatabaseOptions()).Instance()
 
-		credential, err := azidentity.NewDefaultAzureCredential(nil)
+		scheduler, err := newScheduler(appConfig)
 		if err != nil {
 			return nil, err
 		}
 
-		sender, err := messaging.NewServiceBusMessageSender(credential, messaging.MessageSenderOptions{
-			SubscriptionId:          appConfig.Azure.SubscriptionId,
-			Location:                appConfig.Azure.Location,
-			ResourceGroupName:       appConfig.Azure.ResourceGroupName,
-			FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
-		})
-
-		if err != nil {
-			return nil, err
-		}
-
-		service, err := NewManager(db, sender, hook.Notify)
+		service, err := NewManager(db, scheduler, hook.Notify)
 		if err != nil {
 			return nil, err
 		}
@@ -141,4 +130,28 @@ func NewRepositoryFactory(appConfig *config.AppConfig) RepositoryFactory {
 		}
 		return repository, nil
 	}
+}
+
+func newScheduler(appConfig *config.AppConfig) (Scheduler, error) {
+	credential, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	sender, err := messaging.NewServiceBusMessageSender(credential, messaging.MessageSenderOptions{
+		SubscriptionId:          appConfig.Azure.SubscriptionId,
+		Location:                appConfig.Azure.Location,
+		ResourceGroupName:       appConfig.Azure.ResourceGroupName,
+		FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	scheduler, err := NewScheduler(sender)
+	if err != nil {
+		return nil, err
+	}
+	return scheduler, nil
 }

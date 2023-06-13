@@ -14,7 +14,7 @@ type OperationFunc func(context ExecutionContext) error
 type Operation struct {
 	model.InvokedOperation
 	manager *OperationManager
-	do      OperationFunc
+	task    OperationTask
 }
 
 func (o *Operation) Context() context.Context {
@@ -103,19 +103,32 @@ func (o *Operation) Deployment() *model.Deployment {
 	return o.manager.deployment()
 }
 
-// sets the operation's execution function
-func (o *Operation) Do(fn OperationFunc) {
-	o.do = fn
+// sets the operation's task function
+func (o *Operation) Task(task OperationTask) {
+	o.task = task
 }
 
 // executes the operation
 func (o *Operation) Execute() error {
+	fn := o.getFunc()
+	if fn == nil {
+		return fmt.Errorf("invalid runtime operation. the Operation has no task function to execute")
+	}
+
 	context := newExecutionContext(o)
-	executor := NewExecutor(o.do)
+	executor := NewExecutor(fn)
 
 	return executor.Execute(context)
 }
 
 func (o *Operation) saveChangesWithoutNotification() error {
 	return o.manager.saveChanges(false)
+}
+
+func (o *Operation) getFunc() OperationFunc {
+	if o.IsContinuation() {
+		o.manager.log.Info("Operation identified as continuation. executing task.Continue")
+		return o.task.Continue
+	}
+	return o.task.Run
 }

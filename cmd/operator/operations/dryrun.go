@@ -8,18 +8,18 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type dryRunOperation struct {
+type dryRunTask struct {
 	dryRun operation.DryRunFunc
 	log    *log.Entry
 }
 
-func (exe *dryRunOperation) Do(context operation.ExecutionContext) error {
-	azureDeployment, err := exe.getAzureDeployment(context.Operation())
+func (task *dryRunTask) Run(context operation.ExecutionContext) error {
+	azureDeployment, err := task.getAzureDeployment(context.Operation())
 	if err != nil {
 		return err
 	}
 
-	result, err := exe.dryRun(context.Context(), azureDeployment)
+	result, err := task.dryRun(context.Context(), azureDeployment)
 	if err != nil {
 		return err
 	}
@@ -28,7 +28,11 @@ func (exe *dryRunOperation) Do(context operation.ExecutionContext) error {
 	return err
 }
 
-func (exe *dryRunOperation) getAzureDeployment(operation *operation.Operation) (*deployment.AzureDeployment, error) {
+func (task *dryRunTask) Continue(context operation.ExecutionContext) error {
+	return task.Run(context)
+}
+
+func (task *dryRunTask) getAzureDeployment(operation *operation.Operation) (*deployment.AzureDeployment, error) {
 	d := operation.Deployment()
 
 	if d == nil {
@@ -43,19 +47,18 @@ func (exe *dryRunOperation) getAzureDeployment(operation *operation.Operation) (
 		Template:          d.Template,
 		Params:            operation.Parameters,
 	}
-	exe.log.Debugf("Azure Deployment: %+v", deployment)
+	task.log.Debugf("Azure Deployment: %+v", deployment)
 
 	return deployment, nil
 }
 
 //region factory
 
-func NewDryRunOperation() operation.OperationFunc {
-	dryRunOperation := &dryRunOperation{
+func NewDryRunTask() operation.OperationTask {
+	return &dryRunTask{
 		dryRun: deployment.DryRun,
 		log:    log.WithField("operation", "dryrun"),
 	}
-	return dryRunOperation.Do
 }
 
 //endregion factory

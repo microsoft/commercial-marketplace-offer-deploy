@@ -9,9 +9,9 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
 )
 
-type retryStageOperation struct{}
+type retryStageTask struct{}
 
-func (op *retryStageOperation) Do(context operation.ExecutionContext) error {
+func (op *retryStageTask) Run(context operation.ExecutionContext) error {
 	redeployment, err := op.mapToAzureRedeployment(context.Operation())
 	if err != nil {
 		return err
@@ -33,11 +33,15 @@ func (op *retryStageOperation) Do(context operation.ExecutionContext) error {
 	return nil
 }
 
-func (op *retryStageOperation) newDeployer(subscriptionId string) (deployment.Deployer, error) {
+func (task *retryStageTask) Continue(context operation.ExecutionContext) error {
+	return task.Run(context)
+}
+
+func (op *retryStageTask) newDeployer(subscriptionId string) (deployment.Deployer, error) {
 	return deployment.NewDeployer(deployment.DeploymentTypeARM, subscriptionId)
 }
 
-func (op *retryStageOperation) mapToAzureRedeployment(operation *operation.Operation) (deployment.AzureRedeployment, error) {
+func (op *retryStageTask) mapToAzureRedeployment(operation *operation.Operation) (deployment.AzureRedeployment, error) {
 	dep := operation.Deployment()
 
 	azureDeploymentName, ok := operation.AttributeValue(model.AttributeKeyAzureDeploymentName)
@@ -58,7 +62,7 @@ func (op *retryStageOperation) mapToAzureRedeployment(operation *operation.Opera
 	return azureRedeployment, nil
 }
 
-func NewRetryStageOperation() operation.OperationFunc {
-	operation := &retryStageOperation{}
-	return operation.Do
+func NewRetryStageTask() operation.OperationTask {
+	operation := &retryStageTask{}
+	return operation
 }

@@ -18,7 +18,6 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/data"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/diagnostics/audit"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/hook"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/messaging"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/utils"
@@ -194,18 +193,12 @@ func NewEventGridWebHookHandler(appConfig *config.AppConfig, credential azcore.T
 			errors = append(errors, err.Error())
 		}
 
-		sender, err := messaging.NewServiceBusMessageSender(credential, messaging.MessageSenderOptions{
-			SubscriptionId:          appConfig.Azure.SubscriptionId,
-			Location:                appConfig.Azure.Location,
-			ResourceGroupName:       appConfig.Azure.ResourceGroupName,
-			FullyQualifiedNamespace: appConfig.Azure.GetFullQualifiedNamespace(),
-		})
-
+		scheduler, err := operation.NewSchedulerFromConfig(appConfig)
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		service, err := operation.NewManager(db, sender, hook.Notify)
+		service, err := operation.NewManager(db, scheduler, hook.Notify)
 		if err != nil {
 			errors = append(errors, err.Error())
 		}

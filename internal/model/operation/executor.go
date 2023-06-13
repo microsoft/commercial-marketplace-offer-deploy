@@ -32,7 +32,7 @@ type Executor interface {
 
 // default implementation of an operation executor
 type executor struct {
-	operation OperationFunc
+	operationFunc OperationFunc
 }
 
 // default implementation for executing an operation
@@ -49,8 +49,8 @@ func (exe *executor) Execute(executionContext ExecutionContext) error {
 		return err
 	}
 
-	do := WithLogging(exe.operation)
-	err = do(executionContext)
+	fn := WithLogging(exe.operationFunc)
+	err = fn(executionContext)
 
 	if err != nil {
 		executionContext.Error(err)
@@ -79,7 +79,7 @@ func (exe *executor) Execute(executionContext ExecutionContext) error {
 //	remarks: if any of the operations return an error, the executor considers this a failure and will not execute
 func NewExecutor(operation OperationFunc) Executor {
 	return &executor{
-		operation: operation,
+		operationFunc: operation,
 	}
 }
 

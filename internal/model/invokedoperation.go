@@ -47,16 +47,11 @@ func (o *InvokedOperation) IsExecutable() ([]string, bool) {
 		reasons = append(reasons, fmt.Sprintf("operation already completed on [%s]", o.LatestResult().CompletedAt.String()))
 	}
 
-	isRunning := o.IsRunning()
-	if isRunning {
-		reasons = append(reasons, "operation is already running")
-	}
-
 	attemptsExceeded := o.AttemptsExceeded()
 	if attemptsExceeded {
 		reasons = append(reasons, fmt.Sprintf("operation has exceeded the maximum number of attempts (%d)", o.Retries))
 	}
-	return reasons, (!isCompleted && !isRunning && !attemptsExceeded)
+	return reasons, (!isCompleted && !attemptsExceeded)
 }
 
 func (o *InvokedOperation) IsRetry() bool {

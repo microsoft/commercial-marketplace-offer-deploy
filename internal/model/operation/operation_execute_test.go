@@ -14,13 +14,13 @@ import (
 )
 
 type executeTestFakes struct {
-	db              *gorm.DB
-	notifyFake      *fake.FakeNotifyFunc // underlying fake for notify
-	sender          *fake.FakeMessageSender
-	log             *log.Entry
-	manager         *OperationManager
-	repository      Repository
-	operationAction OperationFunc
+	db         *gorm.DB
+	notifyFake *fake.FakeNotifyFunc // underlying fake for notify
+	sender     *fake.FakeMessageSender
+	log        *log.Entry
+	manager    *OperationManager
+	repository Repository
+	runFunc    OperationFunc
 }
 
 type operationExecuteTest struct {
@@ -58,7 +58,9 @@ func (suite *operationExecuteTest) Test_Dispatch_Count_Matches_Attempts() {
 	suite.Assert().Equal(uint(0), operation.Attempts)
 
 	suite.actionReturnsError = true
-	operation.Do(suite.fakes.operationAction)
+	operation.Task(NewOperationTask(OperationTaskOptions{
+		Run: suite.fakes.runFunc,
+	}))
 
 	for !operation.AttemptsExceeded() {
 		operation.Execute()
@@ -73,7 +75,9 @@ func (suite *operationExecuteTest) Test_Notifications_For_Retries() {
 	suite.Assert().Equal(uint(0), operation.Attempts)
 
 	suite.actionReturnsError = true
-	operation.Do(suite.fakes.operationAction)
+	operation.Task(NewOperationTask(OperationTaskOptions{
+		Run: suite.fakes.runFunc,
+	}))
 
 	for !operation.AttemptsExceeded() {
 		operation.Execute()
@@ -97,7 +101,10 @@ func (suite *operationExecuteTest) newFakes() {
 
 	sender := fake.NewFakeMessageSender(suite.T())
 
-	manager, err := NewManager(db, sender, notifyFake.Notify)
+	scheduler, err := NewScheduler(sender)
+	suite.Require().NoError(err)
+
+	manager, err := NewManager(db, scheduler, notifyFake.Notify)
 	suite.Require().NoError(err)
 
 	repository, err := NewRepository(manager, nil)
@@ -111,7 +118,7 @@ func (suite *operationExecuteTest) newFakes() {
 		sender:     sender,
 		manager:    manager,
 		repository: repository,
-		operationAction: func(context ExecutionContext) error {
+		runFunc: func(context ExecutionContext) error {
 			suite.T().Log("operationAction called")
 			if suite.actionReturnsError {
 				return &RetriableError{Err: errors.New("fake error"), RetryAfter: 0}

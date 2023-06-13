@@ -1,54 +1,76 @@
 package operations
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
-	"github.com/labstack/gommon/log"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/config"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/model/template"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/internal/structure"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/deployment"
+	log "github.com/sirupsen/logrus"
 )
 
-type deployOperation struct {
-	retryOperation      operation.OperationFunc
+type deployTask struct {
+	retryTask           operation.OperationTask
 	operationRepository operation.Repository
 	deployStageFactory  *operation.DeployStageOperationFactory
 }
 
 // the operation to execute
-func (op *deployOperation) Do(context operation.ExecutionContext) error {
-	operation, err := op.getOperation(context)
+func (task *deployTask) Run(context operation.ExecutionContext) error {
+	operation, err := task.getRun(context)
 	if err != nil {
 		return err
 	}
 	return operation(context)
 }
 
-func (op *deployOperation) getOperation(context operation.ExecutionContext) (operation.OperationFunc, error) {
-	do := op.do
-
-	if context.Operation().IsRetry() { // this is a retry if so
-		do = op.retryOperation
-	}
-	return do, nil
-}
-
-func (op *deployOperation) do(context operation.ExecutionContext) error {
-	deployStageOperations, err := op.deployStageFactory.Create(context.Operation())
+func (task *deployTask) Continue(context operation.ExecutionContext) error {
+	token, err := task.getResumeToken(context)
 	if err != nil {
 		return err
 	}
 
-	azureDeployment := op.mapAzureDeployment(context.Operation(), deployStageOperations)
+	deployer, err := task.newDeployer(token.SubscriptionId)
+	if err != nil {
+		return err
+	}
+
+	result, err := deployer.Wait(context.Context(), token)
+	context.Value(result)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (task *deployTask) getRun(context operation.ExecutionContext) (operation.OperationFunc, error) {
+	run := task.run
+	if context.Operation().IsRetry() { // this is a retry if so
+		run = task.retryTask.Run
+	}
+	return run, nil
+}
+
+func (task *deployTask) run(context operation.ExecutionContext) error {
+	deployStageOperations, err := task.deployStageFactory.Create(context.Operation())
+	if err != nil {
+		return err
+	}
+
+	azureDeployment := task.mapAzureDeployment(context.Operation(), deployStageOperations)
 
 	// save the built arm template to the operation's attributes so we have a snapshot of what was submitted
 	context.Attribute(model.AttributeKeyArmTemplate, azureDeployment.Template)
 
-	deployer, err := op.newDeployer(azureDeployment.SubscriptionId)
+	deployer, err := task.newDeployer(azureDeployment.SubscriptionId)
 	if err != nil {
 		return err
 	}
@@ -78,11 +100,30 @@ func (op *deployOperation) do(context operation.ExecutionContext) error {
 	return nil
 }
 
-func (op *deployOperation) newDeployer(subscriptionId string) (deployment.Deployer, error) {
+func (task *deployTask) getResumeToken(context operation.ExecutionContext) (*deployment.ResumeToken, error) {
+	attribute, ok := context.Operation().AttributeValue(model.AttributeKeyResumeToken)
+	if !ok {
+		return nil, errors.New("unable to continue deployment operation. missing resume token")
+	}
+
+	tokenMap, ok := attribute.(map[string]any)
+	if !ok {
+		return nil, errors.New("unable to continue deployment operation. resume token is in an invalid format")
+	}
+
+	token := &deployment.ResumeToken{}
+	err := structure.Decode(tokenMap, &token)
+	if err != nil {
+		return nil, err
+	}
+	return token, nil
+}
+
+func (task *deployTask) newDeployer(subscriptionId string) (deployment.Deployer, error) {
 	return deployment.NewDeployer(deployment.DeploymentTypeARM, subscriptionId)
 }
 
-func (op *deployOperation) mapAzureDeployment(parent *operation.Operation, stages map[uuid.UUID]*operation.Operation) deployment.AzureDeployment {
+func (task *deployTask) mapAzureDeployment(parent *operation.Operation, stages map[uuid.UUID]*operation.Operation) deployment.AzureDeployment {
 	d := parent.Deployment()
 
 	template := template.NewDeploymentTemplate(d.Template)
@@ -119,7 +160,7 @@ func (op *deployOperation) mapAzureDeployment(parent *operation.Operation, stage
 	return azureDeployment
 }
 
-func NewDeployOperation(appConfig *config.AppConfig) operation.OperationFunc {
+func NewDeployTask(appConfig *config.AppConfig) operation.OperationTask {
 	repositoryFactory := operation.NewRepositoryFactory(appConfig)
 	repository, err := repositoryFactory()
 	if err != nil {
@@ -129,10 +170,10 @@ func NewDeployOperation(appConfig *config.AppConfig) operation.OperationFunc {
 
 	deployStageFactory := operation.NewDeployStageOperationFactory(repository)
 
-	operation := &deployOperation{
-		retryOperation:      NewRetryOperation(),
+	task := &deployTask{
+		retryTask:           NewRetryTask(),
 		operationRepository: repository,
 		deployStageFactory:  deployStageFactory,
 	}
-	return operation.Do
+	return task
 }
