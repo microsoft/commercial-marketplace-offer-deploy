@@ -10,7 +10,7 @@ module storageAcounts './modules/storageAccounts.bicep' = {
   }
 }
 
-module dependsOn './modules/dependsOn.bicep' = {
+module dependsOn './modules/deploymentScript.bicep' = {
   name: 'dependsOnStorageAccounts'
   dependsOn: [
     storageAcounts

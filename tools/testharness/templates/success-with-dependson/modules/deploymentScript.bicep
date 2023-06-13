@@ -11,12 +11,8 @@ resource runBashWithOutputs 'Microsoft.Resources/deploymentScripts@2020-10-01' =
     arguments: '\'foo\' \'bar\''
     environmentVariables: [
       {
-        name: 'UserName'
-        value: 'jdole'
-      }
-      {
-        name: 'Password'
-        secureValue: 'jDolePassword'
+        name: 'TestEnvVar'
+        value: 'TestVal'
       }
     ]
     scriptContent: 'sleep 300; echo "Error: Timeout reached"; exit 1'
