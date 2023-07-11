@@ -16,9 +16,8 @@ This marketplace offer deployment manager (MODM) simplifies the deployment of co
 
 ## Feature Overview
 
-- Simplified deployment semantics
-- Includes deployment "Stages" that are tracked separate
-- Automatical retries of a Deployment and/or Stage
+- Simplified deployment semantics including deployment "Stages" for child Azure deployments
+- Automatic retries
 - Dry Run operation support
 - Async operations built-in
 - Web Hook registration to receive only relevant deployment events
@@ -69,7 +68,6 @@ Any use of third-party trademarks or logos are subject to those third-party's po
 
 ## Credits
 
-- [Ashwin Senthilkumar](https://github.com/ashsenth) (Contributor)
-- [Bob Jacobs](https://github.com/bobjac) (Author)
-- [Kevin M. Gates](https://github.com/kevinmgates) (Contributor)
 - [Kevin Hillinger](https://github.com/kevinhillinger) (Author)
+- [Bob Jacobs](https://github.com/bobjac) (Author)
+- [Contributors](https://github.com/microsoft/commercial-marketplace-offer-deploy/graphs/contributors)
