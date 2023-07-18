@@ -30,6 +30,11 @@ func (deployer *TerraformDeployer) Begin(ctx context.Context, terraformDeploymen
 
 	// workingDir := "/path/to/working/dir"
 	workingDir := terraformDeployment.WorkingDirectory
+
+	// save the template to the working directory
+	// save the parameters file to the working directory
+	// save the state file to the working directory
+
 	tf, err := tfexec.NewTerraform(workingDir, execPath)
 	if err != nil {
 		log.Fatalf("error running NewTerraform: %s", err)
