@@ -1,3 +1,6 @@
+﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
 namespace Operator;
 
 public class Worker : BackgroundService

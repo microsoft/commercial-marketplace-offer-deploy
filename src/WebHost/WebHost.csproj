@@ -13,11 +13,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Web' " />
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="8.0.0-preview.5.23302.2">
       <!-- The SPA Proxy is only used at development time -->
       <Publish>false</Publish>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0-preview.7.23375.6" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,6 +27,10 @@
     <Content Remove="$(SpaRoot)**" />
     <None Remove="$(SpaRoot)**" />
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Operator\Operator.csproj" />
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
