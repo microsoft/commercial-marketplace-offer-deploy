@@ -22,7 +22,6 @@
   },
   "include": [
     "src", 
-    "aspnetcore-https.ts",
-    "aspnetcore-react.ts"
+    "aspnetcore-https.ts"
   ]
 }
