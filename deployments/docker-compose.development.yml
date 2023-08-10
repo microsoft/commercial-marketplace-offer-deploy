@@ -4,8 +4,6 @@ services:
     ports:
       - 80:80
       - 443:443
-    networks:
-      - bridge
     volumes:
       - ../deployments/caddy/Caddyfile:/etc/caddy/Caddyfile
     restart: unless-stopped
@@ -15,22 +13,11 @@ services:
       - MODM_LOCAL_HOSTNAME=modm
       - MODM_LOCAL_PORT=8080
   modm:
-    env_file: ../bin/.env
-    image: gpsuscodewith/modmapi:latest
+    image: modmdev.azurecr.io/modm:latest
     ports:
       - 8080:8080
-    environment:
-      - GO_ENV=development
-    networks:
-      - bridge
-  modmoperator:
-    env_file: ../bin/.env
-    image: gpsuscodewith/modmoperator:latest
-    environment:
-      - GO_ENV=development
-    networks:
-      - bridge
-
-networks:
-  web:
-    external: true
+  jenkins:
+    image: modmdev.azurecr.io/jenkins:latest
+    ports:
+      - 8081:8080
+      - 50000:50000
