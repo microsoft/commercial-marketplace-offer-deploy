@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  webhost:
+    image: ${DOCKER_REGISTRY-}webhost
+    build:
+      context: .
+      dockerfile: WebHost/Dockerfile

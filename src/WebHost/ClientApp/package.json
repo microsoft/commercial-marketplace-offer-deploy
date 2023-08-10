@@ -7,7 +7,7 @@
   "scripts": {
     "prestart": "node --loader ts-node/esm ./aspnetcore-https.ts",
     "start": "vite",
-    "build": "vite build --mode development",
+    "build": "vite build",
     "test": "vite test",
     "serve": "vite preview"
   },

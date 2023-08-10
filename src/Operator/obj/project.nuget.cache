@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "cxHJNLjeHgH4jNbakT7Crh4LzsD4Z0jDRebGHh8GXzId9cpWF0VjEEnnyhAJXxcqHj7AD+MZL2c0aJqL6AetOA==",
+  "dgSpecHash": "lJ3q5uT1rLHu8oEyisn5begMNg3AqcnrIu1503TWiJLLg5nR1FaJ3L7+IVIB93Sd7uQMBzB8Xne2vRbBe8FHLg==",
   "success": true,
   "projectFilePath": "/Users/kehilli/Workspace/github.com/microsoft/commercial-marketplace-offer-deploy/src/Operator/Operator.csproj",
   "expectedPackageFiles": [
