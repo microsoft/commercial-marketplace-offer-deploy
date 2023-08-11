@@ -23,4 +23,5 @@ sudo apt install git -y
 git clone --depth=1 --branch develop https://github.com/microsoft/commercial-marketplace-offer-deploy.git
 cd commercial-marketplace-offer-deploy
 
-sudo docker compose -f ./deployments/docker-compose.development.yml -p modm up -e SITE_ADDRESS=$SITE_ADDRESS 
+echo SITE_ADDRESS=$SITE_ADDRESS > ./deployments/.env
+sudo docker compose -f ./deployments/docker-compose.development.yml -p modm up
