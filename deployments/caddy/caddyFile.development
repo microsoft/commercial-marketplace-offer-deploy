@@ -7,8 +7,6 @@
 }
 
 {$SITE_ADDRESS} {
-	tls internal
-
 	handle_path /* {
 			reverse_proxy http://modm:5000
 	}
