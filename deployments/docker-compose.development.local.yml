@@ -5,7 +5,7 @@ services:
       - 80:80
       - 443:443
     volumes:
-      - ../deployments/caddy/Caddyfile.development:/etc/caddy/Caddyfile
+      - ../deployments/caddy/Caddyfile.development.local:/etc/caddy/Caddyfile
     restart: unless-stopped
     environment:
       - SITE_ADDRESS=localhost:443

@@ -12,20 +12,22 @@ export VM_DNS_NAME=modmvm02dev
 export VM_FQDN=$VM_DNS_NAME.eastus.cloudapp.azure.com
 
 az vm create \
-  --resource-group $RESOURCE_GROUP_NAME \
-  --name $VM_NAME \
-  --image $VM_IMAGE \
-  --assign-identity [system] \
-  --vnet-name $VNET_NAME \ 
-  --public-ip-address-dns-name $VM_DNS_NAME \
-  --admin-username $ADMIN_USERNAME \
-  --generate-ssh-keys \
-  --public-ip-sku Standard \
-  --size Standard_D2s_v3
+   --resource-group $RESOURCE_GROUP_NAME \
+   --location $LOCATION \
+   --name $VM_NAME \
+   --image $VM_IMAGE \
+   --public-ip-sku Standard \
+   --size Standard_D2s_v3 \
+   --vnet-name $VNET_NAME \
+   --subnet default \
+   --public-ip-address-dns-name $VM_DNS_NAME \
+   --admin-username $ADMIN_USERNAME \
+   --generate-ssh-keys
 
 
 export IP_ADDRESS=$(az vm show --show-details --resource-group $RESOURCE_GROUP_NAME --name $VM_NAME --query publicIps --output tsv)
 az vm open-port --port 443 --resource-group $RESOURCE_GROUP_NAME --name $VM_NAME
+
 
 
 az vm run-command invoke \
