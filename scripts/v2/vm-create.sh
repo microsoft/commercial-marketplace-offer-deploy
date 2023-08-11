@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# creates a virtual machine in azure
 
 export RESOURCE_GROUP_NAME=modm-dev
 export VNET_NAME=modm-vnet-dev
