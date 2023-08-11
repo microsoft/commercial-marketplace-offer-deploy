@@ -6,6 +6,10 @@
 	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
 }
 
-{$MODM_SITE_URL} {
-	reverse_proxy http://{$MODM_LOCAL_HOSTNAME}:{$MODM_LOCAL_PORT}
+{$SITE_ADDRESS} {
+	tls internal
+
+	handle_path /* {
+			reverse_proxy http://modm:5000
+	}
 }
