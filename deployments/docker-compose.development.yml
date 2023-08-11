@@ -8,7 +8,7 @@ services:
       - ../deployments/caddy/Caddyfile.development:/etc/caddy/Caddyfile
     restart: unless-stopped
     environment:
-      - SITE_ADDRESS=localhost:443
+      - SITE_ADDRESS=${SITE_ADDRESS}
       - ACME_ACCOUNT_EMAIL=nowhere@nowhere.com
   modm:
     image: modmdev.azurecr.io/modm:latest
