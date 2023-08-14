@@ -3,7 +3,7 @@
 
 # Docker engine
 sudo apt-get update
-sudo apt-get install ca-certificates curl gnupg -y
+sudo apt-get install ca-certificates curl gnupg lsof -y
 
 sudo install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
