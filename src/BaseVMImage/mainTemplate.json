@@ -149,7 +149,7 @@
                         "deleteOption": "[parameters('osDiskDeleteOption')]"
                     },
                     "imageReference": {
-                        "id": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/modmImage/providers/Microsoft.Compute/images/bobjacnginx3"
+                        "id": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/modmvm/providers/Microsoft.Compute/galleries/bobjacmodm2/images/modm/versions/0.0.1"
                     },
                     "copy": [
                         {

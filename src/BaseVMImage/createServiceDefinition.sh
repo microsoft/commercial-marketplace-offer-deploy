@@ -21,28 +21,30 @@ else
     echo "Storage account $STORAGE_ACC_NAME does not exist in resource group $STORAGE_ACC_RESOURCE_GROUP."
     echo "Creating storage account $STORAGE_ACC_NAME in resource group $STORAGE_ACC_RESOURCE_GROUP."
     az storage account create \
-        --name $STORAGE_ACC_NAME  \
-        --resource-group $STORAGE_ACC_RESOURCE_GROUP \
+        --name "$STORAGE_ACC_NAME"  \
+        --resource-group "$STORAGE_ACC_RESOURCE_GROUP" \
         --location eastus2  \
         --sku Standard_LRS \
-        --kind StorageV2
+        --kind StorageV2 \
+        --allow-blob-public-access true
 fi
 
+echo "Creating storage account container $STORAGE_CONTAINER_NAME in storage account $STORAGE_ACC_NAME."
 az storage container create \
-    --account-name $STORAGE_ACC_NAME \
-    --name $STORAGE_CONTAINER_NAME \
+    --account-name "$STORAGE_ACC_NAME" \
+    --name "$STORAGE_CONTAINER_NAME" \
     --auth-mode login \
     --public-access blob
 
 az storage blob upload \
-    --account-name $STORAGE_ACC_NAME \
-    --container-name $STORAGE_CONTAINER_NAME \
+    --account-name "$STORAGE_ACC_NAME" \
+    --container-name "$STORAGE_CONTAINER_NAME" \
     --name "app.zip" \
     --file "./app.zip"
 
-blob=$(az storage blob url --account-name $STORAGE_ACC_NAME --container-name $STORAGE_CONTAINER_NAME --name app.zip --output tsv)
+blob=$(az storage blob url --account-name "$STORAGE_ACC_NAME" --container-name "$STORAGE_CONTAINER_NAME" --name app.zip --output tsv)
 groupid=$(az ad group show --group bobjacmarketplace --query id --output tsv)
 roleid=$(az role definition list --name Owner --query [].name --output tsv)
 
-az group create --name $MA_RESOURCE_GROUP --location eastus2
-az managedapp definition create --name "$MA_DEFINITION_NAME" --location "eastus2" --resource-group $MA_RESOURCE_GROUP --lock-level ReadOnly --display-name "$MA_DEFINITION_NAME" --description "$MA_DEFINITION_NAME" --authorizations "$groupid:$roleid" --package-file-uri "$blob"
+az group create --name "$MA_RESOURCE_GROUP" --location eastus2
+az managedapp definition create --name "$MA_DEFINITION_NAME" --location "eastus2" --resource-group "$MA_RESOURCE_GROUP" --lock-level ReadOnly --display-name "$MA_DEFINITION_NAME" --description "$MA_DEFINITION_NAME" --authorizations "$groupid:$roleid" --package-file-uri "$blob"
