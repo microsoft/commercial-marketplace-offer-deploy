@@ -101,7 +101,8 @@
             "nicDeleteOption": "Delete",
             "adminUsername": "[steps('vmImage').tbAdminUser]",
             "adminPassword": "[steps('vmImage').pbAdminPassword]",
-            "virtualMachine1Zone": "1"
+            "virtualMachine1Zone": "1",
+            "imageReference": "<IMAGE_REFERENCE>"
         }
     }
 }
