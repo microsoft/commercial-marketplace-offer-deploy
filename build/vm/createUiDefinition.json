@@ -71,7 +71,6 @@
             "pipDeleteOption": "Delete",
             "virtualMachineName": "[steps('vmImage').tbVmImageName]",
             "virtualMachineComputerName1": "[steps('vmImage').tbVmImageName]",
-            "virtualMachineRG": "modmvm",
             "osDiskType": "Premium_LRS",
             "osDiskDeleteOption": "Delete",
             "dataDisks1": [

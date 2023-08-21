@@ -32,9 +32,6 @@
         "virtualMachineComputerName1": {
             "type": "string"
         },
-        "virtualMachineRG": {
-            "type": "string"
-        },
         "osDiskType": {
             "type": "string"
         },

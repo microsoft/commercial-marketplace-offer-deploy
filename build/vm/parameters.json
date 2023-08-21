@@ -32,9 +32,6 @@
         "virtualMachineComputerName1": {
             "value": "bobjacnginx1"
         },
-        "virtualMachineRG": {
-            "value": "modmvm"
-        },
         "osDiskType": {
             "value": "Premium_LRS"
         },
