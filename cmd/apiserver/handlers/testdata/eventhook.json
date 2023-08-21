@@ -1,5 +1,0 @@
-{
-    "name": "test-hook",
-    "apiKey": "12345",
-    "callback": "http://testcallback"
-}
