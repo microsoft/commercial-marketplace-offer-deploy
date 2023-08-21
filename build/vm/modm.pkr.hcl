@@ -51,7 +51,11 @@ build {
 
   provisioner "shell" {
     execute_command = "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'"
-    inline          = ["apt-get update", "apt-get upgrade -y", "apt-get -y install nginx", "git clone https://github.com/microsoft/commercial-marketplace-offer-deploy.git /usr/local/source", "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"]
+    inline          = [
+      "git clone https://github.com/microsoft/commercial-marketplace-offer-deploy.git /usr/local/source", 
+      "/usr/local/source/build/scripts/setup.sh"
+      "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync",
+    ]
     inline_shebang  = "/bin/sh -x"
   }
 }
