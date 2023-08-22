@@ -8,4 +8,5 @@ sudo docker build . -t jenkins -f ./build/container/Dockerfile.jenkins
 
 # next, setup caddy
 SITE_ADDRESS=""
+cd /usr/local/source/build/vm
 sudo docker compose -f ./docker-compose.yml -p modm up
