@@ -61,6 +61,13 @@
         },
         "imageReference": {
             "type": "string"
+        },
+        "_artifactsLocation": {
+            "type": "string",
+            "metadata": {
+              "description": "The base URI where artifacts required by this template are located including a trailing '/'"
+            },
+            "defaultValue": "[deployment().properties.templateLink.uri]"
         }
     },
     "variables": {
@@ -215,7 +222,7 @@
                         "typeHandlerVersion": "2.0",
                         "autoUpgradeMinorVersion": true,
                         "settings": {
-                            "script": "[concat('#!/bin/bash\n', 'sh ', variables('scriptDirectory'), '/', variables('scriptName'))]"
+                            "script": "[concat('#!/bin/bash\n', 'sh ', variables('scriptDirectory'), '/', variables('scriptName'), ' ', parameters('_artifactsLocation'))]"
                         }
                     }
                 }
