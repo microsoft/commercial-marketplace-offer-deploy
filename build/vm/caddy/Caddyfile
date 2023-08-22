@@ -7,7 +7,7 @@
 }
 
 {$SITE_ADDRESS} {
-	handle_path /* {
+	handle_path / {
 			reverse_proxy http://modm:5000
 	}
 }
