@@ -15,7 +15,7 @@ SUBSCRIPTION_ID="$5"
 TENANT_ID="$6"
 
 # Run the Packer command
-packer init ./modm.pkr.hcl -var-files ../../obj/values.pkrvars.hcl
+packer init ./modm.pkr.hcl
 packer build ./modm.pkr.hcl
 
 # Create role assignment
