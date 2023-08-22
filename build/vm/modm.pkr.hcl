@@ -53,8 +53,8 @@ build {
     execute_command = "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'"
     inline          = [
       "git clone --branch develop https://github.com/microsoft/commercial-marketplace-offer-deploy.git /usr/local/source", 
-      "sudo /usr/local/source/build/vm/scripts/setup.sh",
-      "sudo ch/usr/local/source/build/vm/scripts/build.sh",
+      "/usr/local/source/build/vm/scripts/setup.sh",
+      "/usr/local/source/build/vm/scripts/build.sh",
       "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync",
     ]
     inline_shebang  = "/bin/sh -x"
