@@ -65,7 +65,6 @@
     },
     "variables": {
         "vnetId": "[parameters('virtualNetworkId')]",
-        "vnetName": "[last(split(variables('vnetId'), '/'))]",
         "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]"
     },
     "resources": [
@@ -103,7 +102,11 @@
             "apiVersion": "2020-08-01",
             "location": "[parameters('location')]",
             "properties": {
-                "publicIpAllocationMethod": "[parameters('publicIpAddressType')]"
+                "publicIpAllocationMethod": "[parameters('publicIpAddressType')]",
+                "dnsSettings": {
+                    "domainNameLabel": "[parameters('virtualMachineName')]",
+                    "domainNameLabelScope": "NoReuse"
+                }
             },
             "sku": {
                 "name": "[parameters('publicIpAddressSku')]"
