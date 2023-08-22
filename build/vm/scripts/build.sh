@@ -3,8 +3,8 @@
 # build 
 cd /usr/local/source
 
-docker build ./src -t modm -f ./build/container/Dockerfile.modm  
-docker build . -t jenkins -f ./build/container/Dockerfile.jenkins
+sudo docker build ./src -t modm -f ./build/container/Dockerfile.modm  
+sudo docker build . -t jenkins -f ./build/container/Dockerfile.jenkins
 
 # next, setup caddy
 SITE_ADDRESS=""
