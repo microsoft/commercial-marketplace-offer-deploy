@@ -5,20 +5,20 @@ services:
       - 80:80
       - 443:443
     volumes:
-      - ../deployments/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - /usr/local/source/caddy/Caddyfile:/etc/caddy/Caddyfile
     restart: unless-stopped
     environment:
       - SITE_ADDRESS=${SITE_ADDRESS}
       - ACME_ACCOUNT_EMAIL=nowhere@nowhere.com
   modm:
-    image: modmdev.azurecr.io/modm:latest
+    image: modm:latest
     ports:
       - 5000:5000
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5000
   jenkins:
-    image: modmdev.azurecr.io/jenkins:latest
+    image: jenkins:latest
     ports:
       - 8080:8080
     environment:
