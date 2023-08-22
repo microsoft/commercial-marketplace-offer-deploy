@@ -8,8 +8,10 @@ services:
       - /usr/local/source/build/vm/caddy/Caddyfile:/etc/caddy/Caddyfile
     restart: unless-stopped
     environment:
-      - SITE_ADDRESS="${VM_FQDN}"
+      - SITE_ADDRESS=${VM_FQDN}
       - ACME_ACCOUNT_EMAIL=nowhere@nowhere.com
+    env_file:
+      - /usr/local/source/build/vm/caddy/.env
   modm:
     image: modm:latest
     ports:
