@@ -9,12 +9,12 @@ fi
 # make sure we have a vars file before proceeding
 env_pkrvars_file=../../obj/.env.pkrvars
 
-if [ ! -f $env_pkrvars_file ]
+if [ ! -f $env_pkrvars_file ];
 then
     echo "./obj/.env.pkrvars file is required."
     exit 1
 else
-    echo "Packer variables env var file present.
+    echo "Packer variables env var file present."
 fi
 
 # export packer env variables so they get picked up
