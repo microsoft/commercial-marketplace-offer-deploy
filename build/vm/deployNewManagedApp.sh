@@ -7,7 +7,7 @@ if [ $# -ne 1 ]; then
 fi
 
 MANAGED_APP_VERSION="$1"
-export PKR_VAR_managed_image_name=modm-nginx-${MANAGED_APP_VERSION}
+export PKR_VAR_managed_image_name=modm-mi-${MANAGED_APP_VERSION}
 
 MODM_VM_CLIENT_ID=$PKR_VAR_client_id
 MODM_VM_CLIENT_SECRET=$PKR_VAR_client_secret
