@@ -65,7 +65,9 @@
     },
     "variables": {
         "vnetId": "[parameters('virtualNetworkId')]",
-        "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]"
+        "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
+        "scriptDirectory": "/usr/local/source/build/vm",
+        "scriptName": "scriptExtension.sh"
     },
     "resources": [
         {
@@ -199,6 +201,25 @@
                     }
                 }
             },
+            "resources": [
+                {
+                    "type": "extensions",
+                    "name": "customScript",
+                    "apiVersion": "2020-09-01",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName')]"
+                    ],
+                    "properties": {
+                        "publisher": "Microsoft.Azure.Extensions",
+                        "type": "CustomScript",
+                        "typeHandlerVersion": "2.0",
+                        "autoUpgradeMinorVersion": true,
+                        "settings": {
+                            "script": "[concat('#!/bin/bash\n', 'sh ', variables('scriptDirectory'), '/', variables('scriptName'))]"
+                        }
+                    }
+                }
+            ],
             "zones": [
                 "[parameters('virtualMachine1Zone')]"
             ]
