@@ -21,8 +21,8 @@ variable "managed_image_name" {
 packer {
   required_plugins {
     azure = {
+      version = ">= 2.0.0"
       source  = "github.com/hashicorp/azure"
-      version = "~> 1"
     }
   }
 }
