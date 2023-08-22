@@ -8,6 +8,6 @@
 
 {$SITE_ADDRESS} {
 	handle_path / {
-			reverse_proxy http://modm:5000
+		reverse_proxy http://modm:5000
 	}
 }
