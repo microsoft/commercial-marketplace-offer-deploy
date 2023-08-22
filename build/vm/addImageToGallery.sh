@@ -33,6 +33,7 @@ else
     echo "The image definition does not exist."
 
     az sig image-definition create \
+    --location "$REGION" \
     --resource-group "$GALLERY_RESOURCE_GROUP" \
     --gallery-name "$GALLERY_NAME" \
     --gallery-image-definition "$GALLERY_IMAGE_DEFINITION" \
@@ -49,11 +50,12 @@ else
     echo "The image version does not exist."
 
     az sig image-version create \
-   --resource-group "$GALLERY_RESOURCE_GROUP" \
-   --gallery-name "$GALLERY_NAME" \
-   --gallery-image-definition "$GALLERY_IMAGE_DEFINITION" \
-   --gallery-image-version "$GALLERY_IMAGE_VERSION" \
-   --managed-image "/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$IMAGE_RESOURCE_GROUP/providers/Microsoft.Compute/images/$IMAGE"
+    --location "$REGION" \
+    --resource-group "$GALLERY_RESOURCE_GROUP" \
+    --gallery-name "$GALLERY_NAME" \
+    --gallery-image-definition "$GALLERY_IMAGE_DEFINITION" \
+    --gallery-image-version "$GALLERY_IMAGE_VERSION" \
+    --managed-image "/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$IMAGE_RESOURCE_GROUP/providers/Microsoft.Compute/images/$IMAGE"
 fi
 
 

@@ -14,11 +14,8 @@ MANAGED_IMAGE_RG_NAME="$4"
 SUBSCRIPTION_ID="$5"
 TENANT_ID="$6"
 
-# export packer env variables so they get picked up
-export $(grep -v '^#' ../../bin/.env.packer | xargs)
-
 # Run the Packer command
-packer init ./modm.pkr.hcl
+packer init ./modm.pkr.hcl -var-files ../../obj/values.pkrvars.hcl
 packer build ./modm.pkr.hcl
 
 # Create role assignment
