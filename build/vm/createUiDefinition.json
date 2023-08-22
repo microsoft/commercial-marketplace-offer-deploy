@@ -62,10 +62,10 @@
         ],
         "outputs": {
             "location": "[location()]",
-            "networkInterfaceName1": "bobjacnginx1414_z1",
+            "networkInterfaceName1": "[concat(steps('vmImage').tbVmImageName, '_z1')]",
             "subnetName": "default",
             "virtualNetworkId": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/modmvm/providers/Microsoft.Network/virtualNetworks/bobjacmodm-vnet",
-            "publicIpAddressName1": "bobjacnginx1-ip",
+            "publicIpAddressName1": "[concat(steps('vmImage').tbVmImageName, '-ip')]",
             "publicIpAddressType": "Static",
             "publicIpAddressSku": "Standard",
             "pipDeleteOption": "Delete",
@@ -81,12 +81,12 @@
                     "caching": "ReadOnly",
                     "writeAcceleratorEnabled": false,
                     "diskSizeGB": 1024,
-                    "name": "bobjacnginx1_DataDisk_0"
+                    "name": "[concat(steps('vmImage').tbVmImageName, '_DataDisk_0')]"
                 }
             ],
             "dataDiskResources1": [
                 {
-                    "name": "bobjacnginx1_DataDisk_0",
+                    "name": "[concat(steps('vmImage').tbVmImageName, '_DataDisk_0')]",
                     "sku": "Premium_LRS",
                     "properties": {
                         "diskSizeGB": 1024,

@@ -114,8 +114,7 @@
             "properties": {
                 "publicIpAllocationMethod": "[parameters('publicIpAddressType')]",
                 "dnsSettings": {
-                    "domainNameLabel": "[parameters('virtualMachineName')]",
-                    "domainNameLabelScope": "NoReuse"
+                    "domainNameLabel": "[parameters('virtualMachineName')]"
                 }
             },
             "sku": {
@@ -213,7 +212,8 @@
                 {
                     "type": "extensions",
                     "name": "customScript",
-                    "apiVersion": "2020-09-01",
+                    "location": "[resourceGroup().location]",
+                    "apiVersion": "2019-03-01",
                     "dependsOn": [
                         "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]"
                     ],
@@ -223,7 +223,7 @@
                         "typeHandlerVersion": "2.0",
                         "autoUpgradeMinorVersion": true,
                         "settings": {
-                            "script": "[concat('#!/bin/bash\n', 'sh ', variables('scriptDirectory'), '/', variables('scriptName'), ' ', parameters('_artifactsLocation'), ' ', variables('vmFqdn'))]"
+                            "script": "[base64(concat('#!/bin/bash\n', 'sh ', variables('scriptDirectory'), '/', variables('scriptName'), ' ', parameters('_artifactsLocation'), ' ', variables('vmFqdn')))]"
                         }
                     }
                 }
