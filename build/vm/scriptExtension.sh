@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [ $# -ne 1 ]; then
-  echo "Usage: $0 <artifacts location>"
+if [ $# -ne 2 ]; then
+  echo "Usage: $0 <artifacts location> <fully qualified domain name>"
   exit 1
 fi
 
