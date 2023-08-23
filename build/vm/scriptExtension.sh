@@ -18,5 +18,5 @@ echo "FQDN = $VM_FQDN"
 echo SITE_ADDRESS=$VM_FQDN | sudo tee /usr/local/source/build/vm/caddy/.env
 echo ACME_ACCOUNT_EMAIL=nowhere@nowhere.com  | sudo tee --append /usr/local/source/build/vm/caddy/.env
 
-# sudo docker compose -f /usr/local/source/build/vm/docker-compose.yml -p modm up -d --force-recreate
+sudo docker compose -f /usr/local/source/build/vm/docker-compose.yml -p modm up -d --force-recreate
 # sudo docker compose -f /usr/local/source/build/vm/docker-compose.yml -p modm down
