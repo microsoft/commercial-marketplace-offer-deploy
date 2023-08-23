@@ -10,4 +10,12 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0-preview.7.23375.6" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Artifacts\" />
+    <None Remove="Engine\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Artifacts\" />
+    <Folder Include="Engine\" />
+  </ItemGroup>
 </Project>

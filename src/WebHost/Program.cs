@@ -1,11 +1,24 @@
+using FluentValidation;
 using Operator;
+using Operator.Artifacts;
+using Operator.Engine;
+using WebHost.Deployments;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHttpClient();
+
+builder.Services.AddSingleton<IDeploymentEngine, JenkinsDeploymentEngine>();
+builder.Services.AddSingleton<ArtifactsDownloader>();
+
+builder.Services.AddScoped<IValidator<CreateDeploymentRequest>, CreateDeploymentRequestValidator>();
+
 // Add services to the container.
 builder.Services.AddHostedService<Worker>();
-
 builder.Services.AddControllersWithViews();
+
+//configuration
+builder.Services.Configure<ArtifactsDownloadOptions>(builder.Configuration.GetSection(ArtifactsDownloadOptions.ConfigSectionKey));
 
 var app = builder.Build();
 
