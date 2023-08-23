@@ -1,0 +1,32 @@
+FROM jenkins/jenkins:lts-jdk11
+USER root
+
+# prerequisites
+RUN apt-get clean && apt-get update
+RUN apt install curl -y
+RUN apt install -y --no-install-recommends gnupg ca-certificates apt-transport-https
+
+# install azure CLI
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+
+# install terraform
+RUN apt-get update && apt-get install -y gnupg software-properties-common
+RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
+RUN apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+
+RUN apt-get update
+RUN apt-get install terraform
+
+# skip "installation wizard"
+ENV JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+RUN mkdir -p /var/lib/jenkins/ && echo "2.0" > /var/lib/jenkins/jenkins.install.UpgradeWizard.state
+COPY ["build/config/basic-security.groovy", "/var/lib/jenkins/init.groovy.d/"]
+
+# plugins
+USER jenkins
+
+ENV DEFAULT_PLUGINS="command-launcher credentials-binding workflow-api pipeline-build-step workflow-cps workflow-support gradle cloudbees-folder build-timeout git git-client"
+ENV MODM_PLUGINS="azure-cli azure-credentials azure-ad terraform configuration-as-code"
+
+RUN jenkins-plugin-cli --plugins $DEFAULT_PLUGINS
+RUN jenkins-plugin-cli --plugins $MODM_PLUGINS
