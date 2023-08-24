@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Operator.Artifacts
+namespace Modm.Artifacts
 {
 	public readonly struct ArtifactsUri
 	{
@@ -27,7 +27,7 @@ namespace Operator.Artifacts
         /// </summary>
         public readonly string Value { get; }
 
-        public readonly string Name
+        public readonly string FileName
         {
             get
             {

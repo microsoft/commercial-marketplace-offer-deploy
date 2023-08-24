@@ -6,7 +6,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Options;
 
-namespace Operator.Artifacts
+namespace Modm.Artifacts
 {
 	public class ArtifactsDownloader
 	{
@@ -35,7 +35,7 @@ namespace Operator.Artifacts
         public async Task DownloadAsync(ArtifactsUri uri, ArtifactsDownloadOptions options)
         {
             var httpResult = await client.GetAsync(uri);
-            var archiveFilePath = Path.Combine(options.SavePath, "app.zip");
+            var archiveFilePath = Path.Combine(options.SavePath, uri.FileName);
 
             using (var resultStream = await httpResult.Content.ReadAsStreamAsync())
             using (var fileStream = File.Create(archiveFilePath))

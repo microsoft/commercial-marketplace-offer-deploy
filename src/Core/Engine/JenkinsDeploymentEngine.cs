@@ -1,7 +1,7 @@
 ﻿using System;
-using Operator.Artifacts;
+using Modm.Artifacts;
 
-namespace Operator.Engine
+namespace Modm.Engine
 {
     public class JenkinsDeploymentEngine : IDeploymentEngine
     {
@@ -19,7 +19,7 @@ namespace Operator.Engine
         /// <returns></returns>
         public async Task<int> StartAsync(string artifactsUri)
         {
-            await downloader.DownloadAsync(new ArtifactsUri { Value = artifactsUri });
+            await downloader.DownloadAsync(new ArtifactsUri(artifactsUri));
 
             return 1;
         }

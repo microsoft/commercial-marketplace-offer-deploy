@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Operator.Artifacts
+namespace Modm.Artifacts
 {
 	public class ArtifactsDownloadOptions
 	{
