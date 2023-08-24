@@ -1,11 +1,15 @@
 #!/bin/bash
 
-package_file="app.zip"  # Replace with the actual file name
-package_file_path="../../bin/$package_file"
-terraform_content_dir="terraformContent"  # Name of the directory to include
+package_file="../../bin/app.zip"  # Change the path to the bin directory
+main_template_file="../../obj/mainTemplate.json"
+create_ui_definition_file="../../obj/createUiDefinition.json"
+terraform_content_dir="terraformContent"
 
-# Create the zip file including the specified files and directory
-zip -FS -j $package_file_path \
-    "../../obj/mainTemplate.json" \
-    "../../obj/createUiDefinition.json" \
-    "$terraform_content_dir/*"   # Include the contents of the terraformcontent directory
+# Change working directory to the vm directory
+cd "$(dirname "$0")"
+
+# Create the zip file including the specified files and directories
+zip -FS -j "$package_file" "$main_template_file" "$create_ui_definition_file" content.zip
+find "$terraform_content_dir" -type f -print | zip -u "$package_file" -@
+
+echo "Package app.zip created in the bin directory."

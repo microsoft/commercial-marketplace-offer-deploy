@@ -75,7 +75,8 @@
         "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
         "scriptDirectory": "/usr/local/source/build/vm",
         "scriptName": "scriptExtension.sh",
-        "vmFqdn": "[concat(parameters('virtualMachineName'), '.', parameters('location'), '.cloudapp.azure.com')]"
+        "vmFqdn": "[concat(parameters('virtualMachineName'), '.', parameters('location'), '.cloudapp.azure.com')]",
+        "artifactsContainerLocation": "[substring(parameters('_artifactsLocation'), 0, lastIndexOf(parameters('_artifactsLocation'), '/'))]"
     },
     "resources": [
         {
@@ -223,7 +224,7 @@
                         "typeHandlerVersion": "2.0",
                         "autoUpgradeMinorVersion": true,
                         "settings": {
-                            "script": "[base64(concat('#!/bin/bash\n', 'sudo sh ', variables('scriptDirectory'), '/', variables('scriptName'), ' ', parameters('_artifactsLocation'), ' ', variables('vmFqdn')))]"
+                            "script": "[base64(concat('#!/bin/bash\n', 'sudo sh ', variables('scriptDirectory'), '/', variables('scriptName'), ' ', variables('artifactsContainerLocation'), ' ', variables('vmFqdn')))]"
                         }
                     }
                 }
