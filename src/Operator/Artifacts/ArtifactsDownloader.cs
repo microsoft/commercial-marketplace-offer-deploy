@@ -1,6 +1,9 @@
 ﻿using System;
 using System.IO.Compression;
 using System.Net.Http;
+using Azure.Identity;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Options;
 
 namespace Operator.Artifacts
@@ -31,7 +34,7 @@ namespace Operator.Artifacts
 
         public async Task DownloadAsync(ArtifactsUri uri, ArtifactsDownloadOptions options)
         {
-            var httpResult = await client.GetAsync(uri.Container + "/app.zip");
+            var httpResult = await client.GetAsync(uri);
             var archiveFilePath = Path.Combine(options.SavePath, "app.zip");
 
             using (var resultStream = await httpResult.Content.ReadAsStreamAsync())
@@ -41,8 +44,8 @@ namespace Operator.Artifacts
                 await resultStream.FlushAsync();
             }
 
-            ZipFile.ExtractToDirectory(archiveFilePath, options.SavePath);
+            ZipFile.ExtractToDirectory(archiveFilePath, options.SavePath, overwriteFiles: true);
         }
-	}
+    }
 }
 

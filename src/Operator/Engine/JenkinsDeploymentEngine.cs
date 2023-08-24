@@ -19,7 +19,7 @@ namespace Operator.Engine
         /// <returns></returns>
         public async Task<int> StartAsync(string artifactsUri)
         {
-            await downloader.DownloadAsync(new ArtifactsUri { Container = artifactsUri });
+            await downloader.DownloadAsync(new ArtifactsUri { Value = artifactsUri });
 
             return 1;
         }
