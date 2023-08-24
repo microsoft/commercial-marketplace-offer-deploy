@@ -1,8 +1,8 @@
-using FluentValidation;
 using Modm;
 using Modm.Artifacts;
 using Modm.Engine;
 using WebHost.Deployments;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
