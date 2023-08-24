@@ -7,12 +7,12 @@ namespace WebHost.Deployments
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class DeploymentController : ControllerBase
+    public class DeploymentsController : ControllerBase
     {
         private readonly IValidator<CreateDeploymentRequest> validator;
         private readonly IDeploymentEngine engine;
 
-        public DeploymentController(IValidator<CreateDeploymentRequest> validator, IDeploymentEngine engine)
+        public DeploymentsController(IValidator<CreateDeploymentRequest> validator, IDeploymentEngine engine)
         {
             this.validator = validator;
             this.engine = engine;
