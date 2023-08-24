@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Operator;
+namespace Modm;
 
 public class Worker : BackgroundService
 {

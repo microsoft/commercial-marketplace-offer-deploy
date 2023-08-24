@@ -16,7 +16,7 @@ COPY ["WebHost/ClientApp/package.json", "WebHost/ClientApp/"]
 COPY ["WebHost/ClientApp/vite.config.js", "WebHost/ClientApp/"]
 
 COPY ["WebHost/WebHost.csproj", "WebHost/"]
-COPY ["Operator/Operator.csproj", "Operator/"]
+COPY ["Core/Core.csproj", "Core/"]
 
 RUN dotnet restore "WebHost/WebHost.csproj"
 COPY . .
