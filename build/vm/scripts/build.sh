@@ -9,4 +9,5 @@ sudo docker build . --no-cache -t entrypoint-builder -f ./build/container/Docker
 
 sudo docker create --name entrypoint-container entrypoint-builder
 sudo docker cp entrypoint-container:/app/Entrypoint /usr/local/bin
+sudo docker cp entrypoint-container:/app/Entrypoint.dll /usr/local/bin
 sudo docker rm entrypoint-container
