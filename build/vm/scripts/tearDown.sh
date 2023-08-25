@@ -1,14 +1,15 @@
 #!/bin/bash
 
 # Check if all required parameters are provided
-if [ $# -ne 2 ]; then
-  echo "Usage: $0 <start_version> <end_version>"
+if [ $# -ne 3 ]; then
+  echo "Usage: $0 <start_version> <end_version> <common_resource_group>"
   exit 1
 fi
 
 # Set the range of numbers
 start_number=$1
 end_number=$2
+common_resource_group=$3
 
 # Loop through the range and construct resource group names
 for ((number=$start_number; number<=$end_number; number++))
