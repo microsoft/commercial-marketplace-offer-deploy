@@ -19,9 +19,11 @@
   <ItemGroup>
     <None Remove="Artifacts\" />
     <None Remove="Engine\" />
+    <None Remove="Deployments\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Artifacts\" />
     <Folder Include="Engine\" />
+    <Folder Include="Deployments\" />
   </ItemGroup>
 </Project>

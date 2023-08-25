@@ -5,10 +5,18 @@ using WebHost.Deployments;
 using FluentValidation;
 using Microsoft.Extensions.Azure;
 using Azure.Identity;
+using JenkinsNET;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpClient();
+
+builder.Services.AddSingleton<JenkinsClientFactory>();
+builder.Services.AddSingleton<IJenkinsClient>(provider =>
+{
+    var factory = provider.GetService<JenkinsClientFactory>();
+    return factory == null ? throw new NullReferenceException("JenkinsClientFactory not configured") : factory.Create();
+});
 
 builder.Services.AddSingleton<IDeploymentEngine, JenkinsDeploymentEngine>();
 builder.Services.AddSingleton<ArtifactsDownloader>();
@@ -28,6 +36,8 @@ builder.Services.AddAzureClients(clientBuilder =>
 
 //configuration
 builder.Services.Configure<ArtifactsDownloadOptions>(builder.Configuration.GetSection(ArtifactsDownloadOptions.ConfigSectionKey));
+builder.Services.Configure<JenkinsOptions>(builder.Configuration.GetSection(JenkinsOptions.ConfigSectionKey));
+
 
 var app = builder.Build();
 

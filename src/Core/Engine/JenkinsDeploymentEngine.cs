@@ -1,4 +1,5 @@
 ﻿using System;
+using JenkinsNET;
 using Modm.Artifacts;
 
 namespace Modm.Engine
@@ -6,10 +7,12 @@ namespace Modm.Engine
     public class JenkinsDeploymentEngine : IDeploymentEngine
     {
         private readonly ArtifactsDownloader downloader;
+        private readonly IJenkinsClient client;
 
-        public JenkinsDeploymentEngine(ArtifactsDownloader downloader)
+        public JenkinsDeploymentEngine(ArtifactsDownloader downloader, IJenkinsClient client)
         {
             this.downloader = downloader;
+            this.client = client;
         }
 
 
@@ -17,11 +20,15 @@ namespace Modm.Engine
         /// starts a deployment
         /// </summary>
         /// <returns></returns>
-        public async Task<int> StartAsync(string artifactsUri)
+        public async Task<StartDeploymentResult> StartAsync(string artifactsUri)
         {
-            await downloader.DownloadAsync(new ArtifactsUri(artifactsUri));
+            var descriptor = await downloader.DownloadAsync(new ArtifactsUri(artifactsUri));
 
-            return 1;
+            // TODO: use result.GetQueueItemNumber() and whatever else to have the backend start to poll for the information
+            var result = await client.Jobs.BuildAsync(descriptor.Definition.DeploymentType);
+
+            // TODO: fill out results. this is just stubbed out only
+            return new StartDeploymentResult();
         }
     }
 }
