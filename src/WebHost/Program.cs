@@ -22,7 +22,7 @@ builder.Services.AddControllersWithViews();
 // azure configuration
 builder.Services.AddAzureClients(clientBuilder =>
 {
-    clientBuilder.AddArmClient("31e9f9a0-9fd2-4294-a0a3-0101246d9700");
+    clientBuilder.AddArmClient(builder.Configuration.GetSection("Azure"));
     clientBuilder.UseCredential(new DefaultAzureCredential());
 });
 
