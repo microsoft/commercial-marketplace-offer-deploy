@@ -52,12 +52,10 @@ build {
   provisioner "shell" {
     execute_command = "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'"
     inline          = [
-      "git clone https://github.com/microsoft/commercial-marketplace-offer-deploy.git /usr/local/source",
+      "git clone --branch bobjac/packer-dotnetupdate https://github.com/microsoft/commercial-marketplace-offer-deploy.git /usr/local/source",
       "chmod +x /usr/local/source/build/vm/scriptExtension.sh", 
       "/usr/local/source/build/vm/scripts/setup.sh",
       "/usr/local/source/build/vm/scripts/build.sh",
-      "sudo dotnet publish /usr/local/source/src/Entrypoint/Entrypoint.csproj -c Release -o /usr/local/bin",
-      "chmod +x /usr/local/Entrypoint",
       "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync",
     ]
     inline_shebang  = "/bin/sh -x"
