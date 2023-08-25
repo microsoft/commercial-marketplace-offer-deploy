@@ -13,10 +13,10 @@ COPY . .
 
 # Build the application
 WORKDIR /src/src/Entrypoint
-RUN dotnet build "Entrypoint.csproj" -c Release -o /app/build
+RUN sudo dotnet build "Entrypoint.csproj" -c Release -o /app/build
 
 # Publish the application
-RUN dotnet publish "Entrypoint.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN sudo dotnet publish "Entrypoint.csproj" -c Release -o /app/publish /p:UseAppHost=true
 
 # Use a different base image for the final stage
 FROM mcr.microsoft.com/dotnet/runtime:7.0 AS final
