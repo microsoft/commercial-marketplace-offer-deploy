@@ -1,8 +1,10 @@
-using FluentValidation;
 using Modm;
 using Modm.Artifacts;
 using Modm.Engine;
 using WebHost.Deployments;
+using FluentValidation;
+using Microsoft.Extensions.Azure;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +18,13 @@ builder.Services.AddScoped<IValidator<CreateDeploymentRequest>, CreateDeployment
 // Add services to the container.
 builder.Services.AddHostedService<Worker>();
 builder.Services.AddControllersWithViews();
+
+// azure configuration
+builder.Services.AddAzureClients(clientBuilder =>
+{
+    clientBuilder.AddArmClient("31e9f9a0-9fd2-4294-a0a3-0101246d9700");
+    clientBuilder.UseCredential(new DefaultAzureCredential());
+});
 
 //configuration
 builder.Services.Configure<ArtifactsDownloadOptions>(builder.Configuration.GetSection(ArtifactsDownloadOptions.ConfigSectionKey));

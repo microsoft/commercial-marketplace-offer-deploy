@@ -3,6 +3,14 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
+# install Azure CLI to support managed identity from host VM
+# uninstall curl to lock image back down
+
+RUN apt-get update
+RUN apt-get install curl -y
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+RUN apt remove curl -y
+
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 

@@ -1,0 +1,16 @@
+services:
+  modm:
+    image: modm:latest
+    ports:
+      - 5000:5000
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5000
+    volumes:
+      - ~/.azure:/root/.azure
+  jenkins:
+    image: jenkins:latest
+    ports:
+      - 8080:8080
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
