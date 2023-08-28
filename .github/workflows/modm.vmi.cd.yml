@@ -21,17 +21,8 @@ jobs:
           with:
             azcliversion: 2.34.1
             inlineScript: |
-                latest_version=$(
-                    az vm image show \
-                    --urn "${IMAGE_PUBLISHER}:${IMAGE_OFFER}:${IMAGE_SKU}:latest" \
-                    --query name \
-                    --out tsv
-                )
-                echo "Publisher: ${IMAGE_PUBLISHER}"
-                echo "Offer:     ${IMAGE_OFFER}"
-                echo "SKU:       ${IMAGE_SKU}"
-                echo "Version:   ${latest_version}"
-                echo "version=${latest_version}" >> $GITHUB_OUTPUT
+                az account show
+                az storage -h
         
         - name: Install Packer
           uses: hashicorp/packer-github-actions@master
