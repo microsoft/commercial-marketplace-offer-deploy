@@ -87,8 +87,7 @@ build {
   provisioner "shell" {
     execute_command = "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'"
     inline          = [
-      "git clone https://github.com/microsoft/commercial-marketplace-offer-deploy.git /usr/local/modmsource",
-      "/usr/local/modmsource/build/vm/scripts/build.sh",
+      "/usr/local/modmsource/build/vmi/modm/build.sh",
       "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync",
     ]
     inline_shebang  = "/bin/sh -x"
