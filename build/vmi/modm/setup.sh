@@ -3,6 +3,8 @@
 # build 
 cd /usr/local/source
 
+sudo git pull
+
 sudo docker build ./src -t modm -f ./build/container/Dockerfile.modm  
 sudo docker build . -t jenkins -f ./build/container/Dockerfile.jenkins
 sudo docker build . -t entrypoint-builder -f ./build/container/Dockerfile.modmentry
