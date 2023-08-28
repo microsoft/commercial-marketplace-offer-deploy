@@ -46,6 +46,10 @@ variable "managed_image_resource_group_modm" {
   type = string
 }
 
+variable "custom_managed_image_name" {
+  type = string
+}
+
 packer {
   required_plugins {
     azure = {
@@ -69,16 +73,16 @@ source "azure-arm" "modm_image" {
   subscription_id                   = var.subscription_id
   tenant_id                         = var.tenant_id
   vm_size                           = "Standard_DS2_v2"
-  custom_managed_image_name         = "modm-base-0.0.3"
+  custom_managed_image_name         = "modm-base-0.0.5" var.custom_managed_image_name
   custom_managed_image_resource_group_name = var.sig_gallery_resource_group
-  shared_image_gallery_destination {
-      subscription     = var.subscription_id
-      resource_group  = var.sig_gallery_resource_group
-      gallery_name     = var.sig_gallery_name
-      image_name       = var.sig_image_name_modm
-      image_version    = var.sig_image_version_modm
-      replication_regions = [var.location]
-  }
+//   shared_image_gallery_destination {
+//       subscription     = var.subscription_id
+//       resource_group  = var.sig_gallery_resource_group
+//       gallery_name     = var.sig_gallery_name
+//       image_name       = var.sig_image_name_modm
+//       image_version    = var.sig_image_version_modm
+//       replication_regions = [var.location]
+//   }
 }
 
 build {
@@ -87,7 +91,7 @@ build {
   provisioner "shell" {
     execute_command = "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'"
     inline          = [
-      "/usr/local/modmsource/build/vmi/modm/build.sh",
+      "/usr/local/source/build/vmi/modm/setup.sh",
       "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync",
     ]
     inline_shebang  = "/bin/sh -x"

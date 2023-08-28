@@ -38,6 +38,10 @@ variable "managed_image_name" {
   type = string
 }
 
+variable "managed_image_resource_group_name" {
+  type = string
+}
+
 packer {
   required_plugins {
     azure = {
@@ -57,9 +61,9 @@ source "azure-arm" "base_image" {
   image_offer                       = "0001-com-ubuntu-server-jammy"
   image_publisher                   = "canonical"
   image_sku                         = "22_04-lts"
-  location                          = "East US"
+  location                          = var.location
   managed_image_name                = var.managed_image_name
-  managed_image_resource_group_name = "modm-dev"
+  managed_image_resource_group_name = var.managed_image_resource_group_name
   os_type                           = "Linux"
   subscription_id                   = var.subscription_id
   tenant_id                         = var.tenant_id

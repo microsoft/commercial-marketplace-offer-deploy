@@ -1,14 +1,24 @@
 #!/bin/bash
 
-# build 
-cd /usr/local/source
+# make sure we have a vars file before proceeding
+env_pkrvars_file=./obj/.env.pkrvars
 
-sudo git pull
+if [ ! -f $env_pkrvars_file ];
+then
+    echo "./obj/.env.pkrvars file is required."
+    exit 1
+else
+    echo "Packer variables env var file present."
+fi
 
-sudo docker build ./src -t modm -f ./build/container/Dockerfile.modm  
-sudo docker build . -t jenkins -f ./build/container/Dockerfile.jenkins
-sudo docker build . -t entrypoint-builder -f ./build/container/Dockerfile.modmentry
+# export packer env variables so they get picked up
+export $(grep -v '^#' $env_pkrvars_file | xargs)
 
-sudo docker create --name entrypoint-container entrypoint-builder
-sudo docker cp entrypoint-container:/app/. /usr/local/bin/
-sudo docker rm entrypoint-container
+MODM_VERSION="$1"
+export PKR_VAR_sig_image_version_modm=${MODM_VERSION}
+export PKR_VAR_managed_image_name_modm=modmvmi-${MODM_VERSION}
+
+# Run the Packer command
+packer init ./build/vmi/modm/modm.pkr.hcl
+packer build ./build/vmi/modm/modm.pkr.hcl 
+

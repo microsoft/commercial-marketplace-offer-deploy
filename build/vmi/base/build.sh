@@ -15,9 +15,18 @@ fi
 export $(grep -v '^#' $env_pkrvars_file | xargs)
 
 BASE_VERSION="$1"
-export PKR_VAR_sig_image_version=modm-base-${BASE_VERSION}
-export PKR_VAR_managed_image_name=modm-base-${BASE_VERSION}
+export PKR_VAR_sig_image_version=modmvmi-base-${BASE_VERSION}
+export PKR_VAR_managed_image_name=modmvmi-base-${BASE_VERSION}
 export PKR_VAR_sig_image_version=${BASE_VERSION}
+
+# Check if the Shared Image Gallery exists
+if ! az sig show --resource-group $PKR_VAR_sig_gallery_resource_group --gallery-name $PKR_VAR_sig_gallery_name &>/dev/null; then
+
+    # Create a Shared Image Gallery
+    az sig create --resource-group $PKR_VAR_sig_gallery_resource_group --gallery-name $PKR_VAR_sig_gallery_name --location $PKR_VAR_location
+
+    echo "Shared Image Gallery created."
+fi
 
 az sig image-definition show \
   --subscription $PKR_VAR_subscription_id \
@@ -37,10 +46,9 @@ else
     --gallery-name $PKR_VAR_sig_gallery_name \
     --gallery-image-definition $PKR_VAR_sig_image_name \
     --publisher Microsoft \
-    --offer MODMBase \
-    --sku MODMBase \
+    --offer MODMBaseVMI \
+    --sku MODMBaseVMI \
     --os-type Linux
-
 fi
 
 
