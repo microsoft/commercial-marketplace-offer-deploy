@@ -73,7 +73,7 @@ source "azure-arm" "modm_image" {
   subscription_id                   = var.subscription_id
   tenant_id                         = var.tenant_id
   vm_size                           = "Standard_DS2_v2"
-  custom_managed_image_name         = "modm-base-0.0.5" var.custom_managed_image_name
+  custom_managed_image_name         = var.custom_managed_image_name
   custom_managed_image_resource_group_name = var.sig_gallery_resource_group
 //   shared_image_gallery_destination {
 //       subscription     = var.subscription_id
