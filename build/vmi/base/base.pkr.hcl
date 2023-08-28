@@ -90,14 +90,6 @@ build {
     ]
     inline_shebang  = "/bin/sh -x"
   }
-
-  post-processor "manifest" {
-    output = "manifest.json"
-    strip_path = true
-    custom_data = {
-        source_image_name = "${build.SourceImageName}"
-    }
-  }
 }
 
 
