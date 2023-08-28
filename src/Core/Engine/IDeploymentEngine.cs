@@ -2,6 +2,6 @@
 {
     public interface IDeploymentEngine
     {
-        Task<int> StartAsync(string artifactsUri);
+        Task<StartDeploymentResult> StartAsync(string artifactsUri);
     }
 }
