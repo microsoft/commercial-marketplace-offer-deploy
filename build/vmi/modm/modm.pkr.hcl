@@ -75,14 +75,6 @@ source "azure-arm" "modm_image" {
   vm_size                           = "Standard_DS2_v2"
   custom_managed_image_name         = var.custom_managed_image_name
   custom_managed_image_resource_group_name = var.sig_gallery_resource_group
-//   shared_image_gallery_destination {
-//       subscription     = var.subscription_id
-//       resource_group  = var.sig_gallery_resource_group
-//       gallery_name     = var.sig_gallery_name
-//       image_name       = var.sig_image_name_modm
-//       image_version    = var.sig_image_version_modm
-//       replication_regions = [var.location]
-//   }
 }
 
 build {
