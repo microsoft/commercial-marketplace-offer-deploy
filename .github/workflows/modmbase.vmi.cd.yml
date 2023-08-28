@@ -1,4 +1,4 @@
-name: MODM Packer Build
+name: MODM Base Packer Build
 
 on:
     workflow_dispatch:
@@ -63,5 +63,5 @@ jobs:
 
         - name: Run Packer script
           run: |
-            chmod +x ./build/vmi/modm/build.sh
-            ./build/vmi/modm/build.sh ${{ secrets.MODM_VERSION }}
+            chmod +x ./build/base/modm/build.sh
+            ./build/vmi/base/build.sh ${{ secrets.MODM_VERSION }}
