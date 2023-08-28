@@ -10,6 +10,34 @@ jobs:
         - name: Checkout Repository
           uses: actions/checkout@v2
 
+        - name: Azure Login
+          uses: azure/login@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+        - name: Get Latest Azure CLI
+          id: get_latest_version
+          uses: azure/CLI@v1
+          with:
+            azcliversion: 2.34.1
+            inlineScript: |
+                latest_version=$(
+                    az vm image show \
+                    --urn "${IMAGE_PUBLISHER}:${IMAGE_OFFER}:${IMAGE_SKU}:latest" \
+                    --query name \
+                    --out tsv
+                )
+                echo "Publisher: ${IMAGE_PUBLISHER}"
+                echo "Offer:     ${IMAGE_OFFER}"
+                echo "SKU:       ${IMAGE_SKU}"
+                echo "Version:   ${latest_version}"
+                echo "version=${latest_version}" >> $GITHUB_OUTPUT
+        
+        - name: Install Packer
+          uses: hashicorp/packer-github-actions@master
+          with:
+            version: "1.9.2"
+
         - name: Set up environment
           run: |
                 echo "PKR_VAR_client_id=${{ secrets.PKR_VAR_client_id }}" >> $GITHUB_ENV
