@@ -5,6 +5,7 @@ using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Options;
+using Modm.Deployments;
 
 namespace Modm.Artifacts
 {
@@ -24,7 +25,7 @@ namespace Modm.Artifacts
         /// </summary>
         /// <param name="uri"></param>
         /// <returns></returns>
-        public Task DownloadAsync(ArtifactsUri uri)
+        public Task<ArtifactsDescriptor> DownloadAsync(ArtifactsUri uri)
         {
             return DownloadAsync(uri, new ArtifactsDownloadOptions
             {
@@ -32,7 +33,7 @@ namespace Modm.Artifacts
             });
         }
 
-        public async Task DownloadAsync(ArtifactsUri uri, ArtifactsDownloadOptions options)
+        public async Task<ArtifactsDescriptor> DownloadAsync(ArtifactsUri uri, ArtifactsDownloadOptions options)
         {
             var httpResult = await client.GetAsync(uri);
             var archiveFilePath = Path.Combine(options.SavePath, uri.FileName);
@@ -45,6 +46,18 @@ namespace Modm.Artifacts
             }
 
             ZipFile.ExtractToDirectory(archiveFilePath, options.SavePath, overwriteFiles: true);
+
+
+            // TODO: extract information based on the manifest contents from the artifacts
+
+            return new ArtifactsDescriptor {
+                FolderPath = options.SavePath,
+                Definition = new DeploymentDefinition
+                {
+                    DeploymentType = DeploymentType.ArmTemplate,
+                    MainTemplate = "mainTemplate.json"
+                }
+            };
         }
     }
 }

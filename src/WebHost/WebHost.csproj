@@ -17,6 +17,7 @@
 
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Web' " />
   <ItemGroup>
+    <PackageReference Include="jenkinsnet" Version="1.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="7.0.10">
       <!-- The SPA Proxy is only used at development time -->
       <Publish>false</Publish>

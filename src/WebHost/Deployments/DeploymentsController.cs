@@ -31,14 +31,14 @@ namespace WebHost.Deployments
                 return Results.ValidationProblem(validationResult.ToDictionary());
             }
 
-            var id = await engine.StartAsync(request.ArtifactsUri);
+            var result = await engine.StartAsync(request.ArtifactsUri);
 
 
             // TODO: get resulting object from repo. (underlying "repository" for deployments is going to be the deployment engine)
             // the underlying engine will be jenkins. the wrapper for jenkins will use the jenkins job id as the id of the deployment attempt
             return Results.Created("/deployments", new CreateDeploymentResponse
             {
-                Id = id
+                Id = result.Id
             });
         }
     }
