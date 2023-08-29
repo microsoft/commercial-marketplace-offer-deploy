@@ -4,7 +4,6 @@ import jenkins.model.*
 import hudson.security.*
 import hudson.util.*;
 import jenkins.install.*;
-import hudson.security.csrf;
 
 def instance = Jenkins.get()
 
@@ -19,6 +18,6 @@ def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
 strategy.setAllowAnonymousRead(false)
 instance.setAuthorizationStrategy(strategy)
 
-instance.setCrumbIssuer(GlobalCrumbIssuerConfiguration.createDefaultCrumbIssuer());
+instance.setCrumbIssuer(hudson.security.csrf.GlobalCrumbIssuerConfiguration.createDefaultCrumbIssuer());
 
 instance.save()

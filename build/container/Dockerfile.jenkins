@@ -18,10 +18,11 @@ RUN apt-get update
 RUN apt-get install terraform
 
 # skip "installation wizard"
-#ENV JAVA_OPTS=-Djenkins.install.runSetupWizard=false
-#RUN echo 2.0 > /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state
+ENV JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+RUN echo 2.0 > /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state
 
-COPY jenkins/init/basic-security.groovy /var/lib/jenkins/init.groovy.d
+RUN mkdir -p $JENKINS_HOME/init.groovy.d
+COPY jenkins/init/basic-security.groovy $JENKINS_HOME/init.groovy.d
 
 # plugins
 USER jenkins
