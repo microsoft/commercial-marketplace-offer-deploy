@@ -1,17 +1,20 @@
 ﻿using System;
 using JenkinsNET;
 using Modm.Artifacts;
+using Modm.Engine.Jenkins;
 
 namespace Modm.Engine
 {
     public class JenkinsDeploymentEngine : IDeploymentEngine
     {
         private readonly ArtifactsDownloader downloader;
+        private readonly ApiTokenProvider apiTokenProvider;
         private readonly IJenkinsClient client;
 
-        public JenkinsDeploymentEngine(ArtifactsDownloader downloader, IJenkinsClient client)
+        public JenkinsDeploymentEngine(ArtifactsDownloader downloader, ApiTokenProvider apiTokenProvider, IJenkinsClient client)
         {
             this.downloader = downloader;
+            this.apiTokenProvider = apiTokenProvider;
             this.client = client;
         }
 
