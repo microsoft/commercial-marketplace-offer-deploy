@@ -1,18 +1,25 @@
 #!/bin/bash
 
-# make sure we have a vars file before proceeding
-env_pkrvars_file=./obj/.env.pkrvars
-
-if [ ! -f $env_pkrvars_file ];
-then
-    echo "./obj/.env.pkrvars file is required."
-    exit 1
+# Check if running in GitHub Actions environment
+if [ -n "$GITHUB_ACTIONS" ]; then
+    echo "Running in GitHub Actions environment"
+    # You don't need to check for the .env.pkrvars file or export variables here
 else
-    echo "Packer variables env var file present."
-fi
+    echo "Running locally"
+    # make sure we have a vars file before proceeding
+    env_pkrvars_file=./obj/.env.pkrvars
 
-# export packer env variables so they get picked up
-export $(grep -v '^#' $env_pkrvars_file | xargs)
+    if [ ! -f $env_pkrvars_file ];
+    then
+        echo "./obj/.env.pkrvars file is required."
+        exit 1
+    else
+        echo "Packer variables env var file present."
+    fi
+
+    # export packer env variables so they get picked up
+    export $(grep -v '^#' $env_pkrvars_file | xargs)
+fi
 
 BASE_VERSION="$1"
 export PKR_VAR_sig_image_version=modmvmi-base-${BASE_VERSION}
