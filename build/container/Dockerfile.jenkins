@@ -18,15 +18,13 @@ RUN apt-get update
 RUN apt-get install terraform
 
 # skip "installation wizard"
-ENV JAVA_OPTS=-Djenkins.install.runSetupWizard=false
-RUN mkdir -p /var/lib/jenkins/ && echo "2.0" > /var/lib/jenkins/jenkins.install.UpgradeWizard.state
-COPY ["build/config/basic-security.groovy", "/var/lib/jenkins/init.groovy.d/"]
+#ENV JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+#RUN echo 2.0 > /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state
+
+COPY jenkins/init/basic-security.groovy /var/lib/jenkins/init.groovy.d
 
 # plugins
 USER jenkins
 
-ENV DEFAULT_PLUGINS="command-launcher credentials-binding workflow-api pipeline-build-step workflow-cps workflow-support gradle cloudbees-folder build-timeout git git-client"
-ENV MODM_PLUGINS="azure-cli azure-credentials azure-ad terraform configuration-as-code"
-
-RUN jenkins-plugin-cli --plugins $DEFAULT_PLUGINS
-RUN jenkins-plugin-cli --plugins $MODM_PLUGINS
+COPY --chown=jenkins:jenkins jenkins/plugins.txt /usr/share/jenkins/ref
+RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
