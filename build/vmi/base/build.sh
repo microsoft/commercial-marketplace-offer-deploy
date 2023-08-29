@@ -1,5 +1,16 @@
 #!/bin/bash
 
+BASE_VERSION="0.0.0"
+source ./build/vmi/scripts/nextversion.sh
+
+if [ $# -ne 1 ]; then
+    BASE_VERSION=$(get_next_image_version "modmvmi-base" "modm-dev-vmi")
+else
+    BASE_VERSION="$1"
+fi
+
+echo "Building modm version $BASE_VERSION"
+
 # Check if running in GitHub Actions environment
 if [ -n "$GITHUB_ACTIONS" ]; then
     echo "Running in GitHub Actions environment"
@@ -21,7 +32,6 @@ else
     export $(grep -v '^#' $env_pkrvars_file | xargs)
 fi
 
-BASE_VERSION="$1"
 export PKR_VAR_sig_image_version=modmvmi-base-${BASE_VERSION}
 export PKR_VAR_managed_image_name=modmvmi-base-${BASE_VERSION}
 export PKR_VAR_sig_image_version=${BASE_VERSION}
