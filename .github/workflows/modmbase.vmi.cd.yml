@@ -27,7 +27,8 @@ jobs:
         - name: Install Packer
           uses: hashicorp/packer-github-actions@master
           with:
-            version: "1.9.2"
+            command: version
+            target: .
 
         - name: Set up environment
           run: |
