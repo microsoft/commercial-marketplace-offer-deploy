@@ -18,6 +18,8 @@
 #
 # ===========================================================================================
 
+#!/bin/bash
+
 get_next_image_version() {
     local image_name="$1"
     local resource_group="$2"
@@ -49,27 +51,6 @@ get_next_image_version() {
     echo "$next_version"
 }
 
-# Example usage:
-next_version=$(get_next_image_version "modmvmi" "modm-dev-vmi")
-if [ "$next_version" != "not found" ]; then
-    echo "Next version for modmvmi: $next_version"
-else
-    echo "Error: $next_version"
-fi
-
-next_version=$(get_next_image_version "modmvmi-base" "modm-dev-vmi")
-if [ "$next_version" != "not found" ]; then
-    echo "Next version for modmvmi-base: $next_version"
-else
-    echo "Error: $next_version"
-fi
-
-next_version=$(get_next_image_version "hark" "modm-dev-vmi")
-if [ "$next_version" != "not found" ]; then
-    echo "Next version for hark: $next_version"
-else
-    echo "Error: $next_version"
-fi
 
 
 
