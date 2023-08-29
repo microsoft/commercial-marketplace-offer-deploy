@@ -20,10 +20,14 @@
     <None Remove="Artifacts\" />
     <None Remove="Engine\" />
     <None Remove="Deployments\" />
+    <None Remove="Engine\Jenkins\" />
+    <None Remove="Extensions\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Artifacts\" />
     <Folder Include="Engine\" />
     <Folder Include="Deployments\" />
+    <Folder Include="Engine\Jenkins\" />
+    <Folder Include="Extensions\" />
   </ItemGroup>
 </Project>

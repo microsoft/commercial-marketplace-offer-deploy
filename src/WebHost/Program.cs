@@ -6,16 +6,18 @@ using FluentValidation;
 using Microsoft.Extensions.Azure;
 using Azure.Identity;
 using JenkinsNET;
+using Modm.Engine.Jenkins;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpClient();
 
 builder.Services.AddSingleton<JenkinsClientFactory>();
+builder.Services.AddSingleton<ApiTokenProvider>();
 builder.Services.AddSingleton<IJenkinsClient>(provider =>
 {
     var factory = provider.GetService<JenkinsClientFactory>();
-    return factory == null ? throw new NullReferenceException("JenkinsClientFactory not configured") : factory.Create();
+    return factory == null ? throw new NullReferenceException("JenkinsClientFactory not configured") : factory.CreateAsync().GetAwaiter().GetResult();
 });
 
 builder.Services.AddSingleton<IDeploymentEngine, JenkinsDeploymentEngine>();

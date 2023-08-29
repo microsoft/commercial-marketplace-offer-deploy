@@ -14,3 +14,4 @@ services:
       - 8080:8080
     environment:
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+      - DEFAULT_ADMIN_PASSWORD=admin
