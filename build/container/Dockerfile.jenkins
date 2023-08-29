@@ -22,7 +22,7 @@ ENV JAVA_OPTS=-Djenkins.install.runSetupWizard=false
 RUN echo 2.0 > /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state
 
 RUN mkdir -p $JENKINS_HOME/init.groovy.d
-COPY jenkins/init/basic-security.groovy $JENKINS_HOME/init.groovy.d
+COPY jenkins/init-hooks/basic-security.groovy $JENKINS_HOME/init.groovy.d
 
 # plugins
 USER jenkins
