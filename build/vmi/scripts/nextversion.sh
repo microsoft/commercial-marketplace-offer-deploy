@@ -1,5 +1,23 @@
 #!/bin/bash
 
+# ===========================================================================================
+#
+#   DESCRIPTION:
+#   This script gets the version to use for the next build of a VMI image
+#   
+#   Prescendence of values
+#     It takes two arguments:
+#        image_name - the name of the image you want to build
+#        resource_group - the resource group where the image should be deployed 
+#   File Paths:
+#     ALL paths are relative to the root of the repository. This guarantees consistency with relative paths
+#     [realpath] is used for converting all relative paths to absolute paths
+#
+#   Example Usage:
+#   next_version=$(get_next_image_version "modmvmi" "modm-dev-vmi")
+#
+# ===========================================================================================
+
 get_next_image_version() {
     local image_name="$1"
     local resource_group="$2"
@@ -16,9 +34,9 @@ get_next_image_version() {
 
     # Loop through versions to find the latest
     for version in $versions; do
-        version_number=$(echo "$version" | cut -d'-' -f2- | cut -d'.' -f3)
+        version_number=$(echo "$version" | awk -F- '{print $NF}' | cut -d'.' -f3)
         if [ "$version_number" -gt "$(echo "$latest_version" | cut -d'.' -f3)" ]; then
-            latest_version=$(echo "$version" | cut -d'-' -f2-)
+            latest_version=$(echo "$version" | awk -F- '{print $NF}')
         fi
     done
 
@@ -27,8 +45,8 @@ get_next_image_version() {
     new_patch=$((version_parts[2] + 1))
     next_version="${version_parts[0]}.${version_parts[1]}.$new_patch"
 
-    # Return the formatted next version
-    echo "$image_name-$next_version"
+    # Return the formatted next version without image name
+    echo "$next_version"
 }
 
 # Example usage:
@@ -52,3 +70,6 @@ if [ "$next_version" != "not found" ]; then
 else
     echo "Error: $next_version"
 fi
+
+
+
