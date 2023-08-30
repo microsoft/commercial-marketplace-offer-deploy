@@ -1,0 +1,121 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vmName": {
+            "defaultValue": "bobjacmodmvmtemp",
+            "type": "String"
+        },
+        "vmImageRef": {
+            "defaultValue": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/modm-dev-vmi/providers/Microsoft.Compute/images/modmvmi-0.0.161",
+            "type": "String"
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2023-03-01",
+            "name": "[concat(parameters('vmName'), '864_z1')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('subnetId')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Compute/disks",
+            "apiVersion": "2023-03-01",
+            "name": "[concat(parameters('vmName'), '_disk1_b24cf7022b4a4c1bb38e8cdb9370b002')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "creationData": {
+                    "createOption": "Empty"
+                },
+                "diskSizeGB": 30,
+                "osType": "Linux",
+                "caching": "ReadWrite",
+                "encryptionSettings": {
+                    "enabled": false
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2023-03-01",
+            "name": "[parameters('vmName')]",
+            "location": "[resourceGroup().location]",
+            "zones": [
+                "1"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_D2s_v3"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "id": "[parameters('vmImageRef')]"
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "[concat(parameters('vmName'), '_disk1_b24cf7022b4a4c1bb38e8cdb9370b002')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        },
+                        "deleteOption": "Detach",
+                        "diskSizeGB": 30
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[parameters('vmName')]",
+                    "adminUsername": "modmadmin",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": false,
+                        "provisionVMAgent": true,
+                        "patchSettings": {
+                            "patchMode": "ImageDefault",
+                            "assessmentMode": "ImageDefault"
+                        },
+                        "enableVMAgentPlatformUpdates": false
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true,
+                    "requireGuestProvisionSignal": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('vmName'), '864_z1'))]",
+                            "properties": {
+                                "deleteOption": "Detach"
+                            }
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "subnetId": {
+            "type": "String",
+            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]"
+        }
+    }
+}
