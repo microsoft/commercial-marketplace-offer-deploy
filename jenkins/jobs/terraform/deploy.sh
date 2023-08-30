@@ -10,7 +10,9 @@ az account show
 echo ""
 echo "setting up terraform"
 
-# TODO: need to fetch the terraform files with a main.tf from somwhere
+# this path is by convention. MODM will place all artifacts from the content.zip from the artifacts URI
+# into a host path that must be mounted to /var/jenkins_home/artifacts
+cd $JENKINS_HOME/modm/artifacts
 
 echo "Terraform files"
 ls -1
