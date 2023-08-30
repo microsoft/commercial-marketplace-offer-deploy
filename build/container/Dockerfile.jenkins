@@ -21,8 +21,11 @@ RUN apt-get install terraform
 ENV JAVA_OPTS=-Djenkins.install.runSetupWizard=false
 RUN echo 2.0 > /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state
 
+# add initialization hooks
+# more info: https://www.jenkins.io/doc/book/managing/groovy-hook-scripts/
 RUN mkdir -p $JENKINS_HOME/init.groovy.d
-COPY jenkins/init-hooks/basic-security.groovy $JENKINS_HOME/init.groovy.d
+COPY jenkins/init-hooks/*.groovy $JENKINS_HOME/init.groovy.d
+
 
 # plugins
 USER jenkins
