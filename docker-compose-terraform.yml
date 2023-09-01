@@ -1,0 +1,8 @@
+services:
+  jenkins:
+    image: bobjac/jenkins
+    ports:
+      - 8083:8080
+    volumes:
+      - ~/.azure:/root/.azure
+      - ./test/v2/terraform-storage:/solutions/terraform

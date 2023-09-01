@@ -28,7 +28,8 @@ RUN mkdir -p $JENKINS_HOME/scripts
 COPY jenkins/deploy.sh $JENKINS_HOME/scripts
 RUN chmod +x $JENKINS_HOME/scripts/deploy.sh
 
-RUN mkdir -p /solutions/terraform
+# RUN mkdir -p /solutions/terraform
+# COPY /test/v2/terraform-storage/. /solutions/terraform/
 
 # plugins
 USER jenkins
