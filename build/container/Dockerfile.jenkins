@@ -24,6 +24,12 @@ RUN echo 2.0 > /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state
 RUN mkdir -p $JENKINS_HOME/init.groovy.d
 COPY jenkins/init-hooks/basic-security.groovy $JENKINS_HOME/init.groovy.d
 
+RUN mkdir -p $JENKINS_HOME/scripts
+COPY jenkins/deploy.sh $JENKINS_HOME/scripts
+RUN chmod +x $JENKINS_HOME/scripts/deploy.sh
+
+RUN mkdir -p /solutions/terraform
+
 # plugins
 USER jenkins
 
