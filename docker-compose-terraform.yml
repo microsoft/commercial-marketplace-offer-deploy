@@ -6,3 +6,7 @@ services:
     volumes:
       - ~/.azure:/root/.azure
       - ./test/v2/terraform-storage:/solutions/terraform
+      - ./jenkins/definitions:/solutions/job-definitions
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+      - DEFAULT_ADMIN_PASSWORD=admin
