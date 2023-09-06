@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# ===========================================================================================
+#   DESCRIPTION:
+#     Provisioning shell script, executed during Packer build
+#
+#   Execution context:
+#     This script is executed on the VM by Packer, not locally
+# ===========================================================================================
+
+
+echo set debconf to Noninteractive
+echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections
+
+
 # prep with prerequisites
 sudo apt-get update -y
 sudo apt-get upgrade -y
@@ -28,10 +41,12 @@ sudo apt-get install docker-buildx-plugin docker-compose -y
 sudo apt-get install -y dotnet-sdk-7.0
 
 # clone the MODM source into source
-sudo git clone --depth=1 https://github.com/microsoft/commercial-marketplace-offer-deploy.git $MODM_HOME/source
+sudo git clone --depth=1 --branch $MODM_REPO_BRANCH https://github.com/microsoft/commercial-marketplace-offer-deploy.git $MODM_HOME/source
 
 # Initial image setup so we can get cached image layers to speed up builds for the final vmi
 cd $MODM_HOME/source
 
-sudo docker build ./src -t modm -f ./build/container/Dockerfile.modm  
-sudo docker build . -t jenkins -f ./build/container/Dockerfile.jenkins
+echo "Building docker images."
+
+# sudo docker build ./src -t modm -f ./build/container/Dockerfile.modm  
+# sudo docker build . -t jenkins -f ./build/container/Dockerfile.jenkins
