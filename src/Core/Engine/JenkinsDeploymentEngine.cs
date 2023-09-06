@@ -28,28 +28,8 @@ namespace Modm.Engine
         {
             var descriptor = await downloader.DownloadAsync(new ArtifactsUri(artifactsUri));
 
-            // token = await this.apiTokenProvider.GetAsync();
-
-            //var jobUrlWithToken = $"http://localhost:8083/job/modmserviceprincipal/job/modmserviceprincipal/build?token={token}";
-
-            //var jenkinsClient = new JenkinsClient(jenkinsUrl);
-            //bool isJobTriggered = await jenkinsClient.Jobs.TriggerRemoteJobAsync(jobUrlWithToken);
-
-            //var httpClient = new HttpClient();
-            // Send an HTTP POST request to trigger the job
-            //HttpResponseMessage response = await httpClient.PostAsync(jobUrlWithToken, null);
-
-
-            // TODO: use result.GetQueueItemNumber() and whatever else to have the backend start to poll for the information
-            //string jobName = "modmserviceprincipal/modmserviceprincipal";
             var jobInfo =  client.Jobs.Get<JenkinsJobBase>("modmserviceprincipal");
             var result = await client.Jobs.BuildAsync("modmserviceprincipal");
-            //client.Jobs.Get
-
-
-            //var result = await client.Jobs.BuildAsync(descriptor.Definition.DeploymentType);
-            // client.
-            // this.apiTokenProvider.
 
             // TODO: fill out results. this is just stubbed out only
             return new StartDeploymentResult();
