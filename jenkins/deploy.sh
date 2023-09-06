@@ -2,7 +2,7 @@
 
 echo "Hello crom deploy.sh"
 
-cd /solutions/terraform
+cd /solutions/terraform/content
 
 # Initialize Terraform (required before first run)
 terraform init -backend=false

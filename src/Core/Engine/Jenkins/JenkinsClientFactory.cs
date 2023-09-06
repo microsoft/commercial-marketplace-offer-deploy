@@ -25,6 +25,7 @@ namespace Modm.Engine.Jenkins
             {
                 BaseUrl = options.BaseUrl,
                 UserName = options.UserName,
+                Password = options.Password,
                 ApiToken = apiToken,
             };
 

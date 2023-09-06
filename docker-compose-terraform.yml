@@ -5,7 +5,8 @@ services:
       - 8083:8080
     volumes:
       - ~/.azure:/root/.azure
-      - ./test/v2/terraform-storage:/solutions/terraform
+      - ./test/v2/terraform-storage:/solutions/terraform-old
+      - ./test/v2/drop:/solutions/terraform
       - ./jenkins/definitions:/solutions/job-definitions
     environment:
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false

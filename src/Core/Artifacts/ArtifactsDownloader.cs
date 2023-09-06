@@ -54,8 +54,8 @@ namespace Modm.Artifacts
                 FolderPath = options.SavePath,
                 Definition = new DeploymentDefinition
                 {
-                    DeploymentType = DeploymentType.ArmTemplate,
-                    MainTemplate = "mainTemplate.json"
+                    DeploymentType = DeploymentType.Terafform,
+                    MainTemplate = "main.tf"
                 }
             };
         }

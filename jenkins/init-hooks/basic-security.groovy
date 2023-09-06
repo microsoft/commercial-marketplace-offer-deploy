@@ -32,21 +32,10 @@ instance.setAuthorizationStrategy(strategy)
 
 instance.setCrumbIssuer(hudson.security.csrf.GlobalCrumbIssuerConfiguration.createDefaultCrumbIssuer());
 
-def folder = instance.getItem(jobName)
-// Create the folder if it doesn't exist
-if (folder == null) {
-  folder = instance.createProject(Folder.class, jobName)
-}
-
 def xmlContent = new File(jobConfigXmlPath).text
 def xmlStream = new StringBufferInputStream(xmlContent)
 // Check if the job already exists
-def job = folder.getItem(jobName)
-// Remove it if it already exists
-if (job != null) {
-  folder.remove(job)
-}
-// Create job in the folder
-job = folder.createProjectFromXML(jobName, xmlStream)
+def job = instance.getItem(jobName)
+job = instance.createProjectFromXML(jobName, xmlStream)
 
 instance.save()
