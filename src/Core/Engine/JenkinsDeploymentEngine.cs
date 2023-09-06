@@ -28,8 +28,8 @@ namespace Modm.Engine
         {
             var descriptor = await downloader.DownloadAsync(new ArtifactsUri(artifactsUri));
 
-            var jobInfo =  client.Jobs.Get<JenkinsJobBase>("modmserviceprincipal");
-            var result = await client.Jobs.BuildAsync("modmserviceprincipal");
+            var jobInfo =  client.Jobs.Get<JenkinsJobBase>("modmterraform");
+            var result = await client.Jobs.BuildAsync("modmterraform");
 
             // TODO: fill out results. this is just stubbed out only
             return new StartDeploymentResult();

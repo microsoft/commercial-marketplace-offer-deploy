@@ -5,9 +5,12 @@ services:
       - 8083:8080
     volumes:
       - ~/.azure:/root/.azure
-      - ./test/v2/terraform-storage:/solutions/terraform-old
-      - ./test/v2/drop:/solutions/terraform
-      - ./jenkins/definitions:/solutions/job-definitions
+      - ./test/v2/drop:/var/jenkins_home/solutions/terraform
+      - ./jenkins/definitions:/var/jenkins_home/job-definitions
     environment:
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
-      - DEFAULT_ADMIN_PASSWORD=admin
+      - DEFAULT_ADMIN_PASSWORD=$ADMIN_PWD
+      - AZURE_SUBSCRIPTION_ID=$AZURE_SUBSCRIPTION_ID
+      - AZURE_CLIENT_ID=$AZURE_CLIENT_ID
+      - AZURE_CLIENT_SECRET=$AZURE_CLIENT_SECRET
+      - AZURE_TENANT_ID=$AZURE_TENANT_ID
