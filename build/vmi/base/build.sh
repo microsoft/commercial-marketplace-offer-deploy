@@ -1,74 +1,96 @@
 #!/bin/bash
 
-BASE_VERSION="0.0.0"
+# import functions
+source ./build/vmi/scripts/shared.sh
+
+# -------------------------------------------------------------------------------
+
+# Defaults
+RESOURCE_GROUP_NAME="modm-dev-vmi"
+IMAGE_NAME="modm-base"
+IMAGE_VERSION="0.0.0"
+IMAGE_OFFER="modm-base-ubuntu"
+BUILD_ENVIRONMENT=$(get_build_environment)
+
+
+if [ "$BUILD_ENVIRONMENT" = "Local" ]; then
+    export_packer_env_vars_from_file
+fi
+
+# override default resource group name if packer var declares the resource group
+if [ -n "$PKR_VAR_resource_group" ]; then
+    RESOURCE_GROUP_NAME=$PKR_VAR_resource_group
+fi
+
 source ./build/vmi/scripts/nextversion.sh
 
 if [ $# -ne 1 ]; then
-    BASE_VERSION=$(get_next_image_version "modmvmi-base" "modm-dev-vmi")
+    IMAGE_VERSION=$(get_next_image_version $IMAGE_NAME $RESOURCE_GROUP_NAME)
 else
-    BASE_VERSION="$1"
+    IMAGE_VERSION="$1"
 fi
 
-echo "Building modm version $BASE_VERSION"
+export PKR_VAR_image_name="${IMAGE_NAME}"
+export PKR_VAR_image_version="${IMAGE_VERSION}"
 
-# Check if running in GitHub Actions environment
-if [ -n "$GITHUB_ACTIONS" ]; then
-    echo "Running in GitHub Actions environment"
-    # You don't need to check for the .env.pkrvars file or export variables here
-else
-    echo "Running locally"
-    # make sure we have a vars file before proceeding
-    env_pkrvars_file=./obj/.env.pkrvars
+# PREAMBLE
+echo ""
+echo "Environment Variables "
+echo "---------------------------------------------"
 
-    if [ ! -f $env_pkrvars_file ];
-    then
-        echo "./obj/.env.pkrvars file is required."
-        exit 1
-    else
-        echo "Packer variables env var file present."
-    fi
+echo "BUILD_ENVIRONMENT:        $BUILD_ENVIRONMENT"
+echo "RESOURCE_GROUP_NAME:      $RESOURCE_GROUP_NAME"
+echo "IMAGE_NAME:               $IMAGE_NAME"
+echo "IMAGE_VERSION:            $IMAGE_VERSION"
+echo ""
+echo "Packer Variables "
+echo "---------------------------------------------"
+print_packer_variables
 
-    # export packer env variables so they get picked up
-    export $(grep -v '^#' $env_pkrvars_file | xargs)
-fi
-
-export PKR_VAR_sig_image_version=modmvmi-base-${BASE_VERSION}
-export PKR_VAR_managed_image_name=modmvmi-base-${BASE_VERSION}
-export PKR_VAR_sig_image_version=${BASE_VERSION}
 
 # Check if the Shared Image Gallery exists
-if ! az sig show --resource-group $PKR_VAR_sig_gallery_resource_group --gallery-name $PKR_VAR_sig_gallery_name &>/dev/null; then
+if ! az sig show --resource-group $RESOURCE_GROUP_NAME --gallery-name $PKR_VAR_image_gallery_name &>/dev/null; then
 
     # Create a Shared Image Gallery
-    az sig create --resource-group $PKR_VAR_sig_gallery_resource_group --gallery-name $PKR_VAR_sig_gallery_name --location $PKR_VAR_location
+    az sig create --resource-group $RESOURCE_GROUP_NAME --gallery-name $PKR_VAR_image_gallery_name --location $PKR_VAR_location
 
-    echo "Shared Image Gallery created."
+    if [ $? -ne 0 ]; then
+        echo "Shared Image Gallery creation failed."
+        exit 1
+    fi
 fi
 
 az sig image-definition show \
   --subscription $PKR_VAR_subscription_id \
-  --resource-group $PKR_VAR_sig_gallery_resource_group \
-  --gallery-name $PKR_VAR_sig_gallery_name \
-  --gallery-image-definition $PKR_VAR_sig_image_name \
+  --resource-group $RESOURCE_GROUP_NAME \
+  --gallery-name $PKR_VAR_image_gallery_name \
+  --gallery-image-definition $PKR_VAR_image_name \
   --output none
 
-if [ $? -eq 0 ]; then
-  echo "Image definition $image_definition_name already exists."
-else
-  echo "Image definition $image_definition_name doesn't exist. Creating..."
+if [ $? -ne 0 ]; then
+  echo "Creating image definition [$PKR_VAR_image_name] in $PKR_VAR_image_gallery_name"
   
   az sig image-definition create \
     --subscription $PKR_VAR_subscription_id \
-    --resource-group $PKR_VAR_sig_gallery_resource_group \
-    --gallery-name $PKR_VAR_sig_gallery_name \
-    --gallery-image-definition $PKR_VAR_sig_image_name \
+    --resource-group $RESOURCE_GROUP_NAME \
+    --gallery-name $PKR_VAR_image_gallery_name \
+    --gallery-image-definition $PKR_VAR_image_name \
     --publisher Microsoft \
-    --offer MODMBaseVMI \
-    --sku MODMBaseVMI \
-    --os-type Linux
+    --offer $IMAGE_OFFER \
+    --sku $IMAGE_OFFER \
+    --os-type Linux \
+    --location $PKR_VAR_location
+
+    if [ $? -ne 0 ]; then
+        echo "Image definition creation failed."
+        exit 1
+    fi
 fi
 
-
+echo ""
 # Run the Packer command
-packer init ./build/vmi/base/base.pkr.hcl
-packer build ./build/vmi/base/base.pkr.hcl
+packer_file=./build/vmi/base/vmi.pkr.hcl
+echo "Executing Packer build against [$packer_file]"
+
+# packer init $packer_file
+# packer build $packer_file

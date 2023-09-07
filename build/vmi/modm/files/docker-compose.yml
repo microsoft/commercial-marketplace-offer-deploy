@@ -1,3 +1,4 @@
+
 services:
   caddy:
     image: caddy:2-alpine
@@ -5,10 +6,10 @@ services:
       - 80:80
       - 443:443
     volumes:
-      - /usr/local/source/build/vm/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ${MODM_HOME}/source/caddy/Caddyfile:/etc/caddy/Caddyfile
     restart: unless-stopped
     env_file:
-      - /usr/local/source/build/vm/caddy/.env
+      - ${MODM_HOME}/.env
   modm:
     image: modm:latest
     ports:
@@ -16,11 +17,13 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5000
+    env_file:
+      - ${MODM_HOME}/.env
   jenkins:
     image: jenkins:latest
     ports:
       - 8080:8080
     volumes:
-      - /usr/local/modm:/var/jenkins_home/modm
+      - ${MODM_HOME}:/var/jenkins_home/modm
     environment:
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false

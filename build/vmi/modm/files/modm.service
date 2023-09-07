@@ -1,0 +1,11 @@
+[Unit]
+Description=MODM Service Host
+After=docker.service
+
+[Service]
+Type=notify
+EnvironmentFile=/etc/environment
+ExecStart=/usr/sbin/modm-servicehost
+
+[Install]
+WantedBy=multi-user.target

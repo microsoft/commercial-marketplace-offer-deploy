@@ -1,3 +1,4 @@
+
 variable "client_id" {
   type = string
 }
@@ -50,6 +51,16 @@ variable "custom_managed_image_name" {
   type = string
 }
 
+variable "modm_version" {
+  type = string
+  default = ""
+}
+
+variable "modm_home" {
+  type = string
+  default = "/usr/local/modm"
+}
+
 packer {
   required_plugins {
     azure = {
@@ -80,10 +91,25 @@ source "azure-arm" "modm_image" {
 build {
   sources = ["source.azure-arm.modm_image"]
 
+  provisioner "file" {
+    source = "build/vmi/modm/files/docker-compose.yml"
+    destination = "${var.modm_home}/docker-compose.yml"
+  }
+
+  provisioner "file" {
+    source = "build/vmi/modm/files/modm.service"
+    destination = "/etc/systemd/system"
+  }
+
+  provisioner "file" {
+    source = "build/vmi/modm/files/setup.sh"
+    destination = "${var.modm_home}/scripts/setup.sh"
+  }
+
   provisioner "shell" {
     execute_command = "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'"
     inline          = [
-      "/usr/local/source/build/vmi/modm/setup.sh",
+      "echo MODM_VERSION=${var.modm_version}  | sudo tee --append $MODM_HOME/.env",
       "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync",
     ]
     inline_shebang  = "/bin/sh -x"
