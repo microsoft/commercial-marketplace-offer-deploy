@@ -1,5 +1,8 @@
 name: Build and Publish Virtual Machine Images
 
+env:
+  default_image_version: 0.0.${{ github.run_number }}
+
 permissions:
   id-token: write
   contents: read
