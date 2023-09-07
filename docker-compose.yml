@@ -8,13 +8,19 @@ services:
       - ASPNETCORE_URLS=http://+:5000
     volumes:
       - ~/.azure:/root/.azure
+      - ./test/v2/drop:/artifacts/drop
   jenkins:
     image: jenkins:latest
     ports:
       - 8080:8080
+    volumes:
+      - ~/.azure:/root/.azure
+      - ./test/v2/drop:/var/jenkins_home/solutions/terraform
+      - ./jenkins/definitions:/var/jenkins_home/job-definitions
     environment:
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
       - DEFAULT_ADMIN_PASSWORD=admin
-      - AZURE_SUBSCRIPTION_ID=${AZURE_SUBSCRIPTION_ID}
-      - AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
-      - AZURE_CLIENT_SECRET=${AZURE_SUBSCRIPTION_ID}
+      - AZURE_SUBSCRIPTION_ID=$AZURE_SUBSCRIPTION_ID
+      - AZURE_CLIENT_ID=$AZURE_CLIENT_ID
+      - AZURE_CLIENT_SECRET=$AZURE_CLIENT_SECRET
+      - AZURE_TENANT_ID=$AZURE_TENANT_ID
