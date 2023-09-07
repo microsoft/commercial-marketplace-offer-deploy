@@ -5,6 +5,8 @@ if [ $# -ne 2 ]; then
   exit 1
 fi
 
+export MODM_HOME=/usr/local/modm
+
 export ARTIFACTS_LOCATION="$1"
 export VM_FQDN="$2"
 
@@ -13,10 +15,11 @@ echo "FQDN = $VM_FQDN"
 
 # next, setup caddy's required .env file. This file is referenced in the docker-compose file for caddy to run properly and compose
 
-# write the fqdn to an env file that will be used by caddy for its environment variables
+# write the fqdn to an env file that will be used by caddy and modm for its environment variables
 # this will allow the site address to be set to the VM's FQDN
-echo SITE_ADDRESS=$VM_FQDN | sudo tee /usr/local/source/build/vm/caddy/.env
-echo ACME_ACCOUNT_EMAIL=nowhere@nowhere.com  | sudo tee --append /usr/local/source/build/vm/caddy/.env
+echo SITE_ADDRESS=$VM_FQDN | sudo tee $MODM_HOME/.env
+echo ACME_ACCOUNT_EMAIL=nowhere@nowhere.com  | sudo tee --append $MODM_HOME/.env
 
-sudo docker compose -f /usr/local/source/build/vm/docker-compose.yml -p modm up -d --force-recreate
-# sudo docker compose -f /usr/local/source/build/vm/docker-compose.yml -p modm down
+# Start up docker compose
+# TODO: call entrypoint using docker run instead, attach the .env file
+sudo docker compose -f $MODM_HOME/docker-compose.yml -p modm up -d --force-recreate

@@ -17,9 +17,6 @@
 #   next_version=$(get_next_image_version "modmvmi" "modm-dev-vmi")
 #
 # ===========================================================================================
-
-#!/bin/bash
-
 get_next_image_version() {
     local image_name="$1"
     local resource_group="$2"
