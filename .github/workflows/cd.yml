@@ -29,7 +29,7 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    - name: 'Az CLI login'
+    - name: Azure Login
       uses: azure/login@v1
       with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
