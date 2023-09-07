@@ -2,7 +2,7 @@
 
 echo "Hello crom deploy.sh"
 
-cd $JENKINS_HOME/solutions/terraform/content
+cd $MODM_HOME/content
 
 # Initialize Terraform (required before first run)
 terraform init -backend=false

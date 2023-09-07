@@ -9,8 +9,9 @@ import java.io.File
 import hudson.model.FreeStyleProject
 import com.cloudbees.hudson.plugins.folder.*
 
-def jobConfigXmlPath = '/var/jenkins_home/job-definitions/terraform.xml'
-def jobName = 'modmterraform'
+def jobName = 'terraform'
+def modmHome = System.getenv('MODM_HOME')
+def jobConfigXmlPath = "${modmHome}/source/jenkins/definitions/${jobName}/config.xml"
 
 def instance = Jenkins.get()
 def xmlContent = new File(jobConfigXmlPath).text

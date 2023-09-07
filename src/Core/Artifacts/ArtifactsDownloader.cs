@@ -36,7 +36,9 @@ namespace Modm.Artifacts
         public async Task<ArtifactsDescriptor> DownloadAsync(ArtifactsUri uri, ArtifactsDownloadOptions options)
         {
             var httpResult = await client.GetAsync(uri);
-            var archiveFilePath = Path.Combine(options.SavePath, uri.FileName);
+            
+            var resolvedSavePath = Environment.ExpandEnvironmentVariables(options.SavePath);
+            var archiveFilePath = Path.GetFullPath(Path.Combine(resolvedSavePath, uri.FileName));
 
             using (var resultStream = await httpResult.Content.ReadAsStreamAsync())
             using (var fileStream = File.Create(archiveFilePath))
@@ -45,13 +47,13 @@ namespace Modm.Artifacts
                 await resultStream.FlushAsync();
             }
 
-            ZipFile.ExtractToDirectory(archiveFilePath, options.SavePath, overwriteFiles: true);
+            ZipFile.ExtractToDirectory(archiveFilePath, resolvedSavePath, overwriteFiles: true);
 
 
             // TODO: extract information based on the manifest contents from the artifacts
 
             return new ArtifactsDescriptor {
-                FolderPath = options.SavePath,
+                FolderPath = resolvedSavePath,
                 Definition = new DeploymentDefinition
                 {
                     DeploymentType = DeploymentType.Terafform,

@@ -13,7 +13,7 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
       <hudson.tasks.Shell>
-          <command>$JENKINS_HOME/scripts/deploy.sh</command>
+          <command>$MODM_HOME/source/jenkins/definitions/terraform/deploy.sh</command>
           <configuredLocalRules />
       </hudson.tasks.Shell>
   </builders>
