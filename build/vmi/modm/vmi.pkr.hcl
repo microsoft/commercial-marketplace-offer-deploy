@@ -29,6 +29,7 @@ variable "base_image_name" {
 
 variable "base_image_version" {
   type = string
+  default = "latest"
 }
 
 variable "image_name" {
@@ -84,7 +85,7 @@ source "azure-arm" "modm" {
     image_version    = var.base_image_version
   }
 
-  managed_image_name                = var.image_name
+  managed_image_name                = "${var.image_name}-${var.image_version}"
   managed_image_resource_group_name = var.resource_group
 
   shared_image_gallery_destination {
@@ -102,9 +103,9 @@ build {
 
   provisioner "file" {
     sources = [
-      "build/vmi/modm/files/modm.service",
-      "build/vmi/modm/files/Caddyfile",
-      "build/vmi/modm/files/docker-compose.yml",
+      "build/vmi/${var.image_name}/files/modm.service",
+      "build/vmi/${var.image_name}/files/Caddyfile",
+      "build/vmi/${var.image_name}/files/docker-compose.yml",
     ]
     destination = "/tmp/"
   }

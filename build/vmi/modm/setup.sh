@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo ""
+
 # copy files to the correct location
 echo "Copying caddy and docker compose files to $MODM_HOME"
 sudo cp /tmp/Caddyfile $MODM_HOME/Caddyfile
@@ -12,6 +14,7 @@ sudo git pull
 
 # build service host and install it
 # ----------------------------------
+echo ""
 echo "Building ServiceHost"
 csproj=./src/ServiceHost/ServiceHost.csproj
 out_path=./bin/servicehost
@@ -27,10 +30,11 @@ sudo cp /tmp/modm.service /etc/systemd/system/modm.service
 sudo cp $out_path/publish/modm-servicehost /usr/sbin/modm-servicehost
 
 sudo systemctl daemon-reload
-sudo systemctl status modm-servicehost
+sudo systemctl status modm.service
 
 # build final docker images that will represent MODM backend and its deployment engine (jenkins)
 # ----------------------------------
+echo ""
 echo "Building container images"
 sudo docker build ./src -t modm -f ./build/container/Dockerfile.modm  
 sudo docker build . -t jenkins -f ./build/container/Dockerfile.jenkins
