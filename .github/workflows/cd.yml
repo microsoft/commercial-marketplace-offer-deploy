@@ -32,9 +32,15 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
+    
+    - name: Install Packer
+      uses: hashicorp/packer-github-actions@master
+      with:
+        command: version
+        target: .
     - name: 'Run Azure CLI commands'
       run: |
           az account show
-          az group list
-          pwd 
+    - name: Run Packer script
+      run: |
+        ./scripts/build-vmi.sh --image-name modm --image-version ${{ vars.image_version }} --image-offer ${{ vars.image_offer }} 
