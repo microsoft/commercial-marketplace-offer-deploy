@@ -70,7 +70,6 @@ source "azure-arm" "modm" {
   client_id                         = var.client_id
   client_secret                     = var.client_secret
   location                          = var.location
-  os_type                           = "Linux"
   subscription_id                   = var.subscription_id
   tenant_id                         = var.tenant_id
   os_type                           = "Linux"
