@@ -1,91 +1,40 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+name: Build and Publish Virtual Machine Images
 
-name: CD
+permissions:
+  id-token: write
+  contents: read
 
-env:
-  targetGitHubAccount: gpsuscodewith
-  versionPrefix: v0.1.
-  imageName: modm
-  RESOURCE_GROUP_NAME: development-${{ github.run_number }}
 on:
   workflow_dispatch:
 
 jobs:
-
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
+    environment: dev
 
-    - name: Set up Go
-      uses: actions/setup-go@v3
+    env:
+      PKR_VAR_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+      PKR_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      PKR_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+      PKR_VAR_resource_group: ${{ vars.resource_group }}
+      PKR_VAR_location: ${{ vars.location }}
+      PKR_VAR_image_gallery_name: ${{ vars.image_gallery_name }}
+      PKR_VAR_base_image_name: ${{ vars.base_image_name }}
+      PKR_VAR_base_image_version: ${{ vars.base_image_version }}
+          
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: 'Az CLI login'
+      uses: azure/login@v1
       with:
-        go-version: 1.19
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    - name: Build binaries
-      run: make build
-  
-  push:     
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-  
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v2
-  
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-    - name: Login to GitHub Container Registry
-      run: echo ${{ secrets.CR_PAT2 }} | docker login ghcr.io -u ${{ env.targetGitHubAccount }} --password-stdin
-    - name: Build and push to registry
-      uses: docker/build-push-action@v4
-      with:
-        context: .
-        push: true
-        file: ./build/package/Dockerfile
-        tags: ghcr.io/${{ env.targetGitHubAccount }}/${{ env.imageName }}:latest, ghcr.io/${{ env.targetGitHubAccount }}/${{ env.imageName }}:${{ env.versionPrefix }}${{github.run_number}}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-        provenance: false
-
-  azure-deploy:
-    runs-on: ubuntu-latest
-    needs: [push]
-    steps:
-      - uses: actions/checkout@v3
-      - uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-    
-#       - name: Clean up resource groups
-#         uses: azure/CLI@v1 
-#         with: 
-#           azcliversion: 2.30.0 
-#           inlineScript: | 
-#             filter="[?starts_with(name,'development')].[name]" 
-#             groups=$(az group list --query $filter -o tsv) 
-#             for g in $groups; do 
-#               az group delete -n $g --yes --no-wait; 
-#             done 
-#             az group create -l eastus -n $RESOURCE_GROUP_NAME
-
-      # Replace the placeholder registry password with secret
-      - name: Find and Replace
-        uses: jacobtomlinson/gha-find-replace@v2
-        with:
-          find: "<placeholderRegistryPassword>"
-          replace: "${{ secrets.CR_PAT2 }}"
-          include: "templates/**"
-          regex: true
-
-      - name: Deploy resources
-        uses: azure/CLI@v1 
-        with: 
-          azcliversion: 2.30.0 
-          inlineScript: |
-            cd ./templates 
-            az deployment group create --resource-group $RESOURCE_GROUP_NAME \
-                --template-file ./main.bicep \
-                --parameters acmeEmail=nowhere@domain.com appVersion=v0.1.${{github.run_number}}
+    - name: 'Run Azure CLI commands'
+      run: |
+          az account show
+          az group list
+          pwd 

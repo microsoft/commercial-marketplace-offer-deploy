@@ -234,7 +234,10 @@ _Pvt_Extensions
 
 # FAKE - F# Make
 .fake/
-.env
 
 # Home directory used for content
 /home/
+
+# all envs
+.env
+.env.*
