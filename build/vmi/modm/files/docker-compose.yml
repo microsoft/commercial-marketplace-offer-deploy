@@ -19,6 +19,8 @@ services:
       - ASPNETCORE_URLS=http://+:5000
     env_file:
       - ${MODM_HOME}/.env
+    volumes:
+      - ${MODM_HOME}:${MODM_HOME}
   jenkins:
     image: jenkins:latest
     ports:
