@@ -29,6 +29,8 @@ def store = instance.getExtensionList(SYSTEM_CREDENTIALS_PROVIDER)[0].getStore()
 final subscriptionId = System.getenv('AZURE_SUBSCRIPTION_ID')
 final clientId = System.getenv('AZURE_CLIENT_ID')
 final clientSecret = System.getenv('AZURE_CLIENT_SECRET')
+final tenantId = System.getenv('AZURE_TENANT_ID') 
+
 
 // if there's a client ID and a client secret present, then it should be a service principal
 // otherwise, default to managed identity
@@ -41,6 +43,8 @@ if (shouldCredentialsBeServicePrincipal(clientId, clientSecret)) {
                 subscriptionId,
                 clientId,
                 clientSecret)
+        // Set the tenant ID for the service principal credentials
+        servicePrincipalCredentials.tenant = tenantId
         store.addCredentials(domain, servicePrincipalCredentials)
 
 } else { // managed identity
@@ -53,5 +57,6 @@ if (shouldCredentialsBeServicePrincipal(clientId, clientSecret)) {
 
         managedIdentityCredentials.subscriptionId = subscriptionId
         managedIdentityCredentials.clientId = clientId
+        managedIdentityCredentials.tenant = tenantId 
         store.addCredentials(domain, managedIdentityCredentials)
 }

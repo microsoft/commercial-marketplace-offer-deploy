@@ -1,5 +1,6 @@
 ﻿using System;
 using JenkinsNET;
+using JenkinsNET.Models;
 using Modm.Artifacts;
 using Modm.Engine.Jenkins;
 
@@ -27,9 +28,9 @@ namespace Modm.Engine
         {
             var descriptor = await downloader.DownloadAsync(new ArtifactsUri(artifactsUri));
 
-            // TODO: use result.GetQueueItemNumber() and whatever else to have the backend start to poll for the information
+            var jobInfo =  client.Jobs.Get<JenkinsJobBase>(descriptor.Definition.DeploymentType);
             var result = await client.Jobs.BuildAsync(descriptor.Definition.DeploymentType);
-           
+
             // TODO: fill out results. this is just stubbed out only
             return new StartDeploymentResult();
         }

@@ -3,7 +3,7 @@
   <description />
   <keepDependencies>false</keepDependencies>
   <properties />
-  <scm class="hudson.scm.NullSCM" />
+  <scm class="hudson.scm.NullSCM" /> 
   <canRoam>true</canRoam>
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
@@ -13,7 +13,7 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
       <hudson.tasks.Shell>
-          <command>cd $JENKINS_HOME/scripts . ./deploy.sh</command>
+          <command>$MODM_HOME/source/jenkins/definitions/terraform/deploy.sh</command>
           <configuredLocalRules />
       </hudson.tasks.Shell>
   </builders>
