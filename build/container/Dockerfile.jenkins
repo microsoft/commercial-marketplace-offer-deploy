@@ -26,7 +26,6 @@ RUN echo 2.0 > /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state
 RUN mkdir -p $JENKINS_HOME/init.groovy.d
 COPY jenkins/init-hooks/*.groovy $JENKINS_HOME/init.groovy.d
 
-
 # plugins
 USER jenkins
 
