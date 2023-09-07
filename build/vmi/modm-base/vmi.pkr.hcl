@@ -71,6 +71,7 @@ source "azure-arm" "base" {
   tenant_id                         = var.tenant_id
   managed_image_name                = "${var.image_name}-${var.image_version}"
   managed_image_resource_group_name = var.resource_group
+
   shared_image_gallery_destination {
       subscription     = var.subscription_id
       resource_group   = var.resource_group
@@ -106,7 +107,7 @@ build {
         "MODM_HOME=${var.modm_home}",
         "MODM_REPO_BRANCH=${var.modm_repo_branch}"
       ]
-    script = "build/vmi/base/setup.sh"
+    script = "build/vmi/${var.image_name}/setup.sh"
   }
 
   provisioner "shell" {

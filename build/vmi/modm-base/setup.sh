@@ -1,11 +1,23 @@
 #!/bin/bash
 
+# ===========================================================================================
+#   DESCRIPTION:
+#     Provisioning shell script, executed during Packer build
+#
+#   Execution context:
+#     This script is executed on the VM by Packer, not locally
+# ===========================================================================================
+
+
+echo set debconf to Noninteractive
+echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections
+
+
 # prep with prerequisites
-sudo apt-get update
+sudo apt-get update -y
 sudo apt-get upgrade -y
 
 # Docker engine
-sudo apt-get update
 sudo apt-get install ca-certificates curl gnupg -y
 
 # Add Docker GPG key and repository
@@ -17,7 +29,7 @@ echo \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 # Update package lists after adding the repository
-sudo apt-get update
+sudo apt-get update -y
 
 # Install Docker packages
 sudo apt-get install docker-ce docker-ce-cli containerd.io -y
@@ -25,8 +37,16 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io -y
 # Optional: Install additional Docker-related packages
 sudo apt-get install docker-buildx-plugin docker-compose -y
 
-# build images
-cd /usr/local/source
+# Install .NET 7
+sudo apt-get install -y dotnet-sdk-7.0
+
+# clone the MODM source into source
+sudo git clone --depth=1 --branch $MODM_REPO_BRANCH https://github.com/microsoft/commercial-marketplace-offer-deploy.git $MODM_HOME/source
+
+# Initial image setup so we can get cached image layers to speed up builds for the final vmi
+cd $MODM_HOME/source
+
+echo "Building docker images."
 
 sudo docker build ./src -t modm -f ./build/container/Dockerfile.modm  
 sudo docker build . -t jenkins -f ./build/container/Dockerfile.jenkins

@@ -3,61 +3,95 @@
 # ===========================================================================================
 #
 #   DESCRIPTION:
-#   This script defines args/options for the VM Image (VMI) build that is driven by packer
+#   This script drives the packer builds
 #   
-#   DEPENDENCIES:
-#     args.sh - This script is required to be run first in order to get all input args set
-# 
+#   imports
+    source ./build/vmi/scripts/shared.sh
+#
+#   Example Call (from root of repository):
+#       ./build/vmi/build.sh -v 0.0.301 -n modm-base -o modm-base-ubuntu
 # ===========================================================================================
 
-source ./build/vmi/args.sh
+# args
+# ------------------------------------------------------------
 
-# verify arg inputs that were processed from args.sh
+POSITIONAL_ARGS=()
 
+while [[ $# -gt 0 ]]; do
+case $1 in
+    -n|--image-name)
+    IMAGE_NAME="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -v|--image-version)
+    IMAGE_VERSION="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -o|--image-offer)
+    IMAGE_OFFER="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -*|--*)
+    echo "Unknown option $1"
+    exit 1
+    ;;
+    *)
+    POSITIONAL_ARGS+=("$1") # save positional arg
+    shift # past argument
+    ;;
+esac
+done
+set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
+
+guard_against_empty --value "$IMAGE_NAME" --error-message "Image Name is required. Use --image-name|-n to set."
+guard_against_empty --value "$IMAGE_VERSION" --error-message "Image Version is required. Use --image-version|-v to set."
+guard_against_empty --value "$IMAGE_VERSION" --error-message "Image Offer is required. Use --image-offer|-o to set."
+
+# Defaults
+# ------------------------------------------------------------
+
+RESOURCE_GROUP_NAME="modm-dev-vmi"
+BUILD_ENVIRONMENT=$(get_build_environment)
+
+
+if [ "$BUILD_ENVIRONMENT" = "Local" ]; then
+    export_packer_env_vars_from_file
+fi
+
+# override default resource group name if packer var declares the resource group
+if [ -n "$PKR_VAR_resource_group" ]; then
+    RESOURCE_GROUP_NAME=$PKR_VAR_resource_group
+fi
+
+export PKR_VAR_image_name="${IMAGE_NAME}"
+export PKR_VAR_image_version="${IMAGE_VERSION}"
+
+# DEMANDS
+demand_resource_group $RESOURCE_GROUP_NAME
+
+# PREAMBLE
 echo ""
-echo "------------------------------------"
-echo "ENV FILE        = ${ENV_VARS_FILE}"
-echo "VERSION         = ${VERSION}"
-echo "RESOURCE GROUP  = ${RESOURCE_GROUP}"
-echo "GALLERY NAME    = ${GALLERY_NAME}"
-echo "LOCATION        = ${LOCATION}"
-echo "CONFIRMED       = ${CONFIRMED} (bypass prompts to proceed)"
+echo "Environment Variables "
+echo "---------------------------------------------"
+
+echo "BUILD_ENVIRONMENT:        $BUILD_ENVIRONMENT"
+echo "RESOURCE_GROUP_NAME:      $RESOURCE_GROUP_NAME"
+echo "IMAGE_NAME:               $IMAGE_NAME"
+echo "IMAGE_VERSION:            $IMAGE_VERSION"
 echo ""
-echo "PACKER VARIABLES:"
-echo "  client_id            = ${PKR_VAR_client_id}"
-echo "  client_secret        = ***"
-echo "  subscription_id      = ${PKR_VAR_subscription_id}"
-echo "  tenant_id            = ${PKR_VAR_tenant_id}"
-echo "  location             = ${PKR_VAR_location}"
-echo "  managed_image_name   = ${PKR_VAR_managed_image_name}"
-echo "  resource_group_name  = ${PKR_VAR_resource_group_name}"
+echo "Packer Variables "
+echo "---------------------------------------------"
+print_packer_variables
 echo ""
 
+ensure_shared_image_gallery -g $RESOURCE_GROUP_NAME -n $PKR_VAR_image_gallery_name -l $PKR_VAR_location
 
-function ensure_shared_image_gallery() {
-  echo "Checking shared image gallery [$GALLERY_NAME]"
-  az sig show --resource-group $RESOURCE_GROUP --gallery-name $GALLERY_NAME --query id --output tsv
+ensure_image_definition -s $PKR_VAR_subscription_id -g $RESOURCE_GROUP_NAME -l $PKR_VAR_location \
+    --image-name $PKR_VAR_image_name \
+    --image-gallery-name $PKR_VAR_image_gallery_name \
+    --image-offer $IMAGE_OFFER
 
-  # $? will contain the exit status of the last command
-  if [ $? -ne 0 ]; then
-      echo "Gallery does not exist. Creating gallery [$GALLERY_NAME] in [$RESOURCE_GROUP]"
-      az sig create --resource-group $RESOURCE_GROUP --gallery-name $GALLERY_NAME --location $LOCATION
-  fi
-
-  echo ""
-}
-
-# we're going to have all incoming input variable values come from environment variables, not a var file
-function packer_build() {
-  echo "Executing Packer build."
-  
-  packer init ./build/vmi/modm.pkr.hcl
-  packer build ./build/vmi/modm.pkr.hcl
-}
-
-
-# -------------------------------------------------------------------------
-# main
-
-ensure_shared_image_gallery
-packer_build
+execute_packer --image-name $IMAGE_NAME
