@@ -10,12 +10,14 @@ on:
 env:
   image_version: 0.0.${{ github.run_number }}
 
+  # reference
+  # conditional steps: https://www.meziantou.net/executing-github-actions-jobs-or-steps-only-when-specific-files-change.htm
 jobs:
   should-build-base:
     runs-on: ubuntu-latest
     # Map a step output to a job output
     outputs:
-      output1: ${{ steps.step1.outputs.test }}
+      shouldBuildBaseVmi: ${{ steps.step1.outputs.test }}
     steps:
       - id: step1
         run: echo "test=hello" >> "$GITHUB_OUTPUT"
