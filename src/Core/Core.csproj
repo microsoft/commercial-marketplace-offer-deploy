@@ -22,6 +22,7 @@
     <None Remove="Deployments\" />
     <None Remove="Engine\Jenkins\" />
     <None Remove="Extensions\" />
+    <None Remove="Azure\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Artifacts\" />
@@ -29,5 +30,6 @@
     <Folder Include="Deployments\" />
     <Folder Include="Engine\Jenkins\" />
     <Folder Include="Extensions\" />
+    <Folder Include="Azure\" />
   </ItemGroup>
 </Project>
