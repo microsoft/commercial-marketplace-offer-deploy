@@ -18,36 +18,46 @@
 #
 # ===========================================================================================
 get_next_image_version() {
-    local image_name="$1"
-    local resource_group="$2"
-    local latest_version="0.0.0"
+    # parse options as --option optionValue
+    POSITIONAL_ARGS=()
 
-    # Get a list of image versions in the resource group
-    versions=$(az image list --resource-group "$resource_group" --query "[?starts_with(name, '$image_name-')].name" --output tsv)
-
-    # If no versions found, return "not found" error
-    if [ -z "$versions" ]; then
-        echo "Image $image_name not found in resource group $resource_group"
+    while [[ $# -gt 0 ]]; do
+    case $1 in
+        -n|--gallery-name)
+        gallery_name="$2"
+        shift # past argument
+        shift # past value
+        ;;
+        -g|--resource-group)
+        resource_group="$2"
+        shift # past argument
+        shift # past value
+        ;;
+        -i|--image-name)
+        image_name="$2"
+        shift # past argument
+        shift # past value
+        ;;
+        -*|--*)
+        echo "Unknown option $1"
         exit 1
-    fi
-
-    # Loop through versions to find the latest
-    for version in $versions; do
-        version_number=$(echo "$version" | awk -F- '{print $NF}' | cut -d'.' -f3)
-        if [ "$version_number" -gt "$(echo "$latest_version" | cut -d'.' -f3)" ]; then
-            latest_version=$(echo "$version" | awk -F- '{print $NF}')
-        fi
+        ;;
+        *)
+        POSITIONAL_ARGS+=("$1") # save positional arg
+        shift # past argument
+        ;;
+    esac
     done
+    set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
+
+    # get latest version
+    latest_version=$(az sig image-version list -g $resource_group -i $image_name -r $gallery_name -o tsv --query "[-1:].name")
 
     # Increment the patch version
-    IFS='.' read -r -a version_parts <<< "$latest_version"
+    IFS="." read -r -a version_parts <<< "$latest_version"
     new_patch=$((version_parts[2] + 1))
     next_version="${version_parts[0]}.${version_parts[1]}.$new_patch"
 
     # Return the formatted next version without image name
     echo "$next_version"
 }
-
-
-
-

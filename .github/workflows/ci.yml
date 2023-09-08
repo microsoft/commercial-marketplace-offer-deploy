@@ -1,0 +1,96 @@
+name: Build and Publish Virtual Machine Images
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_dispatch:
+
+env:
+  image_version: 0.0.${{ github.run_number }}
+
+jobs:
+  should-build-base:
+    runs-on: ubuntu-latest
+    # Map a step output to a job output
+    outputs:
+      output1: ${{ steps.step1.outputs.test }}
+    steps:
+      - id: step1
+        run: echo "test=hello" >> "$GITHUB_OUTPUT"
+
+  build-base-vmi:
+    runs-on: ubuntu-latest
+    environment: dev  
+    env:
+      PKR_VAR_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+      PKR_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      PKR_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+      PKR_VAR_resource_group: ${{ vars.resource_group }}
+      PKR_VAR_location: ${{ vars.location }}
+      PKR_VAR_image_gallery_name: ${{ vars.image_gallery_name }}
+      PKR_VAR_base_image_name: ${{ vars.base_image_name }}
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    
+    - name: Install Packer
+      uses: hashicorp/packer-github-actions@master
+      with:
+        command: version
+        target: .
+    - name: Build VMI
+      run: |
+        source ./build/vmi/scripts/nextversion.sh
+        local image_version=$(get_next_image_version \
+          --image-name ${{ vars.base_image_name }} \
+          --gallery-name ${{ vars.image_gallery_name }} \
+          --resource-group ${{ vars.resource_group }})
+
+        ./scripts/build-vmi.sh \
+          --image-name ${{ vars.base_image_name }} \
+          --image-version $image_version \
+          --image-offer ${{ vars.base_image_offer }} 
+      
+  build-vmi:
+    runs-on: ubuntu-latest
+    environment: dev  
+    env:
+      PKR_VAR_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+      PKR_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      PKR_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+      PKR_VAR_resource_group: ${{ vars.resource_group }}
+      PKR_VAR_location: ${{ vars.location }}
+      PKR_VAR_image_gallery_name: ${{ vars.image_gallery_name }}
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    
+    - name: Install Packer
+      uses: hashicorp/packer-github-actions@master
+      with:
+        command: version
+        target: .
+    - name: Build VMI
+      run: |
+        ./scripts/build-vmi.sh \
+          --image-name ${{ vars.image_name }} \
+          --image-version ${{ env.image_version }} \
+          --image-offer ${{ vars.image_offer }} 
