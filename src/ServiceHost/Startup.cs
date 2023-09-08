@@ -16,13 +16,13 @@ namespace Modm.ServiceHost
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var fqdn = await metadataService.GetFqdnAsync();
-            _logger.LogInformation("FQDN: {fqdn}", fqdn);
-
             while (!stoppingToken.IsCancellationRequested)
             {
-                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                await Task.Delay(1000, stoppingToken);
+                var fqdn = await metadataService.GetFqdnAsync();
+                _logger.LogInformation("FQDN: {fqdn}", fqdn);
+
+                _logger.LogInformation("Running at: {time}", DateTimeOffset.Now);
+                await Task.Delay(10000, stoppingToken);
             }
         }
     }
