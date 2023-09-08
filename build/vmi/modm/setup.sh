@@ -9,6 +9,8 @@ sudo cp /tmp/docker-compose.yml $MODM_HOME/docker-compose.yml
 
 echo "Performing git pull on branch [$MODM_REPO_BRANCH]"
 cd $MODM_HOME/source
+
+sudo git config --global --add safe.directory .
 sudo git checkout $MODM_REPO_BRANCH
 sudo git pull
 
@@ -29,8 +31,16 @@ echo "Installing ServiceHost as systemd service."
 sudo cp /tmp/modm.service /etc/systemd/system/modm.service
 sudo cp $out_path/publish/modm-servicehost /usr/sbin/modm-servicehost
 
+# activate and start
 sudo systemctl daemon-reload
-sudo systemctl status modm.service
+sudo systemctl start modm
+
+# support start on boot
+sudo systemctl enable modm
+
+# print out status
+sudo systemctl status modm
+
 
 # build final docker images that will represent MODM backend and its deployment engine (jenkins)
 # ----------------------------------
