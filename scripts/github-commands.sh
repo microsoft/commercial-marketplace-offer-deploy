@@ -89,4 +89,5 @@ function gh_set_secrets() {
 }
 
 export -f gh_login
+export -f gh_set_secrets
 export -f gh_set_variables
