@@ -75,7 +75,6 @@ source "azure-arm" "modm" {
   build_resource_group_name         = var.build_resource_group_name
   client_id                         = var.client_id
   client_secret                     = var.client_secret
-  location                          = var.location
   subscription_id                   = var.subscription_id
   tenant_id                         = var.tenant_id
   os_type                           = "Linux"

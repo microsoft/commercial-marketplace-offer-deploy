@@ -71,7 +71,6 @@ source "azure-arm" "base" {
   image_sku                         = "22_04-lts"
   os_type                           = "Linux"
   vm_size                           = "Standard_DS2_v2"
-  location                          = var.location
   subscription_id                   = var.subscription_id
   tenant_id                         = var.tenant_id
   managed_image_name                = "${var.image_name}-${var.image_version}"
