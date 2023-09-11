@@ -22,9 +22,7 @@
     <!-- debug type embedded causes the PDB file to be included in the single file -->
     <DebugType>embedded</DebugType>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Worker' ">
-    <ExternalConsole>true</ExternalConsole>
-  </PropertyGroup>
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Worker' " />
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="7.0.0" />
