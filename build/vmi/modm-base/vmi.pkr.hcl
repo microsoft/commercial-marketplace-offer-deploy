@@ -19,6 +19,10 @@ variable "location" {
   type = string
 }
 
+variable "build_resource_group_name" {
+  type = string
+}
+
 variable "resource_group" {
   type = string
 }
@@ -59,6 +63,7 @@ source "azure-arm" "base" {
     dept = "Engineering"
     task = "Image deployment"
   }
+  build_resource_group_name         = var.build_resource_group_name
   client_id                         = var.client_id
   client_secret                     = var.client_secret
   image_offer                       = "0001-com-ubuntu-server-jammy"
