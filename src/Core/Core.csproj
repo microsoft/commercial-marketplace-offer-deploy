@@ -14,6 +14,7 @@
     <PackageReference Include="Azure.Storage.Blobs" Version="12.17.0" />
     <PackageReference Include="jenkinsnet" Version="1.0.4" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+    <PackageReference Include="Azure.Deployments.Expression" Version="1.0.1040" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,6 +24,7 @@
     <None Remove="Engine\Jenkins\" />
     <None Remove="Extensions\" />
     <None Remove="Azure\" />
+    <None Remove="Networking\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Artifacts\" />
@@ -31,5 +33,6 @@
     <Folder Include="Engine\Jenkins\" />
     <Folder Include="Extensions\" />
     <Folder Include="Azure\" />
+    <Folder Include="Networking\" />
   </ItemGroup>
 </Project>
