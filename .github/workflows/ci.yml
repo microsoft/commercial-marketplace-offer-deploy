@@ -30,7 +30,9 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
-    
+      with:
+        fetch-depth: '0'
+  
       # Give an id to the step, so we can reference it later
     - name: Check If Base Image Should Be Built
       id: check_base_changed
