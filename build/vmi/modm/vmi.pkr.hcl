@@ -21,6 +21,7 @@ variable "location" {
 
 variable "build_resource_group_name" {
   type = string
+  default = "modm-dev-packer"
 }
 
 variable "resource_group" {

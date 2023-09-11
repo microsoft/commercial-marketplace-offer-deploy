@@ -27,11 +27,14 @@ build_resource_group=modm-dev-packer
 shared_image_gallery=modm.dev.sig
 
 image_gallery_id=$(az sig show -r $shared_image_gallery -g $vmi_resource_group --query id --output tsv)
-build_resource_group_id=$(az group show -n $vmi_resource_group --query id --output tsv)
+vmi_resource_group_id=$(az group show -n $vmi_resource_group --query id --output tsv)
+build_resource_group_id=$(az group show -n $build_resource_group --query id --output tsv)
 
+subscription_id=$(az account show --query id -o tsv)
 contributor_role_id=b24988ac-6180-42a0-ab88-20f7382dd24c
 reader_role_id=acdd72a7-3385-48ef-bd42-f606fba81ae7
 
 
 az role assignment create --assignee $packer_client_id --role $reader_role_id --scope $image_gallery_id
+az role assignment create --assignee $packer_client_id --role $reader_role_id --scope /subscriptions/$subscription_id
 az role assignment create --assignee $packer_client_id --role $contributor_role_id --scope $build_resource_group_id

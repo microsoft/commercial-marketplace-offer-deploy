@@ -31,7 +31,7 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v3
       with:
-        fetch-depth: '0'
+        fetch-depth: '100'
   
       # Give an id to the step, so we can reference it later
     - name: Check If Base Image Should Be Built
