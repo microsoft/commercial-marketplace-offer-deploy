@@ -19,6 +19,11 @@ namespace Modm.Engine
             this.client = client;
         }
 
+        public async Task<EngineStatus> GetStatus()
+        {
+            return await this.client.GetJenkinsStatusAsync();
+        }
+        
 
         /// <summary>
         /// starts a deployment
