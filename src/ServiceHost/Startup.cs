@@ -1,29 +1,35 @@
 ﻿using System;
 using Modm.Azure;
+using Modm.Networking;
 
 namespace Modm.ServiceHost
 {
     public class Startup : BackgroundService
     {
         private readonly InstanceMetadataService metadataService;
-        private readonly ILogger<Worker> _logger;
+        private readonly ILogger<Worker> logger;
 
         public Startup(InstanceMetadataService metadataService, ILogger<Worker> logger)
         {
             this.metadataService = metadataService;
-            _logger = logger;
+            this.logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                var fqdn = await metadataService.GetFqdnAsync();
-                _logger.LogInformation("FQDN: {fqdn}", fqdn);
+            logger.LogInformation("ServiceHost started.");
 
-                _logger.LogInformation("Running at: {time}", DateTimeOffset.Now);
-                await Task.Delay(10000, stoppingToken);
-            }
+            var controller = ControllerBuilder.Create()
+                .UseFqdn(await GetFqdn())
+                .Build();
+
+            await controller.StartAsync(stoppingToken);
+        }
+
+        private async Task<string> GetFqdn()
+        {
+            var metadata = await metadataService.GetAsync();
+            return FqdnFactory.Create(metadata.Compute.ResourceId, metadata.Compute.Location);
         }
     }
 }
