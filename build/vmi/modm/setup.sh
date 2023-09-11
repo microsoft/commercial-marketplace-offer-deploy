@@ -7,15 +7,14 @@ echo "Copying caddy and docker compose files to $MODM_HOME"
 sudo cp /tmp/Caddyfile $MODM_HOME/Caddyfile
 sudo cp /tmp/docker-compose.yml $MODM_HOME/docker-compose.yml
 
-echo "Performing git pull on branch [$MODM_REPO_BRANCH]"
-cd $MODM_HOME/source
-
-sudo git config --global --add safe.directory .
-sudo git checkout $MODM_REPO_BRANCH
-sudo git pull
+echo "Performing git checkout on branch [$MODM_REPO_BRANCH]"
+sudo rm -rf $MODM_HOME/source
+sudo git clone --depth=1 --branch $MODM_REPO_BRANCH https://github.com/microsoft/commercial-marketplace-offer-deploy.git $MODM_HOME/source
+sudo git config --global --add safe.directory $MODM_HOME/source
 
 # build service host and install it
 # ----------------------------------
+cd $MODM_HOME/source
 echo ""
 echo "Building ServiceHost"
 csproj=./src/ServiceHost/ServiceHost.csproj
@@ -28,8 +27,8 @@ sudo dotnet publish $csproj -c Release -o $out_path/publish
 
 # setup daemon
 echo "Installing ServiceHost as systemd service."
-sudo cp /tmp/modm.service /etc/systemd/system/modm.service
 sudo cp $out_path/publish/modm-servicehost /usr/sbin/modm-servicehost
+sudo cp /tmp/modm.service /etc/systemd/system/modm.service
 
 # activate and start
 sudo systemctl daemon-reload

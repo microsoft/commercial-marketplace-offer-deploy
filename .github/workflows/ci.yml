@@ -17,18 +17,22 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev  
     env:
-      PKR_VAR_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+      PKR_VAR_client_id: ${{ secrets.PACKER_CLIENT_ID }}
+      PKR_VAR_client_secret: ${{ secrets.PACKER_CLIENT_SECRET }}
       PKR_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       PKR_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
       PKR_VAR_resource_group: ${{ vars.resource_group }}
       PKR_VAR_location: ${{ vars.location }}
       PKR_VAR_image_gallery_name: ${{ vars.image_gallery_name }}
       PKR_VAR_base_image_name: ${{ vars.base_image_name }}
+      PKR_VAR_build_resource_group_name: ${{ vars.build_resource_group_name }}
 
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
-    
+      with:
+        fetch-depth: '100'
+  
       # Give an id to the step, so we can reference it later
     - name: Check If Base Image Should Be Built
       id: check_base_changed
@@ -61,7 +65,7 @@ jobs:
       # Given that the modm vmi packer defaults to "latest" base image version,
       # it will pick up the base VMI built here
     - name: Build Base VMI
-      if: steps.check_base_changed.outputs.base_changed == true
+      if: steps.check_base_changed.outputs.base_changed == 'true'
       run: |
         source ./build/vmi/scripts/nextversion.sh
         local image_version=$(get_next_image_version \
