@@ -25,7 +25,6 @@ namespace Modm.ServiceHost
 
             var expandedPath = Environment.ExpandEnvironmentVariables(artifactsFilePath);
             fileWatcher = new FileSystemWatcher(Path.GetDirectoryName(expandedPath));
-        ;
             fileWatcher.Filter = Path.GetFileName(expandedPath);
             fileWatcher.Created += OnFileCreated;
         }
@@ -33,6 +32,7 @@ namespace Modm.ServiceHost
 
         public void Start()
         {
+            this.logger.LogInformation("Artifacts watcher started. Watching: {directory}", fileWatcher.Path);
             this.fileWatcher.EnableRaisingEvents = true;
         }
 
