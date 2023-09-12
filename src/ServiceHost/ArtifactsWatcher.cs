@@ -11,6 +11,8 @@ namespace Modm.ServiceHost
 {
 	public class ArtifactsWatcher
 	{
+        public const string ArtifactsUriFileName = "artifacts.uri";
+
         private readonly ILogger<ArtifactsWatcher> logger;
         private readonly string artifactsFilePath;
         private readonly string statusEndpoint;
@@ -25,7 +27,7 @@ namespace Modm.ServiceHost
 
             var expandedPath = Environment.ExpandEnvironmentVariables(artifactsFilePath);
             fileWatcher = new FileSystemWatcher(Path.GetDirectoryName(expandedPath));
-            fileWatcher.Filter = Path.GetFileName(expandedPath);
+            fileWatcher.Filter = ArtifactsUriFileName;
             fileWatcher.Created += OnFileCreated;
         }
 
@@ -33,6 +35,7 @@ namespace Modm.ServiceHost
         public void Start()
         {
             this.logger.LogInformation("Artifacts watcher started. Watching: {directory}", fileWatcher.Path);
+            this.logger.LogInformation("Artifacts watcher filter: {filter}", fileWatcher.Filter);
             this.fileWatcher.EnableRaisingEvents = true;
         }
 
