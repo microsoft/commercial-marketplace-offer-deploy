@@ -15,6 +15,7 @@ IHost host = Host.CreateDefaultBuilder(args)
     {
         services.AddHttpClient();
         services.AddSingleton<InstanceMetadataService>();
+        services.AddSingleton<ManagedIdentityService>();
         services.AddHostedService<Startup>();
 
         services.AddSingleton<ArtifactsWatcher>(provider =>

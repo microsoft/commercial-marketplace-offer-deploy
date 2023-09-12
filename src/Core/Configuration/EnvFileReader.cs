@@ -1,7 +1,7 @@
 ﻿using System;
 namespace Modm.Configuration
 {
-    public class EnvFile
+    public class EnvFileReader
     {
         private readonly string filePath;
         readonly Dictionary<string, string> items;
@@ -27,7 +27,7 @@ namespace Modm.Configuration
             }
         }
 
-        private EnvFile(string filePath)
+        private EnvFileReader(string filePath)
         {
             this.items = new Dictionary<string, string>();
             this.filePath = filePath;
@@ -38,9 +38,9 @@ namespace Modm.Configuration
             }
         }
 
-        public static EnvFile FromPath(string filePath)
+        public static EnvFileReader FromPath(string filePath)
         {
-            return new EnvFile(filePath);
+            return new EnvFileReader(filePath);
         }
 
         public void Read()

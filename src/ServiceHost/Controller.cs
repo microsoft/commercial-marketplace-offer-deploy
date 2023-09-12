@@ -3,6 +3,7 @@ using Ductus.FluentDocker.Builders;
 using Ductus.FluentDocker.Services;
 using Ductus.FluentDocker.Model.Compose;
 using Modm.Configuration;
+using Modm.Azure;
 
 namespace Modm.ServiceHost
 {
@@ -15,6 +16,7 @@ namespace Modm.ServiceHost
         private readonly ControllerOptions options;
         private readonly ILogger<Controller> logger;
         ICompositeService? composeService;
+        readonly ManagedIdentityService managedIdentityService;
 
         public Controller(ControllerOptions options)
         {
@@ -25,16 +27,16 @@ namespace Modm.ServiceHost
 
             this.options = options;
             this.logger = options.Logger;
+            this.managedIdentityService = options.ManagedIdentityService;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken = default)
         {
             logger.LogInformation("FQDN: {fqdn}", options.Fqdn);
 
-            this.composeService = BuildDockerComposeService();
-            composeService.StateChange += Service_StateChange;
-            composeService.Start();
+            await SetEnvFileAsync();
 
+            StartCompose();
             options.Watcher?.Start();
 
             while (!cancellationToken.IsCancellationRequested)
@@ -52,9 +54,34 @@ namespace Modm.ServiceHost
             return Task.CompletedTask;
         }
 
-        private void Service_StateChange(object sender, StateChangeEventArgs e)
+        void StartCompose()
         {
-            logger.LogInformation("Docker Compose state changed: {state}", e.State);
+            this.composeService = BuildDockerComposeService();
+            composeService.StateChange += (object sender, StateChangeEventArgs e) =>
+            {
+                logger.LogInformation("Docker Compose state changed: {state}", e.State);
+            };
+            composeService.Start();
+        }
+
+        private async Task SetEnvFileAsync()
+        {
+            var envFilePath = Path.Combine(options.ComposeFileDirectory, ".env");
+            var envFile = EnvFileReader.FromPath(envFilePath);
+
+            var writer = new EnvFileWriter(envFile.Items);
+
+            // set for caddy
+            writer.Add("SITE_ADDRESS", options.Fqdn);
+
+            var info = await managedIdentityService.GetAsync();
+
+            // required by container environments
+            writer.Add("AZURE_CLIENT_ID", info.ClientId.ToString());
+            writer.Add("AZURE_TENANT_ID", info.TenantId.ToString());
+            writer.Add("AZURE_SUBSCRIPTION_ID", info.SubscriptionId.ToString());
+
+            await writer.WriteAsync(envFilePath);
         }
 
         private ICompositeService BuildDockerComposeService()
@@ -70,7 +97,7 @@ namespace Modm.ServiceHost
 
             if (isEnvFileNextToComposeFile)
             {
-                var envFile = EnvFile.FromPath(envFilePath);
+                var envFile = EnvFileReader.FromPath(envFilePath);
                 if (envFile.HasItems)
                 {
                     builder.WithEnvironment(envFile.Items.Select(item => $"{item.Key}={item.Value}").ToArray());

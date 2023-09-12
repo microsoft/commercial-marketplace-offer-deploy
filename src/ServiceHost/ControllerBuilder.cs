@@ -1,4 +1,5 @@
 ﻿using System;
+using Modm.Azure;
 using Modm.ServiceHost;
 
 namespace Modm.ServiceHost
@@ -52,6 +53,7 @@ namespace Modm.ServiceHost
                 throw new NullReferenceException("serviceProvider is required.");
             }
 
+			this.options.ManagedIdentityService = serviceProvider.GetRequiredService<ManagedIdentityService>();
 			this.options.Logger = serviceProvider.GetRequiredService<ILogger<Controller>>();
 
             return new Controller(this.options);
