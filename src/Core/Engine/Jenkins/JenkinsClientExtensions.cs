@@ -8,6 +8,7 @@ namespace Modm.Engine.Jenkins
 {
     public static class JenkinsClientExtensions
     {
+        // TODO: move to a compositional class for better logging support
         public static async Task<EngineStatus> GetJenkinsStatusAsync(this IJenkinsClient client)
         {
             EngineStatus status = new EngineStatus { EngineType = EngineType.Jenkins, IsHealthy = false, Version = "Unknown"};
@@ -42,9 +43,9 @@ namespace Modm.Engine.Jenkins
                     return status;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return status;
+                throw;
             }
         }
     }

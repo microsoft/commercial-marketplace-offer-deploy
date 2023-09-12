@@ -6,16 +6,19 @@ namespace Modm.ServiceHost
 	class ControllerBuilder
 	{
 		readonly ControllerOptions options;
+        private readonly ILogger<Startup> logger;
+
 		IServiceProvider? serviceProvider;
 
-        public ControllerBuilder()
+        public ControllerBuilder(ILogger<Startup> logger)
 		{
+			this.logger = logger;
 			options = new ControllerOptions();
 		}
 
-		public static ControllerBuilder Create()
+		public static ControllerBuilder Create(ILogger<Startup> logger)
 		{
-			return new ControllerBuilder();
+			return new ControllerBuilder(logger);
 		}
 
 		public ControllerBuilder UsingServiceProvider(IServiceProvider serviceProvider)

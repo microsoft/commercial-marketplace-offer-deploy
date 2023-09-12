@@ -22,7 +22,7 @@ namespace Modm.ServiceHost
         {
             logger.LogInformation("ServiceHost started.");
 
-            controller = ControllerBuilder.Create()
+            controller = ControllerBuilder.Create(this.logger)
                 .UseFqdn(await GetFqdnAsync())
                 .UseComposeFile(GetComposeFilePath())
                 .UsingServiceProvider(serviceProvider)
