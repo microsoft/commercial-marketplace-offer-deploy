@@ -35,6 +35,8 @@ namespace Modm.ServiceHost
             composeService.StateChange += Service_StateChange;
             composeService.Start();
 
+            options.Watcher?.Start();
+
             while (!cancellationToken.IsCancellationRequested)
             {
                 logger.LogInformation("Running at: {time}", DateTimeOffset.Now);
@@ -76,6 +78,11 @@ namespace Modm.ServiceHost
             }
 
             var compositeService = builder.RemoveOrphans()
+                        .WaitForHttp("jenkins", "http://localhost:8080/login", timeout: 60000, (response, attempt) =>
+                        {
+                            logger.LogInformation("Engine check [{attempt}]. HTTP Status [{statusCode}]", attempt, response.Code);
+                            return response.Code == System.Net.HttpStatusCode.OK ? 0 : 500;
+                        })
                         .Build();
 
             return compositeService;

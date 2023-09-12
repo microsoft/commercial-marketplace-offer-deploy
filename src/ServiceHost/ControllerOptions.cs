@@ -8,6 +8,8 @@ namespace Modm
 		public string? Fqdn { get; set; }
 		public string? ComposeFilePath { get; set; }
 		public ILogger<Controller>? Logger { get; set; }
+		public ArtifactsWatcher? Watcher { get; set; }
+		
         public string ComposeFileDirectory
 		{
 			get

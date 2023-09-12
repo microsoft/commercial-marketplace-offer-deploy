@@ -11,58 +11,46 @@ namespace Modm.ServiceHost
 {
 	public class ArtifactsWatcher
 	{
-        private readonly ILogger<Worker> logger;
-        private readonly string artifactsFilePath;
-        private readonly string statusEndpoint;
+        public const string ArtifactsUriFileName = "artifacts.uri";
+
+        private readonly ILogger<ArtifactsWatcher> logger;
+        private readonly string deploymentsEndpoint;
         private readonly FileSystemWatcher fileWatcher;
         private readonly HttpClient httpClient;
 
-        public ArtifactsWatcher(HttpClient client, string artifactsFilePath, string statusEndpoint, ILogger<Worker> logger)
+        public ArtifactsWatcher(HttpClient client, string artifactsFilePath, string deploymentsEndpoint, ILogger<ArtifactsWatcher> logger)
 		{
-            this.artifactsFilePath = string.IsNullOrEmpty(artifactsFilePath) ? GetDefaultArtifactsPath() : artifactsFilePath;
-            this.statusEndpoint = statusEndpoint;
+            this.deploymentsEndpoint = deploymentsEndpoint;
             this.logger = logger;
             this.httpClient = client;
 
-            fileWatcher = new FileSystemWatcher(Path.GetDirectoryName(artifactsFilePath));
-            fileWatcher.Filter = Path.GetFileName(artifactsFilePath);
+            var expandedPath = Environment.ExpandEnvironmentVariables(artifactsFilePath);
+            fileWatcher = new FileSystemWatcher(Path.GetDirectoryName(expandedPath));
+            fileWatcher.Filter = ArtifactsUriFileName;
             fileWatcher.Created += OnFileCreated;
         }
 
-        private string GetDefaultArtifactsPath()
-        {
-            string? modmHome = Environment.GetEnvironmentVariable("MODM_HOME");
-            if (string.IsNullOrEmpty(modmHome))
-            {
-                throw new InvalidOperationException("$MODM_HOME environment variable is not set.");
-            }
-            return Path.Combine(modmHome, "artifacts.uri");
-        }
 
         public void Start()
         {
+            this.logger.LogInformation("Artifacts watcher started. Watching: {directory}", fileWatcher.Path);
+            this.logger.LogInformation("Artifacts watcher filter: {filter}", fileWatcher.Filter);
             this.fileWatcher.EnableRaisingEvents = true;
         }
 
         private async void OnFileCreated(object sender, FileSystemEventArgs e)
         {
+            this.logger.LogInformation("File created.");
             try
             {
-                string uri = File.ReadAllText(artifactsFilePath);
-
+                var expandedPath = Environment.ExpandEnvironmentVariables(e.FullPath);
+                this.logger.LogInformation($"exmpanedPath: {expandedPath}");
+                string uri = File.ReadAllText(expandedPath);
+                this.logger.LogInformation("uri: {uri}", uri);
                 if (Uri.IsWellFormedUriString(uri, UriKind.Absolute))
                 {
-                    bool isReady = await WaitForServiceReady();
-
-                    if (isReady)
-                    {
-                        await SendHttpPost(uri);
-                        this.logger.LogInformation("HTTP Post sent successfully.");
-                    }
-                    else
-                    {
-                        this.logger.LogInformation("External service is not ready.");
-                    }
+                    await StartDeployment(uri);
+                    this.logger.LogInformation("HTTP Post sent successfully.");
                 }
                 else
                 {
@@ -82,6 +70,7 @@ namespace Modm.ServiceHost
 
             for (int attempt = 0; attempt < maxAttempts; attempt++)
             {
+                this.logger.LogInformation("inside WaitForServiceReady loop.");
                 bool isReady = await CheckServiceStatus();
 
                 if (isReady)
@@ -97,20 +86,22 @@ namespace Modm.ServiceHost
 
         private async Task<bool> CheckServiceStatus()
         {
-            HttpResponseMessage response = await this.httpClient.GetAsync(statusEndpoint);
+            this.logger.LogInformation("inside CheckServiceStatus.");
+            HttpResponseMessage response = await this.httpClient.GetAsync(deploymentsEndpoint);
             if (response.IsSuccessStatusCode)
             {
                 EngineStatus status = await response.Content.ReadAsAsync<EngineStatus>();
+                this.logger.LogInformation($"Engine status: {status}");
                 return status.IsHealthy;
             }
 
             return false;
         }
 
-        private async Task<CreateDeploymentResponse> SendHttpPost(string uri)
+        private async Task<CreateDeploymentResponse> StartDeployment(string uri)
         {
             var request = new CreateDeploymentRequest { ArtifactsUri = uri };
-            HttpResponseMessage response = await this.httpClient.PostAsJsonAsync(uri, request);
+            HttpResponseMessage response = await this.httpClient.PostAsJsonAsync(this.deploymentsEndpoint, request);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsAsync<CreateDeploymentResponse>();
         }

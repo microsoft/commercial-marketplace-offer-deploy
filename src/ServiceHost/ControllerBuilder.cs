@@ -33,6 +33,12 @@ namespace Modm.ServiceHost
 			return this;
 		}
 
+		public ControllerBuilder UseArtifactsWatcher(ArtifactsWatcher watcher)
+		{
+			options.Watcher = watcher;
+			return this;
+		}
+
         public ControllerBuilder UseComposeFile(string composeFile)
         {
             options.ComposeFilePath = composeFile;
