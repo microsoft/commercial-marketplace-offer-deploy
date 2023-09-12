@@ -5,6 +5,7 @@ IHost host = Host.CreateDefaultBuilder(args)
     .UseSystemd()
     .ConfigureServices(services =>
     {
+        services.AddHttpClient();
         services.AddSingleton<InstanceMetadataService>();
         services.AddHostedService<Startup>();
     })

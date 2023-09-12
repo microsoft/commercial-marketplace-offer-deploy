@@ -6,8 +6,9 @@ namespace Modm.ServiceHost
 	class ControllerBuilder
 	{
 		readonly ControllerOptions options;
+		IServiceProvider? serviceProvider;
 
-		public ControllerBuilder()
+        public ControllerBuilder()
 		{
 			options = new ControllerOptions();
 		}
@@ -17,15 +18,34 @@ namespace Modm.ServiceHost
 			return new ControllerBuilder();
 		}
 
+		public ControllerBuilder UsingServiceProvider(IServiceProvider serviceProvider)
+		{
+			this.serviceProvider = serviceProvider;
+			return this;
+		}
+
 		public ControllerBuilder UseFqdn(string fqdn)
 		{
 			options.Fqdn = fqdn;
 			return this;
 		}
 
-		public Controller Build()
+        public ControllerBuilder UseComposeFile(string composeFile)
+        {
+            options.ComposeFilePath = composeFile;
+            return this;
+        }
+
+        public Controller Build()
 		{
-			return new Controller();
+            if (serviceProvider == null)
+            {
+                throw new NullReferenceException("serviceProvider is required.");
+            }
+
+			this.options.Logger = serviceProvider.GetRequiredService<ILogger<Controller>>();
+
+            return new Controller(this.options);
 		}
 	}
 }

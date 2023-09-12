@@ -1,35 +1,58 @@
 ﻿using System;
+using System.Threading;
 using Modm.Azure;
-using Modm.Networking;
 
 namespace Modm.ServiceHost
 {
     public class Startup : BackgroundService
     {
+        Controller? controller;
         private readonly InstanceMetadataService metadataService;
-        private readonly ILogger<Worker> logger;
+        private readonly ILogger<Startup> logger;
+        private readonly IServiceProvider serviceProvider;
 
-        public Startup(InstanceMetadataService metadataService, ILogger<Worker> logger)
+        public Startup(InstanceMetadataService metadataService, ILogger<Startup> logger, IServiceProvider serviceProvider)
         {
             this.metadataService = metadataService;
             this.logger = logger;
+            this.serviceProvider = serviceProvider;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             logger.LogInformation("ServiceHost started.");
 
-            var controller = ControllerBuilder.Create()
-                .UseFqdn(await GetFqdn())
+            controller = ControllerBuilder.Create()
+                .UseFqdn(await GetFqdnAsync())
+                .UseComposeFile(GetComposeFilePath())
+                .UsingServiceProvider(serviceProvider)
                 .Build();
 
             await controller.StartAsync(stoppingToken);
         }
 
-        private async Task<string> GetFqdn()
+        public override Task StopAsync(CancellationToken cancellationToken)
         {
-            var metadata = await metadataService.GetAsync();
-            return FqdnFactory.Create(metadata.Compute.ResourceId, metadata.Compute.Location);
+            controller?.StopAsync(cancellationToken);
+            return base.StopAsync(cancellationToken);
+        }
+
+        private async Task<string> GetFqdnAsync()
+        {
+            var isProduction = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") == "production";
+
+            if (isProduction)
+            {
+                var metadata = await metadataService.GetAsync();
+                return metadata.Fqdn;
+            }
+            return "localhost";
+        }
+
+        string GetComposeFilePath()
+        {
+            var folderPath = Environment.GetEnvironmentVariable("MODM_HOME") ?? throw new InvalidOperationException("MODM_HOME is null.");
+            return Path.Combine(folderPath, "docker-compose.yml");
         }
     }
 }

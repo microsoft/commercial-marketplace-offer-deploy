@@ -18,21 +18,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Artifacts\" />
-    <None Remove="Engine\" />
-    <None Remove="Deployments\" />
-    <None Remove="Engine\Jenkins\" />
-    <None Remove="Extensions\" />
-    <None Remove="Azure\" />
-    <None Remove="Networking\" />
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+    <_Parameter1>Modm.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Configuration\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Artifacts\" />
-    <Folder Include="Engine\" />
-    <Folder Include="Deployments\" />
-    <Folder Include="Engine\Jenkins\" />
-    <Folder Include="Extensions\" />
-    <Folder Include="Azure\" />
-    <Folder Include="Networking\" />
+    <Folder Include="Configuration\" />
   </ItemGroup>
 </Project>
