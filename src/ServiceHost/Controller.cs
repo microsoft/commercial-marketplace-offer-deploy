@@ -31,11 +31,11 @@ namespace Modm.ServiceHost
         {
             logger.LogInformation("FQDN: {fqdn}", options.Fqdn);
 
-            options.Watcher?.Start();
-
             this.composeService = BuildDockerComposeService();
             composeService.StateChange += Service_StateChange;
             composeService.Start();
+
+            options.Watcher?.Start();
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -78,6 +78,7 @@ namespace Modm.ServiceHost
             }
 
             var compositeService = builder.RemoveOrphans()
+                        .WaitForHttp("jenkins", "http://localhost:8080/login")
                         .Build();
 
             return compositeService;
