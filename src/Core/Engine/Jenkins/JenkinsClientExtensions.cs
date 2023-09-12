@@ -42,9 +42,9 @@ namespace Modm.Engine.Jenkins
                     return status;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return status;
+                throw;
             }
         }
     }
