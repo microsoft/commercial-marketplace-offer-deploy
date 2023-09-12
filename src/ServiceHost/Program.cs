@@ -22,7 +22,7 @@ IHost host = Host.CreateDefaultBuilder(args)
             var logger = provider.GetRequiredService<ILogger<ArtifactsWatcher>>();
             var httpClient = provider.GetRequiredService<HttpClient>();
             string artifactsFilePath = configuration.GetSection("ArtifactsWatcherSettings")["ArtifactsFilePath"];
-            string statusEndpoint = configuration.GetSection("ArtifactsWatcherSettings")["StatusEndpoint"];
+            string statusEndpoint = configuration.GetSection("ArtifactsWatcherSettings")["DeploymentsEndpoint"];
             return new ArtifactsWatcher(httpClient, artifactsFilePath, statusEndpoint, logger);
         });
     })

@@ -14,13 +14,13 @@ namespace Modm.ServiceHost
         public const string ArtifactsUriFileName = "artifacts.uri";
 
         private readonly ILogger<ArtifactsWatcher> logger;
-        private readonly string statusEndpoint;
+        private readonly string deploymentsEndpoint;
         private readonly FileSystemWatcher fileWatcher;
         private readonly HttpClient httpClient;
 
-        public ArtifactsWatcher(HttpClient client, string artifactsFilePath, string statusEndpoint, ILogger<ArtifactsWatcher> logger)
+        public ArtifactsWatcher(HttpClient client, string artifactsFilePath, string deploymentsEndpoint, ILogger<ArtifactsWatcher> logger)
 		{
-            this.statusEndpoint = statusEndpoint;
+            this.deploymentsEndpoint = deploymentsEndpoint;
             this.logger = logger;
             this.httpClient = client;
 
@@ -49,7 +49,7 @@ namespace Modm.ServiceHost
                 this.logger.LogInformation("uri: {uri}", uri);
                 if (Uri.IsWellFormedUriString(uri, UriKind.Absolute))
                 {
-                    await SendHttpPost(uri);
+                    await StartDeployment(uri);
                     this.logger.LogInformation("HTTP Post sent successfully.");
                 }
                 else
@@ -87,7 +87,7 @@ namespace Modm.ServiceHost
         private async Task<bool> CheckServiceStatus()
         {
             this.logger.LogInformation("inside CheckServiceStatus.");
-            HttpResponseMessage response = await this.httpClient.GetAsync(statusEndpoint);
+            HttpResponseMessage response = await this.httpClient.GetAsync(deploymentsEndpoint);
             if (response.IsSuccessStatusCode)
             {
                 EngineStatus status = await response.Content.ReadAsAsync<EngineStatus>();
@@ -98,10 +98,10 @@ namespace Modm.ServiceHost
             return false;
         }
 
-        private async Task<CreateDeploymentResponse> SendHttpPost(string uri)
+        private async Task<CreateDeploymentResponse> StartDeployment(string uri)
         {
             var request = new CreateDeploymentRequest { ArtifactsUri = uri };
-            HttpResponseMessage response = await this.httpClient.PostAsJsonAsync(uri, request);
+            HttpResponseMessage response = await this.httpClient.PostAsJsonAsync(this.deploymentsEndpoint, request);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsAsync<CreateDeploymentResponse>();
         }
