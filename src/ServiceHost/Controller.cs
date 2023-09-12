@@ -31,6 +31,8 @@ namespace Modm.ServiceHost
         {
             logger.LogInformation("FQDN: {fqdn}", options.Fqdn);
 
+            options.Watcher?.Start();
+
             this.composeService = BuildDockerComposeService();
             composeService.StateChange += Service_StateChange;
             composeService.Start();

@@ -10,9 +10,11 @@ namespace Modm.ServiceHost
         private readonly InstanceMetadataService metadataService;
         private readonly ILogger<Startup> logger;
         private readonly IServiceProvider serviceProvider;
+        private readonly ArtifactsWatcher watcher;
 
-        public Startup(InstanceMetadataService metadataService, ILogger<Startup> logger, IServiceProvider serviceProvider)
+        public Startup(ArtifactsWatcher watcher, InstanceMetadataService metadataService, ILogger<Startup> logger, IServiceProvider serviceProvider)
         {
+            this.watcher = watcher;
             this.metadataService = metadataService;
             this.logger = logger;
             this.serviceProvider = serviceProvider;
@@ -25,6 +27,7 @@ namespace Modm.ServiceHost
             controller = ControllerBuilder.Create(this.logger)
                 .UseFqdn(await GetFqdnAsync())
                 .UseComposeFile(GetComposeFilePath())
+                .UseArtifactsWatcher(watcher)
                 .UsingServiceProvider(serviceProvider)
                 .Build();
 

@@ -19,25 +19,17 @@ namespace Modm.ServiceHost
 
         public ArtifactsWatcher(HttpClient client, string artifactsFilePath, string statusEndpoint, ILogger<Worker> logger)
 		{
-            this.artifactsFilePath = string.IsNullOrEmpty(artifactsFilePath) ? GetDefaultArtifactsPath() : artifactsFilePath;
             this.statusEndpoint = statusEndpoint;
             this.logger = logger;
             this.httpClient = client;
 
-            fileWatcher = new FileSystemWatcher(Path.GetDirectoryName(artifactsFilePath));
-            fileWatcher.Filter = Path.GetFileName(artifactsFilePath);
+            var expandedPath = Environment.ExpandEnvironmentVariables(artifactsFilePath);
+            fileWatcher = new FileSystemWatcher(Path.GetDirectoryName(expandedPath));
+        ;
+            fileWatcher.Filter = Path.GetFileName(expandedPath);
             fileWatcher.Created += OnFileCreated;
         }
 
-        private string GetDefaultArtifactsPath()
-        {
-            string? modmHome = Environment.GetEnvironmentVariable("MODM_HOME");
-            if (string.IsNullOrEmpty(modmHome))
-            {
-                throw new InvalidOperationException("$MODM_HOME environment variable is not set.");
-            }
-            return Path.Combine(modmHome, "artifacts.uri");
-        }
 
         public void Start()
         {
@@ -46,6 +38,7 @@ namespace Modm.ServiceHost
 
         private async void OnFileCreated(object sender, FileSystemEventArgs e)
         {
+            this.logger.LogInformation("File created.");
             try
             {
                 string uri = File.ReadAllText(artifactsFilePath);
