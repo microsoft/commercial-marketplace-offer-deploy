@@ -11,14 +11,16 @@ namespace Modm.ServiceHost
 {
 	public class ArtifactsWatcher
 	{
+        private readonly ILogger<Worker> logger;
         private readonly string artifactsFilePath;
         private readonly string statusEndpoint;
         private readonly FileSystemWatcher fileWatcher;
 
-        public ArtifactsWatcher(string artifactsFilePath, string statusEndpoint)
+        public ArtifactsWatcher(string artifactsFilePath, string statusEndpoint, ILogger<Worker> logger)
 		{
             this.artifactsFilePath = string.IsNullOrEmpty(artifactsFilePath) ? GetDefaultArtifactsPath() : artifactsFilePath;
             this.statusEndpoint = statusEndpoint;
+            this.logger = logger;
 
             fileWatcher = new FileSystemWatcher(Path.GetDirectoryName(artifactsFilePath));
             fileWatcher.Filter = Path.GetFileName(artifactsFilePath);
@@ -53,21 +55,21 @@ namespace Modm.ServiceHost
                     if (isReady)
                     {
                         await SendHttpPost(uri);
-                        Console.WriteLine("HTTP Post sent successfully.");
+                        this.logger.LogInformation("HTTP Post sent successfully.");
                     }
                     else
                     {
-                        Console.WriteLine("External service is not ready.");
+                        this.logger.LogInformation("External service is not ready.");
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Invalid URI format.");
+                    this.logger.LogInformation("Invalid URI format.");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");
+                this.logger.LogError($"Error: {ex.Message}");
             }
         }
 
@@ -98,7 +100,6 @@ namespace Modm.ServiceHost
                 HttpResponseMessage response = await client.GetAsync(statusEndpoint);
                 if (response.IsSuccessStatusCode)
                 {
-                    // Assuming the response contains JSON representing EngineStatus
                     EngineStatus status = await response.Content.ReadAsAsync<EngineStatus>();
                     return status.IsHealthy;
                 }
