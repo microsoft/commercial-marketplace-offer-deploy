@@ -1,4 +1,5 @@
 ﻿using System;
+
 namespace WebHost.Deployments
 {
 	public record CreateDeploymentRequest
