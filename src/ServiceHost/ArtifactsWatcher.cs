@@ -15,12 +15,14 @@ namespace Modm.ServiceHost
         private readonly string artifactsFilePath;
         private readonly string statusEndpoint;
         private readonly FileSystemWatcher fileWatcher;
+        private readonly HttpClient httpClient;
 
-        public ArtifactsWatcher(string artifactsFilePath, string statusEndpoint, ILogger<Worker> logger)
+        public ArtifactsWatcher(HttpClient client, string artifactsFilePath, string statusEndpoint, ILogger<Worker> logger)
 		{
             this.artifactsFilePath = string.IsNullOrEmpty(artifactsFilePath) ? GetDefaultArtifactsPath() : artifactsFilePath;
             this.statusEndpoint = statusEndpoint;
             this.logger = logger;
+            this.httpClient = client;
 
             fileWatcher = new FileSystemWatcher(Path.GetDirectoryName(artifactsFilePath));
             fileWatcher.Filter = Path.GetFileName(artifactsFilePath);
@@ -95,28 +97,22 @@ namespace Modm.ServiceHost
 
         private async Task<bool> CheckServiceStatus()
         {
-            using (HttpClient client = new HttpClient())
+            HttpResponseMessage response = await this.httpClient.GetAsync(statusEndpoint);
+            if (response.IsSuccessStatusCode)
             {
-                HttpResponseMessage response = await client.GetAsync(statusEndpoint);
-                if (response.IsSuccessStatusCode)
-                {
-                    EngineStatus status = await response.Content.ReadAsAsync<EngineStatus>();
-                    return status.IsHealthy;
-                }
-
-                return false;
+                EngineStatus status = await response.Content.ReadAsAsync<EngineStatus>();
+                return status.IsHealthy;
             }
+
+            return false;
         }
 
         private async Task<CreateDeploymentResponse> SendHttpPost(string uri)
         {
             var request = new CreateDeploymentRequest { ArtifactsUri = uri };
-            using (HttpClient client = new HttpClient())
-            {
-                HttpResponseMessage response = await client.PostAsJsonAsync(uri, request);
-                response.EnsureSuccessStatusCode();
-                return await response.Content.ReadAsAsync<CreateDeploymentResponse>();
-            }
+            HttpResponseMessage response = await this.httpClient.PostAsJsonAsync(uri, request);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsAsync<CreateDeploymentResponse>();
         }
     }
 }

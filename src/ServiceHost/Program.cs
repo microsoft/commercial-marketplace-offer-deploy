@@ -20,9 +20,10 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<ArtifactsWatcher>(provider =>
         {
             var logger = provider.GetRequiredService<ILogger<Worker>>();
+            var httpClient = provider.GetRequiredService<HttpClient>();
             string artifactsFilePath = configuration.GetSection("ArtifactsWatcherSettings")["ArtifactsFilePath"];
             string statusEndpoint = configuration.GetSection("ArtifactsWatcherSettings")["StatusEndpoint"];
-            return new ArtifactsWatcher(artifactsFilePath, statusEndpoint, logger);
+            return new ArtifactsWatcher(httpClient, artifactsFilePath, statusEndpoint, logger);
         });
     })
     .Build();
