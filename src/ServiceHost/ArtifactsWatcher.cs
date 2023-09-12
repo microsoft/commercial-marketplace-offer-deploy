@@ -14,7 +14,6 @@ namespace Modm.ServiceHost
         public const string ArtifactsUriFileName = "artifacts.uri";
 
         private readonly ILogger<ArtifactsWatcher> logger;
-        private readonly string artifactsFilePath;
         private readonly string statusEndpoint;
         private readonly FileSystemWatcher fileWatcher;
         private readonly HttpClient httpClient;
@@ -44,21 +43,14 @@ namespace Modm.ServiceHost
             this.logger.LogInformation("File created.");
             try
             {
-                string uri = File.ReadAllText(artifactsFilePath);
-
+                var expandedPath = Environment.ExpandEnvironmentVariables(e.FullPath);
+                this.logger.LogInformation($"exmpanedPath: {expandedPath}");
+                string uri = File.ReadAllText(expandedPath);
+                this.logger.LogInformation("uri: {uri}", uri);
                 if (Uri.IsWellFormedUriString(uri, UriKind.Absolute))
                 {
-                    bool isReady = await WaitForServiceReady();
-
-                    if (isReady)
-                    {
-                        await SendHttpPost(uri);
-                        this.logger.LogInformation("HTTP Post sent successfully.");
-                    }
-                    else
-                    {
-                        this.logger.LogInformation("External service is not ready.");
-                    }
+                    await SendHttpPost(uri);
+                    this.logger.LogInformation("HTTP Post sent successfully.");
                 }
                 else
                 {
@@ -78,6 +70,7 @@ namespace Modm.ServiceHost
 
             for (int attempt = 0; attempt < maxAttempts; attempt++)
             {
+                this.logger.LogInformation("inside WaitForServiceReady loop.");
                 bool isReady = await CheckServiceStatus();
 
                 if (isReady)
@@ -93,10 +86,12 @@ namespace Modm.ServiceHost
 
         private async Task<bool> CheckServiceStatus()
         {
+            this.logger.LogInformation("inside CheckServiceStatus.");
             HttpResponseMessage response = await this.httpClient.GetAsync(statusEndpoint);
             if (response.IsSuccessStatusCode)
             {
                 EngineStatus status = await response.Content.ReadAsAsync<EngineStatus>();
+                this.logger.LogInformation($"Engine status: {status}");
                 return status.IsHealthy;
             }
 
