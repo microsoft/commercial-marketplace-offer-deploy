@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Modm.Azure
 {
-    public static class ArmFunctions
+    static class ArmFunctions
     {
         public const string FunctionName_UniqueString = "uniqueString";
 

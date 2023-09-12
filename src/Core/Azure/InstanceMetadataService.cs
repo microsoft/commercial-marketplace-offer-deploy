@@ -14,30 +14,14 @@ namespace Modm.Azure
     public class InstanceMetadataService
 	{
         private const string DefaultApiVersion = "2021-02-01";
-        const string ImdsServer = "http://169.254.169.254";
-        const string InstanceEndpoint = ImdsServer + "/metadata/instance";
-
-        const string FqdnTagName = "fqdn";
+        const string DefaultServiceEndpoint = "http://169.254.169.254";
+        const string InstanceEndpoint = DefaultServiceEndpoint + "/metadata/instance";
 
         private readonly HttpClient client;
 
         public InstanceMetadataService(HttpClient client)
 		{
             this.client = client;
-        }
-
-        /// <summary>
-        /// Returns the FQDN of the machine using the machine name and the location
-        /// </summary>
-        /// <remarks>
-        /// We MUST have this value set on the VM's NIC dnsLabel in order to launch the containers, required by Caddy
-        /// Format: {machinename}.{location}.cloudapp.azure.com
-        /// </remarks>
-        /// <returns></returns>
-        public async Task<string> GetFqdnAsync()
-        {
-            var metadata = await GetAsync();
-            return $"{metadata.Compute.Name}.{metadata.Compute.Location}.cloudapp.azure.com";
         }
 
         public async Task<InstanceMetadata> GetAsync()

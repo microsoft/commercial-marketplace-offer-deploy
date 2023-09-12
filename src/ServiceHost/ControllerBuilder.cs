@@ -6,17 +6,25 @@ namespace Modm.ServiceHost
 	class ControllerBuilder
 	{
 		readonly ControllerOptions options;
-        private readonly ILogger<Worker> logger;
+        private readonly ILogger<Startup> logger;
 
-        public ControllerBuilder(ILogger<Worker> logger)
+		IServiceProvider? serviceProvider;
+
+        public ControllerBuilder(ILogger<Startup> logger)
 		{
 			this.logger = logger;
 			options = new ControllerOptions();
 		}
 
-		public static ControllerBuilder Create(ILogger<Worker> logger)
+		public static ControllerBuilder Create(ILogger<Startup> logger)
 		{
 			return new ControllerBuilder(logger);
+		}
+
+		public ControllerBuilder UsingServiceProvider(IServiceProvider serviceProvider)
+		{
+			this.serviceProvider = serviceProvider;
+			return this;
 		}
 
 		public ControllerBuilder UseFqdn(string fqdn)
@@ -25,9 +33,22 @@ namespace Modm.ServiceHost
 			return this;
 		}
 
-		public Controller Build()
+        public ControllerBuilder UseComposeFile(string composeFile)
+        {
+            options.ComposeFilePath = composeFile;
+            return this;
+        }
+
+        public Controller Build()
 		{
-			return new Controller(this.options, this.logger);
+            if (serviceProvider == null)
+            {
+                throw new NullReferenceException("serviceProvider is required.");
+            }
+
+			this.options.Logger = serviceProvider.GetRequiredService<ILogger<Controller>>();
+
+            return new Controller(this.options);
 		}
 	}
 }
