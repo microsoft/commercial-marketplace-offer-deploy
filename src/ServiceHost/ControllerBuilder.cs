@@ -30,14 +30,22 @@ namespace Modm.ServiceHost
 			return this;
 		}
 
-		public Controller Build()
+        public ControllerBuilder UseComposeFile(string composeFile)
+        {
+            options.ComposeFilePath = composeFile;
+            return this;
+        }
+
+        public Controller Build()
 		{
             if (serviceProvider == null)
             {
                 throw new NullReferenceException("serviceProvider is required.");
             }
 
-            return new Controller(this.options, serviceProvider.GetRequiredService<ILogger<Controller>>());
+			this.options.Logger = serviceProvider.GetRequiredService<ILogger<Controller>>();
+
+            return new Controller(this.options);
 		}
 	}
 }
