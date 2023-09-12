@@ -19,7 +19,7 @@ namespace Modm.ServiceHost
         {
             logger.LogInformation("ServiceHost started.");
 
-            var controller = ControllerBuilder.Create()
+            var controller = ControllerBuilder.Create(this.logger)
                 .UseFqdn(await GetFqdn())
                 .Build();
 
