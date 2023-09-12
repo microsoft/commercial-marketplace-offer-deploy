@@ -2,6 +2,7 @@
 services:
   caddy:
     image: caddy:2-alpine
+    container_name: caddy
     ports:
       - 80:80
       - 443:443
@@ -12,6 +13,7 @@ services:
       - ${MODM_HOME}/.env
   modm:
     image: modm:latest
+    container_name: modm
     ports:
       - 5000:5000
     environment:
@@ -23,6 +25,7 @@ services:
       - ${MODM_HOME}:${MODM_HOME}
   jenkins:
     image: jenkins:latest
+    container_name: jenkins
     ports:
       - 8080:8080
     volumes:
