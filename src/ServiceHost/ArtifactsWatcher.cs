@@ -11,13 +11,13 @@ namespace Modm.ServiceHost
 {
 	public class ArtifactsWatcher
 	{
-        private readonly ILogger<Worker> logger;
+        private readonly ILogger<ArtifactsWatcher> logger;
         private readonly string artifactsFilePath;
         private readonly string statusEndpoint;
         private readonly FileSystemWatcher fileWatcher;
         private readonly HttpClient httpClient;
 
-        public ArtifactsWatcher(HttpClient client, string artifactsFilePath, string statusEndpoint, ILogger<Worker> logger)
+        public ArtifactsWatcher(HttpClient client, string artifactsFilePath, string statusEndpoint, ILogger<ArtifactsWatcher> logger)
 		{
             this.statusEndpoint = statusEndpoint;
             this.logger = logger;
