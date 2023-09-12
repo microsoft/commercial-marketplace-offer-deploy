@@ -1,6 +1,5 @@
 ﻿using System;
 using Modm.Azure;
-using Modm.Networking;
 
 namespace Modm.ServiceHost
 {
@@ -18,18 +17,13 @@ namespace Modm.ServiceHost
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             logger.LogInformation("ServiceHost started.");
+            var metadata = await metadataService.GetAsync();
 
             var controller = ControllerBuilder.Create()
-                .UseFqdn(await GetFqdn())
+                .UseFqdn(metadata.Fqdn)
                 .Build();
 
             await controller.StartAsync(stoppingToken);
-        }
-
-        private async Task<string> GetFqdn()
-        {
-            var metadata = await metadataService.GetAsync();
-            return FqdnFactory.Create(metadata.Compute.ResourceId, metadata.Compute.Location);
         }
     }
 }
