@@ -3,9 +3,9 @@
     internal class Controller
     {
         private readonly ControllerOptions options;
-        private readonly ILogger<Worker> logger;
+        private readonly ILogger<Controller> logger;
 
-        public Controller(ControllerOptions options, ILogger<Worker> logger)
+        public Controller(ControllerOptions options, ILogger<Controller> logger)
         {
             this.options = options;
             this.logger = logger;

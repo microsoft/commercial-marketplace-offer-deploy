@@ -15,6 +15,12 @@
     <UserSecretsId>48d00c50-0df3-4506-b490-bc0aec447a1d</UserSecretsId>
   </PropertyGroup>
 
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+    <_Parameter1>Modm.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Web' " />
   <ItemGroup>
     <PackageReference Include="jenkinsnet" Version="1.0.4" />
