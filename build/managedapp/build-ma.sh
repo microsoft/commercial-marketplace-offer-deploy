@@ -24,7 +24,7 @@ rm ./obj/mainTemplate.json 2> /dev/null
 cp -f ./build/managedapp/mainTemplate.json ./obj/mainTemplate.json
 
 # Zip up the package for the managed application
-./createAppZip.sh
+./build/managedapp/createAppZip.sh
 
 
 # Create the Service Definition
@@ -34,6 +34,6 @@ STORAGE_CONTAINER_NAME="modm$MANAGED_APP_VERSION"
 MA_RESOURCE_GROUP=$STORAGE_ACC_RESOURCE_GROUP
 MA_DEFINITION_NAME="modm$MANAGED_APP_VERSION"
 
-./createServiceDefinition.sh $STORAGE_ACC_RESOURCE_GROUP $STORAGE_ACC_NAME $STORAGE_CONTAINER_NAME $MA_RESOURCE_GROUP $MA_DEFINITION_NAME
+./build/managedapp/createServiceDefinition.sh $STORAGE_ACC_RESOURCE_GROUP $STORAGE_ACC_NAME $STORAGE_CONTAINER_NAME $MA_RESOURCE_GROUP $MA_DEFINITION_NAME
 
 az role assignment create --assignee c3551f1c-671e-4495-b9aa-8d4adcd62976 --role acdd72a7-3385-48ef-bd42-f606fba81ae7 --scope "$DEPLOYED_IMAGE_REFERENCE"
