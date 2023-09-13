@@ -79,6 +79,8 @@
         "scriptName": "scriptExtension.sh",
         "vmFqdn": "[concat(parameters('virtualMachineName'), '.', parameters('location'), '.cloudapp.azure.com')]",
         "artifactsContainerLocation": "[substring(parameters('_artifactsLocation'), 0, lastIndexOf(parameters('_artifactsLocation'), '/'))]",
+        "uniqueStringInput": "[concat(subscription().subscriptionId, resourceGroup().name, parameters('virtualMachineName'))]",
+        "dnsLabel": "[uniqueString(variables('uniqueStringInput'))]",
         "Owner": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]"
     },
     "resources": [
@@ -127,6 +129,9 @@
                             "publicIpAddress": {
                                 "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', parameters('publicIpAddressName1'))]",
                                 "properties": {
+                                    "dnsSettings": {
+                                        "domainNameLabel": "[variables('dnsLabel')]"
+                                    },
                                     "deleteOption": "[parameters('pipDeleteOption')]"
                                 }
                             }
@@ -143,7 +148,7 @@
             "properties": {
                 "publicIpAllocationMethod": "[parameters('publicIpAddressType')]",
                 "dnsSettings": {
-                    "domainNameLabel": "[parameters('virtualMachineName')]"
+                    "domainNameLabel": "[variables('dnsLabel')]"
                 }
             },
             "sku": {
