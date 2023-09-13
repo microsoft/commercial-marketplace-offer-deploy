@@ -1,4 +1,5 @@
 ﻿using System;
+using Modm.Azure;
 using Modm.ServiceHost;
 
 namespace Modm
@@ -9,8 +10,9 @@ namespace Modm
 		public string? ComposeFilePath { get; set; }
 		public ILogger<Controller>? Logger { get; set; }
 		public ArtifactsWatcher? Watcher { get; set; }
-		
-        public string ComposeFileDirectory
+		public ManagedIdentityService? ManagedIdentityService { get; set; }
+
+		public string ComposeFileDirectory
 		{
 			get
 			{
