@@ -75,7 +75,7 @@
         "subnetName": "[concat(parameters('virtualMachineName'), '-subnet')]",
         "vnetId": "[parameters('virtualNetworkId')]",
         "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
-        "scriptDirectory": "/usr/local/source/build/vm",
+        "scriptDirectory": "/usr/local/modm/source/build/vm",
         "scriptName": "scriptExtension.sh",
         "vmFqdn": "[concat(parameters('virtualMachineName'), '.', parameters('location'), '.cloudapp.azure.com')]",
         "artifactsContainerLocation": "[substring(parameters('_artifactsLocation'), 0, lastIndexOf(parameters('_artifactsLocation'), '/'))]",
