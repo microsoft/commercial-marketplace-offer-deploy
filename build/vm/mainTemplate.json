@@ -71,14 +71,42 @@
         }
     },
     "variables": {
+        "vnetName": "[concat(parameters('virtualMachineName'), '-vnet')]",
+        "subnetName": "[concat(parameters('virtualMachineName'), '-subnet')]",
         "vnetId": "[parameters('virtualNetworkId')]",
         "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
         "scriptDirectory": "/usr/local/source/build/vm",
         "scriptName": "scriptExtension.sh",
         "vmFqdn": "[concat(parameters('virtualMachineName'), '.', parameters('location'), '.cloudapp.azure.com')]",
-        "artifactsContainerLocation": "[substring(parameters('_artifactsLocation'), 0, lastIndexOf(parameters('_artifactsLocation'), '/'))]"
+        "artifactsContainerLocation": "[substring(parameters('_artifactsLocation'), 0, lastIndexOf(parameters('_artifactsLocation'), '/'))]",
+        "Owner": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]"
     },
     "resources": [
+        {
+            "name": "[variables('vnetName')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2021-08-01",
+            "location": "[parameters('location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.0.0.0/16" 
+                    ]
+                }
+            }
+        },
+        {
+            "name": "[concat(variables('vnetName'), '/', variables('subnetName'))]",
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2021-08-01",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+            ],
+            "properties": {
+                "addressPrefix": "10.0.0.0/24" 
+            }
+        },
         {
             "name": "[parameters('networkInterfaceName1')]",
             "type": "Microsoft.Network/networkInterfaces",
@@ -93,7 +121,7 @@
                         "name": "ipconfig1",
                         "properties": {
                             "subnet": {
-                                "id": "[variables('subnetRef')]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]"
                             },
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIpAddress": {
@@ -141,13 +169,30 @@
             "zones": "[if(contains(parameters('dataDiskResources1')[copyIndex()].sku, '_ZRS'), json('null'), array(parameters('virtualMachine1Zone')))]"
         },
         {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2022-04-01",
+            "name": "[guid(concat('Deploy-Permission',parameters('virtualMachineName')))]",
+            "dependsOn": [
+              "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]"
+            ],
+            "properties": {
+                "principalType": "ServicePrincipal",
+                "roleDefinitionId": "[variables('Owner')]",
+                "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName')), '2022-03-01', 'Full').identity.principalId]"
+            }
+        },
+        {
             "name": "[parameters('virtualMachineName')]",
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2022-03-01",
             "location": "[parameters('location')]",
+            "identity": {
+                "type": "SystemAssigned"
+            },
             "dependsOn": [
                 "managedDiskResources",
-                "[concat('Microsoft.Network/networkInterfaces/', parameters('networkInterfaceName1'))]"
+                "[concat('Microsoft.Network/networkInterfaces/', parameters('networkInterfaceName1'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]"
             ],
             "properties": {
                 "hardwareProfile": {
