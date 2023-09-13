@@ -53,10 +53,10 @@ namespace Modm.Azure
         public required Plan Plan { get; set; }
 
         [JsonPropertyName("platformFaultDomain")]
-        public long PlatformFaultDomain { get; set; }
+        public string? PlatformFaultDomain { get; set; }
 
         [JsonPropertyName("platformUpdateDomain")]
-        public long PlatformUpdateDomain { get; set; }
+        public string? PlatformUpdateDomain { get; set; }
 
         [JsonPropertyName("priority")]
         public required string Priority { get; set; }
@@ -203,7 +203,7 @@ namespace Modm.Azure
         public DiffDiskSettings? DiffDiskSettings { get; set; }
 
         [JsonPropertyName("diskSizeGB")]
-        public long DiskSizeGb { get; set; }
+        public string? DiskSizeGb { get; set; }
 
         [JsonPropertyName("encryptionSettings")]
         public EncryptionSettings? EncryptionSettings { get; set; }
@@ -259,7 +259,7 @@ namespace Modm.Azure
     public partial class ResourceDisk
     {
         [JsonPropertyName("size")]
-        public long Size { get; set; }
+        public string? Size { get; set; }
     }
 
     public partial class Network
@@ -304,7 +304,7 @@ namespace Modm.Azure
         public required string Address { get; set; }
 
         [JsonPropertyName("prefix")]
-        public long Prefix { get; set; }
+        public string? Prefix { get; set; }
     }
 
     public partial class Ipv6
