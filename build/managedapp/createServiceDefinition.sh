@@ -38,7 +38,7 @@ az storage blob upload \
     --account-name "$STORAGE_ACC_NAME" \
     --container-name "$STORAGE_CONTAINER_NAME" \
     --name "app.zip" \
-    --file "../../bin/app.zip"
+    --file "./bin/app.zip"
 
 blob=$(az storage blob url --account-name "$STORAGE_ACC_NAME" --container-name "$STORAGE_CONTAINER_NAME" --name app.zip --output tsv)
 groupid=$(az ad group show --group "Managed Application Tests" --query id --output tsv)
