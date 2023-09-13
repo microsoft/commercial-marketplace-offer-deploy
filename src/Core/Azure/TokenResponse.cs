@@ -12,16 +12,16 @@ namespace Modm.Azure
         public Guid ClientId { get; set; }
 
         [JsonPropertyName("expires_in")]
-        public long ExpiresIn { get; set; }
+        public required string ExpiresIn { get; set; }
 
         [JsonPropertyName("expires_on")]
-        public long ExpiresOn { get; set; }
+        public required string ExpiresOn { get; set; }
 
         [JsonPropertyName("ext_expires_in")]
-        public long ExtExpiresIn { get; set; }
+        public required string ExtExpiresIn { get; set; }
 
         [JsonPropertyName("not_before")]
-        public long NotBefore { get; set; }
+        public required string NotBefore { get; set; }
 
         [JsonPropertyName("resource")]
         public required Uri Resource { get; set; }
