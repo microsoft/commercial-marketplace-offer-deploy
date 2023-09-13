@@ -22,10 +22,8 @@ echo ""
 echo "Building ServiceHost"
 csproj=./src/ServiceHost/ServiceHost.csproj
 out_path=./bin/service
-service_path=$MODM_HOME/service
 
 sudo mkdir -p $out_path
-sudo mkdir -p $service_path
 
 sudo dotnet restore $csproj
 sudo dotnet build $csproj -c Release -o $out_path/build
@@ -35,7 +33,6 @@ sudo dotnet publish $csproj -c Release -o $out_path/publish
 echo "Installing ServiceHost as systemd service."
 sudo cp $out_path/publish/modm /usr/sbin/modm
 
-sudo mkdir -p $MODM_HOME/service
 sudo cp $out_path/publish/appsettings.json $service_path
 sudo cp /tmp/modm.service /etc/systemd/system/modm.service
 

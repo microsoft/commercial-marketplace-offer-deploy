@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Modm.Azure
@@ -24,6 +25,7 @@ namespace Modm.Azure
         public required string EvictionPolicy { get; set; }
 
         [JsonPropertyName("isHostCompatibilityLayerVm")]
+        [JsonConverter(typeof(BooleanConverter))]
         public bool IsHostCompatibilityLayerVm { get; set; }
 
         [JsonPropertyName("licenseType")]
@@ -120,6 +122,7 @@ namespace Modm.Azure
         public required string ComputerName { get; set; }
 
         [JsonPropertyName("disablePasswordAuthentication")]
+        [JsonConverter(typeof(BooleanConverter))]
         public bool DisablePasswordAuthentication { get; set; }
     }
 
@@ -147,9 +150,11 @@ namespace Modm.Azure
     public partial class SecurityProfile
     {
         [JsonPropertyName("secureBootEnabled")]
+        [JsonConverter(typeof(BooleanConverter))]
         public bool SecureBootEnabled { get; set; }
 
         [JsonPropertyName("virtualTpmEnabled")]
+        [JsonConverter(typeof(BooleanConverter))]
         public bool VirtualTpmEnabled { get; set; }
     }
 
@@ -219,6 +224,7 @@ namespace Modm.Azure
         public Image? Vhd { get; set; }
 
         [JsonPropertyName("writeAcceleratorEnabled")]
+        [JsonConverter(typeof(BooleanConverter))]
         public bool WriteAcceleratorEnabled { get; set; }
     }
 
@@ -231,6 +237,7 @@ namespace Modm.Azure
     public partial class EncryptionSettings
     {
         [JsonPropertyName("enabled")]
+        [JsonConverter(typeof(BooleanConverter))]
         public bool Enabled { get; set; }
     }
 
@@ -306,5 +313,31 @@ namespace Modm.Azure
         public required object[] IpAddress { get; set; }
     }
 
-   
+    public class BooleanConverter : JsonConverter<bool>
+    {
+        public override bool Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            switch (reader.TokenType)
+            {
+                case JsonTokenType.True:
+                    return true;
+                case JsonTokenType.False:
+                    return false;
+                case JsonTokenType.String:
+                    return reader.GetString() switch
+                    {
+                        "true" => true,
+                        "false" => false,
+                        _ => throw new JsonException()
+                    };
+                default:
+                    throw new JsonException();
+            }
+        }
+
+        public override void Write(Utf8JsonWriter writer, bool value, JsonSerializerOptions options)
+        {
+            writer.WriteBooleanValue(value);
+        }
+    }
 }
