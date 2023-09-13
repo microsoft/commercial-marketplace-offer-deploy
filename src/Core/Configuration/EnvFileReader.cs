@@ -31,11 +31,6 @@ namespace Modm.Configuration
         {
             this.items = new Dictionary<string, string>();
             this.filePath = filePath;
-
-            if (!File.Exists(filePath))
-            {
-                throw new InvalidOperationException("File path is invalid.");
-            }
         }
 
         public static EnvFileReader FromPath(string filePath)
@@ -45,6 +40,12 @@ namespace Modm.Configuration
 
         public void Read()
         {
+            if (!File.Exists(filePath))
+            {
+                read = true;
+                return;
+            }
+
             foreach (var line in File.ReadAllLines(filePath))
             {
                 var parts = line.Split('=', 2, StringSplitOptions.RemoveEmptyEntries);
