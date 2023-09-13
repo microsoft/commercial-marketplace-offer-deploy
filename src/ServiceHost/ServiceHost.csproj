@@ -22,7 +22,7 @@
     <WarningLevel>4</WarningLevel>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
-    <AssemblyName>modm-servicehost</AssemblyName>
+    <AssemblyName>modm</AssemblyName>
     <PlatformTarget>x64</PlatformTarget>
     <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
     <UseAppHost>true</UseAppHost>
@@ -44,6 +44,10 @@
     <Content Update="Properties\launchSettings.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </Content>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
