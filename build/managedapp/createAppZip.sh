@@ -1,8 +1,8 @@
 #!/bin/bash
 
-package_file="../../bin/app.zip"  # Change the path to the bin directory
-main_template_file="../../obj/mainTemplate.json"
-create_ui_definition_file="../../obj/createUiDefinition.json"
+package_file="./bin/app.zip"  # Change the path to the bin directory
+main_template_file=".obj/mainTemplate.json"
+create_ui_definition_file="./obj/createUiDefinition.json"
 terraform_content_dir="terraformContent"
 
 # Change working directory to the vm directory

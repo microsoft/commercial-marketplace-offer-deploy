@@ -8,11 +8,11 @@ fi
 
 MANAGED_APP_VERSION="$1"
 
-mkdir -p ../../obj
+mkdir -p ./obj
 
 DEPLOYED_IMAGE_REFERENCE="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$GALLERY_RESOURCE_GROUP/providers/Microsoft.Compute/galleries/$GALLERY_NAME/images/$GALLERY_IMAGE_DEFINITION/versions/$GALLERY_IMAGE_VERSION"
-UIDEF_FILE="createUiDefinition.json"
-TEMP_FILE="../../obj/createUiDefinition.json"
+UIDEF_FILE="./build/managedapp/createUiDefinition.json"
+TEMP_FILE="./obj/createUiDefinition.json"
 
 # Use sed to replace <IMAGE_REFERENCE> with the DEPLOYED_IMAGE_REFERENCE
 # The -i option has issues with certain platform implementations of the sed command,
@@ -20,8 +20,8 @@ TEMP_FILE="../../obj/createUiDefinition.json"
 rm $TEMP_FILE 2> /dev/null
 sed "s|<IMAGE_REFERENCE>|$DEPLOYED_IMAGE_REFERENCE|g" "$UIDEF_FILE" > "$TEMP_FILE"
 
-rm ../../obj/mainTemplate.json 2> /dev/null
-cp -f mainTemplate.json ../../obj/mainTemplate.json
+rm ./obj/mainTemplate.json 2> /dev/null
+cp -f ./build/managedapp/mainTemplate.json ./obj/mainTemplate.json
 
 # Zip up the package for the managed application
 ./createAppZip.sh
