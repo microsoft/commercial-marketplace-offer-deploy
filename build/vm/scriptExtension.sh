@@ -10,7 +10,7 @@ export MODM_HOME=/usr/local/modm
 export ARTIFACTS_LOCATION="$1"
 export VM_FQDN="$2"
 
-echo "Hello, world from script extension!  The _artifactsLocation is $ARTIFACTS_LOCATION" > scriptExtensionOutput.txt
+echo "$ARTIFACTS_LOCATION" > $MODM_HOME/artifacts.uri
 echo "FQDN = $VM_FQDN"
 
 # next, setup caddy's required .env file. This file is referenced in the docker-compose file for caddy to run properly and compose
@@ -19,7 +19,3 @@ echo "FQDN = $VM_FQDN"
 # this will allow the site address to be set to the VM's FQDN
 echo SITE_ADDRESS=$VM_FQDN | sudo tee $MODM_HOME/.env
 echo ACME_ACCOUNT_EMAIL=nowhere@nowhere.com  | sudo tee --append $MODM_HOME/.env
-
-# Start up docker compose
-# TODO: call entrypoint using docker run instead, attach the .env file
-sudo docker compose -f $MODM_HOME/docker-compose.yml -p modm up -d --force-recreate
