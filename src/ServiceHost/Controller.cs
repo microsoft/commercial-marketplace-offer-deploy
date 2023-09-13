@@ -4,6 +4,8 @@ using Ductus.FluentDocker.Services;
 using Ductus.FluentDocker.Model.Compose;
 using Modm.Configuration;
 using Modm.Azure;
+using MediatR;
+using Modm.ServiceHost.Extensions;
 
 namespace Modm.ServiceHost
 {
@@ -14,20 +16,21 @@ namespace Modm.ServiceHost
     class Controller
     {
         private readonly ControllerOptions options;
+        private readonly IConfiguration configuration;
+        private readonly IMediator mediator;
         private readonly ILogger<Controller> logger;
         ICompositeService? composeService;
-        readonly ManagedIdentityService managedIdentityService;
+        readonly IManagedIdentityService managedIdentityService;
+        private readonly IHostEnvironment environment;
 
-        public Controller(ControllerOptions options)
+        public Controller(ControllerOptions options, IManagedIdentityService managedServiceIdentity, IHostEnvironment environment, IConfiguration configuration, IMediator mediator, ILogger<Controller> logger)
         {
-            if (options.Logger == null)
-            {
-                throw new ArgumentNullException(nameof(options), "Logger cannot be null.");
-            }
-
             this.options = options;
-            this.logger = options.Logger;
-            this.managedIdentityService = options.ManagedIdentityService;
+            this.configuration = configuration;
+            this.mediator = mediator;
+            this.logger = logger;
+            this.managedIdentityService = managedServiceIdentity;
+            this.environment = environment;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken = default)
@@ -35,9 +38,8 @@ namespace Modm.ServiceHost
             logger.LogInformation("FQDN: {fqdn}", options.Fqdn);
 
             await SetEnvFileAsync();
-
             StartCompose();
-            options.Watcher?.Start();
+            await Notify();
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -52,6 +54,25 @@ namespace Modm.ServiceHost
         {
             composeService?.Stop();
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Notify that the controller has started
+        /// </summary>
+        /// <returns></returns>
+        async Task Notify()
+        {
+            var port = composeService.Containers.First(c => c.Name == "modm")
+                .GetConfiguration()
+                .NetworkSettings.Ports
+                .First(p => p.Value != null && p.Value.FirstOrDefault() != null)
+                .Value.First().Port;
+
+            await mediator.Publish(new ControllerStarted
+            {
+                DeploymentsUrl = $"http://localhost:{port}/api/deployments",
+                ArtifactsPath = configuration.GetHomeDirectory()
+            });
         }
 
         void StartCompose()
@@ -74,13 +95,15 @@ namespace Modm.ServiceHost
             // set for caddy
             writer.Add("SITE_ADDRESS", options.Fqdn);
 
-            var info = await managedIdentityService.GetAsync();
+            if (environment.IsProduction())
+            {
+                var info = await managedIdentityService.GetAsync();
 
-            // required by container environments
-            writer.Add("AZURE_CLIENT_ID", info.ClientId.ToString());
-            writer.Add("AZURE_TENANT_ID", info.TenantId.ToString());
-            writer.Add("AZURE_SUBSCRIPTION_ID", info.SubscriptionId.ToString());
-
+                // required by container environments
+                writer.Add("AZURE_CLIENT_ID", info.ClientId.ToString());
+                writer.Add("AZURE_TENANT_ID", info.TenantId.ToString());
+                writer.Add("AZURE_SUBSCRIPTION_ID", info.SubscriptionId.ToString());
+            }
             await writer.WriteAsync(envFilePath);
         }
 
@@ -104,6 +127,7 @@ namespace Modm.ServiceHost
                 }
             }
 
+            // TODO: dynamically grab the correct port set on the engine / jenkins for the WaitForHttp
             var compositeService = builder.RemoveOrphans()
                         .WaitForHttp("jenkins", "http://localhost:8080/login", timeout: 60000, (response, attempt) =>
                         {

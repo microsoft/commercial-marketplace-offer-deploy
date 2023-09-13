@@ -1,16 +1,9 @@
-﻿using System;
-using Modm.Azure;
-using Modm.ServiceHost;
-
-namespace Modm
+﻿namespace Modm
 {
 	class ControllerOptions
 	{
 		public string? Fqdn { get; set; }
 		public string? ComposeFilePath { get; set; }
-		public ILogger<Controller>? Logger { get; set; }
-		public ArtifactsWatcher? Watcher { get; set; }
-		public ManagedIdentityService? ManagedIdentityService { get; set; }
 
 		public string ComposeFileDirectory
 		{

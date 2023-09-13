@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text.Json.Serialization;
-using Azure.Deployments.Core.Definitions.Identifiers;
 
 namespace Modm.Azure
 {
@@ -11,24 +10,6 @@ namespace Modm.Azure
 
         [JsonPropertyName("network")]
         public required Network Network { get; set; }
-
-
-        /// <summary>
-        /// Returns the FQDN of the machine using the machine name and the location
-        /// </summary>
-        /// <remarks>
-        /// We MUST have this value set on the VM's NIC dnsLabel in order to launch the containers, required by Caddy
-        /// Format: {uniqueString(vm.resourceId)}.{location}.cloudapp.azure.com
-        /// </remarks>
-        /// <returns></returns>
-        public string Fqdn
-        {
-            get
-            {
-                var dnsLabel = ArmFunctions.UniqueString(this.Compute.ResourceId);
-                return $"{dnsLabel}.{this.Compute.Location}.cloudapp.azure.com";
-            }
-        }
     }
 
     public partial class Compute
@@ -172,7 +153,7 @@ namespace Modm.Azure
         public bool VirtualTpmEnabled { get; set; }
     }
 
-    public partial class StorageProfile
+    public class StorageProfile
     {
         [JsonPropertyName("dataDisks")]
         public required object[] DataDisks { get; set; }

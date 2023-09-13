@@ -48,7 +48,7 @@ namespace Modm.Configuration
             foreach (var line in File.ReadAllLines(filePath))
             {
                 var parts = line.Split('=', 2, StringSplitOptions.RemoveEmptyEntries);
-                items.Add(parts[0], parts[1]);
+                items.TryAdd(parts[0], parts[1]);
             }
 
             read = true;

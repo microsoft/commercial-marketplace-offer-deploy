@@ -1,31 +1,32 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using Modm;
 using Modm.Azure;
 using Modm.ServiceHost;
 
-IConfiguration configuration = new ConfigurationBuilder()
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json")
-    .Build();
-
 IHost host = Host.CreateDefaultBuilder(args)
     .UseSystemd()
-    .ConfigureServices(services =>
+    .ConfigureAppConfiguration(builder =>
     {
-        services.AddHttpClient();
-        services.AddSingleton<InstanceMetadataService>();
-        services.AddSingleton<ManagedIdentityService>();
-        services.AddHostedService<Startup>();
-
-        services.AddSingleton<ArtifactsWatcher>(provider =>
+        builder.AddEnvironmentVariables();
+    })
+    .ConfigureServices((context, services) =>
+    {
+        if (context.HostingEnvironment.IsDevelopment())
         {
-            var logger = provider.GetRequiredService<ILogger<ArtifactsWatcher>>();
-            var httpClient = provider.GetRequiredService<HttpClient>();
-            string artifactsFilePath = configuration.GetSection("ArtifactsWatcherSettings")["ArtifactsFilePath"];
-            string statusEndpoint = configuration.GetSection("ArtifactsWatcherSettings")["DeploymentsEndpoint"];
-            return new ArtifactsWatcher(httpClient, artifactsFilePath, statusEndpoint, logger);
-        });
+            services.AddSingleton<IMetadataService, LocalMetadataService>();
+            services.AddSingleton<IManagedIdentityService, LocalManagedIdentityService>();
+        }
+        else
+        {
+            services.AddSingleton<IMetadataService, DefaultMetadataService>();
+            services.AddSingleton<IManagedIdentityService, DefaultManagedIdentityService>();
+        }
+
+        services.AddHttpClient();
+        services.AddSingleton<ArtifactsWatcher>();
+
+        services.AddHostedService<ControllerService>();
+        services.AddHostedService<ArtifactsWatcherService>();
+
+        services.AddMediatR(c => c.RegisterServicesFromAssemblyContaining<ControllerService>());
     })
     .Build();
 
