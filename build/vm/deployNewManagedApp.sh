@@ -11,7 +11,7 @@ env_pkrvars_file=../../obj/.env.pkrvars
 
 if [ ! -f $env_pkrvars_file ];
 then
-    echo "./obj/.env.pkrvars file is required."
+    echo "../../obj/.env.pkrvars file is required."
     exit 1
 else
     echo "Packer variables env var file present."
@@ -26,13 +26,13 @@ export PKR_VAR_managed_image_name=modm-mi-${MANAGED_APP_VERSION}
 MODM_VM_CLIENT_ID=$PKR_VAR_client_id
 MODM_VM_CLIENT_SECRET=$PKR_VAR_client_secret
 MANAGED_IMAGE_NAME=$PKR_VAR_managed_image_name
-MANAGED_IMAGE_RG_NAME="modm-dev"
+MANAGED_IMAGE_RG_NAME="modm-dev-vmi"
 SUBSCRIPTION_ID=$PKR_VAR_subscription_id
 TENANT_ID=$PKR_VAR_tenant_id
 
-./packer/buildImage.sh $MODM_VM_CLIENT_ID $MODM_VM_CLIENT_SECRET $MANAGED_IMAGE_NAME $MANAGED_IMAGE_RG_NAME $SUBSCRIPTION_ID $TENANT_ID
+# ./packer/buildImage.sh $MODM_VM_CLIENT_ID $MODM_VM_CLIENT_SECRET $MANAGED_IMAGE_NAME $MANAGED_IMAGE_RG_NAME $SUBSCRIPTION_ID $TENANT_ID
 
-GALLERY_RESOURCE_GROUP="modm-dev"
+GALLERY_RESOURCE_GROUP="modm-dev-vmi"
 GALLERY_NAME="modm.dev.sig"
 GALLERY_IMAGE_DEFINITION="modm"
 GALLERY_IMAGE_VERSION="0.0.$MANAGED_APP_VERSION"
@@ -40,7 +40,7 @@ IMAGE="$MANAGED_IMAGE_NAME"
 IMAGE_RESOURCE_GROUP="$MANAGED_IMAGE_RG_NAME"
 REGION="eastus"
 
-./addImageToGallery.sh $GALLERY_RESOURCE_GROUP $GALLERY_NAME $GALLERY_IMAGE_DEFINITION $GALLERY_IMAGE_VERSION $SUBSCRIPTION_ID $IMAGE $IMAGE_RESOURCE_GROUP $REGION
+# ./addImageToGallery.sh $GALLERY_RESOURCE_GROUP $GALLERY_NAME $GALLERY_IMAGE_DEFINITION $GALLERY_IMAGE_VERSION $SUBSCRIPTION_ID $IMAGE $IMAGE_RESOURCE_GROUP $REGION
 
 mkdir -p ../../obj
 
@@ -63,7 +63,7 @@ cp -f mainTemplate.json ../../obj/mainTemplate.json
 
 # Create the Service Definition
 STORAGE_ACC_RESOURCE_GROUP="modm-dev"
-STORAGE_ACC_NAME="modmdev0scsa"
+STORAGE_ACC_NAME="modmsvccatalog"
 STORAGE_CONTAINER_NAME="modm$MANAGED_APP_VERSION"
 MA_RESOURCE_GROUP=$STORAGE_ACC_RESOURCE_GROUP
 MA_DEFINITION_NAME="modm$MANAGED_APP_VERSION"
