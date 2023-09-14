@@ -16,6 +16,11 @@ DEPLOYED_IMAGE_REFERENCE="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$GALLER
 UIDEF_FILE="./build/managedapp/createUiDefinition.json"
 TEMP_FILE="./obj/createUiDefinition.json"
 
+# Assign the Reader role to the Managed Application Service Principal
+az role assignment create --assignee 1cf33839-e2dd-49a4-a41f-03a52b70a203 --role acdd72a7-3385-48ef-bd42-f606fba81ae7 --scope "$DEPLOYED_IMAGE_REFERENCE"
+# Assign the Reader role to the Managed Application Service Principal
+az role assignment create --assignee c3551f1c-671e-4495-b9aa-8d4adcd62976 --role acdd72a7-3385-48ef-bd42-f606fba81ae7 --scope "$DEPLOYED_IMAGE_REFERENCE"
+
 # Use sed to replace <IMAGE_REFERENCE> with the DEPLOYED_IMAGE_REFERENCE
 # The -i option has issues with certain platform implementations of the sed command,
 # so we use a temporary file for the output and then overwrite the original file
@@ -42,4 +47,3 @@ MA_DEFINITION_NAME="modm$MANAGED_APP_VERSION"
 
 ./build/managedapp/createServiceDefinition.sh $STORAGE_ACC_RESOURCE_GROUP $STORAGE_ACC_NAME $STORAGE_CONTAINER_NAME $MA_RESOURCE_GROUP $MA_DEFINITION_NAME
 
-az role assignment create --assignee 1cf33839-e2dd-49a4-a41f-03a52b70a203 --role acdd72a7-3385-48ef-bd42-f606fba81ae7 --scope "$DEPLOYED_IMAGE_REFERENCE"
