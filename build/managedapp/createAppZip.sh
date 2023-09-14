@@ -6,12 +6,15 @@ if [ $# -ne 1 ]; then
 fi
 
 scenario_name="$1"
+echo "The scenario name is: $scenario_name"
 package_file="./bin/app.zip"  # Change the path to the bin directory
 main_template_file="./obj/mainTemplate.json"
 create_ui_definition_file="./obj/createUiDefinition.json"
 
 # Create the content.zip file
 zip -r ./obj/content.zip ./build/managedapp/$scenario_name/*
+echo "zipped content.zip"
+echo "The ./obj directory contains: $(ls -la ./obj)"
 
 # Create the zip file including the specified files and directories
 zip -FS -j "$package_file" "$main_template_file" "$create_ui_definition_file" ./obj/content.zip

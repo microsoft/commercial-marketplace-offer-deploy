@@ -7,7 +7,6 @@ if [ $# -ne 2 ]; then
 fi
 
 MANAGED_APP_VERSION="$1"
-echo "The current directory is: $(pwd)"
 
 mkdir -p ./obj
 mkdir -p ./bin
@@ -17,8 +16,7 @@ DEPLOYED_IMAGE_REFERENCE="$2"
 UIDEF_FILE="./build/managedapp/createUiDefinition.json"
 TEMP_FILE="./obj/createUiDefinition.json"
 
-# Assign the Reader role to the Managed Application Service Principal
-# az role assignment create --assignee 1cf33839-e2dd-49a4-a41f-03a52b70a203 --role acdd72a7-3385-48ef-bd42-f606fba81ae7 --scope "$DEPLOYED_IMAGE_REFERENCE"
+
 # Assign the Reader role to the Managed Application Service Principal
 az role assignment create --assignee c3551f1c-671e-4495-b9aa-8d4adcd62976 --role acdd72a7-3385-48ef-bd42-f606fba81ae7 --scope "$DEPLOYED_IMAGE_REFERENCE"
 
@@ -30,11 +28,12 @@ sed "s|<IMAGE_REFERENCE>|$DEPLOYED_IMAGE_REFERENCE|g" "$UIDEF_FILE" > "$TEMP_FIL
 
 rm ./obj/mainTemplate.json 2> /dev/null
 cp -f ./build/managedapp/mainTemplate.json ./obj/mainTemplate.json
-cp -f ./build/managedapp/content.zip ./obj/content.zip
+#cp -f ./build/managedapp/content.zip ./obj/content.zip
 
 echo "The ./obj directory contains: $(ls -la ./obj)"
 
 scenario_name="$3"
+echo "The scenario name is: $scenario_name"
 # Zip up the package for the managed application
 ./build/managedapp/createAppZip.sh $scenario_name
 
