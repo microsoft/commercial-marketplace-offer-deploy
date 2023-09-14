@@ -7,6 +7,7 @@ using Microsoft.Extensions.Azure;
 using Azure.Identity;
 using JenkinsNET;
 using Modm.Engine.Jenkins;
+using Modm.Deployments;
 
 var builder = WebApplication.CreateBuilder(args);
 

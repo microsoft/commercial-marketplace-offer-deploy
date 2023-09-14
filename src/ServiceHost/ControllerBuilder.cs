@@ -1,4 +1,5 @@
 ﻿using System;
+using MediatR;
 using Modm.Azure;
 using Modm.ServiceHost;
 
@@ -7,17 +8,17 @@ namespace Modm.ServiceHost
 	class ControllerBuilder
 	{
 		readonly ControllerOptions options;
-        private readonly ILogger<Startup> logger;
+        private readonly ILogger<ControllerService> logger;
 
 		IServiceProvider? serviceProvider;
 
-        public ControllerBuilder(ILogger<Startup> logger)
+        public ControllerBuilder(ILogger<ControllerService> logger)
 		{
 			this.logger = logger;
 			options = new ControllerOptions();
 		}
 
-		public static ControllerBuilder Create(ILogger<Startup> logger)
+		public static ControllerBuilder Create(ILogger<ControllerService> logger)
 		{
 			return new ControllerBuilder(logger);
 		}
@@ -34,12 +35,6 @@ namespace Modm.ServiceHost
 			return this;
 		}
 
-		public ControllerBuilder UseArtifactsWatcher(ArtifactsWatcher watcher)
-		{
-			options.Watcher = watcher;
-			return this;
-		}
-
         public ControllerBuilder UseComposeFile(string composeFile)
         {
             options.ComposeFilePath = composeFile;
@@ -53,10 +48,13 @@ namespace Modm.ServiceHost
                 throw new NullReferenceException("serviceProvider is required.");
             }
 
-			this.options.ManagedIdentityService = serviceProvider.GetRequiredService<ManagedIdentityService>();
-			this.options.Logger = serviceProvider.GetRequiredService<ILogger<Controller>>();
-
-            return new Controller(this.options);
+            return new Controller(this.options,
+                serviceProvider.GetRequiredService<IManagedIdentityService>(),
+				serviceProvider.GetRequiredService<IHostEnvironment>(),
+                serviceProvider.GetRequiredService<IConfiguration>(),
+                serviceProvider.GetRequiredService<IMediator>(),
+                serviceProvider.GetRequiredService<ILogger<Controller>>()
+            );
 		}
 	}
 }

@@ -1,6 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using Modm;
+using Modm.Deployments;
 using Modm.Engine;
 
 namespace WebHost.Deployments
