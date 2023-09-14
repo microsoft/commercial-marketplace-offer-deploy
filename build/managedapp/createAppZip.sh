@@ -9,7 +9,7 @@ create_ui_definition_file="./obj/createUiDefinition.json"
 #cd "$(dirname "$0")"
 
 # Create the zip file including the specified files and directories
-zip -FS -j "$package_file" "$main_template_file" "$create_ui_definition_file" content.zip
+zip -FS -j "$package_file" "$main_template_file" "$create_ui_definition_file" ./obj/content.zip
 # find "$terraform_content_dir" -type f -print | zip -u "$package_file" -@
 
 echo "Package app.zip created in the bin directory."
