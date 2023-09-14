@@ -7,7 +7,7 @@ services:
       - 80:80
       - 443:443
     volumes:
-      - ${MODM_HOME}/Caddyfile:/etc/caddy/Caddyfile
+      - ${MODM_HOME}/service/Caddyfile:/etc/caddy/Caddyfile
     restart: unless-stopped
     env_file:
       - ${MODM_HOME}/service/.env

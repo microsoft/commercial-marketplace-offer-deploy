@@ -7,7 +7,7 @@ sudo mkdir -p $service_path
 
 # copy files to the correct location
 echo "Copying caddy and docker compose files to $MODM_HOME"
-sudo cp /tmp/Caddyfile $MODM_HOME/Caddyfile
+sudo cp /tmp/Caddyfile $service_path/Caddyfile
 sudo cp /tmp/docker-compose.yml $service_path/docker-compose.yml
 
 echo "Performing git checkout on branch [$MODM_REPO_BRANCH]"
