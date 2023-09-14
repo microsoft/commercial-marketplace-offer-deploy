@@ -38,14 +38,18 @@ az storage blob upload \
     --account-name "$STORAGE_ACC_NAME" \
     --container-name "$STORAGE_CONTAINER_NAME" \
     --name "app.zip" \
-    --file "../../bin/app.zip"
+    --file "./bin/app.zip"
 
 blob=$(az storage blob url --account-name "$STORAGE_ACC_NAME" --container-name "$STORAGE_CONTAINER_NAME" --name app.zip --output tsv)
-groupid=$(az ad group show --group "Managed Application Tests" --query id --output tsv)
+# groupid=$(az ad group show --group "Managed Application Tests" --query id --output tsv)
 roleid=$(az role definition list --name Owner --query [].name --output tsv)
+groupid="d391271a-216a-49e1-a36e-c24b2c619f14"
 
-# az group create --name "$MA_RESOURCE_GROUP" --location eastus2
+echo "blob: $blob"
+echo "groupid: $groupid"
+echo "roleid: $roleid"
 
+echo "Creating managed app definition $MA_DEFINITION_NAME in resource group $MA_RESOURCE_GROUP with authorizations $groupid:$roleid."
 az managedapp definition create --name "$MA_DEFINITION_NAME" \
     --location "eastus2" \
     --resource-group "$MA_RESOURCE_GROUP" \
