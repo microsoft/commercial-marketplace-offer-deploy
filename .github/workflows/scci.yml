@@ -45,7 +45,7 @@ jobs:
         # else
         #     latest_version=$GALLERY_IMAGE_VERSION
         # fi
-        latest_version=$(az sig image-version list -g $RESOURCE_GROUP -i $IMAGE_NAME -r $IMAGE_GALLERY_NAME -o tsv --query "[-1:].name")
+        latest_version=$(az sig image-version list -g ${{ vars.RESOURCE_GROUP }} -i ${{ vars.IMAGE_NAME }} -r ${{ vars.IMAGE_GALLERY_NAME }} -o tsv --query "[-1:].name")
         echo "pulled latest version $latest_version"
         scenario="terraform/terraform-storage"
         deployed_image_reference="/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.RESOURCE_GROUP }}/providers/Microsoft.Compute/galleries/${{ vars.IMAGE_GALLERY_NAME }}/images/${{ vars.IMAGE_NAME }}/versions/$latest_version"
