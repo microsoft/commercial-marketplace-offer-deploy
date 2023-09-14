@@ -107,15 +107,12 @@ namespace Modm.ServiceHost
             envFile.Set("SITE_ADDRESS", options.Fqdn);
             envFile.Set("ACME_ACCOUNT_EMAIL", "nowhere@nowhere.com");
 
-            if (environment.IsProduction())
-            {
-                var info = await managedIdentityService.GetAsync();
+            var info = await managedIdentityService.GetAsync();
 
-                // required by container environments to have managed identity flow from vm to container
-                envFile.Set("AZURE_CLIENT_ID", info.ClientId.ToString());
-                envFile.Set("AZURE_TENANT_ID", info.TenantId.ToString());
-                envFile.Set("AZURE_SUBSCRIPTION_ID", info.SubscriptionId.ToString());
-            }
+            // required by container environments to have managed identity flow from vm to container
+            envFile.Set("AZURE_CLIENT_ID", info.ClientId.ToString());
+            envFile.Set("AZURE_TENANT_ID", info.TenantId.ToString());
+            envFile.Set("AZURE_SUBSCRIPTION_ID", info.SubscriptionId.ToString());
 
             await envFile.SaveAsync();
         }
