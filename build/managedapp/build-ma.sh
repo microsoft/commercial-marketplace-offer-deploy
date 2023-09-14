@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Check if all required parameters are provided
-if [ $# -ne 1 ]; then
-  echo "Usage: $0 <managed_app_version>"
+if [ $# -ne 2 ]; then
+  echo "Usage: $0 <managed_app_version> <deployed_image_reference>"
   exit 1
 fi
 
@@ -12,7 +12,8 @@ echo "The current directory is: $(pwd)"
 mkdir -p ./obj
 mkdir -p ./bin
 
-DEPLOYED_IMAGE_REFERENCE="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$GALLERY_RESOURCE_GROUP/providers/Microsoft.Compute/galleries/$GALLERY_NAME/images/$GALLERY_IMAGE_DEFINITION/versions/$GALLERY_IMAGE_VERSION"
+#DEPLOYED_IMAGE_REFERENCE="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$GALLERY_RESOURCE_GROUP/providers/Microsoft.Compute/galleries/$GALLERY_NAME/images/$GALLERY_IMAGE_DEFINITION/versions/$GALLERY_IMAGE_VERSION"
+DEPLOYED_IMAGE_REFERENCE="$2"
 UIDEF_FILE="./build/managedapp/createUiDefinition.json"
 TEMP_FILE="./obj/createUiDefinition.json"
 
