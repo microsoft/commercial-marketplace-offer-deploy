@@ -76,7 +76,7 @@ namespace Modm.ServiceHost
 
         public Task StopAsync(CancellationToken cancellationToken = default)
         {
-            ComposeService?.Stop();
+            ComposeService.Stop();
             return Task.CompletedTask;
         }
 
