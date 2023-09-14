@@ -29,7 +29,16 @@ sudo dotnet restore $csproj
 sudo dotnet build $csproj -c Release -o $out_path/build
 sudo dotnet publish $csproj -c Release -o $out_path/publish
 
+
+# build final docker images that will represent MODM backend and its deployment engine (jenkins)
+# ----------------------------------
+echo ""
+echo "Building container images"
+sudo docker build ./src -t modm -f ./build/container/Dockerfile.modm  
+sudo docker build . -t jenkins -f ./build/container/Dockerfile.jenkins
+
 # setup daemon
+# ----------------------------------
 echo "Installing ServiceHost as systemd service."
 sudo cp $out_path/publish/modm /usr/sbin/modm
 
@@ -45,11 +54,3 @@ sudo systemctl enable modm
 
 # print out status
 sudo systemctl status modm
-
-
-# build final docker images that will represent MODM backend and its deployment engine (jenkins)
-# ----------------------------------
-echo ""
-echo "Building container images"
-sudo docker build ./src -t modm -f ./build/container/Dockerfile.modm  
-sudo docker build . -t jenkins -f ./build/container/Dockerfile.jenkins
