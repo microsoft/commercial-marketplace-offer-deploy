@@ -275,7 +275,7 @@
                         "typeHandlerVersion": "2.0",
                         "autoUpgradeMinorVersion": true,
                         "settings": {
-                            "script": "[base64(concat('#!/bin/bash\n', 'sudo sh ', variables('scriptDirectory'), '/', variables('scriptName'), ' ', variables('artifactsContainerLocation'), ' ', variables('vmFqdn')))]"
+                            "script": "[base64(concat('#!/bin/bash\n', 'sudo sh ', variables('scriptDirectory'), '/', variables('scriptName'), ' --artifacts-uri ', variables('artifactsContainerLocation')))]"
                         }
                     }
                 }

@@ -15,6 +15,8 @@ namespace Modm.ServiceHost
     /// </summary>
     class Controller
     {
+        #region Fields and Properties
+
         private readonly ControllerOptions options;
         private readonly IConfiguration configuration;
         private readonly IMediator mediator;
@@ -22,6 +24,28 @@ namespace Modm.ServiceHost
         ICompositeService? composeService;
         readonly IManagedIdentityService managedIdentityService;
         private readonly IHostEnvironment environment;
+
+        string EnvFilePath
+        {
+            get
+            {
+                return Path.Combine(options.ComposeFileDirectory, ".env");
+            }
+        }
+
+        ICompositeService ComposeService
+        {
+            get
+            {
+                if (composeService == null)
+                {
+                    throw new NullReferenceException("Compose Service is null.");
+                }
+                return composeService;
+            }
+        }
+
+        #endregion
 
         public Controller(ControllerOptions options, IManagedIdentityService managedServiceIdentity, IHostEnvironment environment, IConfiguration configuration, IMediator mediator, ILogger<Controller> logger)
         {
@@ -37,14 +61,14 @@ namespace Modm.ServiceHost
         {
             logger.LogInformation("FQDN: {fqdn}", options.Fqdn);
 
-            await SetEnvFileAsync();
-            StartCompose();
+            await UpdateEnvFileAsync();
+            await StartComposeAsync();
             await Notify();
 
             while (!cancellationToken.IsCancellationRequested)
             {
                 logger.LogInformation("Running at: {time}", DateTimeOffset.Now);
-                logger.LogInformation("Docker Compose state: {state}", composeService.State);
+                logger.LogInformation("Docker Compose state: {state}", ComposeService.State);
 
                 await Task.Delay(10000, cancellationToken);
             }
@@ -52,7 +76,7 @@ namespace Modm.ServiceHost
 
         public Task StopAsync(CancellationToken cancellationToken = default)
         {
-            composeService?.Stop();
+            ComposeService?.Stop();
             return Task.CompletedTask;
         }
 
@@ -62,7 +86,7 @@ namespace Modm.ServiceHost
         /// <returns></returns>
         async Task Notify()
         {
-            var port = composeService.Containers.First(c => c.Name == "modm")
+            var port = ComposeService.Containers.First(c => c.Name == "modm")
                 .GetConfiguration()
                 .NetworkSettings.Ports
                 .First(p => p.Value != null && p.Value.FirstOrDefault() != null)
@@ -75,39 +99,34 @@ namespace Modm.ServiceHost
             });
         }
 
-        void StartCompose()
+        private async Task UpdateEnvFileAsync()
         {
-            this.composeService = BuildDockerComposeService();
-            composeService.StateChange += (object sender, StateChangeEventArgs e) =>
-            {
-                logger.LogInformation("Docker Compose state changed: {state}", e.State);
-            };
-            composeService.Start();
-        }
+            using var envFile = await GetEnvFileAsync();
 
-        private async Task SetEnvFileAsync()
-        {
-            var envFilePath = Path.Combine(options.ComposeFileDirectory, ".env");
-            var envFile = EnvFileReader.FromPath(envFilePath);
-
-            var writer = new EnvFileWriter(envFile.Items);
-
-            // set for caddy
-            writer.Add("SITE_ADDRESS", options.Fqdn);
+            // set for caddy to work
+            envFile.Set("SITE_ADDRESS", options.Fqdn);
+            envFile.Set("ACME_ACCOUNT_EMAIL", "nowhere@nowhere.com");
 
             if (environment.IsProduction())
             {
                 var info = await managedIdentityService.GetAsync();
 
-                // required by container environments
-                writer.Add("AZURE_CLIENT_ID", info.ClientId.ToString());
-                writer.Add("AZURE_TENANT_ID", info.TenantId.ToString());
-                writer.Add("AZURE_SUBSCRIPTION_ID", info.SubscriptionId.ToString());
+                // required by container environments to have managed identity flow from vm to container
+                envFile.Set("AZURE_CLIENT_ID", info.ClientId.ToString());
+                envFile.Set("AZURE_TENANT_ID", info.TenantId.ToString());
+                envFile.Set("AZURE_SUBSCRIPTION_ID", info.SubscriptionId.ToString());
             }
-            await writer.WriteAsync(envFilePath);
+
+            await envFile.SaveAsync();
         }
 
-        private ICompositeService BuildDockerComposeService()
+        async Task StartComposeAsync()
+        {
+            await BuildComposeServiceAsync();
+            ComposeService.Start();
+        }
+
+        private async Task BuildComposeServiceAsync()
         {
             var builder = new Builder()
                         .UseContainer()
@@ -115,20 +134,15 @@ namespace Modm.ServiceHost
                         .AssumeComposeVersion(ComposeVersion.V2)
                         .FromFile((TemplateString)options.ComposeFilePath);
 
-            var envFilePath = Path.Combine(options.ComposeFileDirectory, ".env");
-            var isEnvFileNextToComposeFile = File.Exists(envFilePath);
+            using var envFile = await GetEnvFileAsync();
 
-            if (isEnvFileNextToComposeFile)
+            if (await envFile.AnyAsync())
             {
-                var envFile = EnvFileReader.FromPath(envFilePath);
-                if (envFile.HasItems)
-                {
-                    builder.WithEnvironment(envFile.Items.Select(item => $"{item.Key}={item.Value}").ToArray());
-                }
+                builder.WithEnvironment(envFile.ToArray());
             }
 
             // TODO: dynamically grab the correct port set on the engine / jenkins for the WaitForHttp
-            var compositeService = builder.RemoveOrphans()
+            var service = builder.RemoveOrphans()
                         .WaitForHttp("jenkins", "http://localhost:8080/login", timeout: 60000, (response, attempt) =>
                         {
                             logger.LogInformation("Engine check [{attempt}]. HTTP Status [{statusCode}]", attempt, response.Code);
@@ -136,7 +150,20 @@ namespace Modm.ServiceHost
                         })
                         .Build();
 
-            return compositeService;
+            service.StateChange += (object sender, StateChangeEventArgs e) =>
+            {
+                logger.LogInformation("Docker Compose state changed: {state}", e.State);
+            };
+
+            this.composeService = service;
+        }
+
+        private async Task<EnvFile> GetEnvFileAsync()
+        {
+            var envFile = EnvFile.New(EnvFilePath);
+            await envFile.ReadAsync();
+
+            return envFile;
         }
 
     }

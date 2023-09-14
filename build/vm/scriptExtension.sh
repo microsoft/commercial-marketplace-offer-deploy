@@ -1,21 +1,62 @@
 #!/bin/bash
 
-if [ $# -ne 2 ]; then
-  echo "Usage: $0 <artifacts location> <fully qualified domain name>"
-  exit 1
-fi
+# parse options as --option optionValue
+POSITIONAL_ARGS=()
 
-export MODM_HOME=/usr/local/modm
+while [[ $# -gt 0 ]]; do
+case $1 in
+    -a|--artifacts-uri)
+    artifacts_uri="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -*|--*)
+    echo "Unknown option $1"
+    exit 1
+    ;;
+    *)
+    POSITIONAL_ARGS+=("$1") # save positional arg
+    shift # past argument
+    ;;
+esac
+done
+set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
-export ARTIFACTS_LOCATION="$1"
-export VM_FQDN="$2"
+function guard_against_empty() {
+    # parse options as --option optionValue
+    POSITIONAL_ARGS=()
 
-echo "$ARTIFACTS_LOCATION" > $MODM_HOME/artifacts.uri
-echo "FQDN = $VM_FQDN"
+    while [[ $# -gt 0 ]]; do
+    case $1 in
+        -v|--value)
+        value="$2"
+        shift # past argument
+        shift # past value
+        ;;
+        -m|--error-message)
+        message="$2"
+        shift # past argument
+        shift # past value
+        ;;
+        -*|--*)
+        echo "Unknown option $1"
+        exit 1
+        ;;
+        *)
+        POSITIONAL_ARGS+=("$1") # save positional arg
+        shift # past argument
+        ;;
+    esac
+    done
+    set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
-# next, setup caddy's required .env file. This file is referenced in the docker-compose file for caddy to run properly and compose
+    if [ -z "$value" ]; then
+        echo "$message"
+        exit 1
+    fi
+}
 
-# write the fqdn to an env file that will be used by caddy and modm for its environment variables
-# this will allow the site address to be set to the VM's FQDN
-echo SITE_ADDRESS=$VM_FQDN | sudo tee $MODM_HOME/.env
-echo ACME_ACCOUNT_EMAIL=nowhere@nowhere.com  | sudo tee --append $MODM_HOME/.env
+guard_against_empty --value "$artifacts_uri" --error-message "Artifacts URI is required. Use --artifacts-uri|-a to set."
+
+# write file
+echo "artifacts_uri" | sudo tee $MODM_HOME/artifacts.uri
