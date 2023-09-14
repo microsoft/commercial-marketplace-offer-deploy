@@ -13,6 +13,7 @@ mkdir -p ./bin
 
 #DEPLOYED_IMAGE_REFERENCE="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$GALLERY_RESOURCE_GROUP/providers/Microsoft.Compute/galleries/$GALLERY_NAME/images/$GALLERY_IMAGE_DEFINITION/versions/$GALLERY_IMAGE_VERSION"
 DEPLOYED_IMAGE_REFERENCE="$2"
+echo "The deployed image reference is: $DEPLOYED_IMAGE_REFERENCE"
 UIDEF_FILE="./build/managedapp/createUiDefinition.json"
 TEMP_FILE="./obj/createUiDefinition.json"
 
