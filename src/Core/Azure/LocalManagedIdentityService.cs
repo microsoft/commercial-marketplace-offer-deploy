@@ -18,6 +18,11 @@ namespace Modm.Azure
                 TenantId = Guid.Empty
             });
         }
+
+        public Task<bool> IsAccessibleAsync()
+        {
+            return Task.FromResult(true);
+        }
     }
 }
 
