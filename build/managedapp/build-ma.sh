@@ -7,6 +7,7 @@ if [ $# -ne 1 ]; then
 fi
 
 MANAGED_APP_VERSION="$1"
+echo "The current directory is: $(pwd)"
 
 mkdir -p ./obj
 
