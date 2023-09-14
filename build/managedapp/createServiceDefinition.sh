@@ -44,8 +44,11 @@ blob=$(az storage blob url --account-name "$STORAGE_ACC_NAME" --container-name "
 groupid=$(az ad group show --group "Managed Application Tests" --query id --output tsv)
 roleid=$(az role definition list --name Owner --query [].name --output tsv)
 
-# az group create --name "$MA_RESOURCE_GROUP" --location eastus2
+echo "blob: $blob"
+echo "groupid: $groupid"
+echo "roleid: $roleid"
 
+echo "Creating managed app definition $MA_DEFINITION_NAME in resource group $MA_RESOURCE_GROUP with authorizations $groupid:$roleid."
 az managedapp definition create --name "$MA_DEFINITION_NAME" \
     --location "eastus2" \
     --resource-group "$MA_RESOURCE_GROUP" \
