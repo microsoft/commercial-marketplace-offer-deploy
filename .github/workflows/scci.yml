@@ -1,0 +1,42 @@
+name: Build Service Catalog Managed Application
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_dispatch:
+
+env:
+  app_version: 0.0.${{ github.run_number }}
+
+  # reference
+  # conditional steps: https://www.meziantou.net/executing-github-actions-jobs-or-steps-only-when-specific-files-change.htm
+jobs:
+  build-vm-images:
+    runs-on: ubuntu-latest
+    environment: dev  
+    env:
+      MANAGED_APP_STORAGE_RG: ${{ vars.MANAGED_APP_STORAGE_RG }}
+      MANAGED_APP_STORAGE_NAME: ${{ vars.MANAGED_APP_STORAGE_NAME }}
+      SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      GALLERY_RESOURCE_GROUP: ${{ vars.RESOURCE_GROUP }}
+      GALLERY_NAME: ${{ vars.IMAGE_GALLERY_NAME }}
+      GALLERY_IMAGE_DEFINITION: ${{ vars.IMAGE_NAME }}
+      GALLERY_IMAGE_VERSION: ${{ vars.GALLERY_IMAGE_VERSION }}
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: '100'
+  
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      
+    - name: Build Service Catalog
+      run: |
+        ./build/managedapp/build-ma.sh $app_version
