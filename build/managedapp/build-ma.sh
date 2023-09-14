@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Check if all required parameters are provided
-if [ $# -ne 2 ]; then
+if [ $# -ne 3 ]; then
   echo "Usage: $0 <managed_app_version> <deployed_image_reference> <scenario_name>"
   exit 1
 fi
