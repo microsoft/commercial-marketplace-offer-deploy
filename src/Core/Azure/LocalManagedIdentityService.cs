@@ -12,7 +12,10 @@ namespace Modm.Azure
         {
             return Task.FromResult(new ManagedIdentityInfo
             {
-
+                ClientId = Guid.Empty,
+                SubscriptionId = Guid.Empty,
+                ObjectId = Guid.Empty,
+                TenantId = Guid.Empty
             });
         }
     }

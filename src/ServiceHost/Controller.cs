@@ -132,7 +132,8 @@ namespace Modm.ServiceHost
                         .UseContainer()
                         .UseCompose()
                         .AssumeComposeVersion(ComposeVersion.V2)
-                        .FromFile((TemplateString)options.ComposeFilePath);
+                        .FromFile((TemplateString)options.ComposeFilePath)
+                        .ServiceName("modm-service");
 
             using var envFile = await GetEnvFileAsync();
 
