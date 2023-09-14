@@ -41,9 +41,9 @@ az storage blob upload \
     --file "./bin/app.zip"
 
 blob=$(az storage blob url --account-name "$STORAGE_ACC_NAME" --container-name "$STORAGE_CONTAINER_NAME" --name app.zip --output tsv)
-groupid=$(az ad group show --group "Managed Application Tests" --query id --output tsv)
-#roleid=$(az role definition list --name Owner --query [].name --output tsv)
-roleid="d391271a-216a-49e1-a36e-c24b2c619f14"
+# groupid=$(az ad group show --group "Managed Application Tests" --query id --output tsv)
+roleid=$(az role definition list --name Owner --query [].name --output tsv)
+groupid="d391271a-216a-49e1-a36e-c24b2c619f14"
 
 echo "blob: $blob"
 echo "groupid: $groupid"
