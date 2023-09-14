@@ -1,0 +1,107 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+    "handler": "Microsoft.Azure.CreateUIDef",
+    "version": "0.1.2-preview",
+    "parameters": {
+        "basics": [
+            {}
+        ],
+        "steps": [
+            {
+                "name": "vmImage",
+                "label": "VM Image",
+                "elements": [
+                    {
+                        "name": "tbVmImageName",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "VM Image Name",
+                        "placeholder": "",
+                        "defaultValue": "bobjacnginx2",
+                        "toolTip": "Use only allowed characters",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^[a-z0-9A-Z]{1,30}$",
+                            "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-30 characters long."
+                        },
+                        "visible": true
+                    },
+                    {
+                        "name": "tbAdminUser",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Admin Username",
+                        "placeholder": "",
+                        "defaultValue": "modmadmin",
+                        "toolTip": "Use only allowed characters",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^[a-z0-9A-Z]{1,30}$",
+                            "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-30 characters long."
+                        },
+                        "visible": true
+                    },
+                    {
+                        "name": "pbAdminPassword",
+                        "type": "Microsoft.Common.PasswordBox",
+                        "label": {
+                            "password": "Password",
+                            "confirmPassword": "Confirm password"
+                        },
+                        "toolTip": "",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^[a-zA-Z0-9]{8,}$",
+                            "validationMessage": "Password must be at least 8 characters long, contain only numbers and letters"
+                        },
+                        "options": {
+                            "hideConfirmation": false
+                        },
+                        "visible": true
+                    }
+                ]
+            }
+        ],
+        "outputs": {
+            "location": "[location()]",
+            "networkInterfaceName1": "[concat(steps('vmImage').tbVmImageName, '_z1')]",
+            "subnetName": "default",
+            "virtualNetworkId": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/modmvm/providers/Microsoft.Network/virtualNetworks/bobjacmodm-vnet",
+            "publicIpAddressName1": "[concat(steps('vmImage').tbVmImageName, '-ip')]",
+            "publicIpAddressType": "Static",
+            "publicIpAddressSku": "Standard",
+            "pipDeleteOption": "Delete",
+            "virtualMachineName": "[steps('vmImage').tbVmImageName]",
+            "virtualMachineComputerName1": "[steps('vmImage').tbVmImageName]",
+            "osDiskType": "Premium_LRS",
+            "osDiskDeleteOption": "Delete",
+            "dataDisks1": [
+                {
+                    "lun": 0,
+                    "createOption": "attach",
+                    "deleteOption": "Delete",
+                    "caching": "ReadOnly",
+                    "writeAcceleratorEnabled": false,
+                    "diskSizeGB": 1024,
+                    "name": "[concat(steps('vmImage').tbVmImageName, '_DataDisk_0')]"
+                }
+            ],
+            "dataDiskResources1": [
+                {
+                    "name": "[concat(steps('vmImage').tbVmImageName, '_DataDisk_0')]",
+                    "sku": "Premium_LRS",
+                    "properties": {
+                        "diskSizeGB": 1024,
+                        "creationData": {
+                            "createOption": "empty"
+                        }
+                    }
+                }
+            ],
+            "virtualMachineSize": "Standard_D2s_v3",
+            "nicDeleteOption": "Delete",
+            "adminUsername": "[steps('vmImage').tbAdminUser]",
+            "adminPassword": "[steps('vmImage').pbAdminPassword]",
+            "virtualMachine1Zone": "1",
+            "imageReference": "<IMAGE_REFERENCE>"
+        }
+    }
+}
