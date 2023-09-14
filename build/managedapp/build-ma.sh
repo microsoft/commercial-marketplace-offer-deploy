@@ -34,9 +34,9 @@ cp -f ./build/managedapp/content.zip ./obj/content.zip
 
 echo "The ./obj directory contains: $(ls -la ./obj)"
 
+scenario_name="$3"
 # Zip up the package for the managed application
-./build/managedapp/createAppZip.sh
-
+./build/managedapp/createAppZip.sh $scenario_name
 
 # Create the Service Definition
 STORAGE_ACC_RESOURCE_GROUP=$MANAGED_APP_STORAGE_RG
