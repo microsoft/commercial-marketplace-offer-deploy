@@ -7,10 +7,10 @@ services:
       - 80:80
       - 443:443
     volumes:
-      - ${MODM_HOME}/Caddyfile:/etc/caddy/Caddyfile
+      - ${MODM_HOME}/service/Caddyfile:/etc/caddy/Caddyfile
     restart: unless-stopped
     env_file:
-      - ${MODM_HOME}/.env
+      - ${MODM_HOME}/service/.env
   modm:
     image: modm:latest
     container_name: modm
@@ -20,7 +20,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5000
     env_file:
-      - ${MODM_HOME}/.env
+      - ${MODM_HOME}/service/.env
     volumes:
       - ${MODM_HOME}:${MODM_HOME}
   jenkins:

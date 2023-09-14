@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Text.Json;
 using System.Text.Json.Serialization;
-using Azure.Deployments.Core.Definitions.Identifiers;
 
 namespace Modm.Azure
 {
@@ -11,24 +11,6 @@ namespace Modm.Azure
 
         [JsonPropertyName("network")]
         public required Network Network { get; set; }
-
-
-        /// <summary>
-        /// Returns the FQDN of the machine using the machine name and the location
-        /// </summary>
-        /// <remarks>
-        /// We MUST have this value set on the VM's NIC dnsLabel in order to launch the containers, required by Caddy
-        /// Format: {uniqueString(vm.resourceId)}.{location}.cloudapp.azure.com
-        /// </remarks>
-        /// <returns></returns>
-        public string Fqdn
-        {
-            get
-            {
-                var dnsLabel = ArmFunctions.UniqueString(this.Compute.ResourceId);
-                return $"{dnsLabel}.{this.Compute.Location}.cloudapp.azure.com";
-            }
-        }
     }
 
     public partial class Compute
@@ -43,6 +25,7 @@ namespace Modm.Azure
         public required string EvictionPolicy { get; set; }
 
         [JsonPropertyName("isHostCompatibilityLayerVm")]
+        [JsonConverter(typeof(BooleanConverter))]
         public bool IsHostCompatibilityLayerVm { get; set; }
 
         [JsonPropertyName("licenseType")]
@@ -70,10 +53,10 @@ namespace Modm.Azure
         public required Plan Plan { get; set; }
 
         [JsonPropertyName("platformFaultDomain")]
-        public long PlatformFaultDomain { get; set; }
+        public string? PlatformFaultDomain { get; set; }
 
         [JsonPropertyName("platformUpdateDomain")]
-        public long PlatformUpdateDomain { get; set; }
+        public string? PlatformUpdateDomain { get; set; }
 
         [JsonPropertyName("priority")]
         public required string Priority { get; set; }
@@ -139,6 +122,7 @@ namespace Modm.Azure
         public required string ComputerName { get; set; }
 
         [JsonPropertyName("disablePasswordAuthentication")]
+        [JsonConverter(typeof(BooleanConverter))]
         public bool DisablePasswordAuthentication { get; set; }
     }
 
@@ -166,13 +150,15 @@ namespace Modm.Azure
     public partial class SecurityProfile
     {
         [JsonPropertyName("secureBootEnabled")]
+        [JsonConverter(typeof(BooleanConverter))]
         public bool SecureBootEnabled { get; set; }
 
         [JsonPropertyName("virtualTpmEnabled")]
+        [JsonConverter(typeof(BooleanConverter))]
         public bool VirtualTpmEnabled { get; set; }
     }
 
-    public partial class StorageProfile
+    public class StorageProfile
     {
         [JsonPropertyName("dataDisks")]
         public required object[] DataDisks { get; set; }
@@ -217,7 +203,7 @@ namespace Modm.Azure
         public DiffDiskSettings? DiffDiskSettings { get; set; }
 
         [JsonPropertyName("diskSizeGB")]
-        public long DiskSizeGb { get; set; }
+        public string? DiskSizeGb { get; set; }
 
         [JsonPropertyName("encryptionSettings")]
         public EncryptionSettings? EncryptionSettings { get; set; }
@@ -238,6 +224,7 @@ namespace Modm.Azure
         public Image? Vhd { get; set; }
 
         [JsonPropertyName("writeAcceleratorEnabled")]
+        [JsonConverter(typeof(BooleanConverter))]
         public bool WriteAcceleratorEnabled { get; set; }
     }
 
@@ -250,6 +237,7 @@ namespace Modm.Azure
     public partial class EncryptionSettings
     {
         [JsonPropertyName("enabled")]
+        [JsonConverter(typeof(BooleanConverter))]
         public bool Enabled { get; set; }
     }
 
@@ -271,7 +259,7 @@ namespace Modm.Azure
     public partial class ResourceDisk
     {
         [JsonPropertyName("size")]
-        public long Size { get; set; }
+        public string? Size { get; set; }
     }
 
     public partial class Network
@@ -316,7 +304,7 @@ namespace Modm.Azure
         public required string Address { get; set; }
 
         [JsonPropertyName("prefix")]
-        public long Prefix { get; set; }
+        public string? Prefix { get; set; }
     }
 
     public partial class Ipv6
@@ -325,5 +313,31 @@ namespace Modm.Azure
         public required object[] IpAddress { get; set; }
     }
 
-   
+    public class BooleanConverter : JsonConverter<bool>
+    {
+        public override bool Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            switch (reader.TokenType)
+            {
+                case JsonTokenType.True:
+                    return true;
+                case JsonTokenType.False:
+                    return false;
+                case JsonTokenType.String:
+                    return reader.GetString() switch
+                    {
+                        "true" => true,
+                        "false" => false,
+                        _ => throw new JsonException()
+                    };
+                default:
+                    throw new JsonException();
+            }
+        }
+
+        public override void Write(Utf8JsonWriter writer, bool value, JsonSerializerOptions options)
+        {
+            writer.WriteBooleanValue(value);
+        }
+    }
 }

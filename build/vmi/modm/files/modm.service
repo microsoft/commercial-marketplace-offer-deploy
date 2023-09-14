@@ -7,7 +7,8 @@ StartLimitBurst=5
 [Service]
 Type=notify
 EnvironmentFile=/etc/environment
-ExecStart=/usr/sbin/modm-servicehost
+WorkingDirectory=/usr/local/modm/service
+ExecStart=/usr/sbin/modm
 Restart=always
 RestartSec=30
 

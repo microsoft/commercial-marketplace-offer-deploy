@@ -12,21 +12,21 @@ namespace Modm.Azure
     /// <remarks>
     /// <see cref="https://learn.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-to-use-vm-token#get-a-token-using-c"/>
     /// </remarks>
-	public class ManagedIdentityService
-	{
-		public const string TokenEndpoint = "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://management.azure.com/";
+	public class DefaultManagedIdentityService : IManagedIdentityService
+    {
+        public const string TokenEndpoint = "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://management.azure.com/";
         private readonly HttpClient client;
-        private readonly InstanceMetadataService metadataService;
+        private readonly IMetadataService metadataService;
 
-        public ManagedIdentityService(HttpClient client, InstanceMetadataService metadataService)
-		{
+        public DefaultManagedIdentityService(HttpClient client, IMetadataService metadataService)
+        {
             this.client = client;
             this.metadataService = metadataService;
         }
 
-		public async Task<ManagedIdentityInfo> GetAsync()
-		{
-			var metadata = await metadataService.GetAsync();
+        public async Task<ManagedIdentityInfo> GetAsync()
+        {
+            var metadata = await metadataService.GetAsync();
             var token = await GetTokenAsync();
 
             if (token == null)
@@ -43,7 +43,7 @@ namespace Modm.Azure
                 TenantId = Guid.Parse(accessToken.Claims.First(c => c.Type == "oid").Value),
                 ObjectId = Guid.Parse(accessToken.Claims.First(c => c.Type == "tid").Value)
             };
-		}
+        }
 
         private async Task<TokenResponse?> GetTokenAsync()
         {

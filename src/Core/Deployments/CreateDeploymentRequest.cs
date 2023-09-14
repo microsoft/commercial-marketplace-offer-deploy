@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WebHost.Deployments
+namespace Modm.Deployments
 {
 	public record CreateDeploymentRequest
 	{

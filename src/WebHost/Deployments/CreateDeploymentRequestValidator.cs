@@ -1,5 +1,6 @@
 ﻿using System;
 using FluentValidation;
+using Modm.Deployments;
 
 namespace WebHost.Deployments
 {
