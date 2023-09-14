@@ -24,6 +24,8 @@ sed "s|<IMAGE_REFERENCE>|$DEPLOYED_IMAGE_REFERENCE|g" "$UIDEF_FILE" > "$TEMP_FIL
 rm ./obj/mainTemplate.json 2> /dev/null
 cp -f ./build/managedapp/mainTemplate.json ./obj/mainTemplate.json
 
+echo "The ./obj directory contains: $(ls -la ./obj)"
+
 # Zip up the package for the managed application
 ./build/managedapp/createAppZip.sh
 
