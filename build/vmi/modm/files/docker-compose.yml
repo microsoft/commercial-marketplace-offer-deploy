@@ -24,6 +24,7 @@ services:
       - AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
       - AZURE_TENANT_ID=${AZURE_TENANT_ID}
       - MODM_HOME=/usr/local/modm
+      - Jenkins__Password=${DEFAULT_ADMIN_PASSWORD}
     volumes:
       - ${MODM_HOME}:/usr/local/modm
   jenkins:
