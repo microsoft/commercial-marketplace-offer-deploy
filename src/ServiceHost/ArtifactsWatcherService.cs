@@ -40,7 +40,7 @@ namespace Modm.ServiceHost
 
             while (true)
             {
-                var instanceData = this.metadataService.GetAsync().Result;
+                var instanceData = await this.metadataService.GetAsync();
                 base64UserData = instanceData.Compute.UserData;
                 if (!string.IsNullOrEmpty(base64UserData))
                 {
@@ -60,7 +60,7 @@ namespace Modm.ServiceHost
 
             if (userData.IsValid())
             {
-                var response = StartDeployment(userData.ArtifactsUri).Result;
+                var response = await StartDeployment(userData.ArtifactsUri);
             }
         }
 
