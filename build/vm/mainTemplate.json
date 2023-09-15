@@ -111,12 +111,49 @@
             }
         },
         {
+            "name": "[concat(parameters('virtualMachineName'), '-nsg')]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2021-08-01",
+            "location": "[parameters('location')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "AllowHTTP",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "80",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "AllowHTTPS",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "443",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 101,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
             "name": "[parameters('networkInterfaceName1')]",
             "type": "Microsoft.Network/networkInterfaces",
             "apiVersion": "2021-08-01",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[concat('Microsoft.Network/publicIpAddresses/', parameters('publicIpAddressName1'))]"
+                "[concat('Microsoft.Network/publicIpAddresses/', parameters('publicIpAddressName1'))]",
+                "[concat('Microsoft.Network/networkSecurityGroups/', concat(parameters('virtualMachineName'), '-nsg'))]" 
             ],
             "properties": {
                 "ipConfigurations": [
@@ -135,6 +172,9 @@
                                     },
                                     "deleteOption": "[parameters('pipDeleteOption')]"
                                 }
+                            },
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('virtualMachineName'), '-nsg'))]" 
                             }
                         }
                     }

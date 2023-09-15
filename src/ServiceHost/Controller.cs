@@ -6,6 +6,7 @@ using Modm.Configuration;
 using Modm.Azure;
 using MediatR;
 using Modm.ServiceHost.Extensions;
+using Modm.ServiceHost.Notifications;
 
 namespace Modm.ServiceHost
 {
@@ -76,7 +77,7 @@ namespace Modm.ServiceHost
 
         public Task StopAsync(CancellationToken cancellationToken = default)
         {
-            ComposeService?.Stop();
+            ComposeService.Stop();
             return Task.CompletedTask;
         }
 
@@ -107,15 +108,12 @@ namespace Modm.ServiceHost
             envFile.Set("SITE_ADDRESS", options.Fqdn);
             envFile.Set("ACME_ACCOUNT_EMAIL", "nowhere@nowhere.com");
 
-            if (environment.IsProduction())
-            {
-                var info = await managedIdentityService.GetAsync();
+            var info = await managedIdentityService.GetAsync();
 
-                // required by container environments to have managed identity flow from vm to container
-                envFile.Set("AZURE_CLIENT_ID", info.ClientId.ToString());
-                envFile.Set("AZURE_TENANT_ID", info.TenantId.ToString());
-                envFile.Set("AZURE_SUBSCRIPTION_ID", info.SubscriptionId.ToString());
-            }
+            // required by container environments to have managed identity flow from vm to container
+            envFile.Set("AZURE_CLIENT_ID", info.ClientId.ToString());
+            envFile.Set("AZURE_TENANT_ID", info.TenantId.ToString());
+            envFile.Set("AZURE_SUBSCRIPTION_ID", info.SubscriptionId.ToString());
 
             await envFile.SaveAsync();
         }
@@ -132,7 +130,8 @@ namespace Modm.ServiceHost
                         .UseContainer()
                         .UseCompose()
                         .AssumeComposeVersion(ComposeVersion.V2)
-                        .FromFile((TemplateString)options.ComposeFilePath);
+                        .FromFile((TemplateString)options.ComposeFilePath)
+                        .ServiceName("modm-service");
 
             using var envFile = await GetEnvFileAsync();
 

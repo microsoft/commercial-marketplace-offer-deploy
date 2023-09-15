@@ -23,8 +23,9 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddHttpClient();
         services.AddSingleton<ArtifactsWatcher>();
 
-        services.AddHostedService<ControllerService>();
-        services.AddHostedService<ArtifactsWatcherService>();
+        services.AddSingletonHostedService<ControllerService>();
+        services.AddSingletonHostedService<ArtifactsWatcherService>();
+        services.AddSingletonHostedService<ManagedIdentityMonitorService>();
 
         services.AddMediatR(c => c.RegisterServicesFromAssemblyContaining<ControllerService>());
     })

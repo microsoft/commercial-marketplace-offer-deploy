@@ -8,12 +8,20 @@ namespace Modm.Azure
 		{
 		}
 
-        public Task<ManagedIdentityInfo> GetAsync()
+        public Task<ManagedIdentityInfo> GetAsync(CancellationToken cancellationToken = default)
         {
             return Task.FromResult(new ManagedIdentityInfo
             {
-
+                ClientId = Guid.Empty,
+                SubscriptionId = Guid.Empty,
+                ObjectId = Guid.Empty,
+                TenantId = Guid.Empty
             });
+        }
+
+        public Task<bool> IsAccessibleAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(true);
         }
     }
 }

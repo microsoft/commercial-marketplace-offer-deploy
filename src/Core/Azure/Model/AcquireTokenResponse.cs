@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Modm.Azure
 {
-    class TokenResponse
+    record AcquireTokenResponse
     {
         [JsonPropertyName("access_token")]
         public required string AccessToken { get; set; }

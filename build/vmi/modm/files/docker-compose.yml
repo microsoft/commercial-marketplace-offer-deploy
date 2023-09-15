@@ -9,8 +9,6 @@ services:
     volumes:
       - ${MODM_HOME}/service/Caddyfile:/etc/caddy/Caddyfile
     restart: unless-stopped
-    env_file:
-      - ${MODM_HOME}/service/.env
   modm:
     image: modm:latest
     container_name: modm
@@ -19,10 +17,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5000
-    env_file:
-      - ${MODM_HOME}/service/.env
     volumes:
-      - ${MODM_HOME}:${MODM_HOME}
+      - ${MODM_HOME}:/usr/local/modm
   jenkins:
     image: jenkins:latest
     container_name: jenkins
