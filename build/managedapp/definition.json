@@ -1,10 +1,4 @@
 {
   "deploymentType": "terraform",
-  "mainTemplate": "main.tf",
-  "scripts": {
-    "pre": [
-
-    ],
-
-  }
+  "mainTemplate": "main.tf"
 }
