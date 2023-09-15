@@ -8,6 +8,8 @@ services:
       - 443:443
     volumes:
       - ${MODM_HOME}/service/Caddyfile:/etc/caddy/Caddyfile
+      - SITE_ADDRESS=${SITE_ADDRESS}
+      - ACME_ACCOUNT_EMAIL=${ACME_ACCOUNT_EMAIL}
     restart: unless-stopped
   modm:
     image: modm:latest
@@ -15,8 +17,12 @@ services:
     ports:
       - 5000:5000
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:5000
+      - AZURE_SUBSCRIPTION_ID=${AZURE_SUBSCRIPTION_ID}
+      - AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
+      - AZURE_TENANT_ID=${AZURE_TENANT_ID}
+      - MODM_HOME=/usr/local/modm
     volumes:
       - ${MODM_HOME}:/usr/local/modm
   jenkins:
@@ -28,3 +34,8 @@ services:
       - ${MODM_HOME}:/var/jenkins_home/modm
     environment:
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+      - DEFAULT_ADMIN_PASSWORD=${DEFAULT_ADMIN_PASSWORD}
+      - AZURE_SUBSCRIPTION_ID=${AZURE_SUBSCRIPTION_ID}
+      - AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
+      - AZURE_TENANT_ID=${AZURE_TENANT_ID}
+      - MODM_HOME=/var/jenkins_home/modm

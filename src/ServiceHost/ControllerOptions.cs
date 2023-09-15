@@ -2,6 +2,7 @@
 {
 	class ControllerOptions
 	{
+		public string? MachineName { get; set; }
 		public string? Fqdn { get; set; }
 		public string? ComposeFilePath { get; set; }
 

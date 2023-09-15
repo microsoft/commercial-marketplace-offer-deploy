@@ -104,6 +104,9 @@ namespace Modm.ServiceHost
         {
             using var envFile = await GetEnvFileAsync();
 
+            var password = environment.IsDevelopment() ? "admin" : options.MachineName;
+            envFile.Set("DEFAULT_ADMIN_PASSWORD", password);
+
             // set for caddy to work
             envFile.Set("SITE_ADDRESS", options.Fqdn);
             envFile.Set("ACME_ACCOUNT_EMAIL", "nowhere@nowhere.com");
@@ -134,9 +137,11 @@ namespace Modm.ServiceHost
                         .ServiceName("modm-service");
 
             using var envFile = await GetEnvFileAsync();
+            logger.LogInformation("Environment Variables found: {count}", envFile.Items.Count);
 
             if (await envFile.AnyAsync())
             {
+                logger.LogInformation("Adding variables from env file.");
                 builder.WithEnvironment(envFile.ToArray());
             }
 
