@@ -104,6 +104,8 @@ namespace Modm.ServiceHost
         {
             using var envFile = await GetEnvFileAsync();
 
+            envFile.Set("MODM_HOME", configuration.GetHomeDirectory());
+
             var password = environment.IsDevelopment() ? "admin" : options.MachineName;
             envFile.Set("DEFAULT_ADMIN_PASSWORD", password);
 
