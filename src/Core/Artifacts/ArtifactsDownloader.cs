@@ -6,6 +6,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Options;
 using Modm.Deployments;
+using Newtonsoft.Json;
 
 namespace Modm.Artifacts
 {
@@ -48,18 +49,24 @@ namespace Modm.Artifacts
             }
 
             ZipFile.ExtractToDirectory(archiveFilePath, resolvedSavePath, overwriteFiles: true);
+            string manifestFilePath = Path.Combine(resolvedSavePath, "manifest.json");
 
 
-            // TODO: extract information based on the manifest contents from the artifacts
+            if (File.Exists(manifestFilePath))
+            {
+                string manifestJson = File.ReadAllText(manifestFilePath);
+                var definition = JsonConvert.DeserializeObject<DeploymentDefinition>(manifestJson);
 
-            return new ArtifactsDescriptor {
-                FolderPath = resolvedSavePath,
-                Definition = new DeploymentDefinition
+                return new ArtifactsDescriptor
                 {
-                    DeploymentType = DeploymentType.Terafform,
-                    MainTemplate = "main.tf"
-                }
-            };
+                    FolderPath = resolvedSavePath,
+                    Definition = definition
+                };
+            }
+            else
+            {
+                throw new FileNotFoundException("manifest.json not found in the extracted files.");
+            }
         }
     }
 }
