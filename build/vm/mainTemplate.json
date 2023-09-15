@@ -82,7 +82,10 @@
         "resourceId": "[resourceId('Microsoft.Network/publicIpAddresses', parameters('publicIpAddressName1'))]",
         "vmResourceId": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]",
         "dnsLabel": "[uniqueString(variables('vmResourceId'))]",
-        "Owner": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]"
+        "Owner": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
+        "userDataObject": {
+            "artifactsUri": "[variables('artifactsContainerLocation')]"
+        }
     },
     "resources": [
         {
@@ -244,6 +247,7 @@
                 "hardwareProfile": {
                     "vmSize": "[parameters('virtualMachineSize')]"
                 },
+                "userData": "[base64(variables('userDataObject'))]",
                 "storageProfile": {
                     "osDisk": {
                         "createOption": "fromImage",
@@ -300,26 +304,6 @@
                     }
                 }
             },
-            "resources": [
-                {
-                    "type": "extensions",
-                    "name": "customScript",
-                    "location": "[resourceGroup().location]",
-                    "apiVersion": "2019-03-01",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]"
-                    ],
-                    "properties": {
-                        "publisher": "Microsoft.Azure.Extensions",
-                        "type": "CustomScript",
-                        "typeHandlerVersion": "2.0",
-                        "autoUpgradeMinorVersion": true,
-                        "settings": {
-                            "script": "[base64(concat('#!/bin/bash\n', 'sudo sh ', variables('scriptDirectory'), '/', variables('scriptName'), ' --artifacts-uri ', variables('artifactsContainerLocation')))]"
-                        }
-                    }
-                }
-            ],
             "zones": [
                 "[parameters('virtualMachine1Zone')]"
             ]
