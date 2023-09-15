@@ -247,7 +247,7 @@
                 "hardwareProfile": {
                     "vmSize": "[parameters('virtualMachineSize')]"
                 },
-                "userData": "[base64(variables('userDataObject'))]",
+                "userData": "[base64(string(json(variables('userDataObject'))))]",
                 "storageProfile": {
                     "osDisk": {
                         "createOption": "fromImage",
