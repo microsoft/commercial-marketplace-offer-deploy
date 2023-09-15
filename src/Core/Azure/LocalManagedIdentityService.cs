@@ -8,7 +8,7 @@ namespace Modm.Azure
 		{
 		}
 
-        public Task<ManagedIdentityInfo> GetAsync()
+        public Task<ManagedIdentityInfo> GetAsync(CancellationToken cancellationToken = default)
         {
             return Task.FromResult(new ManagedIdentityInfo
             {
@@ -19,7 +19,7 @@ namespace Modm.Azure
             });
         }
 
-        public Task<bool> IsAccessibleAsync()
+        public Task<bool> IsAccessibleAsync(CancellationToken cancellationToken = default)
         {
             return Task.FromResult(true);
         }

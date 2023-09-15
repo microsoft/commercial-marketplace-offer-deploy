@@ -1,8 +1,6 @@
-﻿using System;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Text.Json;
-using Azure.Core;
 using Microsoft.Extensions.Logging;
 
 namespace Modm.Azure
@@ -16,6 +14,12 @@ namespace Modm.Azure
 	public class DefaultManagedIdentityService : IManagedIdentityService
     {
         public const string TokenEndpoint = "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://management.azure.com/";
+
+        /// <summary>
+        /// empty web proxy will bypass proxies which is required by IMDS
+        /// </summary>
+        static readonly WebProxy ByPassWebProxy = new();
+
         private readonly HttpClient client;
         private readonly IMetadataService metadataService;
         private readonly ILogger<DefaultManagedIdentityService> logger;
@@ -27,10 +31,10 @@ namespace Modm.Azure
             this.logger = logger;
         }
 
-        public async Task<ManagedIdentityInfo> GetAsync()
+        public async Task<ManagedIdentityInfo> GetAsync(CancellationToken cancellationToken = default)
         {
             var metadata = await metadataService.GetAsync();
-            var token = await GetTokenAsync();
+            var token = await GetTokenAsync(cancellationToken);
 
             if (token == null)
             {
@@ -48,35 +52,54 @@ namespace Modm.Azure
             };
         }
 
-        public async Task<bool> IsAccessibleAsync()
+        public async Task<bool> IsAccessibleAsync(CancellationToken cancellationToken = default)
         {
+            var request = CreateRequest();
+            var response = await client.SendAsync(request, cancellationToken);
+
+            if (response.StatusCode == HttpStatusCode.BadRequest || !response.IsSuccessStatusCode)
+            {
+                var result = await JsonSerializer.DeserializeAsync<AcquireTokenErrorResponse>(
+                    response.Content.ReadAsStream(cancellationToken),
+                    cancellationToken: cancellationToken
+                    );
+                logger.LogTrace("Error received while checking IMDS access token endpoint: {message}.", result?.ErrorDescription);
+                return false;
+            }
+
+            return true;
+        }
+
+        private async Task<AcquireTokenResponse?> GetTokenAsync(CancellationToken cancellationToken)
+        {
+            var request = CreateRequest();
+            var response = await client.SendAsync(request, cancellationToken);
+
             try
             {
-                var result = await GetTokenAsync();
-                return (result != null && !string.IsNullOrEmpty(result.AccessToken));
+                response.EnsureSuccessStatusCode();
+
+                var result = await JsonSerializer.DeserializeAsync<AcquireTokenResponse>(
+                    response.Content.ReadAsStream(cancellationToken),
+                    cancellationToken: cancellationToken);
+                return result;
+
             }
             catch (Exception ex)
             {
-                logger.LogTrace(ex, "Managed Identity metdata service endpoint unreachable");
+                logger.LogError(ex, "Failed to receive access token response from metadata service endpoint for authentication token");
             }
 
-            return false;
+            return null;
         }
 
-        private async Task<TokenResponse?> GetTokenAsync()
+        private static HttpRequestMessage CreateRequest()
         {
-            // IMDS requires bypassing proxies.
-            HttpClient.DefaultProxy = new WebProxy();
-
+            HttpClient.DefaultProxy = ByPassWebProxy;
             var request = new HttpRequestMessage(HttpMethod.Get, TokenEndpoint);
             request.Headers.Add("Metadata", "True");
 
-            var response = await client.SendAsync(request);
-            response.EnsureSuccessStatusCode();
-            var result = await JsonSerializer.DeserializeAsync<TokenResponse>(response.Content.ReadAsStream());
-
-
-            return result;
+            return request;
         }
     }
 }
