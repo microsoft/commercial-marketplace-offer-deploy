@@ -35,6 +35,12 @@ namespace Modm.ServiceHost
 			return this;
 		}
 
+        public ControllerBuilder UseMachineName(string machineName)
+        {
+            options.MachineName = machineName;
+            return this;
+        }
+
         public ControllerBuilder UseComposeFile(string composeFile)
         {
             options.ComposeFilePath = composeFile;

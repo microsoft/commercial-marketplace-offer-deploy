@@ -29,8 +29,11 @@ namespace Modm.ServiceHost
 
             await WaitUntilManagedIdentityIsAcquired(stoppingToken);
 
+            var metadata = await metadataService.GetAsync();
+
             controller = ControllerBuilder.Create(this.logger)
                 .UseFqdn(await metadataService.GetFqdnAsync())
+                .UseMachineName(metadata.Compute.Name)
                 .UseComposeFile(GetComposeFilePath())
                 .UsingServiceProvider(serviceProvider)
                 .Build();
