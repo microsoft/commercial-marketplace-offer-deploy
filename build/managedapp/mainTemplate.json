@@ -175,13 +175,13 @@
                                     },
                                     "deleteOption": "[parameters('pipDeleteOption')]"
                                 }
-                            },
-                            "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('virtualMachineName'), '-nsg'))]" 
                             }
                         }
                     }
-                ]
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('virtualMachineName'), '-nsg'))]" 
+                }
             }
         },
         {
