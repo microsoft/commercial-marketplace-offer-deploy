@@ -21,7 +21,6 @@ IHost host = Host.CreateDefaultBuilder(args)
         }
 
         services.AddHttpClient();
-        services.AddSingleton<ArtifactsWatcher>();
 
         services.AddSingletonHostedService<ControllerService>();
         services.AddSingletonHostedService<ArtifactsWatcherService>();

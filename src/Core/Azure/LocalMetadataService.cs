@@ -1,4 +1,5 @@
 ﻿using System;
+using Modm.Azure.Model;
 
 namespace Modm.Azure
 {
@@ -37,7 +38,7 @@ namespace Modm.Azure
                     },
                     Tags = "",
                     TagsList = new List<KeyValuePair<string, string>>(),
-                    UserData = "",
+                    UserData = new UserData { ArtifactsUri = Environment.GetEnvironmentVariable("ARTIFACTS_UTL") ?? "" }.ToBase64Json(),
                     Version = "",
                     VmScaleSetName = "",
                     VmSize = "",
