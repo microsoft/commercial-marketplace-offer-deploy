@@ -1,20 +1,30 @@
-﻿using MediatR;
+﻿using System;
+using System.Text;
+using Newtonsoft.Json;
+using MediatR;
+using Modm.Deployments;
 using Modm.ServiceHost.Notifications;
+using Modm.Azure.Model;
+using Modm.Azure;
 
 namespace Modm.ServiceHost
 {
     public class ArtifactsWatcherService : BackgroundService
     {
         const int DefaultWaitDelaySeconds = 10;
-
-        readonly ArtifactsWatcher watcher;
+        private readonly IMetadataService metadataService;
+        private ILogger<ArtifactsWatcherService> logger;
 
         ArtifactsWatcherOptions? options;
         bool controllerStarted;
 
-        public ArtifactsWatcherService(ArtifactsWatcher watcher)
+        private readonly HttpClient httpClient;
+
+        public ArtifactsWatcherService(IMetadataService metadataService, HttpClient httpClient, ILogger<ArtifactsWatcherService> logger)
 		{
-            this.watcher = watcher;
+            this.metadataService = metadataService;
+            this.httpClient = httpClient;
+            this.logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -25,7 +35,44 @@ namespace Modm.ServiceHost
             {
                 throw new InvalidOperationException("Cannot start artifacts watcher. Options are null");
             }
-            await watcher.StartAsync(options);
+
+            string base64UserData = "";
+
+            while (true)
+            {
+                var instanceData = this.metadataService.GetAsync().Result;
+                base64UserData = instanceData.Compute.UserData;
+                if (!string.IsNullOrEmpty(base64UserData))
+                {
+                    break;
+                }
+                
+                await Task.Delay(1000);
+            }
+
+            byte[] data = Convert.FromBase64String(base64UserData);
+            string jsonString = Encoding.UTF8.GetString(data);
+            UserData userData = JsonConvert.DeserializeObject<UserData>(jsonString);
+            if (userData == null)
+            {
+                throw new InvalidDataException("The userData on the virtual machine instance is null");
+            }
+
+            if (userData.IsValid())
+            {
+                var response = StartDeployment(userData.ArtifactsUri).Result;
+            }
+        }
+
+        private async Task<CreateDeploymentResponse> StartDeployment(string uri)
+        {
+            var request = new CreateDeploymentRequest { ArtifactsUri = uri };
+            HttpResponseMessage response = await this.httpClient.PostAsJsonAsync(this.options?.DeploymentsUrl, request);
+            response.EnsureSuccessStatusCode();
+
+            this.logger.LogInformation("HTTP Post to [{url}] successful.", this.options?.DeploymentsUrl);
+
+            return await response.Content.ReadAsAsync<CreateDeploymentResponse>();
         }
 
         async Task WaitForControllerToStart(CancellationToken cancellationToken)
