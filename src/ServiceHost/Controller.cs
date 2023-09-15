@@ -134,9 +134,11 @@ namespace Modm.ServiceHost
                         .ServiceName("modm-service");
 
             using var envFile = await GetEnvFileAsync();
+            logger.LogInformation("Environment Variables found: [{count}]", envFile.Items.Count);
 
             if (await envFile.AnyAsync())
             {
+                logger.LogInformation("Adding variables from env file.");
                 builder.WithEnvironment(envFile.ToArray());
             }
 
