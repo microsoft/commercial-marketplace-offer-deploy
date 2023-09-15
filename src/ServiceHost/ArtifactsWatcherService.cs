@@ -1,31 +1,20 @@
 ﻿using MediatR;
+using Modm.ServiceHost.Notifications;
 
 namespace Modm.ServiceHost
 {
-    public class ArtifactsWatcherService : BackgroundService, INotificationHandler<ControllerStarted>
+    public class ArtifactsWatcherService : BackgroundService
     {
         const int DefaultWaitDelaySeconds = 10;
 
         readonly ArtifactsWatcher watcher;
 
-        static ArtifactsWatcherOptions? options;
-        static bool controllerStarted;
+        ArtifactsWatcherOptions? options;
+        bool controllerStarted;
 
         public ArtifactsWatcherService(ArtifactsWatcher watcher)
 		{
             this.watcher = watcher;
-        }
-
-        public Task Handle(ControllerStarted notification, CancellationToken cancellationToken)
-        {
-            options = new ArtifactsWatcherOptions
-            {
-                ArtifactsPath = notification.ArtifactsPath,
-                DeploymentsUrl = notification.DeploymentsUrl
-            };
-            controllerStarted = true;
-
-            return Task.CompletedTask;
         }
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -45,6 +34,29 @@ namespace Modm.ServiceHost
             {
                 await Task.Delay(DefaultWaitDelaySeconds * 1000, cancellationToken);
             }
+        }
+
+        class ControllerStartedHandler : INotificationHandler<ControllerStarted>
+        {
+            private readonly ArtifactsWatcherService service;
+
+            public ControllerStartedHandler(ArtifactsWatcherService service)
+            {
+                this.service = service;
+            }
+
+            public Task Handle(ControllerStarted notification, CancellationToken cancellationToken)
+            {
+                service.options = new ArtifactsWatcherOptions
+                {
+                    ArtifactsPath = notification.ArtifactsPath,
+                    DeploymentsUrl = notification.DeploymentsUrl
+                };
+                service.controllerStarted = true;
+
+                return Task.CompletedTask;
+            }
+
         }
     }
 }

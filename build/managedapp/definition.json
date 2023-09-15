@@ -1,3 +1,4 @@
 {
-  "deploymentType": "terraform"
+  "deploymentType": "terraform",
+  "mainTemplate": "main.tf"
 }
