@@ -1,5 +1,7 @@
 # Commercial Marketplace Offer Deployment Manager (MODM)
 
+[![Build](https://github.com/microsoft/commercial-marketplace-offer-deploy/actions/workflows/ci.yml/badge.svg)](https://github.com/microsoft/commercial-marketplace-offer-deploy/actions/workflows/ci.yml)
+
 This marketplace offer deployment manager (MODM) simplifies the deployment of complex managed and packaged applications for the Azure Commercial Marketplace.
 
 
