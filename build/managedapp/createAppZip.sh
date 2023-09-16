@@ -18,7 +18,7 @@ cd "./build/managedapp/$scenario_name" || exit
 echo "The current directory is: $(pwd)"
 
 # Create the content.zip file
-zip -r "../../../../obj/content.zip" ./*
+zip -r "$origional_dir/.obj/content.zip" ./*
 echo "zipped content.zip"
 
 # Go back to the original directory
