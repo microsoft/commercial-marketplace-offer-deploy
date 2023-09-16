@@ -57,6 +57,6 @@ if (shouldCredentialsBeServicePrincipal(clientId, clientSecret)) {
 
         managedIdentityCredentials.subscriptionId = subscriptionId
         managedIdentityCredentials.clientId = clientId
-        managedIdentityCredentials.tenant = tenantId 
+        // managedIdentityCredentials.tenant = tenantId 
         store.addCredentials(domain, managedIdentityCredentials)
 }
