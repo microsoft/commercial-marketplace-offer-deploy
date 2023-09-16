@@ -18,9 +18,9 @@ echo "Changing directory to ./build/managedapp/$scenario_name"
 cd "./build/managedapp/$scenario_name" || exit
 echo "The current directory is: $(pwd)"
 
-echo "current value of the .obj directory is $(ls -la $origional_dir/.obj)"
+echo "current value of the .obj directory is $(ls -la $origional_dir/obj)"
 # Create the content.zip file
-zip -r "$origional_dir/.obj/content.zip" ./*
+zip -r "$origional_dir/obj/content.zip" ./*
 echo "zipped content.zip"
 
 # Go back to the original directory
