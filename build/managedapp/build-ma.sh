@@ -8,6 +8,7 @@ fi
 
 MANAGED_APP_VERSION="$1"
 
+echo "creating directories in $(pwd)"
 mkdir -p ./obj
 mkdir -p ./bin
 
