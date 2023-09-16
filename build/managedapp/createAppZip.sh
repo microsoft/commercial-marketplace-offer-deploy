@@ -11,13 +11,14 @@ package_file="./bin/app.zip"  # Change the path to the bin directory
 main_template_file="./obj/mainTemplate.json"
 create_ui_definition_file="./obj/createUiDefinition.json"
 
+origional_dir=$(pwd)
 # Change the directory to the scenario's location
 echo "Changing directory to ./build/managedapp/$scenario_name"
 cd "./build/managedapp/$scenario_name" || exit
 echo "The current directory is: $(pwd)"
 
 # Create the content.zip file
-zip -r "../../../obj/content.zip" ./*
+zip -r "../../../../obj/content.zip" ./*
 echo "zipped content.zip"
 
 # Go back to the original directory
