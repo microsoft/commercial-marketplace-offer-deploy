@@ -65,7 +65,7 @@ namespace Modm.Artifacts
             }
             else
             {
-                throw new FileNotFoundException("manifest.json not found in the extracted files.");
+                throw new FileNotFoundException($"{Constants.ManifestFileName} not found in the extracted files.");
             }
         }
     }
