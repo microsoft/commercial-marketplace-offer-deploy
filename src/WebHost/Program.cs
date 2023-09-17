@@ -6,6 +6,9 @@ using Microsoft.Extensions.Azure;
 using Azure.Identity;
 using Modm.Extensions;
 using Modm.Deployments;
+using MediatR;
+using Modm.Engine.Notifications;
+using Modm.Engine;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +26,12 @@ builder.Services.AddAzureClients(clientBuilder =>
 {
     clientBuilder.AddArmClient(builder.Configuration.GetSection("Azure"));
     clientBuilder.UseCredential(new DefaultAzureCredential());
+});
+
+builder.Services.AddMediatR(c =>
+{
+    c.RegisterServicesFromAssemblyContaining<DeploymentsController>();
+    c.RegisterServicesFromAssemblyContaining<IDeploymentEngine>();
 });
 
 var app = builder.Build();

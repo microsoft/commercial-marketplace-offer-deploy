@@ -6,7 +6,7 @@ namespace Modm.Engine.Jenkins.Model
     /// <summary>
     /// Generated from JSON using http://localhost:8080/computer/(built-in)/api/json
     /// </summary>
-    class MasterComputer
+    public class MasterComputer
     {
         [JsonPropertyName("_class")]
         public string Class { get; set; }
@@ -69,15 +69,15 @@ namespace Modm.Engine.Jenkins.Model
         public bool TemporarilyOffline { get; set; }
     }
 
-    class Action
+    public class Action
     {
     }
 
-    class Executor
+    public class Executor
     {
     }
 
-    class HudsonNodeMonitorsClockMonitor
+    public class HudsonNodeMonitorsClockMonitor
     {
         [JsonPropertyName("_class")]
         public string Class { get; set; }
@@ -86,7 +86,7 @@ namespace Modm.Engine.Jenkins.Model
         public int Diff { get; set; }
     }
 
-    class HudsonNodeMonitorsDiskSpaceMonitor
+    public class HudsonNodeMonitorsDiskSpaceMonitor
     {
         [JsonPropertyName("_class")]
         public string Class { get; set; }
@@ -101,7 +101,7 @@ namespace Modm.Engine.Jenkins.Model
         public long Size { get; set; }
     }
 
-    class HudsonNodeMonitorsResponseTimeMonitor
+    public class HudsonNodeMonitorsResponseTimeMonitor
     {
         [JsonPropertyName("_class")]
         public string Class { get; set; }
@@ -113,7 +113,7 @@ namespace Modm.Engine.Jenkins.Model
         public int Average { get; set; }
     }
 
-    class HudsonNodeMonitorsSwapSpaceMonitor
+    public class HudsonNodeMonitorsSwapSpaceMonitor
     {
         [JsonPropertyName("_class")]
         public string Class { get; set; }
@@ -131,7 +131,7 @@ namespace Modm.Engine.Jenkins.Model
         public int TotalSwapSpace { get; set; }
     }
 
-    class HudsonNodeMonitorsTemporarySpaceMonitor
+    public class HudsonNodeMonitorsTemporarySpaceMonitor
     {
         [JsonPropertyName("_class")]
         public string Class { get; set; }
@@ -146,13 +146,13 @@ namespace Modm.Engine.Jenkins.Model
         public long Size { get; set; }
     }
 
-    class LoadStatistics
+    public class LoadStatistics
     {
         [JsonPropertyName("_class")]
         public string Class { get; set; }
     }
 
-    class MonitorData
+    public class MonitorData
     {
         [JsonPropertyName("hudson.node_monitors.SwapSpaceMonitor")]
         public HudsonNodeMonitorsSwapSpaceMonitor HudsonNodeMonitorsSwapSpaceMonitor { get; set; }

@@ -7,7 +7,7 @@ namespace Modm.Engine.Jenkins.Model
     /// Generated from JSON from http://localhost:8080/api/json
     /// Provides information about Jenkins
     /// </summary>
-    class Hudson
+    public class Hudson
     {
         [JsonPropertyName("_class")]
         public string Class { get; set; }
@@ -64,7 +64,7 @@ namespace Modm.Engine.Jenkins.Model
         public List<View> Views { get; set; }
     }
 
-    class Job
+    public class Job
     {
         [JsonPropertyName("_class")]
         public string Class { get; set; }
@@ -79,11 +79,11 @@ namespace Modm.Engine.Jenkins.Model
         public string Color { get; set; }
     }
 
-    class OverallLoad
+    public class OverallLoad
     {
     }
 
-    class PrimaryView
+    public class PrimaryView
     {
         [JsonPropertyName("_class")]
         public string Class { get; set; }
@@ -95,13 +95,13 @@ namespace Modm.Engine.Jenkins.Model
         public string Url { get; set; }
     }
 
-    class UnlabeledLoad
+    public class UnlabeledLoad
     {
         [JsonPropertyName("_class")]
         public string Class { get; set; }
     }
 
-    class View
+    public class View
     {
         [JsonPropertyName("_class")]
         public string Class { get; set; }

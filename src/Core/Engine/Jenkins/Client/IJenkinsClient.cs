@@ -8,7 +8,7 @@ namespace Modm.Engine.Jenkins.Client
 	/// Decorating client of the <see cref="JenkinsNET.IJenkinsClient"/> so we can include additional functionality
 	/// to interact with Jenkins
 	/// </summary>
-	interface IJenkinsClient : JenkinsNET.IJenkinsClient
+	public interface IJenkinsClient : JenkinsNET.IJenkinsClient
     {
         /// <summary>
         /// Gets information about Hudson including the version

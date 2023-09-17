@@ -1,13 +1,10 @@
 ﻿using System;
 namespace Modm.Engine
 {
-	public class StartDeploymentResult
+	public record StartDeploymentResult
 	{
 		public int Id { get; set; }
-
-		public StartDeploymentResult()
-		{
-		}
+		public string Status { get; set; }
 	}
 }
 

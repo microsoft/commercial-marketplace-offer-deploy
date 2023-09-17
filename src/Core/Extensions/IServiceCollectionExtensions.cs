@@ -36,7 +36,7 @@ namespace Modm.Extensions
             //configuration
             services.Configure<JenkinsOptions>(configuration.GetSection(JenkinsOptions.ConfigSectionKey));
 
-            services.AddSingletonHostedService<DeploymentMonitorService>();
+            services.AddSingletonHostedService<JenkinsMonitorService>();
             return services;
 		}
 

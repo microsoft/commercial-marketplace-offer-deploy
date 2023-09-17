@@ -1,22 +1,27 @@
-﻿using System;
+﻿using JenkinsNET.Models;
 using MediatR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Modm.Deployments;
+using Modm.Engine.Jenkins.Client;
 using Modm.Engine.Notifications;
 
 namespace Modm.Engine
 {
-	public class DeploymentMonitorService : BackgroundService
+    /// <summary>
+    /// Monitors the active jenkins build triggered through the engine
+    /// </summary>
+	public class JenkinsMonitorService : BackgroundService
 	{
-        private readonly IDeploymentEngine engine;
-        private readonly ILogger<DeploymentMonitorService> logger;
+        private readonly IJenkinsClient client;
+        private readonly ILogger<JenkinsMonitorService> logger;
+
         private bool deploymentStarted;
         private int id;
+        private string name;
 
-        public DeploymentMonitorService(IDeploymentEngine engine, ILogger<DeploymentMonitorService> logger)
+        public JenkinsMonitorService(IJenkinsClient client, ILogger<JenkinsMonitorService> logger)
         {
-            this.engine = engine;
+            this.client = client;
             this.logger = logger;
         }
 
@@ -45,23 +50,37 @@ namespace Modm.Engine
 
         async Task MonitorDeployment(CancellationToken cancellationToken)
         {
-            var deployment = await engine.Get();
+            var build = await GetBuild(cancellationToken);
 
             // wait for the deployment to complete
-            while (deployment.Status != DeploymentStatus.Completed)
+            while (build.Building.GetValueOrDefault(false))
             {
+                build = await GetBuild(cancellationToken);
                 await Task.Delay(1000, cancellationToken);
             }
 
             // deployment is complete
-            logger.LogInformation("Deployment [{id}] completed at: {time}", id, DateTimeOffset.Now);
+            logger.LogInformation("Deployment [{id}] completed at: {time}", id, DateTimeOffset.FromUnixTimeSeconds(build.TimeStamp.Value));
+            Reset();
         }
 
-        class DeploymentStartedHandler : INotificationHandler<DeploymentStarted>
+        void Reset()
         {
-            private readonly DeploymentMonitorService service;
+            deploymentStarted = false;
+            id = 0;
+            name = string.Empty;
+        }
 
-            public DeploymentStartedHandler(DeploymentMonitorService service)
+        async Task<JenkinsBuildBase> GetBuild(CancellationToken cancellationToken)
+        {
+            return await client.Builds.GetAsync<JenkinsBuildBase>(name, id.ToString(), cancellationToken);
+        }
+
+        public class DeploymentStartedHandler : INotificationHandler<DeploymentStarted>
+        {
+            private readonly JenkinsMonitorService service;
+
+            public DeploymentStartedHandler(JenkinsMonitorService service)
             {
                 this.service = service;
             }
@@ -70,6 +89,7 @@ namespace Modm.Engine
             {
                 service.deploymentStarted = true;
                 service.id = notification.Id;
+                service.name = notification.Name;
 
                 return Task.CompletedTask;
             }
