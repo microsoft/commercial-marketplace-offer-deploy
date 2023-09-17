@@ -1,4 +1,5 @@
 using Modm.Azure;
+using Modm.Extensions;
 using Modm.ServiceHost;
 
 IHost host = Host.CreateDefaultBuilder(args)

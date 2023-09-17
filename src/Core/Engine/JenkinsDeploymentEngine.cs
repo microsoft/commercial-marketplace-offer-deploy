@@ -37,9 +37,10 @@ namespace Modm.Engine
             };
         }
 
-        public Task<EngineStatus> GetStatus()
+        public async Task<Deployment> Get()
         {
-            return Task.FromResult(new EngineStatus { });
+            // TODO: do more than read from disk. We have to get the current status of the job
+            return await Read();
         }
 
 
@@ -62,7 +63,7 @@ namespace Modm.Engine
                 deployment.Id = result.GetQueueItemNumber().GetValueOrDefault(0);
                 deployment.Status = DeploymentStatus.Running;
 
-                await Save(deployment);
+                await Write(deployment);
             }
 
             return new StartDeploymentResult
@@ -71,13 +72,13 @@ namespace Modm.Engine
             };
         }
 
-        private async Task Save(Deployment deployment)
+        private async Task Write(Deployment deployment)
         {
             var json = JsonSerializer.Serialize(deployment);
             await File.WriteAllTextAsync(GetDeploymentFilePath(), json);
         }
 
-        private async Task<Deployment> Get()
+        private async Task<Deployment> Read()
         {
             var path = GetDeploymentFilePath();
 
@@ -90,7 +91,14 @@ namespace Modm.Engine
             }
 
             var json = await File.ReadAllTextAsync(GetDeploymentFilePath());
-            return JsonSerializer.Deserialize<Deployment>(json);
+            var deployment = JsonSerializer.Deserialize<Deployment>(json);
+
+            var jobName = deployment.Definition.DeploymentType;
+            var build = await client.Builds.GetAsync<JenkinsBuildBase>(jobName, deployment.Id.ToString());
+
+            deployment.Status = build.Result;
+
+            return deployment;
         }
 
         private string GetDeploymentFilePath()

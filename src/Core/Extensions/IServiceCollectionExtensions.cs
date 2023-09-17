@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Modm.Artifacts;
 using Modm.Engine;
 using Modm.Engine.Jenkins.Client;
@@ -36,8 +37,15 @@ namespace Modm.Extensions
             services.Configure<ArtifactsDownloadOptions>(configuration.GetSection(ArtifactsDownloadOptions.ConfigSectionKey));
             services.Configure<JenkinsOptions>(configuration.GetSection(JenkinsOptions.ConfigSectionKey));
 
+            services.AddSingletonHostedService<DeploymentMonitorService>();
             return services;
 		}
-	}
+
+        public static IServiceCollection AddSingletonHostedService<T>(this IServiceCollection services) where T : class, IHostedService
+        {
+            services.AddSingleton<T>().AddHostedService(p => p.GetRequiredService<T>());
+            return services;
+        }
+    }
 }
 

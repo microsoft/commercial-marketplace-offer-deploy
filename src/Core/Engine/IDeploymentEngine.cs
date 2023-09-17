@@ -1,4 +1,6 @@
-﻿namespace Modm.Engine
+﻿using Modm.Deployments;
+
+namespace Modm.Engine
 {
     public interface IDeploymentEngine
     {
@@ -8,7 +10,7 @@
         /// Gets the status of the engine
         /// </summary>
         /// <returns></returns>
-        Task<EngineStatus> GetStatus();
+        Task<Deployment> Get();
 
 
         /// <summary>
