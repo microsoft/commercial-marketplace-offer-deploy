@@ -34,7 +34,6 @@ namespace Modm.Extensions
 
 
             //configuration
-            services.Configure<ArtifactsDownloadOptions>(configuration.GetSection(ArtifactsDownloadOptions.ConfigSectionKey));
             services.Configure<JenkinsOptions>(configuration.GetSection(JenkinsOptions.ConfigSectionKey));
 
             services.AddSingletonHostedService<DeploymentMonitorService>();
