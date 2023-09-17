@@ -27,6 +27,10 @@ services:
       - Jenkins__Password=${DEFAULT_ADMIN_PASSWORD}
     volumes:
       - ${MODM_HOME}:/usr/local/modm
+    depends_on:
+      jenkins:
+        condition: service_healthy
+        restart: true
   jenkins:
     image: jenkins:latest
     container_name: jenkins
@@ -41,3 +45,9 @@ services:
       - AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
       - AZURE_TENANT_ID=${AZURE_TENANT_ID}
       - MODM_HOME=/var/jenkins_home/modm
+    healthcheck:
+      test: curl --fail http://localhost:8080/login || exit 1
+      interval: 30s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
