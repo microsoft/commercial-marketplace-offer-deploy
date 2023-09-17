@@ -70,7 +70,7 @@ namespace Modm.Azure
             return true;
         }
 
-        private async Task<AcquireTokenResponse?> GetTokenAsync(CancellationToken cancellationToken)
+        private async Task<AcquireTokenResponse> GetTokenAsync(CancellationToken cancellationToken)
         {
             var request = CreateRequest();
             var response = await client.SendAsync(request, cancellationToken);

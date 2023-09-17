@@ -5,8 +5,8 @@ namespace Modm.Deployments
 	{
 		public required string DeploymentType { get; set; }
 
-        public string? OfferName { get; set; }
-        public string? OfferDescription { get; set; }
+        public string OfferName { get; set; }
+        public string OfferDescription { get; set; }
 
         /// <summary>
         /// The relative path to the main template, e.g. templates/mainTemplate.tf, templates/mainTemplate.

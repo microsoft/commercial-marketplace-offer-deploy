@@ -1,9 +1,10 @@
 ﻿using System.Net.Http.Headers;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
+using Modm.Engine.Jenkins.Model;
 using Modm.Extensions;
 
-namespace Modm.Engine.Jenkins
+namespace Modm.Engine.Jenkins.Client
 {
     /// <summary>
     /// Will perform the job of getting a Jenkins API Token
@@ -13,12 +14,12 @@ namespace Modm.Engine.Jenkins
     /// To get an API token, the username:password is used to authenticate.
     /// Get a crumb, use the crumb to create an API Token, then return the token value
     /// </remarks>
-	public class ApiTokenProvider
+	class ApiTokenClient
 	{
         private readonly HttpClient client;
         private readonly JenkinsOptions options;
 
-        public ApiTokenProvider(HttpClient client, IOptions<JenkinsOptions> options)
+        public ApiTokenClient(HttpClient client, IOptions<JenkinsOptions> options)
 		{
             this.client = client;
             this.options = options.Value;
@@ -29,11 +30,11 @@ namespace Modm.Engine.Jenkins
         /// </summary>
         /// <param name="options"></param>
         /// <returns></returns>
-        /// <exception cref="JenkinsCrumbRequestFailure">If the crumb response is null</exception>
-        public async Task<string> GetAsync()
+        /// <exception cref="JenkinsCrumbRequestException">If the crumb response is null</exception>
+        public async Task<string> Get()
         {
-            var crumbResponse = await GetCrumbAsync() ?? throw new JenkinsCrumbRequestFailure("Crumb response null");
-            var response = await GenerateApiTokenAsync(crumbResponse);
+            var crumbResponse = await GetCrumb() ?? throw new JenkinsCrumbRequestException("Crumb response null");
+            var response = await GenerateApiToken(crumbResponse);
 
             if (response != null && response.Status == "ok")
             {
@@ -44,7 +45,7 @@ namespace Modm.Engine.Jenkins
             throw new InvalidOperationException("Generate API Token response is null or status was not 'ok'");
         }
 
-        private async Task<GenerateApiTokenResponse?> GenerateApiTokenAsync(GetCrumbResponse crumbResponse)
+        private async Task<GenerateApiTokenResponse> GenerateApiToken(GetCrumbResponse crumbResponse)
         {
             using var request = GetHttpRequest(HttpMethod.Post, "me/descriptorByName/jenkins.security.ApiTokenProperty/generateNewToken");
             request.Headers.Add(crumbResponse.RequestField, crumbResponse.Crumb);
@@ -55,7 +56,7 @@ namespace Modm.Engine.Jenkins
             return await Deserialize<GenerateApiTokenResponse>(response);
         }
 
-        private async Task<GetCrumbResponse?> GetCrumbAsync()
+        private async Task<GetCrumbResponse> GetCrumb()
         {
             using var request = GetHttpRequest(HttpMethod.Get, "crumbIssuer/api/json");
             var response = await client.SendAsync(request);
@@ -66,7 +67,7 @@ namespace Modm.Engine.Jenkins
             }
             catch (Exception ex)
             {
-                throw new JenkinsCrumbRequestFailure("Received a non success status coding while assempting to get crumb", ex);
+                throw new JenkinsCrumbRequestException("Received a non success status coding while assempting to get crumb", ex);
             }
 
             return await Deserialize<GetCrumbResponse>(response);
@@ -90,22 +91,13 @@ namespace Modm.Engine.Jenkins
             return new AuthenticationHeaderValue("Basic", credential);
         }
 
-        private static async Task<T?> Deserialize<T>(HttpResponseMessage response)
+        private static async Task<T> Deserialize<T>(HttpResponseMessage response)
         {
             return await JsonSerializer.DeserializeAsync<T>(response.Content.ReadAsStream());
         }
 
     }
 
-    public class JenkinsCrumbRequestFailure : Exception
-    {
-        public JenkinsCrumbRequestFailure(string? message = null, Exception? innerException = null) : base(message, innerException)
-        {
-        }
-
-        public JenkinsCrumbRequestFailure(string? message = null) : base(message)
-        {
-        }
-    }
+    
 }
 

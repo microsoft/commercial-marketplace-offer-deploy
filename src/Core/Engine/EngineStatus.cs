@@ -1,11 +1,19 @@
 ﻿using System;
+using Modm.Deployments;
+
 namespace Modm.Engine
 {
 	public class EngineStatus
 	{
-		public required bool IsHealthy { get; set; }
-		public required EngineType EngineType { get; set; }
-		public required string Version { get; set; }
+		/// <summary>
+		/// whether the engine is currently running a deployment
+		/// </summary>
+		public string IsRunning { get; set; }
+
+		/// <summary>
+		/// Info about the current deployment (if the engine is running this will be set)
+		/// </summary>
+		public Deployment Deployment { get; set; }	
 	}
 }
 

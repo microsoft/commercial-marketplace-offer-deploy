@@ -1,7 +1,8 @@
 ﻿using System;
+using Microsoft.Extensions.Configuration;
 using Modm.Configuration;
 
-namespace Modm.ServiceHost.Extensions
+namespace Modm.Extensions
 {
 	public static class IConfigurationExtensions
 	{

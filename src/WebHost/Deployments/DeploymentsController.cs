@@ -19,7 +19,7 @@ namespace WebHost.Deployments
         }
 
         /// <summary>
-        /// Starts a deployment by submitting to the Operator's deployment engine
+        /// Starts a deployment by submitting to the deployment engine
         /// </summary>
         [HttpPost]
         public async Task<IResult> PostAsync([FromBody] CreateDeploymentRequest request)
@@ -31,7 +31,7 @@ namespace WebHost.Deployments
                 return Results.ValidationProblem(validationResult.ToDictionary());
             }
 
-            var result = await engine.StartAsync(request.ArtifactsUri);
+            var result = await engine.Start(request.ArtifactsUri);
 
 
             // TODO: get resulting object from repo. (underlying "repository" for deployments is going to be the deployment engine)

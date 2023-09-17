@@ -2,7 +2,19 @@
 {
     public interface IDeploymentEngine
     {
-        Task<StartDeploymentResult> StartAsync(string artifactsUri);
+        Task<StartDeploymentResult> Start(string artifactsUri);
+
+        /// <summary>
+        /// Gets the status of the engine
+        /// </summary>
+        /// <returns></returns>
         Task<EngineStatus> GetStatus();
+
+
+        /// <summary>
+        /// Get information about the engine
+        /// </summary>
+        /// <returns></returns>
+        Task<EngineInfo> GetInfo();
     }
 }

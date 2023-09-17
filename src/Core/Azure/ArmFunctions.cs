@@ -8,7 +8,7 @@ namespace Modm.Azure
     {
         public const string FunctionName_UniqueString = "uniqueString";
 
-        public static string? UniqueString(params string[] values)
+        public static string UniqueString(params string[] values)
         {
             var parameters = values.Select(arg => new FunctionArgument(JToken.FromObject(arg))).ToArray();
             var result = ExpressionBuiltInFunctions.Functions.EvaluateFunction(FunctionName_UniqueString, parameters, null);

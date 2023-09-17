@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 
-namespace Modm.Engine.Jenkins
+namespace Modm.Engine.Jenkins.Model
 {
-    public record GetCrumbResponse
+    /// <summary>
+    /// Created from JSON result from http://localhost:8080/crumbIssuer/api/json
+    /// </summary>
+    record GetCrumbResponse
     {
         [JsonPropertyName("_class")]
         public required string Class { get; set; }

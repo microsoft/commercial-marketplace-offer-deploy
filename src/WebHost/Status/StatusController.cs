@@ -23,9 +23,9 @@ namespace WebHost.Status
         }
 
         [HttpGet]
-        public async Task<EngineStatus> GetAsync()
+        public async Task<EngineInfo> GetAsync()
         {
-            return await this.engine.GetStatus();
+            return await this.engine.GetInfo();
         }
     }
 }
