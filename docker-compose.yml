@@ -14,6 +14,10 @@ services:
       - ~/.azure:/root/.azure
       - ${MODM_HOME}:/usr/local/modm
       - ./:/usr/local/modm/source
+    depends_on:
+      jenkins:
+        condition: service_healthy
+        restart: true
   jenkins:
     profiles:
       - "local"
@@ -34,3 +38,9 @@ services:
       - AZURE_CLIENT_SECRET=$AZURE_CLIENT_SECRET
       - AZURE_TENANT_ID=$AZURE_TENANT_ID
       - MODM_HOME=/var/jenkins_home/modm
+    healthcheck:
+      test: curl --fail http://localhost:8080/login || exit 1
+      interval: 30s
+      retries: 5
+      start_period: 30s
+      timeout: 10s

@@ -5,8 +5,8 @@ using Ductus.FluentDocker.Model.Compose;
 using Modm.Configuration;
 using Modm.Azure;
 using MediatR;
-using Modm.ServiceHost.Extensions;
 using Modm.ServiceHost.Notifications;
+using Modm.Extensions;
 
 namespace Modm.ServiceHost
 {

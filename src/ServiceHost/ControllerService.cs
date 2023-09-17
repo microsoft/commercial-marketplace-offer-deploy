@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Modm.Azure;
-using Modm.ServiceHost.Extensions;
+using Modm.Extensions;
 using Modm.ServiceHost.Notifications;
 
 namespace Modm.ServiceHost

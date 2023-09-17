@@ -4,8 +4,10 @@ using System.Net.Http;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Modm.Deployments;
+using Modm.Extensions;
 using Newtonsoft.Json;
 
 namespace Modm.Artifacts
@@ -13,12 +15,12 @@ namespace Modm.Artifacts
 	public class ArtifactsDownloader
 	{
         private readonly HttpClient client;
-        private readonly ArtifactsDownloadOptions options;
+        private readonly IConfiguration configuration;
 
-        public ArtifactsDownloader(HttpClient client, IOptions<ArtifactsDownloadOptions> options)
+        public ArtifactsDownloader(HttpClient client, IConfiguration configuration)
 		{
             this.client = client;
-            this.options = options.Value;
+            this.configuration = configuration;
         }
 
         /// <summary>
@@ -30,7 +32,7 @@ namespace Modm.Artifacts
         {
             return DownloadAsync(uri, new ArtifactsDownloadOptions
             {
-                SavePath = options.SavePath
+                SavePath = configuration.GetHomeDirectory()
             });
         }
 
@@ -38,8 +40,7 @@ namespace Modm.Artifacts
         {
             var httpResult = await client.GetAsync(uri);
             
-            var resolvedSavePath = Environment.ExpandEnvironmentVariables(options.SavePath);
-            var archiveFilePath = Path.GetFullPath(Path.Combine(resolvedSavePath, uri.FileName));
+            var archiveFilePath = Path.GetFullPath(Path.Combine(options.SavePath, uri.FileName));
 
             using (var resultStream = await httpResult.Content.ReadAsStreamAsync())
             using (var fileStream = File.Create(archiveFilePath))
@@ -48,9 +49,10 @@ namespace Modm.Artifacts
                 await resultStream.FlushAsync();
             }
 
-            ZipFile.ExtractToDirectory(archiveFilePath, resolvedSavePath, overwriteFiles: true);
-            string manifestFilePath = Path.Combine(resolvedSavePath, Constants.ManifestFileName);
+            var extractToPath = Path.Combine(options.SavePath, "content");
+            ZipFile.ExtractToDirectory(archiveFilePath, extractToPath, overwriteFiles: true);
 
+            var manifestFilePath = Path.Combine(extractToPath, Constants.ManifestFileName);
 
             if (File.Exists(manifestFilePath))
             {
@@ -59,7 +61,7 @@ namespace Modm.Artifacts
 
                 return new ArtifactsDescriptor
                 {
-                    FolderPath = resolvedSavePath,
+                    FolderPath = extractToPath,
                     Definition = definition
                 };
             }

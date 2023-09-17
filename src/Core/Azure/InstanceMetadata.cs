@@ -53,10 +53,10 @@ namespace Modm.Azure
         public required Plan Plan { get; set; }
 
         [JsonPropertyName("platformFaultDomain")]
-        public string? PlatformFaultDomain { get; set; }
+        public string PlatformFaultDomain { get; set; }
 
         [JsonPropertyName("platformUpdateDomain")]
-        public string? PlatformUpdateDomain { get; set; }
+        public string PlatformUpdateDomain { get; set; }
 
         [JsonPropertyName("priority")]
         public required string Priority { get; set; }
@@ -65,7 +65,7 @@ namespace Modm.Azure
         public required string Provider { get; set; }
 
         [JsonPropertyName("publicKeys")]
-        public PublicKey[]? PublicKeys { get; set; }
+        public PublicKey[] PublicKeys { get; set; }
 
         [JsonPropertyName("publisher")]
         public required string Publisher { get; set; }
@@ -77,7 +77,7 @@ namespace Modm.Azure
         public required string ResourceId { get; set; }
 
         [JsonPropertyName("securityProfile")]
-        public SecurityProfile? SecurityProfile { get; set; }
+        public SecurityProfile SecurityProfile { get; set; }
 
         [JsonPropertyName("sku")]
         public required string Sku { get; set; }
@@ -170,7 +170,7 @@ namespace Modm.Azure
         public required OsDisk OsDisk { get; set; }
 
         [JsonPropertyName("resourceDisk")]
-        public ResourceDisk? ResourceDisk { get; set; }
+        public ResourceDisk ResourceDisk { get; set; }
     }
 
     public partial class ImageReference
@@ -200,19 +200,19 @@ namespace Modm.Azure
         public required string CreateOption { get; set; }
 
         [JsonPropertyName("diffDiskSettings")]
-        public DiffDiskSettings? DiffDiskSettings { get; set; }
+        public DiffDiskSettings DiffDiskSettings { get; set; }
 
         [JsonPropertyName("diskSizeGB")]
-        public string? DiskSizeGb { get; set; }
+        public string DiskSizeGb { get; set; }
 
         [JsonPropertyName("encryptionSettings")]
-        public EncryptionSettings? EncryptionSettings { get; set; }
+        public EncryptionSettings EncryptionSettings { get; set; }
 
         [JsonPropertyName("image")]
-        public Image? Image { get; set; }
+        public Image Image { get; set; }
 
         [JsonPropertyName("managedDisk")]
-        public ManagedDisk? ManagedDisk { get; set; }
+        public ManagedDisk ManagedDisk { get; set; }
 
         [JsonPropertyName("name")]
         public required string Name { get; set; }
@@ -221,7 +221,7 @@ namespace Modm.Azure
         public required string OsType { get; set; }
 
         [JsonPropertyName("vhd")]
-        public Image? Vhd { get; set; }
+        public Image Vhd { get; set; }
 
         [JsonPropertyName("writeAcceleratorEnabled")]
         [JsonConverter(typeof(BooleanConverter))]
@@ -259,13 +259,13 @@ namespace Modm.Azure
     public partial class ResourceDisk
     {
         [JsonPropertyName("size")]
-        public string? Size { get; set; }
+        public string Size { get; set; }
     }
 
     public partial class Network
     {
         [JsonPropertyName("interface")]
-        public Interface[]? Interface { get; set; }
+        public Interface[] Interface { get; set; }
     }
 
     public partial class Interface
@@ -283,7 +283,7 @@ namespace Modm.Azure
     public partial class Ipv4
     {
         [JsonPropertyName("ipAddress")]
-        public IpAddress[]? IpAddress { get; set; }
+        public IpAddress[] IpAddress { get; set; }
 
         [JsonPropertyName("subnet")]
         public required Subnet[] Subnet { get; set; }
@@ -304,7 +304,7 @@ namespace Modm.Azure
         public required string Address { get; set; }
 
         [JsonPropertyName("prefix")]
-        public string? Prefix { get; set; }
+        public string Prefix { get; set; }
     }
 
     public partial class Ipv6

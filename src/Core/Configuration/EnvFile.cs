@@ -48,7 +48,7 @@ namespace Modm.Configuration
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        public void Set(string key, string? value)
+        public void Set(string key, string value)
         {
             if (!items.TryAdd(key, value))
             {
