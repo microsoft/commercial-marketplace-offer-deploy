@@ -2,9 +2,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Modm.Artifacts;
+using Modm.Engine;
 using Modm.Engine.Jenkins.Client;
 
-namespace Modm.Engine.Extensions
+namespace Modm.Extensions
 {
 	public static class IServiceCollectionExtensions
 	{
@@ -22,7 +23,7 @@ namespace Modm.Engine.Extensions
             services.AddSingleton<ApiTokenClient>();
             services.AddSingleton<JenkinsClientFactory>();
 
-            services.AddScoped<IJenkinsClient>(provider =>
+            services.AddSingleton<IJenkinsClient>(provider =>
             {
                 var factory = provider.GetService<JenkinsClientFactory>();
                 return factory == null ? throw new NullReferenceException("JenkinsClientFactory not configured") : factory.Create().GetAwaiter().GetResult();

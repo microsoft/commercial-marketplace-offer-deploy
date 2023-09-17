@@ -29,13 +29,11 @@
     <None Remove="Azure\Model\" />
     <None Remove="Engine\Jenkins\Model\" />
     <None Remove="Engine\Jenkins\Client\" />
-    <None Remove="Engine\Extensions\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Configuration\" />
     <Folder Include="Azure\Model\" />
     <Folder Include="Engine\Jenkins\Model\" />
     <Folder Include="Engine\Jenkins\Client\" />
-    <Folder Include="Engine\Extensions\" />
   </ItemGroup>
 </Project>
