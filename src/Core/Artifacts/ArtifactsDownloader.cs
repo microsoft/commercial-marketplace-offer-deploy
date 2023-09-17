@@ -49,7 +49,7 @@ namespace Modm.Artifacts
             }
 
             ZipFile.ExtractToDirectory(archiveFilePath, resolvedSavePath, overwriteFiles: true);
-            string manifestFilePath = Path.Combine(resolvedSavePath, "manifest.json");
+            string manifestFilePath = Path.Combine(resolvedSavePath, Constants.ManifestFileName);
 
 
             if (File.Exists(manifestFilePath))
@@ -65,7 +65,7 @@ namespace Modm.Artifacts
             }
             else
             {
-                throw new FileNotFoundException("manifest.json not found in the extracted files.");
+                throw new FileNotFoundException($"{Constants.ManifestFileName} not found in the extracted files.");
             }
         }
     }
