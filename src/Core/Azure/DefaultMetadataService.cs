@@ -43,7 +43,7 @@ namespace Modm.Azure
             return $"{dnsLabel}.{metadata.Compute.Location}.cloudapp.azure.com";
         }
 
-        private async Task<T?> GetAsync<T>(string uri, string apiVersion, string? otherParams = default)
+        private async Task<T> GetAsync<T>(string uri, string apiVersion, string otherParams = default)
         {
             var requestUri = uri + "?api-version=" + apiVersion;
             if (!string.IsNullOrEmpty(otherParams))
