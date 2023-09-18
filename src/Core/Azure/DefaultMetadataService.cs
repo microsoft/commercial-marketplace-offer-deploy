@@ -39,7 +39,7 @@ namespace Modm.Azure
         public async Task<string> GetFqdnAsync()
         {
             var metadata = await GetAsync();
-            var dnsLabel = ArmFunctions.UniqueString(metadata.Compute.ResourceId);
+            var dnsLabel = $"modm{ArmFunctions.UniqueString(metadata.Compute.ResourceId)}";
             return $"{dnsLabel}.{metadata.Compute.Location}.cloudapp.azure.com";
         }
 
