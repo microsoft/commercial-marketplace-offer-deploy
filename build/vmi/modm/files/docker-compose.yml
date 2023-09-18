@@ -30,7 +30,7 @@ services:
     depends_on:
       jenkins:
         condition: service_healthy
-        restart: true
+    restart: unless-stopped
   jenkins:
     image: jenkins:latest
     container_name: jenkins
