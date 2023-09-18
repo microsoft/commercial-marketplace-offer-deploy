@@ -25,16 +25,5 @@
           <externalDelete />
           <disableDeferredWipeout>false</disableDeferredWipeout>
       </hudson.plugins.ws__cleanup.PreBuildCleanup>
-      <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper plugin="credentials-binding@604.vb_64480b_c56ca_">
-          <bindings>
-              <com.microsoft.azure.util.AzureCredentialsBinding plugin="azure-credentials@254.v64da_8176c83a">
-                  <credentialsId>59aaa22a-e04e-4909-9cc8-2ac406e002d0</credentialsId>
-                  <subscriptionIdVariable>AZURE_SUBSCRIPTION_ID</subscriptionIdVariable>
-                  <clientIdVariable>AZURE_CLIENT_ID</clientIdVariable>
-                  <clientSecretVariable>AZURE_CLIENT_SECRET</clientSecretVariable>
-                  <tenantIdVariable>AZURE_TENANT_ID</tenantIdVariable>
-              </com.microsoft.azure.util.AzureCredentialsBinding>
-          </bindings>
-      </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
   </buildWrappers>
 </project>
