@@ -4,7 +4,7 @@ echo "Hello crom deploy.sh"
 
 cd $MODM_HOME/content
 
-if [ -z "$$AZURE_CLIENT_SECRET" ]; then
+if [ -z "$AZURE_CLIENT_SECRET" ]; then
   # Set Azure credentials from Jenkins bindings
   export ARM_CLIENT_ID=$AZURE_CLIENT_ID
   export ARM_CLIENT_SECRET=$AZURE_CLIENT_SECRET
