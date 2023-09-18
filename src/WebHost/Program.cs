@@ -14,8 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpClient();
 
-builder.Services.AddDeploymentEngine(builder.Configuration);
-builder.Services.AddSingleton<ArtifactsDownloader>();
+builder.Services.AddDeploymentEngine(builder.Configuration, builder.Environment);
 
 builder.Services.AddScoped<IValidator<CreateDeploymentRequest>, CreateDeploymentRequestValidator>();
 
@@ -31,7 +30,6 @@ builder.Services.AddAzureClients(clientBuilder =>
 builder.Services.AddMediatR(c =>
 {
     c.RegisterServicesFromAssemblyContaining<DeploymentsController>();
-    c.RegisterServicesFromAssemblyContaining<IDeploymentEngine>();
 });
 
 var app = builder.Build();

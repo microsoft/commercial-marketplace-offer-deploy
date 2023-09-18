@@ -29,12 +29,12 @@ workflow-support:848.v5a_383b_d14921
 jackson2-api:2.15.2-350.v0c2f3f8fc595
 display-url-api:2.3.9
 git-client:4.4.0
+credentials-binding:636.v55f1275c7b_27
 azure-credentials:293.vb_d506148f506
 mailer:463.vedf8358e006b_
 trilead-api:2.84.v72119de229b_7
 configuration-as-code:1670.v564dc8b_982d0
 ionicons-api:56.v1b_1c8c49374e
-credentials-binding:631.v861c06d062b_4
 azure-cli:0.9
 bouncycastle-api:2.29
 workflow-cps:3773.v505e0052522c
@@ -44,7 +44,7 @@ workflow-job:1326.ve643e00e9220
 credentials:1271.v54b_1c2c6388a_
 scm-api:676.v886669a_199a_a_
 okhttp-api:4.11.0-157.v6852a_a_fa_ec11
-azure-ad:396.v86ce29279947
+azure-ad:404.v99a_327a_b_8904
 jaxb:2.3.8-1
 apache-httpcomponents-client-4-api:4.5.14-208.v438351942757
 commons-text-api:1.10.0-68.v0d0b_c439292b_
