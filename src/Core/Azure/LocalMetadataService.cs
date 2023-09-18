@@ -1,13 +1,17 @@
 ﻿using System;
+using Microsoft.Extensions.Configuration;
 using Modm.Azure.Model;
 
 namespace Modm.Azure
 {
     public class LocalMetadataService : IMetadataService
 	{
-		public LocalMetadataService()
+        private readonly IConfiguration configuration;
+
+        public LocalMetadataService(IConfiguration configuration)
 		{
-		}
+            this.configuration = configuration;
+        }
 
         public Task<InstanceMetadata> GetAsync()
         {
@@ -28,7 +32,7 @@ namespace Modm.Azure
                     Priority = "",
                     Provider = "",
                     Publisher = "",
-                    ResourceGroupName = "",
+                    ResourceGroupName = configuration.GetSection("Azure").GetValue<string>("DefaultResourceGroupName"),
                     ResourceId = "",
                     Sku = "",
                     StorageProfile = new StorageProfile {

@@ -5,6 +5,7 @@ using JenkinsNET.Models;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Modm.Artifacts;
+using Modm.Azure;
 using Modm.Deployments;
 using Modm.Engine.Jenkins;
 using Modm.Engine.Jenkins.Client;
@@ -23,15 +24,21 @@ namespace Modm.Engine
 
         private readonly ArtifactsDownloader downloader;
         private readonly IJenkinsClient client;
+        private readonly DeploymentResourcesClient deploymentResourcesClient;
         private readonly IConfiguration configuration;
         private readonly IMediator mediator;
+        private readonly IMetadataService metadataService;
 
-        public JenkinsDeploymentEngine(ArtifactsDownloader downloader, IJenkinsClient client, IConfiguration configuration, IMediator mediator)
+        public JenkinsDeploymentEngine(ArtifactsDownloader downloader, IJenkinsClient client,
+            DeploymentResourcesClient deploymentResourcesClient, IConfiguration configuration,
+            IMediator mediator, IMetadataService metadataService)
         {
             this.downloader = downloader;
             this.client = client;
+            this.deploymentResourcesClient = deploymentResourcesClient;
             this.configuration = configuration;
             this.mediator = mediator;
+            this.metadataService = metadataService;
         }
 
         public async Task<EngineInfo> GetInfo()
@@ -50,7 +57,12 @@ namespace Modm.Engine
         public async Task<Deployment> Get()
         {
             // TODO: do more than read from disk. We have to get the current status of the job
-            return await Read();
+            var deployment = await Read();
+
+            var resourceGroupName = (await metadataService.GetAsync()).Compute.ResourceGroupName;
+            deployment.Resources = await deploymentResourcesClient.Get(resourceGroupName);
+
+            return deployment;
         }
 
 
