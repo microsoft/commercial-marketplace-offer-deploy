@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "MODM",
+  "name": "Azure Marketplace Offer Deployment Manager",
   "icons": [
     {
       "src": "favicon.ico",
