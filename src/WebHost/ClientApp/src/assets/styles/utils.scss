@@ -1,0 +1,41 @@
+@for $i from 0 through 50 {
+  .m-#{$i} {
+    margin: #{$i}px !important;
+  }
+  .m-l-#{$i} {
+    margin-left: #{$i}px !important;
+  }
+  .m-t-#{$i} {
+    margin-top: #{$i}px !important;
+  }
+  .m-b-#{$i} {
+    margin-bottom: #{$i}px !important;
+  }
+  .m-r-#{$i} {
+    margin-right: #{$i}px !important;
+  }
+  .p-#{$i} {
+    padding: #{$i}px !important;
+  }
+  .p-l-#{$i} {
+    padding-left: #{$i}px !important;
+  }
+  .p-t-#{$i} {
+    padding-top: #{$i}px !important;
+  }
+  .p-b-#{$i} {
+    padding-bottom: #{$i}px !important;
+  }
+  .p-r-#{$i} {
+    padding-right: #{$i}px !important;
+  }
+  $i: $i + 5;
+}
+.c-pointer {
+  cursor: pointer;
+}
+.danger {
+  &:hover {
+    color: red !important;
+  }
+}

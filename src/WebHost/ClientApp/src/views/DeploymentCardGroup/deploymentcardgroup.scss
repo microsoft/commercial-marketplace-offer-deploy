@@ -1,0 +1,20 @@
+@import "../../assets/styles/variables.scss";
+.overview {
+  margin-top: 30px;
+  .overview-container {
+    max-width: 100%;
+    // width: auto;
+    background: #ffffff 0% 0% no-repeat padding-box;
+    box-shadow: 0px 1px 3px #00000033;
+    border: 1px solid #00000000;
+    border-radius: 4px;
+    // padding: 43px;
+    display: inline-flex;
+    grid-template-columns: auto auto auto auto auto;
+     grid-column-gap: 20px;
+     column-gap: 70px;
+    .active-item {
+      box-shadow: -5px 11px 20px;
+    }
+  }
+}
