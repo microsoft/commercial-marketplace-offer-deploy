@@ -1,4 +1,4 @@
-
+version: "3.8"
 services:
   caddy:
     image: caddy:2-alpine
@@ -14,7 +14,7 @@ services:
     restart: unless-stopped
     depends_on:
       modm:
-        condition: service_healthy
+        condition: service_started
   modm:
     image: modm:latest
     container_name: modm
@@ -34,12 +34,6 @@ services:
       jenkins:
         condition: service_healthy
     restart: unless-stopped
-    healthcheck:
-      test: curl --fail http://localhost:5000 || exit 1
-      interval: 10s
-      retries: 5
-      start_period: 10s
-      timeout: 10s
   jenkins:
     image: jenkins:latest
     container_name: jenkins
@@ -56,7 +50,7 @@ services:
       - MODM_HOME=/var/jenkins_home/modm
     healthcheck:
       test: curl --fail http://localhost:8080/login || exit 1
-      interval: 10s
-      retries: 5
+      interval: 5s
+      retries: 3
       start_period: 30s
-      timeout: 10s
+      timeout: 15s
