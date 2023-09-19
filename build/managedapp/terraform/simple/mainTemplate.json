@@ -159,7 +159,7 @@
         {
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2022-04-01",
-            "name": "[guid(concat('Deploy-Permission',variables('virtualMachineName')))]",
+            "name": "[guid(concat('ownerAssignment-', resourceGroup().id))]",
             "dependsOn": [
               "[resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]"
             ],
