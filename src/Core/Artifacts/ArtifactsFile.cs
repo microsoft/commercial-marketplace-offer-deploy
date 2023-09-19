@@ -42,8 +42,15 @@ namespace Modm.Artifacts
 		{
             if (IsExtracted)
                 return;
-            
-            ZipFile.ExtractToDirectory(filePath, ExtractedTo, overwriteFiles: true);
+
+            var destinationDirectoryName = Path.GetDirectoryName(filePath);
+
+            if (Directory.Exists(destinationDirectoryName))
+            {
+                Directory.Delete(destinationDirectoryName);
+            }
+
+            ZipFile.ExtractToDirectory(filePath, destinationDirectoryName, overwriteFiles: true);
 
             IsExtracted = true;
         }
