@@ -13,7 +13,7 @@ env:
   # reference
   # conditional steps: https://www.meziantou.net/executing-github-actions-jobs-or-steps-only-when-specific-files-change.htm
 jobs:
-  build-vm-images:
+  build-service-catalog-app:
     runs-on: ubuntu-latest
     environment: dev  
     env:
