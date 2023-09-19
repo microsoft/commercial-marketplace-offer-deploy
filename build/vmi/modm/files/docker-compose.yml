@@ -11,10 +11,10 @@ services:
     environment:
       - SITE_ADDRESS=${SITE_ADDRESS}
       - ACME_ACCOUNT_EMAIL=${ACME_ACCOUNT_EMAIL}
-    restart: unless-stopped
     depends_on:
       modm:
         condition: service_started
+    restart: always
   modm:
     image: modm:latest
     container_name: modm
@@ -33,7 +33,7 @@ services:
     depends_on:
       jenkins:
         condition: service_healthy
-    restart: unless-stopped
+    restart: always
   jenkins:
     image: jenkins:latest
     container_name: jenkins
@@ -52,5 +52,6 @@ services:
       test: curl --fail http://localhost:8080/login || exit 1
       interval: 5s
       retries: 3
-      start_period: 30s
+      start_period: 90s
       timeout: 15s
+    restart: always
