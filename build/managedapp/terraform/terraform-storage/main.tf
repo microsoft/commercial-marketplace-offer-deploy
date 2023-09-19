@@ -2,9 +2,17 @@ provider "azurerm" {
   features {}
 }
 
-module "storage" {
-  source = "./child-terraform"
+variable "location" {
+  type = string
+}
 
-  location = "East US"
-  resource_group_name = "bobjacterraform"
+variable "resource_group_name" {
+  type = string
+}
+
+module "storage" {
+  source = "./storage"
+
+  location = var.location
+  resource_group_name = var.resource_group_name
 }
