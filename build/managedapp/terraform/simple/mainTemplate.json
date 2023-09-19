@@ -1,32 +1,11 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "location": {
             "type": "string"
         },
         "networkInterfaceName1": {
-            "type": "string"
-        },
-        "subnetName": {
-            "type": "string"
-        },
-        "virtualNetworkId": {
-            "type": "string"
-        },
-        "publicIpAddressName1": {
-            "type": "string"
-        },
-        "publicIpAddressType": {
-            "type": "string"
-        },
-        "publicIpAddressSku": {
-            "type": "string"
-        },
-        "pipDeleteOption": {
-            "type": "string"
-        },
-        "virtualMachineName": {
             "type": "string"
         },
         "virtualMachineComputerName1": {
@@ -71,21 +50,20 @@
         }
     },
     "variables": {
-        "vnetName": "[concat(parameters('virtualMachineName'), '-vnet')]",
-        "subnetName": "[concat(parameters('virtualMachineName'), '-subnet')]",
-        "vnetId": "[parameters('virtualNetworkId')]",
-        "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
-        "scriptDirectory": "/usr/local/modm/source/build/vm",
-        "scriptName": "scriptExtension.sh",
-        "vmFqdn": "[concat(parameters('virtualMachineName'), '.', parameters('location'), '.cloudapp.azure.com')]",
+        "virtualMachineName": "modm",
+        "vnetName": "[concat(variables('virtualMachineName'), '-vnet')]",
+        "subnetName": "default",
         "artifactsContainerLocation": "[substring(parameters('_artifactsLocation'), 0, lastIndexOf(parameters('_artifactsLocation'), '/'))]",
-        "resourceId": "[resourceId('Microsoft.Network/publicIpAddresses', parameters('publicIpAddressName1'))]",
-        "vmResourceId": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]",
+        "vmResourceId": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]",
         "dnsLabel": "[concat('modm', uniqueString(variables('vmResourceId')))]",
         "Owner": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
         "userDataObject": {
             "artifactsUri": "[concat(variables('artifactsContainerLocation'), '/', 'content.zip')]"
-        }
+        },
+        "publicIpAddressType": "Static",
+        "publicIpAddressSku": "Standard",
+        "publicIpAddressName": "[concat(variables('virtualMachineName'), '-publicip')]",
+        "nsgName": "[concat(variables('virtualMachineName'), '-nsg')]"
     },
     "resources": [
         {
@@ -114,9 +92,9 @@
             }
         },
         {
-            "name": "[concat(parameters('virtualMachineName'), '-nsg')]",
             "type": "Microsoft.Network/networkSecurityGroups",
             "apiVersion": "2021-08-01",
+            "name": "[variables('nsgName')]",
             "location": "[parameters('location')]",
             "properties": {
                 "securityRules": [
@@ -150,13 +128,13 @@
             }
         },
         {
-            "name": "[parameters('networkInterfaceName1')]",
             "type": "Microsoft.Network/networkInterfaces",
+            "name": "[parameters('networkInterfaceName1')]",
             "apiVersion": "2021-08-01",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[concat('Microsoft.Network/publicIpAddresses/', parameters('publicIpAddressName1'))]",
-                "[concat('Microsoft.Network/networkSecurityGroups/', concat(parameters('virtualMachineName'), '-nsg'))]" 
+                "[resourceId('Microsoft.Network/publicIpAddresses/', variables('publicIpAddressName'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]" 
             ],
             "properties": {
                 "ipConfigurations": [
@@ -168,35 +146,35 @@
                             },
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIpAddress": {
-                                "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', parameters('publicIpAddressName1'))]",
+                                "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', variables('publicIpAddressName'))]",
                                 "properties": {
                                     "dnsSettings": {
                                         "domainNameLabel": "[variables('dnsLabel')]"
                                     },
-                                    "deleteOption": "[parameters('pipDeleteOption')]"
+                                    "deleteOption": "Delete"
                                 }
                             }
                         }
                     }
                 ],
                 "networkSecurityGroup": {
-                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('virtualMachineName'), '-nsg'))]" 
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]" 
                 }
             }
         },
         {
-            "name": "[parameters('publicIpAddressName1')]",
             "type": "Microsoft.Network/publicIpAddresses",
             "apiVersion": "2020-08-01",
+            "name": "[variables('publicIpAddressName')]",
             "location": "[parameters('location')]",
             "properties": {
-                "publicIpAllocationMethod": "[parameters('publicIpAddressType')]",
+                "publicIpAllocationMethod": "[variables('publicIpAddressType')]",
                 "dnsSettings": {
                     "domainNameLabel": "[variables('dnsLabel')]"
                 }
             },
             "sku": {
-                "name": "[parameters('publicIpAddressSku')]"
+                "name": "[variables('publicIpAddressSku')]"
             },
             "zones": [
                 "[parameters('virtualMachine1Zone')]"

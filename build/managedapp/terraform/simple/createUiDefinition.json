@@ -63,12 +63,7 @@
         "outputs": {
             "location": "[location()]",
             "networkInterfaceName1": "[concat(steps('vmImage').tbVmImageName, '_z1')]",
-            "subnetName": "default",
-            "virtualNetworkId": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/modmvm/providers/Microsoft.Network/virtualNetworks/bobjacmodm-vnet",
-            "publicIpAddressName1": "[concat(steps('vmImage').tbVmImageName, '-ip')]",
-            "publicIpAddressType": "Static",
-            "publicIpAddressSku": "Standard",
-            "pipDeleteOption": "Delete",
+
             "virtualMachineName": "[steps('vmImage').tbVmImageName]",
             "virtualMachineComputerName1": "[steps('vmImage').tbVmImageName]",
             "osDiskType": "Premium_LRS",
