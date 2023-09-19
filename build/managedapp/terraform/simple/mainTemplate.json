@@ -112,6 +112,7 @@
             "apiVersion": "2021-08-01",
             "location": "[parameters('location')]",
             "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]",
                 "[resourceId('Microsoft.Network/publicIpAddresses/', variables('publicIpAddressName'))]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]" 
             ],
