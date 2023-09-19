@@ -42,8 +42,16 @@ namespace Modm.Artifacts
 		{
             if (IsExtracted)
                 return;
-            
-            ZipFile.ExtractToDirectory(filePath, ExtractedTo, overwriteFiles: true);
+
+            if (Directory.Exists(ExtractedTo))
+            {
+                Directory.Delete(ExtractedTo);
+            }
+
+            // because unzip will use the name of the zip file when extracting
+            // unzip directly to ./content
+            var destinationDirectoryName = Path.GetDirectoryName(filePath);
+            ZipFile.ExtractToDirectory(filePath, destinationDirectoryName, overwriteFiles: true);
 
             IsExtracted = true;
         }
