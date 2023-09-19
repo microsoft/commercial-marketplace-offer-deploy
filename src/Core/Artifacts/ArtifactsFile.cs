@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using System.Security.AccessControl;
 using Modm.Deployments;
 
 namespace Modm.Artifacts
@@ -52,8 +53,30 @@ namespace Modm.Artifacts
             // unzip directly to ./content
             var destinationDirectoryName = Path.GetDirectoryName(filePath);
             ZipFile.ExtractToDirectory(filePath, destinationDirectoryName, overwriteFiles: true);
+            ChangeDirectoryPermissions()
 
             IsExtracted = true;
+        }
+
+        /// <summary>
+        /// This method will change the permissions of the directory to allow everyone to have full control
+        /// </summary>
+        /// <param name="directoryPath"></param>
+        /// <exception cref="DirectoryNotFoundException"></exception>
+        private void ChangeDirectoryPermissions(string directoryPath)
+        {
+            DirectoryInfo directoryInfo = new DirectoryInfo(directoryPath);
+
+            if (directoryInfo.Exists)
+            {
+                DirectorySecurity directorySecurity = directoryInfo.GetAccessControl();
+                directorySecurity.AddAccessRule(new FileSystemAccessRule("Everyone", FileSystemRights.FullControl, AccessControlType.Allow));
+                directoryInfo.SetAccessControl(directorySecurity);
+            }
+            else
+            {
+                throw new DirectoryNotFoundException($"Directory '{directoryPath}' does not exist.");
+            }
         }
 
         /// <summary>
