@@ -24,7 +24,7 @@ namespace Modm.Artifacts
         /// <summary>
         /// Gets the extracted to directory path
         /// </summary>
-        public string ExtractedTo => Path.Combine(Path.GetDirectoryName(filePath), DestinationDirectoryName);
+        public string ExtractedTo => Path.Combine(new FileInfo(filePath).DirectoryName, DestinationDirectoryName);
 
         public bool IsExtracted { get; private set; }
 
