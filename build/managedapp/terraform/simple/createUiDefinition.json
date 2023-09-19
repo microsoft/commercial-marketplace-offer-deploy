@@ -8,23 +8,9 @@
         ],
         "steps": [
             {
-                "name": "vmImage",
-                "label": "VM Image",
+                "name": "setup",
+                "label": "App Setup",
                 "elements": [
-                    {
-                        "name": "tbVmImageName",
-                        "type": "Microsoft.Common.TextBox",
-                        "label": "VM Image Name",
-                        "placeholder": "",
-                        "defaultValue": "bobjacnginx2",
-                        "toolTip": "Use only allowed characters",
-                        "constraints": {
-                            "required": true,
-                            "regex": "^[a-z0-9A-Z]{1,30}$",
-                            "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-30 characters long."
-                        },
-                        "visible": true
-                    },
                     {
                         "name": "tbAdminUser",
                         "type": "Microsoft.Common.TextBox",
@@ -62,40 +48,8 @@
         ],
         "outputs": {
             "location": "[location()]",
-            "networkInterfaceName1": "[concat(steps('vmImage').tbVmImageName, '_z1')]",
-
-            "virtualMachineName": "[steps('vmImage').tbVmImageName]",
-            "virtualMachineComputerName1": "[steps('vmImage').tbVmImageName]",
-            "osDiskType": "Premium_LRS",
-            "osDiskDeleteOption": "Delete",
-            "dataDisks1": [
-                {
-                    "lun": 0,
-                    "createOption": "attach",
-                    "deleteOption": "Delete",
-                    "caching": "ReadOnly",
-                    "writeAcceleratorEnabled": false,
-                    "diskSizeGB": 1024,
-                    "name": "[concat(steps('vmImage').tbVmImageName, '_DataDisk_0')]"
-                }
-            ],
-            "dataDiskResources1": [
-                {
-                    "name": "[concat(steps('vmImage').tbVmImageName, '_DataDisk_0')]",
-                    "sku": "Premium_LRS",
-                    "properties": {
-                        "diskSizeGB": 1024,
-                        "creationData": {
-                            "createOption": "empty"
-                        }
-                    }
-                }
-            ],
-            "virtualMachineSize": "Standard_D2s_v3",
-            "nicDeleteOption": "Delete",
-            "adminUsername": "[steps('vmImage').tbAdminUser]",
-            "adminPassword": "[steps('vmImage').pbAdminPassword]",
-            "virtualMachine1Zone": "1",
+            "adminUsername": "[steps('setup').tbAdminUser]",
+            "adminPassword": "[steps('setup').pbAdminPassword]",
             "imageReference": "<IMAGE_REFERENCE>"
         }
     }

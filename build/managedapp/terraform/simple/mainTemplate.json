@@ -5,38 +5,11 @@
         "location": {
             "type": "string"
         },
-        "networkInterfaceName1": {
-            "type": "string"
-        },
-        "virtualMachineComputerName1": {
-            "type": "string"
-        },
-        "osDiskType": {
-            "type": "string"
-        },
-        "osDiskDeleteOption": {
-            "type": "string"
-        },
-        "dataDisks1": {
-            "type": "array"
-        },
-        "dataDiskResources1": {
-            "type": "array"
-        },
-        "virtualMachineSize": {
-            "type": "string"
-        },
-        "nicDeleteOption": {
-            "type": "string"
-        },
         "adminUsername": {
             "type": "string"
         },
         "adminPassword": {
             "type": "secureString"
-        },
-        "virtualMachine1Zone": {
-            "type": "string"
         },
         "imageReference": {
             "type": "string"
@@ -50,6 +23,7 @@
         }
     },
     "variables": {
+        "virtualMachineSize": "Standard_D2s_v3",
         "virtualMachineName": "modm",
         "vnetName": "[concat(variables('virtualMachineName'), '-vnet')]",
         "subnetName": "default",
@@ -57,13 +31,18 @@
         "vmResourceId": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]",
         "dnsLabel": "[concat('modm', uniqueString(variables('vmResourceId')))]",
         "Owner": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
-        "userDataObject": {
-            "artifactsUri": "[concat(variables('artifactsContainerLocation'), '/', 'content.zip')]"
-        },
+        "networkInterfaceName": "[concat(variables('virtualMachineName'), substring(uniqueString(resourceGroup().name), 0, 4))]",
         "publicIpAddressType": "Static",
         "publicIpAddressSku": "Standard",
         "publicIpAddressName": "[concat(variables('virtualMachineName'), '-publicip')]",
-        "nsgName": "[concat(variables('virtualMachineName'), '-nsg')]"
+        "nsgName": "[concat(variables('virtualMachineName'), '-nsg')]",
+        "userDataObject": {
+            "artifactsUri": "[concat(variables('artifactsContainerLocation'), '/', 'content.zip')]",
+            "parameters": {
+                "location": "[resourceGroup().location]",
+                "resource_group_name": "[resourceGroup().name]"
+            }
+        }
     },
     "resources": [
         {
@@ -129,7 +108,7 @@
         },
         {
             "type": "Microsoft.Network/networkInterfaces",
-            "name": "[parameters('networkInterfaceName1')]",
+            "name": "[variables('networkInterfaceName')]",
             "apiVersion": "2021-08-01",
             "location": "[parameters('location')]",
             "dependsOn": [
@@ -175,99 +154,63 @@
             },
             "sku": {
                 "name": "[variables('publicIpAddressSku')]"
-            },
-            "zones": [
-                "[parameters('virtualMachine1Zone')]"
-            ]
-        },
-        {
-            "name": "[parameters('dataDiskResources1')[copyIndex()].name]",
-            "type": "Microsoft.Compute/disks",
-            "apiVersion": "2022-03-02",
-            "location": "[parameters('location')]",
-            "properties": "[parameters('dataDiskResources1')[copyIndex()].properties]",
-            "sku": {
-                "name": "[parameters('dataDiskResources1')[copyIndex()].sku]"
-            },
-            "copy": {
-                "name": "managedDiskResources",
-                "count": "[length(parameters('dataDiskResources1'))]"
-            },
-            "zones": "[if(contains(parameters('dataDiskResources1')[copyIndex()].sku, '_ZRS'), json('null'), array(parameters('virtualMachine1Zone')))]"
+            }
         },
         {
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2022-04-01",
-            "name": "[guid(concat('Deploy-Permission',parameters('virtualMachineName')))]",
+            "name": "[guid(concat('Deploy-Permission',variables('virtualMachineName')))]",
             "dependsOn": [
-              "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]"
+              "[resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]"
             ],
             "properties": {
                 "principalType": "ServicePrincipal",
                 "roleDefinitionId": "[variables('Owner')]",
-                "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName')), '2022-03-01', 'Full').identity.principalId]"
+                "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), '2022-03-01', 'Full').identity.principalId]"
             }
         },
         {
-            "name": "[parameters('virtualMachineName')]",
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2022-03-01",
+            "name": "[variables('virtualMachineName')]",
             "location": "[parameters('location')]",
             "identity": {
                 "type": "SystemAssigned"
             },
             "dependsOn": [
                 "managedDiskResources",
-                "[concat('Microsoft.Network/networkInterfaces/', parameters('networkInterfaceName1'))]",
+                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]",
                 "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]"
             ],
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "[parameters('virtualMachineSize')]"
+                    "vmSize": "[variables('virtualMachineSize')]"
                 },
                 "userData": "[base64(string(variables('userDataObject')))]",
                 "storageProfile": {
                     "osDisk": {
                         "createOption": "fromImage",
                         "managedDisk": {
-                            "storageAccountType": "[parameters('osDiskType')]"
+                            "storageAccountType": "Premium_LRS"
                         },
-                        "deleteOption": "[parameters('osDiskDeleteOption')]"
+                        "deleteOption": "Delete"
                     },
                     "imageReference": {
                         "id": "[parameters('imageReference')]"
-                    },
-                    "copy": [
-                        {
-                            "name": "dataDisks",
-                            "count": "[length(parameters('dataDisks1'))]",
-                            "input": {
-                                "lun": "[parameters('dataDisks1')[copyIndex('dataDisks')].lun]",
-                                "createOption": "[parameters('dataDisks1')[copyIndex('dataDisks')].createOption]",
-                                "caching": "[parameters('dataDisks1')[copyIndex('dataDisks')].caching]",
-                                "diskSizeGB": "[parameters('dataDisks1')[copyIndex('dataDisks')].diskSizeGB]",
-                                "managedDisk": {
-                                    "id": "[resourceId('Microsoft.Compute/disks', parameters('dataDiskResources1')[copyIndex('dataDisks')].name)]",
-                                    "storageAccountType": "Standard_LRS"
-                                },
-                                "deleteOption": "[parameters('dataDisks1')[copyIndex('dataDisks')].deleteOption]",
-                                "writeAcceleratorEnabled": "[parameters('dataDisks1')[copyIndex('dataDisks')].writeAcceleratorEnabled]"
-                            }
-                        }
-                    ]
+                    }
                 },
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName1'))]",
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]",
                             "properties": {
-                                "deleteOption": "[parameters('nicDeleteOption')]"
+                                "deleteOption": "Delete"
                             }
                         }
                     ]
                 },
                 "osProfile": {
-                    "computerName": "[parameters('virtualMachineComputerName1')]",
+                    "computerName": "[variables('virtualMachineName')]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]",
                     "linuxConfiguration": {
@@ -281,10 +224,7 @@
                         "enabled": true
                     }
                 }
-            },
-            "zones": [
-                "[parameters('virtualMachine1Zone')]"
-            ]
+            }
         }
     ],
     "outputs": {

@@ -2,11 +2,16 @@
 
 # Check if all required parameters are provided
 if [ $# -ne 3 ]; then
-  echo "Usage: $0 <managed_app_version> <deployed_image_reference> <scenario_name>"
+  echo "Usage: $0 <managed_app_version> <deployed_image_reference> <scenario>"
   exit 1
 fi
 
 MANAGED_APP_VERSION="$1"
+
+# in the format of {deploymentType}/{name}
+SCENARIO="$3"
+echo "The scenario: $SCENARIO"
+echo ""
 
 echo "creating directories in $(pwd)"
 mkdir -p ./obj
@@ -15,7 +20,7 @@ mkdir -p ./bin
 #DEPLOYED_IMAGE_REFERENCE="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$GALLERY_RESOURCE_GROUP/providers/Microsoft.Compute/galleries/$GALLERY_NAME/images/$GALLERY_IMAGE_DEFINITION/versions/$GALLERY_IMAGE_VERSION"
 DEPLOYED_IMAGE_REFERENCE="$2"
 echo "The deployed image reference is: $DEPLOYED_IMAGE_REFERENCE"
-UIDEF_FILE="./build/managedapp/createUiDefinition.json"
+UIDEF_FILE="./build/managedapp/$SCENARIO/createUiDefinition.json"
 TEMP_FILE="./obj/createUiDefinition.json"
 
 
@@ -29,15 +34,13 @@ rm $TEMP_FILE 2> /dev/null
 sed "s|<IMAGE_REFERENCE>|$DEPLOYED_IMAGE_REFERENCE|g" "$UIDEF_FILE" > "$TEMP_FILE"
 
 rm ./obj/mainTemplate.json 2> /dev/null
-cp -f ./build/managedapp/mainTemplate.json ./obj/mainTemplate.json
+cp -f ./build/managedapp/$SCENARIO/mainTemplate.json ./obj/mainTemplate.json
 #cp -f ./build/managedapp/content.zip ./obj/content.zip
 
 echo "The ./obj directory contains: $(ls -la ./obj)"
 
-scenario_name="$3"
-echo "The scenario name is: $scenario_name"
 # Zip up the package for the managed application
-./build/managedapp/createAppZip.sh $scenario_name
+./build/managedapp/createAppZip.sh $SCENARIO
 
 # Create the Service Definition
 STORAGE_ACC_RESOURCE_GROUP=$MANAGED_APP_STORAGE_RG
@@ -47,5 +50,5 @@ STORAGE_CONTAINER_NAME="modm$BUILDNUM"
 MA_RESOURCE_GROUP=$STORAGE_ACC_RESOURCE_GROUP
 MA_DEFINITION_NAME="modm$MANAGED_APP_VERSION"
 
-./build/managedapp/createServiceDefinition.sh $STORAGE_ACC_RESOURCE_GROUP $STORAGE_ACC_NAME $STORAGE_CONTAINER_NAME $MA_RESOURCE_GROUP $MA_DEFINITION_NAME
+#./build/managedapp/createServiceDefinition.sh $STORAGE_ACC_RESOURCE_GROUP $STORAGE_ACC_NAME $STORAGE_CONTAINER_NAME $MA_RESOURCE_GROUP $MA_DEFINITION_NAME
 
