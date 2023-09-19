@@ -70,13 +70,17 @@ namespace Modm.Engine
         /// starts a deployment
         /// </summary>
         /// <returns></returns>
-        public async Task<StartDeploymentResult> Start(string artifactsUri)
+        public async Task<StartDeploymentResult> Start(string artifactsUri, IDictionary<string, object> parameters)
         {
             var deployment = await Get();
             var descriptor = await downloader.DownloadAsync(new ArtifactsUri(artifactsUri));
 
             if (deployment.IsStartable)
             {
+                // write the parameters to file so they can be picked up by the respective deployment handler in jenkins
+                var parametersFile = CreateParametersFile(descriptor);
+                await parametersFile.Write(parameters);
+
                 deployment.Source = artifactsUri;
                 deployment.Definition = descriptor.Definition;
 
@@ -101,6 +105,17 @@ namespace Modm.Engine
                 Id = deployment.Id,
                 Status = deployment.Status
             };
+        }
+
+        private IDeploymentParametersFile CreateParametersFile(ArtifactsDescriptor descriptor)
+        {
+            var factory = new ParametersFileFactory();
+
+            // wherever the main template is located, the params file should be next to it
+            var destinationDirectory = Path.GetDirectoryName(Path.Combine(descriptor.FolderPath, descriptor.Definition.MainTemplate));
+            var file = factory.Create(descriptor.Definition.DeploymentType, destinationDirectory);
+
+            return file;
         }
 
         private async Task Write(Deployment deployment)
