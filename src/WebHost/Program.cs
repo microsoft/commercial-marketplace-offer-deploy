@@ -20,6 +20,7 @@ builder.Services.AddScoped<IValidator<CreateDeploymentRequest>, CreateDeployment
 
 builder.Services.AddControllersWithViews();
 
+
 // azure configuration
 builder.Services.AddAzureClients(clientBuilder =>
 {
@@ -32,8 +33,19 @@ builder.Services.AddMediatR(c =>
     c.RegisterServicesFromAssemblyContaining<DeploymentsController>();
 });
 
-var app = builder.Build();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin", builder =>
+    {
+        builder.WithOrigins(
+            "https://localhost:44482",
+            "https://localhost:7258",
+            "https://localhost:5000",
+            "http://localhost:5000");
+    });
+});
 
+var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -43,6 +55,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseCors("AllowSpecificOrigin");
 
 app.MapControllerRoute(
     name: "default",

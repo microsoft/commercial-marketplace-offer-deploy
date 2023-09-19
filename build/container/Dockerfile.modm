@@ -27,6 +27,11 @@ RUN apt-get install nodejs -y
 COPY ["WebHost/ClientApp/package.json", "WebHost/ClientApp/"]
 COPY ["WebHost/ClientApp/vite.config.js", "WebHost/ClientApp/"]
 
+WORKDIR /src/WebHost/ClientApp
+RUN npm install
+
+WORKDIR /src
+
 COPY ["WebHost/WebHost.csproj", "WebHost/"]
 COPY ["Core/Core.csproj", "Core/"]
 

@@ -1,4 +1,6 @@
 export interface DeploymentResource {
-    resourceName: string;
-    resourceStatus: string;
+    name: string;
+    type: string;
+    state: string;
+    timestamp: string;
 }

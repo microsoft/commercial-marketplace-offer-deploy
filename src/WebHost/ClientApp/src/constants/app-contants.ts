@@ -1,5 +1,5 @@
 export const AppConstants = {
-    "baseUrl":location.host.indexOf("localhost")==-1? `https://${location.host}/api/`:"http://localhost:3000/api/",
+    "baseUrl":location.host.indexOf("localhost")==-1? `https://${location.host}`:"https://localhost:7258",
     "apiTimeOut": 650000,
     dateFormat : "MM/DD/YYYY HH:mm:ss"
 }

@@ -4,13 +4,13 @@ import { DeploymentConstants, ProvisionState } from "../constants/deployment.con
 import { DeploymentResource } from "models/deployment-models";
 
 export const isSuccess = (deploymentResource: DeploymentResource): boolean => {
-    return (deploymentResource.resourceStatus == ProvisionState.SUCCEEDED);
+    return (deploymentResource.state == ProvisionState.SUCCEEDED);
 }
 
 export const isFailure = (deploymentResource: DeploymentResource): boolean => {
-    return (deploymentResource.resourceStatus == ProvisionState.FAILED);
+    return (deploymentResource.state == ProvisionState.FAILED);
 }
 
 export const isRunning = (deploymentResource: DeploymentResource): boolean => {
-    return (deploymentResource.resourceStatus == ProvisionState.RUNNING);
+    return (deploymentResource.state == ProvisionState.RUNNING);
 };

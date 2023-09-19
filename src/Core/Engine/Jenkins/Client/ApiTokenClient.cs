@@ -97,7 +97,5 @@ namespace Modm.Engine.Jenkins.Client
         }
 
     }
-
-    
 }
 
