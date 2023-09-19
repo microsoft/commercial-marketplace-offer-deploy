@@ -1,6 +1,6 @@
 {
     "deploymentType": "terraform",
-    "mainTemplate": "template/main.tf",
+    "mainTemplate": "main.tf",
     "offer": {
         "name": "TerraformStorage",
         "description": "Simple Storage Acccount just for you!"
