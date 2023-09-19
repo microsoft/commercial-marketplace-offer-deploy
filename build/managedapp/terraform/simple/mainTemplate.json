@@ -178,7 +178,6 @@
                 "type": "SystemAssigned"
             },
             "dependsOn": [
-                "managedDiskResources",
                 "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]",
                 "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]"
             ],
