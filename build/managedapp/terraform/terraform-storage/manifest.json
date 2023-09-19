@@ -1,6 +1,0 @@
-{
-    "DeploymentType": "terraform",
-    "OfferName": "TerraformStorage",
-    "OfferDescription": "This is a simple storage offer",
-    "MainTemplate": "main.tf"
-}

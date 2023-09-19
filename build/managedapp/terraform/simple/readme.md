@@ -1,0 +1,1 @@
+This template is just of a simple storage account deployment. nothing else.

@@ -49,26 +49,14 @@ namespace Modm.Artifacts
                 await resultStream.FlushAsync();
             }
 
-            var extractToPath = Path.Combine(options.SavePath, "content");
-            ZipFile.ExtractToDirectory(archiveFilePath, extractToPath, overwriteFiles: true);
+            var artifactsFile = new ArtifactsFile(archiveFilePath);
+            var definition = await artifactsFile.ReadManifestFile();
 
-            var manifestFilePath = Path.Combine(extractToPath, Constants.ManifestFileName);
-
-            if (File.Exists(manifestFilePath))
+            return new ArtifactsDescriptor
             {
-                string manifestJson = File.ReadAllText(manifestFilePath);
-                var definition = JsonConvert.DeserializeObject<DeploymentDefinition>(manifestJson);
-
-                return new ArtifactsDescriptor
-                {
-                    FolderPath = extractToPath,
-                    Definition = definition
-                };
-            }
-            else
-            {
-                throw new FileNotFoundException($"{Constants.ManifestFileName} not found in the extracted files.");
-            }
+                FolderPath = artifactsFile.ExtractedTo,
+                Definition = definition
+            };
         }
     }
 }
