@@ -25,9 +25,9 @@ namespace Modm.Artifacts
 		{
             var filePath = Path.Combine(directoryPath, FileName);
 
-            if (File.Exists(filePath))
+            if (!File.Exists(filePath))
             {
-                throw new FileNotFoundException($"{FileName} not found in '{filePath} files.");
+                throw new FileNotFoundException($"{FileName} not found in '{filePath}'.");
             }
 
             var json = await File.ReadAllTextAsync(filePath);
