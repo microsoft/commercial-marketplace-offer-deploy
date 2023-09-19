@@ -6,6 +6,7 @@ using Modm.Deployments;
 using Modm.ServiceHost.Notifications;
 using Modm.Azure.Model;
 using Modm.Azure;
+using System.Security.Policy;
 
 namespace Modm.ServiceHost
 {
@@ -60,13 +61,19 @@ namespace Modm.ServiceHost
 
             if (userData.IsValid())
             {
-                var response = await StartDeployment(userData.ArtifactsUri);
+                var request = new CreateDeploymentRequest
+                {
+                    ArtifactsUri = userData.ArtifactsUri,
+                    Parameters = userData.Properties ?? new Dictionary<string, object>()
+                };
+
+                var response = await StartDeployment(request);
             }
         }
 
-        private async Task<CreateDeploymentResponse> StartDeployment(string uri)
+        private async Task<CreateDeploymentResponse> StartDeployment(CreateDeploymentRequest request)
         {
-            var request = new CreateDeploymentRequest { ArtifactsUri = uri };
+          
             HttpResponseMessage response = await this.httpClient.PostAsJsonAsync(this.options?.DeploymentsUrl, request);
             response.EnsureSuccessStatusCode();
 

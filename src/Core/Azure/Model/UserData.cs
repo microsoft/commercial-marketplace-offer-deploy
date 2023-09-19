@@ -6,6 +6,7 @@ namespace Modm.Azure.Model
     public class UserData
     {
         public required string ArtifactsUri { get; set; }
+        public IDictionary<string, object> Properties { get; set; }
 
         public string ToBase64Json()
         {
