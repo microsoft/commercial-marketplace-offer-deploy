@@ -27,7 +27,7 @@ namespace WebHost.Deployments
         }
 
         /// <summary>
-        /// Starts a deployment by submitting to the deployment engine
+        /// Creates a deployment by submitting to the deployment engine
         /// </summary>
         [HttpPost]
         public async Task<IResult> PostAsync([FromBody] CreateDeploymentRequest request)
@@ -39,7 +39,7 @@ namespace WebHost.Deployments
                 return Results.ValidationProblem(validationResult.ToDictionary());
             }
 
-            var result = await engine.Start(request.ArtifactsUri);
+            var result = await engine.Start(request.ArtifactsUri, request.Parameters);
 
             return Results.Created("/deployments", new CreateDeploymentResponse
             {

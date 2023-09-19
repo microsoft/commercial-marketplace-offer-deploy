@@ -1,6 +1,9 @@
 ﻿using System;
 namespace Modm.Deployments
 {
+    /// <summary>
+    /// Represents the contents of the manifest file contained in the artifacts archive file, e.g. the content.zip inside the app.zip
+    /// </summary>
 	public class DeploymentDefinition
 	{
         /// <summary>

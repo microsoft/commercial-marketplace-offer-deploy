@@ -12,6 +12,8 @@ namespace WebHost.Deployments
 			{
 				return Uri.TryCreate(value, new UriCreationOptions { DangerousDisablePathAndQueryCanonicalization = false }, out var result);
 			});
+
+			RuleFor(x => x.Parameters).NotNull();
 		}
 	}
 }
