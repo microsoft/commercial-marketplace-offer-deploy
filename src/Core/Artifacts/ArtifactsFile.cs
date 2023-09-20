@@ -1,4 +1,9 @@
-﻿using System.IO.Compression;
+﻿using System;
+using System.IO.Compression;
+using System.Security.AccessControl;
+using Mono.Unix;
+using Mono.Unix.Native;
+
 using Modm.Deployments;
 
 namespace Modm.Artifacts
@@ -51,9 +56,24 @@ namespace Modm.Artifacts
             // because unzip will use the name of the zip file when extracting
             // unzip directly to ./content
             var destinationDirectoryName = Path.GetDirectoryName(filePath);
+            
             ZipFile.ExtractToDirectory(filePath, destinationDirectoryName, overwriteFiles: true);
+            ChangeDirectoryPermissions(destinationDirectoryName);
 
             IsExtracted = true;
+        }
+
+        /// <summary>
+        /// This method will change the permissions of the directory to allow everyone to have full control
+        /// </summary>
+        /// <param name="directoryPath"></param>
+        /// <exception cref="DirectoryNotFoundException"></exception>
+        public void ChangeDirectoryPermissions(string directoryPath)
+        {
+            if (Syscall.chmod(directoryPath, FilePermissions.S_IRWXU | FilePermissions.S_IRWXG | FilePermissions.S_IRWXO) != 0)
+            {
+                throw new SystemException($"Failed to change permissions for directory '{directoryPath}'.");
+            }
         }
 
         /// <summary>
