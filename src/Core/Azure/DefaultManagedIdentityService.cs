@@ -20,11 +20,11 @@ namespace Modm.Azure
         /// </summary>
         static readonly WebProxy ByPassWebProxy = new();
 
-        private readonly HttpClient client;
+        private readonly System.Net.Http.HttpClient client;
         private readonly IMetadataService metadataService;
         private readonly ILogger<DefaultManagedIdentityService> logger;
 
-        public DefaultManagedIdentityService(HttpClient client, IMetadataService metadataService, ILogger<DefaultManagedIdentityService> logger)
+        public DefaultManagedIdentityService(System.Net.Http.HttpClient client, IMetadataService metadataService, ILogger<DefaultManagedIdentityService> logger)
         {
             this.client = client;
             this.metadataService = metadataService;
@@ -95,7 +95,7 @@ namespace Modm.Azure
 
         private static HttpRequestMessage CreateRequest()
         {
-            HttpClient.DefaultProxy = ByPassWebProxy;
+            System.Net.Http.HttpClient.DefaultProxy = ByPassWebProxy;
             var request = new HttpRequestMessage(HttpMethod.Get, TokenEndpoint);
             request.Headers.Add("Metadata", "True");
 

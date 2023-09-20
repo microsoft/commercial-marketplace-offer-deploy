@@ -17,9 +17,9 @@ namespace Modm.Azure
         const string DefaultServiceEndpoint = "http://169.254.169.254";
         const string InstanceEndpoint = DefaultServiceEndpoint + "/metadata/instance";
 
-        private readonly HttpClient client;
+        private readonly System.Net.Http.HttpClient client;
 
-        public DefaultMetadataService(HttpClient client)
+        public DefaultMetadataService(System.Net.Http.HttpClient client)
         {
             this.client = client;
         }
@@ -52,7 +52,7 @@ namespace Modm.Azure
             }
 
             // IMDS requires bypassing proxies.
-            HttpClient.DefaultProxy = new WebProxy();
+            System.Net.Http.HttpClient.DefaultProxy = new WebProxy();
             var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
             request.Headers.Add("Metadata", "True");
 

@@ -19,9 +19,9 @@ namespace Modm.ServiceHost
         ArtifactsWatcherOptions? options;
         bool controllerStarted;
 
-        private readonly HttpClient httpClient;
+        private readonly System.Net.Http.HttpClient httpClient;
 
-        public ArtifactsWatcherService(IMetadataService metadataService, HttpClient httpClient, ILogger<ArtifactsWatcherService> logger)
+        public ArtifactsWatcherService(IMetadataService metadataService, System.Net.Http.HttpClient httpClient, ILogger<ArtifactsWatcherService> logger)
 		{
             this.metadataService = metadataService;
             this.httpClient = httpClient;
@@ -42,7 +42,7 @@ namespace Modm.ServiceHost
             while (true)
             {
                 var instanceData = await this.metadataService.GetAsync();
-                base64UserData = instanceData.Compute.UserData;
+                base64UserData = instanceData?.Compute.UserData;
                 if (!string.IsNullOrEmpty(base64UserData))
                 {
                     break;

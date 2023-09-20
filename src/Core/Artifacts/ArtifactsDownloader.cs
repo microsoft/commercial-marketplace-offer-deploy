@@ -14,10 +14,10 @@ namespace Modm.Artifacts
 {
 	public class ArtifactsDownloader
 	{
-        private readonly HttpClient client;
+        private readonly System.Net.Http.HttpClient client;
         private readonly IConfiguration configuration;
 
-        public ArtifactsDownloader(HttpClient client, IConfiguration configuration)
+        public ArtifactsDownloader(System.Net.Http.HttpClient client, IConfiguration configuration)
 		{
             this.client = client;
             this.configuration = configuration;

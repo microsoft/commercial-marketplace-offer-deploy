@@ -2,6 +2,8 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
+using Polly;
+using Polly.Retry;
 using Modm.Engine.Jenkins.Model;
 using Modm.Extensions;
 
@@ -11,10 +13,11 @@ namespace Modm.Engine.Jenkins.Client
 	{
         const string JenkinsVersionHeaderName = "X-Jenkins";
 
-        private readonly HttpClient client;
+        private readonly System.Net.Http.HttpClient client;
         private readonly JenkinsOptions options;
+        //private readonly AsyncRetryPolicy retryPolicy;
 
-        public JenkinsClient(HttpClient client, JenkinsOptions options)
+        public JenkinsClient(System.Net.Http.HttpClient client, JenkinsOptions options)
         {
             this.client = client;
             this.options = options;
@@ -55,7 +58,7 @@ namespace Modm.Engine.Jenkins.Client
             {
                 handler(response);
             }
-            
+
             return await Deserialize<T>(response);
         }
 
