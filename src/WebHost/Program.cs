@@ -1,3 +1,4 @@
+
 using Modm;
 using Modm.Artifacts;
 using WebHost.Deployments;
@@ -11,10 +12,19 @@ using Modm.Engine.Notifications;
 using Modm.Engine;
 using Modm.HttpClient;
 using Polly.Retry;
+using Polly;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddHttpClient();
+builder.Services.AddHttpClient(Constants.MODM)
+    .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(new[]
+    {
+        TimeSpan.FromSeconds(1),
+        TimeSpan.FromSeconds(5),
+        TimeSpan.FromSeconds(10)
+    }));
+
 
 builder.Services.AddDeploymentEngine(builder.Configuration, builder.Environment);
 
@@ -46,11 +56,11 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddSingleton<AsyncRetryPolicy>(sp =>
-{
-    var logger = sp.GetRequiredService<ILogger<RetryPolicyProvider>>();
-    return RetryPolicyProvider.GetRetryPolicy(logger);
-});
+//builder.Services.AddSingleton<AsyncRetryPolicy>(sp =>
+//{
+//    var logger = sp.GetRequiredService<ILogger<RetryPolicyProvider>>();
+//    return RetryPolicyProvider.GetRetryPolicy(logger);
+//});
 
 var app = builder.Build();
 

@@ -15,13 +15,12 @@ namespace Modm.Engine.Jenkins.Client
 
         private readonly System.Net.Http.HttpClient client;
         private readonly JenkinsOptions options;
-        private readonly AsyncRetryPolicy retryPolicy;
+        //private readonly AsyncRetryPolicy retryPolicy;
 
-        public JenkinsClient(System.Net.Http.HttpClient client, JenkinsOptions options, AsyncRetryPolicy retryPolicy)
+        public JenkinsClient(System.Net.Http.HttpClient client, JenkinsOptions options)
         {
             this.client = client;
             this.options = options;
-            this.retryPolicy = retryPolicy;
         }
 
         public async Task<JenkinsInfo> GetInfo()
@@ -52,18 +51,15 @@ namespace Modm.Engine.Jenkins.Client
         /// <returns></returns>
         private async Task<T> Send<T>(HttpMethod method, string relativeUri, Action<HttpResponseMessage> handler = null)
         {
-            return await retryPolicy.ExecuteAsync(async () =>
+            using var request = GetHttpRequest(method, relativeUri);
+            var response = await client.SendAsync(request);
+
+            if (handler != null)
             {
-                using var request = GetHttpRequest(method, relativeUri);
-                var response = await client.SendAsync(request);
+                handler(response);
+            }
 
-                if (handler != null)
-                {
-                    handler(response);
-                }
-
-                return await Deserialize<T>(response);
-            });
+            return await Deserialize<T>(response);
         }
 
         private HttpRequestMessage GetHttpRequest(HttpMethod method, string relativeUri)

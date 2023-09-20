@@ -4,7 +4,7 @@ using Modm.HttpClient;
 using Modm.ServiceHost;
 using Polly;
 using Polly.Retry;
-
+using Microsoft.Extensions.DependencyInjection;
 
 
 IHost host = Host.CreateDefaultBuilder(args)
@@ -26,16 +26,22 @@ IHost host = Host.CreateDefaultBuilder(args)
             services.AddSingleton<IManagedIdentityService, DefaultManagedIdentityService>();
         }
 
-        services.AddHttpClient();
+        services.AddHttpClient(Constants.MODM)
+        .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(new[]
+        {
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(5),
+            TimeSpan.FromSeconds(10)
+        }));
 
         services.AddSingletonHostedService<ControllerService>();
         services.AddSingletonHostedService<ArtifactsWatcherService>();
         services.AddSingletonHostedService<ManagedIdentityMonitorService>();
-        services.AddSingleton<AsyncRetryPolicy>(sp =>
-        {
-            var logger = sp.GetRequiredService<ILogger<RetryPolicyProvider>>();
-            return RetryPolicyProvider.GetRetryPolicy(logger);
-        });
+        //services.AddSingleton<AsyncRetryPolicy>(sp =>
+        //{
+        //    var logger = sp.GetRequiredService<ILogger<RetryPolicyProvider>>();
+        //    return RetryPolicyProvider.GetRetryPolicy(logger);
+        //});
 
         services.AddMediatR(c => c.RegisterServicesFromAssemblyContaining<ControllerService>());
     })
