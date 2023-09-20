@@ -42,7 +42,7 @@ namespace Modm.ServiceHost
             while (true)
             {
                 var instanceData = await this.metadataService.GetAsync();
-                base64UserData = instanceData.Compute.UserData;
+                base64UserData = instanceData?.Compute.UserData;
                 if (!string.IsNullOrEmpty(base64UserData))
                 {
                     break;
