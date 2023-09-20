@@ -56,12 +56,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-//builder.Services.AddSingleton<AsyncRetryPolicy>(sp =>
-//{
-//    var logger = sp.GetRequiredService<ILogger<RetryPolicyProvider>>();
-//    return RetryPolicyProvider.GetRetryPolicy(logger);
-//});
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
