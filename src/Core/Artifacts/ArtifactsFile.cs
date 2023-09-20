@@ -2,8 +2,6 @@
 using System.IO.Compression;
 using System.Security.AccessControl;
 using System.Runtime.InteropServices;
-using Mono.Unix;
-using Mono.Unix.Native;
 
 using Modm.Deployments;
 
@@ -71,8 +69,12 @@ namespace Modm.Artifacts
         /// <exception cref="DirectoryNotFoundException"></exception>
         public void ChangeDirectoryPermissions(string directoryPath)
         {
-            var unixFileInfo = new UnixFileInfo(directoryPath);
-            unixFileInfo.FileAccessPermissions = FileAccessPermissions.AllPermissions;
+            DirectoryInfo directoryInfo = new DirectoryInfo(directoryPath);
+            var ownerPermissions = UnixFileMode.UserExecute | UnixFileMode.UserRead | UnixFileMode.UserWrite;
+            var groupPermissions = UnixFileMode.GroupExecute | UnixFileMode.GroupRead | UnixFileMode.GroupWrite;
+            var othersPermissions = UnixFileMode.OtherExecute | UnixFileMode.OtherRead | UnixFileMode.OtherWrite;
+            var allPermissions = ownerPermissions | groupPermissions | othersPermissions;
+            directoryInfo.UnixFileMode = allPermissions;
         }
 
         /// <summary>
