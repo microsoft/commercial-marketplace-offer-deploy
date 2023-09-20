@@ -48,7 +48,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddSingleton<AsyncRetryPolicy>(sp =>
 {
-    var logger = sp.GetRequiredService<ILogger<Program>>();
+    var logger = sp.GetRequiredService<ILogger<RetryPolicyProvider>>();
     return RetryPolicyProvider.GetRetryPolicy(logger);
 });
 

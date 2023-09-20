@@ -1,5 +1,6 @@
 using Modm.Azure;
 using Modm.Extensions;
+using Modm.HttpClient;
 using Modm.ServiceHost;
 using Polly;
 using Polly.Retry;
@@ -30,6 +31,11 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddSingletonHostedService<ControllerService>();
         services.AddSingletonHostedService<ArtifactsWatcherService>();
         services.AddSingletonHostedService<ManagedIdentityMonitorService>();
+        services.AddSingleton<AsyncRetryPolicy>(sp =>
+        {
+            var logger = sp.GetRequiredService<ILogger<RetryPolicyProvider>>();
+            return RetryPolicyProvider.GetRetryPolicy(logger);
+        });
 
         services.AddMediatR(c => c.RegisterServicesFromAssemblyContaining<ControllerService>());
     })
