@@ -45,7 +45,7 @@ namespace Modm.Artifacts
 
             if (Directory.Exists(ExtractedTo))
             {
-                Directory.Delete(ExtractedTo);
+                Directory.Delete(ExtractedTo, recursive: true);
             }
 
             // because unzip will use the name of the zip file when extracting
@@ -54,21 +54,6 @@ namespace Modm.Artifacts
             ZipFile.ExtractToDirectory(filePath, destinationDirectoryName, overwriteFiles: true);
 
             IsExtracted = true;
-        }
-
-        /// <summary>
-        /// Reads and returns the manifest file as the deployment definition
-        /// </summary>
-        /// <returns></returns>
-        public async Task<DeploymentDefinition> ReadManifestFile()
-        {
-            if (!IsExtracted)
-            {
-                Extract();
-            }
-
-            var definition = await ManifestFile.Read(ExtractedTo);
-            return definition;
         }
     }
 }

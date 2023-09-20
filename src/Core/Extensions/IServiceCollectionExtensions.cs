@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Modm.Artifacts;
@@ -7,10 +6,11 @@ using Modm.Azure;
 using Modm.Deployments;
 using Modm.Engine;
 using Modm.Engine.Jenkins.Client;
+using Modm.Engine.Pipelines;
 
 namespace Modm.Extensions
 {
-	public static class IServiceCollectionExtensions
+    public static class IServiceCollectionExtensions
 	{
 
         /// <summary>
@@ -36,6 +36,7 @@ namespace Modm.Extensions
 
             services.AddSingleton<ApiTokenClient>();
             services.AddSingleton<JenkinsClientFactory>();
+            services.AddScoped<DeploymentFile>();
 
             services.AddSingleton<IJenkinsClient>(provider =>
             {
@@ -54,6 +55,7 @@ namespace Modm.Extensions
             services.AddMediatR(c =>
             {
                 c.RegisterServicesFromAssemblyContaining<IDeploymentEngine>();
+                c.AddStartDeploymentRequestPipeline();
             });
 
             return services;

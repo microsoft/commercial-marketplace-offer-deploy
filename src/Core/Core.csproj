@@ -12,6 +12,7 @@
     <PackageReference Include="Azure.ResourceManager" Version="1.7.0" />
     <PackageReference Include="Azure.ResourceManager.Resources" Version="1.6.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.17.0" />
+    <PackageReference Include="FluentValidation" Version="11.7.1" />
     <PackageReference Include="jenkinsnet" Version="1.0.4" />
     <PackageReference Include="MediatR" Version="12.1.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
@@ -32,6 +33,8 @@
     <None Remove="Engine\Jenkins\Model\" />
     <None Remove="Engine\Jenkins\Client\" />
     <None Remove="Engine\Notifications\" />
+    <None Remove="Engine\Behaviors\" />
+    <None Remove="Engine\Pipelines\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Configuration\" />
@@ -39,5 +42,7 @@
     <Folder Include="Engine\Jenkins\Model\" />
     <Folder Include="Engine\Jenkins\Client\" />
     <Folder Include="Engine\Notifications\" />
+    <Folder Include="Engine\Behaviors\" />
+    <Folder Include="Engine\Pipelines\" />
   </ItemGroup>
 </Project>

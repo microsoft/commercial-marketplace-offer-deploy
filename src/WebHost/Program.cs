@@ -1,14 +1,10 @@
-using Modm;
-using Modm.Artifacts;
 using WebHost.Deployments;
 using FluentValidation;
 using Microsoft.Extensions.Azure;
 using Azure.Identity;
 using Modm.Extensions;
 using Modm.Deployments;
-using MediatR;
-using Modm.Engine.Notifications;
-using Modm.Engine;
+using Modm.Engine.Behaviors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,11 +12,7 @@ builder.Services.AddHttpClient();
 
 builder.Services.AddDeploymentEngine(builder.Configuration, builder.Environment);
 
-builder.Services.AddScoped<IValidator<CreateDeploymentRequest>, CreateDeploymentRequestValidator>();
-
 builder.Services.AddControllersWithViews();
-
-// azure configuration
 builder.Services.AddAzureClients(clientBuilder =>
 {
     clientBuilder.AddArmClient(builder.Configuration.GetSection("Azure"));
@@ -30,7 +22,11 @@ builder.Services.AddAzureClients(clientBuilder =>
 builder.Services.AddMediatR(c =>
 {
     c.RegisterServicesFromAssemblyContaining<DeploymentsController>();
+    c.AddOpenBehavior(typeof(LoggingBehaviour<,>));
+    c.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
+
+builder.Services.AddValidatorsFromAssemblyContaining<StartDeploymentRequestValidator>();
 
 builder.Services.AddCors(options =>
 {

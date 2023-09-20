@@ -1,18 +1,10 @@
-﻿using System;
-using System.IO.Compression;
-using System.Net.Http;
-using Azure.Identity;
-using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using Modm.Deployments;
 using Modm.Extensions;
-using Newtonsoft.Json;
 
 namespace Modm.Artifacts
 {
-	public class ArtifactsDownloader
+    public class ArtifactsDownloader
 	{
         private readonly HttpClient client;
         private readonly IConfiguration configuration;
@@ -28,7 +20,7 @@ namespace Modm.Artifacts
         /// </summary>
         /// <param name="uri"></param>
         /// <returns></returns>
-        public Task<ArtifactsDescriptor> DownloadAsync(ArtifactsUri uri)
+        public Task<ArtifactsFile> DownloadAsync(ArtifactsUri uri)
         {
             return DownloadAsync(uri, new ArtifactsDownloadOptions
             {
@@ -36,27 +28,25 @@ namespace Modm.Artifacts
             });
         }
 
-        public async Task<ArtifactsDescriptor> DownloadAsync(ArtifactsUri uri, ArtifactsDownloadOptions options)
+        public async Task<ArtifactsFile> DownloadAsync(ArtifactsUri uri, ArtifactsDownloadOptions options)
         {
             var httpResult = await client.GetAsync(uri);
-            
-            var archiveFilePath = Path.GetFullPath(Path.Combine(options.SavePath, uri.FileName));
+            var artifactsFile = await DownloadFile(httpResult, options);
 
-            using (var resultStream = await httpResult.Content.ReadAsStreamAsync())
-            using (var fileStream = File.Create(archiveFilePath))
-            {
-                await resultStream.CopyToAsync(fileStream);
-                await resultStream.FlushAsync();
-            }
+            return artifactsFile;
+        }
 
-            var artifactsFile = new ArtifactsFile(archiveFilePath);
-            var definition = await artifactsFile.ReadManifestFile();
+        private static async Task<ArtifactsFile> DownloadFile(HttpResponseMessage httpResult, ArtifactsDownloadOptions options)
+        {
+            var archiveFilePath = Path.GetFullPath(Path.Combine(options.SavePath, ArtifactsFile.FileName));
 
-            return new ArtifactsDescriptor
-            {
-                FolderPath = artifactsFile.ExtractedTo,
-                Definition = definition
-            };
+            using var resultStream = await httpResult.Content.ReadAsStreamAsync();
+            using var fileStream = File.Create(archiveFilePath);
+
+            await resultStream.CopyToAsync(fileStream);
+            await resultStream.FlushAsync();
+
+            return new ArtifactsFile(archiveFilePath);
         }
     }
 }

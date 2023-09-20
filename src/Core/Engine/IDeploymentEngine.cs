@@ -4,7 +4,7 @@ namespace Modm.Engine
 {
     public interface IDeploymentEngine
     {
-        Task<StartDeploymentResult> Start(string artifactsUri, IDictionary<string, object> parameters);
+        Task<StartDeploymentResult> Start(StartDeploymentRequest request);
 
         /// <summary>
         /// Gets the status of the engine

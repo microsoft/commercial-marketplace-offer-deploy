@@ -21,7 +21,7 @@ namespace Modm.Artifacts
         /// <param name="directoryPath">The directory where the manifest file is located</param>
         /// <returns></returns>
         /// <exception cref="FileNotFoundException"></exception>
-        public static async Task<DeploymentDefinition> Read(string directoryPath)
+        public static async Task<ManifestInfo> Read(string directoryPath)
 		{
             var filePath = Path.Combine(directoryPath, FileName);
 
@@ -31,13 +31,14 @@ namespace Modm.Artifacts
             }
 
             var json = await File.ReadAllTextAsync(filePath);
-            var definition = JsonSerializer.Deserialize<DeploymentDefinition>(json, new JsonSerializerOptions
+            var manifest = JsonSerializer.Deserialize<ManifestInfo>(json, new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
 
-            return definition;
+            return manifest;
         }
-	}
+
+    }
 }
 
