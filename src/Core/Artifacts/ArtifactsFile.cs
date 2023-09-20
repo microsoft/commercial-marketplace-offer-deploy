@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO.Compression;
 using System.Security.AccessControl;
+using System.Runtime.InteropServices;
 using Mono.Unix;
 using Mono.Unix.Native;
 
@@ -70,10 +71,8 @@ namespace Modm.Artifacts
         /// <exception cref="DirectoryNotFoundException"></exception>
         public void ChangeDirectoryPermissions(string directoryPath)
         {
-            if (Syscall.chmod(directoryPath, FilePermissions.S_IRWXU | FilePermissions.S_IRWXG | FilePermissions.S_IRWXO) != 0)
-            {
-                throw new SystemException($"Failed to change permissions for directory '{directoryPath}'.");
-            }
+            var unixFileInfo = new UnixFileInfo(directoryPath);
+            unixFileInfo.FileAccessPermissions = FileAccessPermissions.AllPermissions;
         }
 
         /// <summary>
