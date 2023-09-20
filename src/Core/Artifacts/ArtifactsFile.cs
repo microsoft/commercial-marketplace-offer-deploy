@@ -1,5 +1,9 @@
-﻿using System.IO.Compression;
+﻿using System;
+using System.IO.Compression;
 using System.Security.AccessControl;
+using Mono.Unix;
+using Mono.Unix.Native;
+
 using Modm.Deployments;
 
 namespace Modm.Artifacts
@@ -52,8 +56,9 @@ namespace Modm.Artifacts
             // because unzip will use the name of the zip file when extracting
             // unzip directly to ./content
             var destinationDirectoryName = Path.GetDirectoryName(filePath);
+            
             ZipFile.ExtractToDirectory(filePath, destinationDirectoryName, overwriteFiles: true);
-            ChangeDirectoryPermissions()
+            ChangeDirectoryPermissions(destinationDirectoryName);
 
             IsExtracted = true;
         }
@@ -63,19 +68,11 @@ namespace Modm.Artifacts
         /// </summary>
         /// <param name="directoryPath"></param>
         /// <exception cref="DirectoryNotFoundException"></exception>
-        private void ChangeDirectoryPermissions(string directoryPath)
+        public void ChangeDirectoryPermissions(string directoryPath)
         {
-            DirectoryInfo directoryInfo = new DirectoryInfo(directoryPath);
-
-            if (directoryInfo.Exists)
+            if (Syscall.chmod(directoryPath, FilePermissions.S_IRWXU | FilePermissions.S_IRWXG | FilePermissions.S_IRWXO) != 0)
             {
-                DirectorySecurity directorySecurity = directoryInfo.GetAccessControl();
-                directorySecurity.AddAccessRule(new FileSystemAccessRule("Everyone", FileSystemRights.FullControl, AccessControlType.Allow));
-                directoryInfo.SetAccessControl(directorySecurity);
-            }
-            else
-            {
-                throw new DirectoryNotFoundException($"Directory '{directoryPath}' does not exist.");
+                throw new SystemException($"Failed to change permissions for directory '{directoryPath}'.");
             }
         }
 
