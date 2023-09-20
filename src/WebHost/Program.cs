@@ -9,6 +9,8 @@ using Modm.Deployments;
 using MediatR;
 using Modm.Engine.Notifications;
 using Modm.Engine;
+using Modm.HttpClient;
+using Polly.Retry;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +44,12 @@ builder.Services.AddCors(options =>
             "https://localhost:5000",
             "http://localhost:5000");
     });
+});
+
+builder.Services.AddSingleton<AsyncRetryPolicy>(sp =>
+{
+    var logger = sp.GetRequiredService<ILogger<Program>>();
+    return RetryPolicyProvider.GetRetryPolicy(logger);
 });
 
 var app = builder.Build();

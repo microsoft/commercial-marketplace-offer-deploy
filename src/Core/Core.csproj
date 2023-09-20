@@ -19,6 +19,7 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.0.0" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
+    <PackageReference Include="Polly" Version="7.2.4" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,6 +34,7 @@
     <None Remove="Engine\Jenkins\Model\" />
     <None Remove="Engine\Jenkins\Client\" />
     <None Remove="Engine\Notifications\" />
+    <None Remove="HttpClient\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Configuration\" />
@@ -40,5 +42,6 @@
     <Folder Include="Engine\Jenkins\Model\" />
     <Folder Include="Engine\Jenkins\Client\" />
     <Folder Include="Engine\Notifications\" />
+    <Folder Include="HttpClient\" />
   </ItemGroup>
 </Project>

@@ -2,6 +2,8 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
+using Polly;
+using Polly.Retry;
 using Modm.Engine.Jenkins.Model;
 using Modm.Extensions;
 
@@ -11,13 +13,15 @@ namespace Modm.Engine.Jenkins.Client
 	{
         const string JenkinsVersionHeaderName = "X-Jenkins";
 
-        private readonly HttpClient client;
+        private readonly System.Net.Http.HttpClient client;
         private readonly JenkinsOptions options;
+        private readonly AsyncRetryPolicy retryPolicy;
 
-        public JenkinsClient(HttpClient client, JenkinsOptions options)
+        public JenkinsClient(System.Net.Http.HttpClient client, JenkinsOptions options, AsyncRetryPolicy retryPolicy)
         {
             this.client = client;
             this.options = options;
+            this.retryPolicy = retryPolicy;
         }
 
         public async Task<JenkinsInfo> GetInfo()
@@ -48,15 +52,18 @@ namespace Modm.Engine.Jenkins.Client
         /// <returns></returns>
         private async Task<T> Send<T>(HttpMethod method, string relativeUri, Action<HttpResponseMessage> handler = null)
         {
-            using var request = GetHttpRequest(method, relativeUri);
-            var response = await client.SendAsync(request);
-
-            if (handler != null)
+            return await retryPolicy.ExecuteAsync(async () =>
             {
-                handler(response);
-            }
-            
-            return await Deserialize<T>(response);
+                using var request = GetHttpRequest(method, relativeUri);
+                var response = await client.SendAsync(request);
+
+                if (handler != null)
+                {
+                    handler(response);
+                }
+
+                return await Deserialize<T>(response);
+            });
         }
 
         private HttpRequestMessage GetHttpRequest(HttpMethod method, string relativeUri)
