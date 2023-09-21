@@ -1,11 +1,8 @@
 using Modm.Azure;
 using Modm.Extensions;
-using Modm.HttpClient;
 using Modm.ServiceHost;
 using Polly;
-using Polly.Retry;
-using Microsoft.Extensions.DependencyInjection;
-
+using Modm.Http;
 
 IHost host = Host.CreateDefaultBuilder(args)
     .UseSystemd()
@@ -15,6 +12,8 @@ IHost host = Host.CreateDefaultBuilder(args)
     })
     .ConfigureServices((context, services) =>
     {
+        services.AddDefaultHttpClient();
+
         if (context.HostingEnvironment.IsDevelopment())
         {
             services.AddSingleton<IMetadataService, LocalMetadataService>();
@@ -25,14 +24,6 @@ IHost host = Host.CreateDefaultBuilder(args)
             services.AddSingleton<IMetadataService, DefaultMetadataService>();
             services.AddSingleton<IManagedIdentityService, DefaultManagedIdentityService>();
         }
-
-        services.AddHttpClient(Constants.MODM)
-        .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(new[]
-        {
-            TimeSpan.FromSeconds(1),
-            TimeSpan.FromSeconds(5),
-            TimeSpan.FromSeconds(10)
-        }));
 
         services.AddSingletonHostedService<ControllerService>();
         services.AddSingletonHostedService<ArtifactsWatcherService>();

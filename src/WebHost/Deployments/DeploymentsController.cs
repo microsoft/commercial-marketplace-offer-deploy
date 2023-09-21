@@ -9,10 +9,10 @@ namespace WebHost.Deployments
     [ApiController]
     public class DeploymentsController : ControllerBase
     {
-        private readonly IValidator<CreateDeploymentRequest> validator;
+        private readonly IValidator<StartDeploymentRequest> validator;
         private readonly IDeploymentEngine engine;
 
-        public DeploymentsController(IValidator<CreateDeploymentRequest> validator, IDeploymentEngine engine)
+        public DeploymentsController(IValidator<StartDeploymentRequest> validator, IDeploymentEngine engine)
         {
             this.validator = validator;
             this.engine = engine;
@@ -30,22 +30,17 @@ namespace WebHost.Deployments
         /// Creates a deployment by submitting to the deployment engine
         /// </summary>
         [HttpPost]
-        public async Task<IResult> PostAsync([FromBody] CreateDeploymentRequest request)
+        public async Task<IResult> PostAsync([FromBody] StartDeploymentRequest request, CancellationToken cancellationToken)
         {
-            var validationResult = await validator.ValidateAsync(request);
+            var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
             if (!validationResult.IsValid)
             {
                 return Results.ValidationProblem(validationResult.ToDictionary());
             }
 
-            var result = await engine.Start(request.ArtifactsUri, request.Parameters);
-
-            return Results.Created("/deployments", new CreateDeploymentResponse
-            {
-                Id = result.Id,
-                Status = result.Status
-            });
+            var result = await engine.Start(request, cancellationToken);
+            return Results.Created("/deployments", result);
         }
     }
 }

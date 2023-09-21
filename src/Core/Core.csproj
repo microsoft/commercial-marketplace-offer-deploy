@@ -12,6 +12,7 @@
     <PackageReference Include="Azure.ResourceManager" Version="1.7.0" />
     <PackageReference Include="Azure.ResourceManager.Resources" Version="1.6.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.17.0" />
+    <PackageReference Include="FluentValidation" Version="11.7.1" />
     <PackageReference Include="jenkinsnet" Version="1.0.4" />
     <PackageReference Include="MediatR" Version="12.1.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
@@ -26,6 +27,9 @@
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
     <_Parameter1>Modm.Tests</_Parameter1>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>DynamicProxyGenAssembly2</_Parameter1>
+      </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>
@@ -34,7 +38,9 @@
     <None Remove="Engine\Jenkins\Model\" />
     <None Remove="Engine\Jenkins\Client\" />
     <None Remove="Engine\Notifications\" />
-    <None Remove="HttpClient\" />
+    <None Remove="Engine\Behaviors\" />
+    <None Remove="Engine\Pipelines\" />
+    <None Remove="Http\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Configuration\" />
@@ -42,6 +48,8 @@
     <Folder Include="Engine\Jenkins\Model\" />
     <Folder Include="Engine\Jenkins\Client\" />
     <Folder Include="Engine\Notifications\" />
-    <Folder Include="HttpClient\" />
+    <Folder Include="Engine\Behaviors\" />
+    <Folder Include="Engine\Pipelines\" />
+    <Folder Include="Http\" />
   </ItemGroup>
 </Project>

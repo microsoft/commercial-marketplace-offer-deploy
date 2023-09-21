@@ -1,12 +1,10 @@
-﻿using System;
-using FluentValidation;
-using Modm.Deployments;
+﻿using FluentValidation;
 
-namespace WebHost.Deployments
+namespace Modm.Deployments
 {
-	public class CreateDeploymentRequestValidator : AbstractValidator<CreateDeploymentRequest>
+    public class StartDeploymentRequestValidator : AbstractValidator<StartDeploymentRequest>
     {
-		public CreateDeploymentRequestValidator()
+		public StartDeploymentRequestValidator()
 		{
 			RuleFor(x => x.ArtifactsUri).NotEmpty().NotNull().Must(value =>
 			{

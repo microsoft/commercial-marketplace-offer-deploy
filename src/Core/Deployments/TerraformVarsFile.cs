@@ -8,6 +8,11 @@ namespace Modm.Deployments
     /// </summary>
 	class TerraformParametersFile : IDeploymentParametersFile
 	{
+        public string FullPath
+        {
+            get {  return Path.Combine(destinationDirectory, FileName); }
+        }
+
         /// <summary>
         /// This file name will automatically be picked up by terraform <see cref="https://developer.hashicorp.com/terraform/language/values/variables"/>
         /// </summary>
@@ -21,10 +26,8 @@ namespace Modm.Deployments
 
         public async Task Write(IDictionary<string, object> parameters)
         {
-            var filePath = Path.Combine(destinationDirectory, FileName);
             var json = JsonSerializer.Serialize(parameters);
-
-            await File.WriteAllTextAsync(filePath, json);
+            await File.WriteAllTextAsync(FullPath, json);
         }
     }
 }
