@@ -162,14 +162,20 @@ namespace Modm.Engine.Pipelines
                 deployment.Status = DeploymentStatus.Undefined;
             }
 
-            var build = await client.Builds.GetAsync<JenkinsBuildBase>(deployment.Definition.DeploymentType, deployment.Id.ToString());
-
-            if (build == null)
+            try
             {
-                deployment.Status = DeploymentStatus.Undefined;
+                var build = await client.Builds.GetAsync<JenkinsBuildBase>(deployment.Definition.DeploymentType, deployment.Id.ToString());
+                if (build == null)
+                {
+                    deployment.Status = DeploymentStatus.Undefined;
+                    return;
+                }
+                deployment.Status = build.Result.ToLower();
             }
-
-            deployment.Status = build.Result.ToLower();
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Failed to get build information");
+            }
         }
     }
 

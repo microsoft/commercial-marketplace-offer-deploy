@@ -52,7 +52,7 @@ namespace Modm.Extensions
 
             services.AddSingleton<ApiTokenClient>();
             services.AddSingleton<JenkinsClientFactory>();
-            services.AddScoped<DeploymentFile>();
+            services.AddSingleton<DeploymentFile>();
 
             services.AddSingleton<IJenkinsClient>(provider =>
             {

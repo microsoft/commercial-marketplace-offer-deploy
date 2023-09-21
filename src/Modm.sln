@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceHost", "ServiceHost\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "..\test\Tests\Tests.csproj", "{4254C84A-D522-4856-9B2C-099867D0422E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0BABB010-FA6E-4B15-88D9-74594C099DEC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,5 +41,10 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {086A6A52-1F5D-4748-AFD2-17C490A71A00}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E0864B32-DE76-4B52-AC18-DBF115E4CF90} = {0BABB010-FA6E-4B15-88D9-74594C099DEC}
+		{217803C8-C582-4D95-A69E-0EE4F358D4F7} = {0BABB010-FA6E-4B15-88D9-74594C099DEC}
+		{DBA5549F-1321-49F0-89E2-330B543725A1} = {0BABB010-FA6E-4B15-88D9-74594C099DEC}
 	EndGlobalSection
 EndGlobal

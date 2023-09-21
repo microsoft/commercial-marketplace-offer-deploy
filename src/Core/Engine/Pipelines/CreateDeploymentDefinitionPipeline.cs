@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using MediatR.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Modm.Artifacts;
 using Modm.Deployments;
@@ -12,15 +13,17 @@ namespace Modm.Engine.Pipelines
     {
         public static MediatRServiceConfiguration AddCreateDeploymentDefinitionPipeline(this MediatRServiceConfiguration c)
         {
-            c.RegisterServicesFromAssemblyContaining<CreateDeploymentDefinitionHandler>();
-
             // start with behaviors order from bottom --> up
             // since we're going to handle the build up of the definition
-
+   
             c.AddBehavior<CreateParametersFile>();
             c.AddBehavior<ReadManifestFile>();
             c.AddBehavior<DownloadAndExtractArtifactsFile>();
+            c.AddRequestPostProcessor<WriteToDisk>();
 
+            c.RegisterServicesFromAssemblyContaining<CreateDeploymentDefinitionHandler>();
+
+   
             return c;
         }
     }
@@ -42,7 +45,7 @@ namespace Modm.Engine.Pipelines
         }
     }
 
-
+    // #1
     /// <summary>
     /// first in the pipeline for creating a definition file
     /// </summary>
@@ -100,6 +103,24 @@ namespace Modm.Engine.Pipelines
 
             return definition;
         }
+    }
+
+    // #4
+    public class WriteToDisk : IRequestPostProcessor<CreateDeploymentDefinition, DeploymentDefinition>
+    {
+        private readonly DeploymentFile file;
+
+        public WriteToDisk(DeploymentFile file) => this.file = file;
+
+        public async Task Process(
+            CreateDeploymentDefinition request,
+            DeploymentDefinition response,
+            CancellationToken cancellationToken) => await file.Write(new Deployment
+            {
+                Definition = response,
+                Id = 0,
+                Status = DeploymentStatus.Undefined
+            }, cancellationToken);
     }
 
     #endregion
