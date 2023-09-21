@@ -91,13 +91,7 @@ namespace Modm.Extensions
         /// <returns></returns>
         public static IServiceCollection AddDefaultHttpClient(this IServiceCollection services)
         {
-            services.AddHttpClient(HttpConstants.DefaultHttpClientName)
-                .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(new[]
-                {
-                            TimeSpan.FromSeconds(1),
-                            TimeSpan.FromSeconds(5),
-                            TimeSpan.FromSeconds(10)
-                }));
+            services.AddHttpClient();
             return services;
         }
     }

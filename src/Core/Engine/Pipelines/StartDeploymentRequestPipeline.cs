@@ -118,6 +118,8 @@ namespace Modm.Engine.Pipelines
                 logger.LogError(ex, "Failure to submit to jenkins");
             }
 
+            result.Deployment = deployment;
+
             return result;
         }
 
@@ -159,7 +161,9 @@ namespace Modm.Engine.Pipelines
         {
             if (deployment.Id == 0 || deployment.Status == DeploymentStatus.Undefined)
             {
+                logger.LogDebug("Deployment id is 0 or status is undefined.");
                 deployment.Status = DeploymentStatus.Undefined;
+                return;
             }
 
             try
@@ -189,7 +193,10 @@ namespace Modm.Engine.Pipelines
         public async Task Process(
             StartDeploymentRequest request,
             StartDeploymentResult response,
-            CancellationToken cancellationToken) => await file.Write(response.Deployment, cancellationToken);
+            CancellationToken cancellationToken)
+        {
+            await file.Write(response.Deployment, cancellationToken);
+        }
     }
 
     #endregion

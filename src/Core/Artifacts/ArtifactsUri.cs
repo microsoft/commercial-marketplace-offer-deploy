@@ -50,14 +50,6 @@ namespace Modm.Artifacts
         /// </summary>
         public readonly string Value { get; }
 
-        public readonly string FileName
-        {
-            get
-            {
-                return Path.GetFileName(uri.LocalPath);
-            }
-        }
-
         public static implicit operator string(ArtifactsUri uri) => uri.Value;
         public static explicit operator ArtifactsUri(string v) => new(v);
 

@@ -9,10 +9,10 @@ namespace Modm.Engine.Jenkins.Client
         private readonly HttpClient httpClient;
         private readonly ApiTokenClient apiTokenClient;
 
-        public JenkinsClientFactory(IHttpClientFactory clientFactory, ApiTokenClient apiTokenClient, IOptions<JenkinsOptions> options)
+        public JenkinsClientFactory(HttpClient client, ApiTokenClient apiTokenClient, IOptions<JenkinsOptions> options)
 		{
             this.options = options.Value;
-            this.httpClient = clientFactory.CreateClient(HttpConstants.DefaultHttpClientName);
+            this.httpClient = client;
             this.apiTokenClient = apiTokenClient;
         }
 

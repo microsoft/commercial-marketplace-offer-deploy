@@ -12,6 +12,11 @@ builder.Services.AddDefaultHttpClient();
 
 builder.Services.AddDeploymentEngine(builder.Configuration, builder.Environment);
 
+builder.Services.Configure<HostOptions>(hostOptions =>
+{
+    hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+});
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddAzureClients(clientBuilder =>
 {
