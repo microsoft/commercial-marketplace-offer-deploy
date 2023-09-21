@@ -1,7 +1,7 @@
-﻿using MediatR;
-using Modm.Azure;
+﻿using Modm.Azure;
 using Modm.Deployments;
 using Modm.Engine.Jenkins.Client;
+using Modm.Engine.Pipelines;
 
 namespace Modm.Engine
 {
@@ -10,16 +10,16 @@ namespace Modm.Engine
         private readonly DeploymentFile file;
         private readonly IJenkinsClient client;
         private readonly DeploymentResourcesClient deploymentResourcesClient;
-        private readonly IMediator mediator;
+        private readonly IPipeline<StartDeploymentRequest, StartDeploymentResult> pipeline;
         private readonly IMetadataService metadataService;
 
         public JenkinsDeploymentEngine(DeploymentFile file, IJenkinsClient client,DeploymentResourcesClient deploymentResourcesClient,
-            IMediator mediator, IMetadataService metadataService)
+            IPipeline<StartDeploymentRequest, StartDeploymentResult> pipeline, IMetadataService metadataService)
         {
             this.file = file;
             this.client = client;
             this.deploymentResourcesClient = deploymentResourcesClient;
-            this.mediator = mediator;
+            this.pipeline = pipeline;
             this.metadataService = metadataService;
         }
 
@@ -54,9 +54,9 @@ namespace Modm.Engine
         /// <remarks>
         /// see <see cref="Engine.Pipelines.StartDeploymentRequestPipeline"/> for implementation of full processing
         /// </remarks>
-        public async Task<StartDeploymentResult> Start(StartDeploymentRequest request)
+        public async Task<StartDeploymentResult> Start(StartDeploymentRequest request, CancellationToken cancellationToken)
         {
-            var result = await mediator.Send<StartDeploymentResult>(request);
+            var result = await pipeline.Execute(request, cancellationToken);
             return result;
         }
     }

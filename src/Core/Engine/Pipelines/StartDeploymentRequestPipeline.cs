@@ -3,14 +3,23 @@ using MediatR;
 using MediatR.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Modm.Artifacts;
 using Modm.Deployments;
 using Modm.Engine.Jenkins.Client;
 using Modm.Engine.Notifications;
 
 namespace Modm.Engine.Pipelines
 {
-    public static class StartDeploymentRequestPipeline
+    /// <summary>
+    /// The pipeline
+    /// </summary>
+    public class StartDeploymentRequestPipeline : Pipeline<StartDeploymentRequest, StartDeploymentResult>
+    {
+        public StartDeploymentRequestPipeline(IMediator mediator) : base(mediator)
+        {
+        }
+    }
+
+    public static class StartDeploymentRequestPipelineRegistration
     {
         public static MediatRServiceConfiguration AddStartDeploymentRequestPipeline(this MediatRServiceConfiguration c)
         {
@@ -18,6 +27,7 @@ namespace Modm.Engine.Pipelines
             c.AddCreateDeploymentDefinitionPipeline();
 
             c.RegisterServicesFromAssemblyContaining<StartDeploymentRequestHandler>();
+
             c.AddRequestPostProcessor<WriteDeploymentToDisk>();
             c.AddBehavior<SubmitDeployment>();
             c.AddBehavior<ReadDeploymentFromDisk>();

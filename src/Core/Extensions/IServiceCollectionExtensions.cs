@@ -14,6 +14,20 @@ namespace Modm.Extensions
 {
     public static class IServiceCollectionExtensions
 	{
+        /// <summary>
+        /// Adds a pipeline that's implemented using <see cref="MediatR"/>
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddPipeline<TService, TImplementation>(this IServiceCollection services, Action<MediatRServiceConfiguration> configure)
+            where TService : class
+            where TImplementation : class, TService
+        {
+            services.AddSingleton<TService, TImplementation>();
+            services.AddMediatR(configure);
+            return services;
+        }
 
         /// <summary>
         /// Add the MODM deployment engine to the service collection
@@ -57,8 +71,9 @@ namespace Modm.Extensions
             services.AddMediatR(c =>
             {
                 c.RegisterServicesFromAssemblyContaining<IDeploymentEngine>();
-                c.AddStartDeploymentRequestPipeline();
             });
+
+            services.AddPipeline<IPipeline<StartDeploymentRequest, StartDeploymentResult>, StartDeploymentRequestPipeline>(c => c.AddStartDeploymentRequestPipeline());
 
             return services;
 		}

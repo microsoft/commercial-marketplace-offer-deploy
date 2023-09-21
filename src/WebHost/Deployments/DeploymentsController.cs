@@ -30,16 +30,16 @@ namespace WebHost.Deployments
         /// Creates a deployment by submitting to the deployment engine
         /// </summary>
         [HttpPost]
-        public async Task<IResult> PostAsync([FromBody] StartDeploymentRequest request)
+        public async Task<IResult> PostAsync([FromBody] StartDeploymentRequest request, CancellationToken cancellationToken)
         {
-            var validationResult = await validator.ValidateAsync(request);
+            var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
             if (!validationResult.IsValid)
             {
                 return Results.ValidationProblem(validationResult.ToDictionary());
             }
 
-            var result = await engine.Start(request);
+            var result = await engine.Start(request, cancellationToken);
             return Results.Created("/deployments", result);
         }
     }

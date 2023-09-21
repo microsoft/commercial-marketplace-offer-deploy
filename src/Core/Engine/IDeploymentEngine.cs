@@ -4,7 +4,7 @@ namespace Modm.Engine
 {
     public interface IDeploymentEngine
     {
-        Task<StartDeploymentResult> Start(StartDeploymentRequest request);
+        Task<StartDeploymentResult> Start(StartDeploymentRequest request, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the status of the engine

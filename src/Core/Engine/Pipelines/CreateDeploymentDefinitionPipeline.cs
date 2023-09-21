@@ -13,6 +13,7 @@ namespace Modm.Engine.Pipelines
         public static MediatRServiceConfiguration AddCreateDeploymentDefinitionPipeline(this MediatRServiceConfiguration c)
         {
             c.RegisterServicesFromAssemblyContaining<CreateDeploymentDefinitionHandler>();
+
             // start with behaviors order from bottom --> up
             // since we're going to handle the build up of the definition
 
@@ -29,9 +30,9 @@ namespace Modm.Engine.Pipelines
     /// <summary>
     /// Starts the pipeline of the definition creation
     /// </summary>
-    public class CreateDeploymentDefinitionHandler : IRequestHandler<StartDeploymentRequest, DeploymentDefinition>
+    public class CreateDeploymentDefinitionHandler : IRequestHandler<CreateDeploymentDefinition, DeploymentDefinition>
     {
-        public Task<DeploymentDefinition> Handle(StartDeploymentRequest request, CancellationToken cancellationToken)
+        public Task<DeploymentDefinition> Handle(CreateDeploymentDefinition request, CancellationToken cancellationToken)
         {
             return Task.FromResult(new DeploymentDefinition
             {
@@ -45,7 +46,7 @@ namespace Modm.Engine.Pipelines
     /// <summary>
     /// first in the pipeline for creating a definition file
     /// </summary>
-	public class DownloadAndExtractArtifactsFile : IPipelineBehavior<StartDeploymentRequest, DeploymentDefinition>
+	public class DownloadAndExtractArtifactsFile : IPipelineBehavior<CreateDeploymentDefinition, DeploymentDefinition>
     {
         private readonly ArtifactsDownloader downloader;
 
@@ -54,7 +55,7 @@ namespace Modm.Engine.Pipelines
             this.downloader = downloader;
         }
 
-        public async Task<DeploymentDefinition> Handle(StartDeploymentRequest request, RequestHandlerDelegate<DeploymentDefinition> next, CancellationToken cancellationToken)
+        public async Task<DeploymentDefinition> Handle(CreateDeploymentDefinition request, RequestHandlerDelegate<DeploymentDefinition> next, CancellationToken cancellationToken)
         {
             var definition = await next();
 
@@ -68,9 +69,9 @@ namespace Modm.Engine.Pipelines
     }
 
     // #2
-    public class ReadManifestFile : IPipelineBehavior<StartDeploymentRequest, DeploymentDefinition>
+    public class ReadManifestFile : IPipelineBehavior<CreateDeploymentDefinition, DeploymentDefinition>
     {
-        public async Task<DeploymentDefinition> Handle(StartDeploymentRequest request, RequestHandlerDelegate<DeploymentDefinition> next, CancellationToken cancellationToken)
+        public async Task<DeploymentDefinition> Handle(CreateDeploymentDefinition request, RequestHandlerDelegate<DeploymentDefinition> next, CancellationToken cancellationToken)
         {
             var definition = await next();
 
@@ -84,14 +85,14 @@ namespace Modm.Engine.Pipelines
     }
 
     // #3
-    public class CreateParametersFile : IPipelineBehavior<DeploymentDefinition, DeploymentDefinition>
+    public class CreateParametersFile : IPipelineBehavior<CreateDeploymentDefinition, DeploymentDefinition>
     {
-        public async Task<DeploymentDefinition> Handle(DeploymentDefinition request, RequestHandlerDelegate<DeploymentDefinition> next, CancellationToken cancellationToken)
+        public async Task<DeploymentDefinition> Handle(CreateDeploymentDefinition request, RequestHandlerDelegate<DeploymentDefinition> next, CancellationToken cancellationToken)
         {
             var definition = await next();
 
             var factory = new ParametersFileFactory();
-            var file = factory.Create(request.DeploymentType, request.GetMainTemplateDirectoryName());
+            var file = factory.Create(definition.DeploymentType, definition.GetMainTemplateDirectoryName());
 
             // the file must always have at least an empty object
             await file.Write(request.Parameters ?? new Dictionary<string, object>());
@@ -103,4 +104,3 @@ namespace Modm.Engine.Pipelines
 
     #endregion
 }
-

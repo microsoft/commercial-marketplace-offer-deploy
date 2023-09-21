@@ -52,7 +52,7 @@ namespace Modm.Artifacts
             var destinationDirectoryName = Path.GetDirectoryName(filePath);
             
             ZipFile.ExtractToDirectory(filePath, destinationDirectoryName, overwriteFiles: true);
-            ChangeDirectoryPermissions(destinationDirectoryName);
+            ChangeDirectoryPermissions(ExtractedTo);
 
             IsExtracted = true;
         }
