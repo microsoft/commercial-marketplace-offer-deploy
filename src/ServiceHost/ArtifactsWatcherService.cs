@@ -1,13 +1,9 @@
-﻿using System;
-using System.Text;
-using Newtonsoft.Json;
-using MediatR;
+﻿using MediatR;
 using Modm.Deployments;
 using Modm.ServiceHost.Notifications;
 using Modm.Azure.Model;
 using Modm.Azure;
-using System.Security.Policy;
-using System.Threading;
+using System.Text.Json;
 
 namespace Modm.ServiceHost
 {
@@ -82,6 +78,7 @@ namespace Modm.ServiceHost
                     };
 
                     var response = await StartDeployment(request);
+                    logger.LogInformation("Received deployment result: {response}", response);
                 }
             }
             catch (Exception ex)
@@ -96,15 +93,14 @@ namespace Modm.ServiceHost
 
         }
 
-        private async Task<StartDeploymentResult> StartDeployment(StartDeploymentRequest request)
+        private async Task<StartDeploymentResult?> StartDeployment(StartDeploymentRequest request)
         {
-          
             HttpResponseMessage response = await this.httpClient.PostAsJsonAsync(this.options?.DeploymentsUrl, request);
             response.EnsureSuccessStatusCode();
 
             this.logger.LogInformation("HTTP Post to [{url}] successful.", this.options?.DeploymentsUrl);
 
-            return await response.Content.ReadAsAsync<StartDeploymentResult>();
+            return await JsonSerializer.DeserializeAsync<StartDeploymentResult>(response.Content.ReadAsStream());
         }
 
         async Task WaitForControllerToStart(CancellationToken cancellationToken)
