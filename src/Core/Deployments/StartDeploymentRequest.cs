@@ -17,7 +17,7 @@ namespace Modm.Deployments
 		/// The deployment parameters
 		/// </summary>
 		[JsonConverter(typeof(DictionaryStringObjectJsonConverter))]
-		public IDictionary<string,object> Parameters { get; set; }
+		public Dictionary<string,object> Parameters { get; set; }
 
 
 		/// <summary>

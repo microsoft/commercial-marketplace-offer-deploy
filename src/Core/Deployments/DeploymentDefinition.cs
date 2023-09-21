@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Text.Json.Serialization;
 using Modm.Artifacts;
+using Modm.Serialization;
 
 namespace Modm.Deployments
 {
@@ -30,7 +32,8 @@ namespace Modm.Deployments
         /// </summary>
         public ArtifactsUri Source { get; set; }
 
-        public IDictionary<string, object> Parameters { get; set; }
+        [JsonConverter(typeof(DictionaryStringObjectJsonConverter))]
+        public Dictionary<string, object> Parameters { get; set; }
 
         /// <summary>
         /// Gets the fully qualified directory path where the main template is located

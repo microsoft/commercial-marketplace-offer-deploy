@@ -18,7 +18,7 @@ namespace Modm.Azure.Model
         public required string ArtifactsUri { get; set; }
 
         [JsonConverter(typeof(DictionaryStringObjectJsonConverter))]
-        public IDictionary<string, object> Parameters { get; set; }
+        public Dictionary<string, object> Parameters { get; set; }
 
         public string ToBase64Json()
         {
