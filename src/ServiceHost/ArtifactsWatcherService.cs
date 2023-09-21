@@ -16,7 +16,9 @@ namespace Modm.ServiceHost
         private ILogger<ArtifactsWatcherService> logger;
 
         ArtifactsWatcherOptions? options;
+
         bool controllerStarted;
+        bool userDataProcessed;
         int attempts = 0;
 
         private readonly HttpClient httpClient;
@@ -32,17 +34,20 @@ namespace Modm.ServiceHost
         {
             await WaitForControllerToStart(cancellationToken);
 
-            while (!cancellationToken.IsCancellationRequested)
+            var userDataProcessed = false;
+
+            while (!cancellationToken.IsCancellationRequested || userDataProcessed)
             {
-                await TryToProcessUserData(cancellationToken);
+                userDataProcessed = await TryToProcessUserData(cancellationToken);
             }
         }
 
-        private async Task TryToProcessUserData(CancellationToken cancellation)
+        private async Task<bool> TryToProcessUserData(CancellationToken cancellation)
         {
             if (attempts > MaxAttempts)
             {
-                return;
+                logger.LogWarning("Max attempts reached while processing user data.");
+                return true;
             }
 
             if (options == null)
@@ -78,7 +83,13 @@ namespace Modm.ServiceHost
                     };
 
                     var response = await StartDeployment(request);
-                    logger.LogInformation("Received deployment result: {response}", response);
+                    logger.LogInformation("Received deployment result: {response}",
+                        JsonSerializer.Serialize(response, new JsonSerializerOptions
+                        {
+                            WriteIndented = true
+                        }));
+
+                    return true;
                 }
             }
             catch (Exception ex)
@@ -91,6 +102,7 @@ namespace Modm.ServiceHost
             attempts++;
             await Task.Delay(DefaultWaitDelaySeconds * 1000, cancellation);
 
+            return false;
         }
 
         private async Task<StartDeploymentResult?> StartDeployment(StartDeploymentRequest request)
