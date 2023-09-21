@@ -82,11 +82,7 @@ namespace Modm.ServiceHost
                     };
 
                     var response = await StartDeployment(request);
-                    logger.LogInformation("Received deployment result: {response}",
-                        JsonSerializer.Serialize(response, new JsonSerializerOptions
-                        {
-                            WriteIndented = true
-                        }));
+                    logger.LogInformation("Received deployment result, Id: {id}", response?.Deployment.Id);
 
                     return true;
                 }
