@@ -60,12 +60,13 @@ namespace Modm.ServiceHost
             {
                 var instanceData = await this.metadataService.GetAsync();
                 base64UserData = instanceData?.Compute.UserData;
+
                 if (!string.IsNullOrEmpty(base64UserData))
                 {
                     break;
                 }
 
-                await Task.Delay(1000);
+                await Task.Delay(DefaultWaitDelaySeconds * 1000, cancellation);
             }
 
             try
