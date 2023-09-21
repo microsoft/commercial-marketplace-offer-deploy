@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Text.Json.Serialization;
 using MediatR;
 using Modm.Artifacts;
+using Modm.Serialization;
 
 namespace Modm.Deployments
 {
@@ -14,6 +16,7 @@ namespace Modm.Deployments
 		/// <summary>
 		/// The deployment parameters
 		/// </summary>
+		[JsonConverter(typeof(DictionaryStringObjectJsonConverter))]
 		public IDictionary<string,object> Parameters { get; set; }
 
 
