@@ -1,18 +1,21 @@
 ﻿using System;
+using System.Net.Http;
 using Microsoft.Extensions.Options;
+using Modm.HttpClient;
+using Polly.Retry;
 
 namespace Modm.Engine.Jenkins.Client
 {
 	class JenkinsClientFactory
 	{
         private readonly JenkinsOptions options;
-        private readonly HttpClient httpClient;
+        private readonly System.Net.Http.HttpClient httpClient;
         private readonly ApiTokenClient apiTokenClient;
 
-        public JenkinsClientFactory(HttpClient httpClient, ApiTokenClient apiTokenClient, IOptions<JenkinsOptions> options)
+        public JenkinsClientFactory(IHttpClientFactory clientFactory, ApiTokenClient apiTokenClient, IOptions<JenkinsOptions> options)
 		{
             this.options = options.Value;
-            this.httpClient = httpClient;
+            this.httpClient = clientFactory.CreateClient(Constants.MODM);
             this.apiTokenClient = apiTokenClient;
         }
 

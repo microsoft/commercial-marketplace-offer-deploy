@@ -16,10 +16,10 @@ namespace Modm.Engine.Jenkins.Client
     /// </remarks>
 	class ApiTokenClient
 	{
-        private readonly HttpClient client;
+        private readonly System.Net.Http.HttpClient client;
         private readonly JenkinsOptions options;
 
-        public ApiTokenClient(HttpClient client, IOptions<JenkinsOptions> options)
+        public ApiTokenClient(System.Net.Http.HttpClient client, IOptions<JenkinsOptions> options)
 		{
             this.client = client;
             this.options = options.Value;

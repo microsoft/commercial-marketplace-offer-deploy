@@ -21,7 +21,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="7.0.11" />
+    <PackageReference Include="Moq" Version="4.20.69" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,9 +33,15 @@
   <ItemGroup>
     <None Remove="Core\" />
     <None Remove="Core\Artifacts\" />
+    <None Remove="Core\Engine\" />
+    <None Remove="Core\Engine\Jenkins\" />
+    <None Remove="Core\Engine\Jenkins\Client\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Core\" />
     <Folder Include="Core\Artifacts\" />
+    <Folder Include="Core\Engine\" />
+    <Folder Include="Core\Engine\Jenkins\" />
+    <Folder Include="Core\Engine\Jenkins\Client\" />
   </ItemGroup>
 </Project>

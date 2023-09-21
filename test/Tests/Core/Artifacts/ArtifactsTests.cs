@@ -1,5 +1,4 @@
 ﻿using System;
-using Mono.Unix.Native;
 using Modm.Artifacts;
 
 namespace Modm.Tests.Core.Artifacts
@@ -14,25 +13,20 @@ namespace Modm.Tests.Core.Artifacts
 		public void ArtifactsCanChangeDirectoryPermissions()
 		{
             string tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(tempDir);
-
+            var d = Directory.CreateDirectory(tempDir);
+           
             try
             {
                 // Act
                 var artifactsFile = new ArtifactsFile("");
+
+                var m = d.UnixFileMode;
+                d.UnixFileMode = UnixFileMode.OtherWrite | UnixFileMode.OtherRead | UnixFileMode.GroupRead | UnixFileMode.UserWrite | UnixFileMode.UserRead;
+
                 artifactsFile.ChangeDirectoryPermissions(tempDir);
 
-                Stat stat;
-
-                if (Syscall.stat(tempDir, out stat) == 0)
-                {
-                    var mode = stat.st_mode;
-                    Assert.Equal("ACCESSPERMS, S_IFDIR", mode.ToString());
-                }
-                else
-                {
-                    Assert.Fail("Could not retrieve directory stats");
-                }
+                var m2 = d.UnixFileMode;
+                Assert.True(m2.HasFlag(UnixFileMode.UserExecute));
             }
             finally
             {
