@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json;
+
 namespace Modm.Azure.Model
 {
     public class UserData
@@ -10,10 +11,20 @@ namespace Modm.Azure.Model
 
         public string ToBase64Json()
         {
-            string jsonString = JsonConvert.SerializeObject(this);
+            string jsonString = JsonSerializer.Serialize(this);
             byte[] jsonBytes = Encoding.UTF8.GetBytes(jsonString);
 
             return Convert.ToBase64String(jsonBytes);
+        }
+
+        public static UserData Deserialize(string base64UserData)
+        {
+            byte[] data = Convert.FromBase64String(base64UserData);
+            string jsonString = Encoding.UTF8.GetString(data);
+
+            UserData userData = JsonSerializer.Deserialize<UserData>(jsonString);
+
+            return userData;
         }
 
         public bool IsValid()
