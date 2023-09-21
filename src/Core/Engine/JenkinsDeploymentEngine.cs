@@ -1,4 +1,5 @@
-﻿using Modm.Azure;
+﻿using System.Text;
+using Modm.Azure;
 using Modm.Deployments;
 using Modm.Engine.Jenkins.Client;
 using Modm.Engine.Pipelines;
@@ -43,6 +44,12 @@ namespace Modm.Engine
             try
             {
                 var text = await client.Builds.GetConsoleTextAsync(deployment.Definition.DeploymentType, deployment.Id.ToString());
+
+                if (string.IsNullOrEmpty(text))
+                {
+                    var bytes = Encoding.Default.GetBytes(text);
+                    text = Encoding.UTF8.GetString(bytes);
+                }
                 return text;
             }
             catch
