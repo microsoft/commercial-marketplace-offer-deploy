@@ -20,7 +20,7 @@ namespace WebHost.Deployments
 
         public async Task<IResult> Get()
         {
-            return Results.Created("/deployments", new GetDeploymentResponse
+            return Results.Json(new GetDeploymentResponse
             {
                 Deployment = await engine.Get()
             });

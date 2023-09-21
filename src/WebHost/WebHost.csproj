@@ -41,9 +41,9 @@
     <Content Remove="$(SpaRoot)**" />
     <None Remove="$(SpaRoot)**" />
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
-    <None Remove="Deployments\" />
     <None Remove="Resources\" />
     <None Remove="Status\" />
+    <None Remove="Controllers\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,9 +51,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Deployments\" />
     <Folder Include="Resources\" />
     <Folder Include="Status\" />
+    <Folder Include="Controllers\" />
   </ItemGroup>
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
     <!-- Ensure Node.js is installed -->

@@ -1,23 +1,24 @@
-﻿using System;
-using System.Text;
-using Newtonsoft.Json;
-using MediatR;
+﻿using MediatR;
 using Modm.Deployments;
 using Modm.ServiceHost.Notifications;
 using Modm.Azure.Model;
 using Modm.Azure;
-using System.Security.Policy;
+using System.Text.Json;
 
 namespace Modm.ServiceHost
 {
     public class ArtifactsWatcherService : BackgroundService
     {
         const int DefaultWaitDelaySeconds = 10;
+        const int MaxAttempts = 10;
+
         private readonly IMetadataService metadataService;
         private ILogger<ArtifactsWatcherService> logger;
 
         ArtifactsWatcherOptions? options;
+
         bool controllerStarted;
+        int attempts = 0;
 
         private readonly HttpClient httpClient;
 
@@ -32,54 +33,86 @@ namespace Modm.ServiceHost
         {
             await WaitForControllerToStart(cancellationToken);
 
+            var userDataProcessed = false;
+
+            while (!userDataProcessed)
+            {
+                userDataProcessed = await TryToProcessUserData(cancellationToken);
+            }
+        }
+
+        private async Task<bool> TryToProcessUserData(CancellationToken cancellation)
+        {
+            if (attempts > MaxAttempts)
+            {
+                logger.LogWarning("Max attempts reached while processing user data.");
+                return true;
+            }
+
             if (options == null)
             {
                 throw new InvalidOperationException("Cannot start artifacts watcher. Options are null");
             }
 
-            string base64UserData = "";
+            string base64UserData;
 
             while (true)
             {
                 var instanceData = await this.metadataService.GetAsync();
                 base64UserData = instanceData?.Compute.UserData;
+
                 if (!string.IsNullOrEmpty(base64UserData))
                 {
                     break;
                 }
-                
-                await Task.Delay(1000);
+
+                await Task.Delay(DefaultWaitDelaySeconds * 1000, cancellation);
             }
 
-            byte[] data = Convert.FromBase64String(base64UserData);
-            string jsonString = Encoding.UTF8.GetString(data);
-            UserData userData = JsonConvert.DeserializeObject<UserData>(jsonString);
-            if (userData == null)
+            try
             {
-                throw new InvalidDataException("The userData on the virtual machine instance is null");
-            }
+                var userData = UserData.Deserialize(base64UserData) ?? throw new InvalidDataException("The userData on the virtual machine instance is null");
 
-            if (userData.IsValid())
-            {
-                var request = new StartDeploymentRequest
+                if (userData.IsValid())
                 {
-                    ArtifactsUri = userData.ArtifactsUri,
-                    Parameters = userData.Properties ?? new Dictionary<string, object>()
-                };
+                    var request = new StartDeploymentRequest
+                    {
+                        ArtifactsUri = userData.ArtifactsUri,
+                        Parameters = userData.Parameters ?? new Dictionary<string, object>()
+                    };
 
-                var response = await StartDeployment(request);
+                    var response = await StartDeployment(request);
+                    logger.LogInformation("Received deployment result, Id: {id}", response?.Deployment.Id);
+
+                    return true;
+                }
             }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error deserializing UserData or starting deployment.");
+            }
+
+            logger.LogWarning("Unable to start deployment. Attempt {attempt}", attempts);
+
+            attempts++;
+            await Task.Delay(DefaultWaitDelaySeconds * 1000, cancellation);
+
+            return false;
         }
 
-        private async Task<StartDeploymentResult> StartDeployment(StartDeploymentRequest request)
+        private async Task<StartDeploymentResult?> StartDeployment(StartDeploymentRequest request)
         {
-          
             HttpResponseMessage response = await this.httpClient.PostAsJsonAsync(this.options?.DeploymentsUrl, request);
             response.EnsureSuccessStatusCode();
 
             this.logger.LogInformation("HTTP Post to [{url}] successful.", this.options?.DeploymentsUrl);
 
-            return await response.Content.ReadAsAsync<StartDeploymentResult>();
+            return await JsonSerializer.DeserializeAsync<StartDeploymentResult>(
+                response.Content.ReadAsStream(), new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
         }
 
         async Task WaitForControllerToStart(CancellationToken cancellationToken)

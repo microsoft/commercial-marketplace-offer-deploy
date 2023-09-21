@@ -12,6 +12,11 @@ builder.Services.AddDefaultHttpClient();
 
 builder.Services.AddDeploymentEngine(builder.Configuration, builder.Environment);
 
+builder.Services.Configure<HostOptions>(hostOptions =>
+{
+    hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+});
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddAzureClients(clientBuilder =>
 {
@@ -22,8 +27,8 @@ builder.Services.AddAzureClients(clientBuilder =>
 builder.Services.AddMediatR(c =>
 {
     c.RegisterServicesFromAssemblyContaining<DeploymentsController>();
-    c.AddOpenBehavior(typeof(LoggingBehaviour<,>));
-    c.AddOpenBehavior(typeof(ValidationBehavior<,>));
+    //c.AddOpenBehavior(typeof(LoggingBehaviour<,>));
+    //c.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
 builder.Services.AddValidatorsFromAssemblyContaining<StartDeploymentRequestValidator>();

@@ -50,17 +50,24 @@ namespace Modm.Engine
 
         async Task MonitorDeployment(CancellationToken cancellationToken)
         {
-            var build = await GetBuild(cancellationToken);
+            var isBuilding = await GetBuild(cancellationToken);
 
             // wait for the deployment to complete
-            while (build.Building.GetValueOrDefault(false))
+            while (isBuilding)
             {
-                build = await GetBuild(cancellationToken);
+                try
+                {
+                    isBuilding = await GetBuild(cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Exception thrown while trying to get build status");
+                }
                 await Task.Delay(1000, cancellationToken);
             }
 
             // deployment is complete
-            logger.LogInformation("Deployment [{id}] completed at: {time}", id, DateTimeOffset.FromUnixTimeSeconds(build.TimeStamp.Value));
+            logger.LogInformation("Deployment [{id}] completed at: {time}", id, DateTimeOffset.Now);
             Reset();
         }
 
@@ -71,9 +78,24 @@ namespace Modm.Engine
             name = string.Empty;
         }
 
-        async Task<JenkinsBuildBase> GetBuild(CancellationToken cancellationToken)
+        async Task<bool> GetBuild(CancellationToken cancellationToken)
         {
-            return await client.Builds.GetAsync<JenkinsBuildBase>(name, id.ToString(), cancellationToken);
+            try
+            {
+                var build = await client.Builds.GetAsync<JenkinsBuildBase>(name, id.ToString(), cancellationToken);
+                if (build == null)
+                {
+                    return false;
+                }
+
+                return build.Building.GetValueOrDefault(false);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Exception thrown while trying to get build status");
+            }
+
+            return false;
         }
 
         public class DeploymentStartedHandler : INotificationHandler<DeploymentStarted>

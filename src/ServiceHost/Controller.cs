@@ -66,13 +66,8 @@ namespace Modm.ServiceHost
             await StartComposeAsync();
             await Notify();
 
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                logger.LogInformation("Running at: {time}", DateTimeOffset.Now);
-                logger.LogInformation("Docker Compose state: {state}", ComposeService.State);
-
-                await Task.Delay(10000, cancellationToken);
-            }
+            logger.LogInformation("Running at: {time}", DateTimeOffset.Now);
+            logger.LogInformation("Docker Compose state: {state}", ComposeService.State);
         }
 
         public Task StopAsync(CancellationToken cancellationToken = default)
