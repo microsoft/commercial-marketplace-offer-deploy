@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json;
+using Modm.Serialization;
 
 namespace Modm.Deployments
 {
@@ -26,7 +27,10 @@ namespace Modm.Deployments
 
         public async Task Write(IDictionary<string, object> parameters)
         {
-            var json = JsonSerializer.Serialize(parameters);
+            var json = JsonSerializer.Serialize(parameters, new JsonSerializerOptions
+            {
+                Converters = { new DictionaryStringObjectJsonConverter() }
+            });
             await File.WriteAllTextAsync(FullPath, json);
         }
     }

@@ -12,6 +12,12 @@ namespace Modm.Engine
         /// <returns></returns>
         Task<Deployment> Get();
 
+        /// <summary>
+        /// Gets the status of the engine
+        /// </summary>
+        /// <returns></returns>
+        Task<string> GetLogs();
+
 
         /// <summary>
         /// Get information about the engine

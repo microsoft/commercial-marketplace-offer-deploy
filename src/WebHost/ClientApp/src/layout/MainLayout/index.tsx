@@ -3,7 +3,6 @@ import { Outlet } from "react-router-dom";
 const MainLayout = () => {
   return (
   <>
-
   {/* Navbar */}
   <nav className="main-header navbar navbar-expand navbar-white navbar-light">
     {/* Left navbar links */}
@@ -92,7 +91,7 @@ const MainLayout = () => {
                with font-awesome or any other icon font library */}
          
           <li className="nav-item">
-            <a href="pages/widgets.html" className="nav-link">
+            <a href={'/'} className="nav-link">
             <i className="nav-icon fas fa-tachometer-alt"></i>
               <p>
                 Dashboard
@@ -100,10 +99,10 @@ const MainLayout = () => {
             </a>
           </li>
           <li className="nav-item">
-            <a href="pages/widgets.html" className="nav-link">
+            <a href={'/diagnostics'} className="nav-link">
             <i className="nav-icon fas fa-book"></i>
               <p>
-                Logs
+                Diagnostics
               </p>
             </a>
           </li>
@@ -122,7 +121,7 @@ const MainLayout = () => {
       <div className="container-fluid">
         <div className="row mb-2">
           <div className="col-sm-6">
-            <h1 className="m-0">Dashboard</h1>
+            <h1 className="m-0">Marketplace Offer Deployment Manager</h1>
           </div>{/* /.col */}
           <div className="col-sm-6">
             <ol className="breadcrumb float-sm-right">
@@ -138,29 +137,13 @@ const MainLayout = () => {
     {/* Main content */}
     <div className="content">
       <div className="container-fluid">
-        <main>
           <Outlet />
-        </main>
       </div>
       {/* /.container-fluid */}
     </div>
     {/* /.content */}
   </div>
   {/* /.content-wrapper */}
-
-  {/* Control Sidebar */}
-  <aside className="control-sidebar control-sidebar-dark">
-    {/* Control sidebar content goes here */}
-  </aside>
-  {/* /.control-sidebar */}
-
-  {/* Main Footer */}
-  <footer className="main-footer">
-    <div className="float-right d-none d-sm-inline-block">
-      <b>Version</b> 0.0.208
-    </div>
-  </footer>
-    
   </>)
 }
 
