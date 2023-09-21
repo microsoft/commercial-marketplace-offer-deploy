@@ -1,9 +1,4 @@
-﻿using System;
-using System.IO.Compression;
-using System.Security.AccessControl;
-using System.Runtime.InteropServices;
-
-using Modm.Deployments;
+﻿using System.IO.Compression;
 
 namespace Modm.Artifacts
 {
@@ -67,29 +62,23 @@ namespace Modm.Artifacts
         /// </summary>
         /// <param name="directoryPath"></param>
         /// <exception cref="DirectoryNotFoundException"></exception>
-        public void ChangeDirectoryPermissions(string directoryPath)
+        public static void ChangeDirectoryPermissions(string directoryPath)
         {
-            DirectoryInfo directoryInfo = new DirectoryInfo(directoryPath);
-            var ownerPermissions = UnixFileMode.UserExecute | UnixFileMode.UserRead | UnixFileMode.UserWrite;
-            var groupPermissions = UnixFileMode.GroupExecute | UnixFileMode.GroupRead | UnixFileMode.GroupWrite;
-            var othersPermissions = UnixFileMode.OtherExecute | UnixFileMode.OtherRead | UnixFileMode.OtherWrite;
-            var allPermissions = ownerPermissions | groupPermissions | othersPermissions;
-            directoryInfo.UnixFileMode = allPermissions;
-        }
-
-        /// <summary>
-        /// Reads and returns the manifest file as the deployment definition
-        /// </summary>
-        /// <returns></returns>
-        public async Task<DeploymentDefinition> ReadManifestFile()
-        {
-            if (!IsExtracted)
+            try
             {
-                Extract();
-            }
+                DirectoryInfo directoryInfo = new(directoryPath);
 
-            var definition = await ManifestFile.Read(ExtractedTo);
-            return definition;
+                var ownerPermissions = UnixFileMode.UserExecute | UnixFileMode.UserRead | UnixFileMode.UserWrite;
+                var groupPermissions = UnixFileMode.GroupExecute | UnixFileMode.GroupRead | UnixFileMode.GroupWrite;
+                var othersPermissions = UnixFileMode.OtherExecute | UnixFileMode.OtherRead | UnixFileMode.OtherWrite;
+                var allPermissions = ownerPermissions | groupPermissions | othersPermissions;
+
+                directoryInfo.UnixFileMode = allPermissions;
+            }
+            catch
+            {
+
+            }
         }
     }
 }

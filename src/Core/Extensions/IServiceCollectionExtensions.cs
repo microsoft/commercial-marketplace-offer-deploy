@@ -7,6 +7,8 @@ using Modm.Deployments;
 using Modm.Engine;
 using Modm.Engine.Jenkins.Client;
 using Modm.Engine.Pipelines;
+using Modm.Http;
+using Polly;
 
 namespace Modm.Extensions
 {
@@ -64,6 +66,23 @@ namespace Modm.Extensions
         public static IServiceCollection AddSingletonHostedService<T>(this IServiceCollection services) where T : class, IHostedService
         {
             services.AddSingleton<T>().AddHostedService(p => p.GetRequiredService<T>());
+            return services;
+        }
+
+        /// <summary>
+        /// Adds our default, configured httpclient
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddDefaultHttpClient(this IServiceCollection services)
+        {
+            services.AddHttpClient(HttpConstants.DefaultHttpClientName)
+                .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(new[]
+                {
+                            TimeSpan.FromSeconds(1),
+                            TimeSpan.FromSeconds(5),
+                            TimeSpan.FromSeconds(10)
+                }));
             return services;
         }
     }

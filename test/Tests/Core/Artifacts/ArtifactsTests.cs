@@ -23,7 +23,7 @@ namespace Modm.Tests.Core.Artifacts
                 var m = d.UnixFileMode;
                 d.UnixFileMode = UnixFileMode.OtherWrite | UnixFileMode.OtherRead | UnixFileMode.GroupRead | UnixFileMode.UserWrite | UnixFileMode.UserRead;
 
-                artifactsFile.ChangeDirectoryPermissions(tempDir);
+                ArtifactsFile.ChangeDirectoryPermissions(tempDir);
 
                 var m2 = d.UnixFileMode;
                 Assert.True(m2.HasFlag(UnixFileMode.UserExecute));
