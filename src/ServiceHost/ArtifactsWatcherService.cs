@@ -18,7 +18,6 @@ namespace Modm.ServiceHost
         ArtifactsWatcherOptions? options;
 
         bool controllerStarted;
-        bool userDataProcessed;
         int attempts = 0;
 
         private readonly HttpClient httpClient;
@@ -36,7 +35,7 @@ namespace Modm.ServiceHost
 
             var userDataProcessed = false;
 
-            while (!cancellationToken.IsCancellationRequested || !userDataProcessed)
+            while (!userDataProcessed)
             {
                 userDataProcessed = await TryToProcessUserData(cancellationToken);
             }
@@ -112,7 +111,12 @@ namespace Modm.ServiceHost
 
             this.logger.LogInformation("HTTP Post to [{url}] successful.", this.options?.DeploymentsUrl);
 
-            return await JsonSerializer.DeserializeAsync<StartDeploymentResult>(response.Content.ReadAsStream());
+            return await JsonSerializer.DeserializeAsync<StartDeploymentResult>(
+                response.Content.ReadAsStream(), new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
         }
 
         async Task WaitForControllerToStart(CancellationToken cancellationToken)
