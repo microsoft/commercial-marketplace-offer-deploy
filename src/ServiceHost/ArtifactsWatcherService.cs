@@ -77,7 +77,7 @@ namespace Modm.ServiceHost
                     var request = new StartDeploymentRequest
                     {
                         ArtifactsUri = userData.ArtifactsUri,
-                        Parameters = userData.Properties ?? new Dictionary<string, object>()
+                        Parameters = userData.Parameters ?? new Dictionary<string, object>()
                     };
 
                     var response = await StartDeployment(request);

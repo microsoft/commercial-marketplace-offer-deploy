@@ -7,11 +7,16 @@ namespace Modm.Azure.Model
     public class UserData
     {
         public required string ArtifactsUri { get; set; }
-        public IDictionary<string, object> Properties { get; set; }
+        public IDictionary<string, object> Parameters { get; set; }
 
         public string ToBase64Json()
         {
-            string jsonString = JsonSerializer.Serialize(this);
+            string jsonString = JsonSerializer.Serialize(this, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                
+            });
             byte[] jsonBytes = Encoding.UTF8.GetBytes(jsonString);
 
             return Convert.ToBase64String(jsonBytes);
@@ -22,7 +27,10 @@ namespace Modm.Azure.Model
             byte[] data = Convert.FromBase64String(base64UserData);
             string jsonString = Encoding.UTF8.GetString(data);
 
-            UserData userData = JsonSerializer.Deserialize<UserData>(jsonString);
+            UserData userData = JsonSerializer.Deserialize<UserData>(jsonString, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
 
             return userData;
         }
