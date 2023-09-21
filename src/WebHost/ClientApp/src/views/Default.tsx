@@ -1,13 +1,6 @@
 import * as React from 'react';
-import { TextField } from '@fluentui/react/lib/TextField';
-import { Toggle } from '@fluentui/react/lib/Toggle';
-import { Announced } from '@fluentui/react/lib/Announced';
-import { DetailsList, DetailsListLayoutMode, Selection, SelectionMode, IColumn } from '@fluentui/react/lib/DetailsList';
-import { MarqueeSelection } from '@fluentui/react/lib/MarqueeSelection';
-import { mergeStyleSets } from '@fluentui/react/lib/Styling';
-import { TooltipHost } from '@fluentui/react';
+import { DetailsList, DetailsListLayoutMode, SelectionMode, IColumn } from '@fluentui/react/lib/DetailsList';
 import { AppConstants } from '../constants/app-constants';
-import { ProvisionState } from '../constants/deployment.constants';
 import { DeploymentResource } from 'models/deployment-models';
 
 
