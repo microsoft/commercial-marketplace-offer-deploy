@@ -22,8 +22,8 @@ builder.Services.AddAzureClients(clientBuilder =>
 builder.Services.AddMediatR(c =>
 {
     c.RegisterServicesFromAssemblyContaining<DeploymentsController>();
-    c.AddOpenBehavior(typeof(LoggingBehaviour<,>));
-    c.AddOpenBehavior(typeof(ValidationBehavior<,>));
+    //c.AddOpenBehavior(typeof(LoggingBehaviour<,>));
+    //c.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
 builder.Services.AddValidatorsFromAssemblyContaining<StartDeploymentRequestValidator>();
