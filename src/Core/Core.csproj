@@ -42,6 +42,7 @@
     <None Remove="Engine\Pipelines\" />
     <None Remove="Http\" />
     <None Remove="Serialization\" />
+    <None Remove="Diagnostics\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Configuration\" />
@@ -53,5 +54,6 @@
     <Folder Include="Engine\Pipelines\" />
     <Folder Include="Http\" />
     <Folder Include="Serialization\" />
+    <Folder Include="Diagnostics\" />
   </ItemGroup>
 </Project>

@@ -36,6 +36,21 @@ namespace Modm.Engine
             };
         }
 
+        public async Task<string> GetLogs()
+        {
+            var deployment = await file.Read();
+
+            try
+            {
+                var text = await client.Builds.GetConsoleTextAsync(deployment.Definition.DeploymentType, deployment.Id.ToString());
+                return text;
+            }
+            catch
+            {
+            }
+            return string.Empty;
+        }
+
         public async Task<Deployment> Get()
         {
             var deployment = await file.Read();
