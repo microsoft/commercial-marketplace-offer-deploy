@@ -13,11 +13,11 @@ namespace Modm.Engine.Jenkins.Client
 	{
         const string JenkinsVersionHeaderName = "X-Jenkins";
 
-        private readonly System.Net.Http.HttpClient client;
+        private readonly HttpClient client;
         private readonly JenkinsOptions options;
         //private readonly AsyncRetryPolicy retryPolicy;
 
-        public JenkinsClient(System.Net.Http.HttpClient client, JenkinsOptions options)
+        public JenkinsClient(HttpClient client, JenkinsOptions options)
         {
             this.client = client;
             this.options = options;

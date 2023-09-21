@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace Modm.Deployments
 {
 	/// <summary>
-	/// The deployment
+	/// The deployment instance
 	/// </summary>
 	public class Deployment
 	{
@@ -14,14 +14,11 @@ namespace Modm.Deployments
 
 		public DeploymentDefinition Definition { get; set; }
 
-		public string Source { get; set; }
-
         // TODO: handle redeploy for failures.
         // For now, we are going to deploy based on either undefined (new) or if there was a failure
         public bool IsStartable => Status == DeploymentStatus.Undefined || Status == DeploymentStatus.Failure;
 
 		public IEnumerable<DeploymentResource> Resources { get; set; }
-
 
 		public Deployment()
 		{

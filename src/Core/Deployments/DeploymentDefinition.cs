@@ -1,4 +1,6 @@
 ﻿using System;
+using Modm.Artifacts;
+
 namespace Modm.Deployments
 {
     /// <summary>
@@ -7,17 +9,37 @@ namespace Modm.Deployments
 	public class DeploymentDefinition
 	{
         /// <summary>
-        /// The relative path to the main template, e.g. template/main.tf
+        /// The fully qualified working directory that the deployment files are all located
         /// </summary>
-        public required string MainTemplate { get; set; }
-        public required string DeploymentType { get; set; }
-        public OfferInfo Offer { get; set; }
-    }
+        public string WorkingDirectory { get; set; }
 
-    public class OfferInfo
-    {
-        public string Name { get; set; }
-        public string Description { get; set; }
+        /// <summary>
+        /// The relative (to the working directory) path to the main template
+        /// </summary>
+        public string MainTemplatePath { get; set; }
+
+        /// <summary>
+        /// The relative (to the working directory) path to the parameters file
+        /// </summary>
+        public string ParametersFilePath { get; set; }
+
+        public string DeploymentType { get; set; }
+
+        /// <summary>
+        /// The source of the deployment definition
+        /// </summary>
+        public ArtifactsUri Source { get; set; }
+
+        public IDictionary<string, object> Parameters { get; set; }
+
+        /// <summary>
+        /// Gets the fully qualified directory path where the main template is located
+        /// </summary>
+        /// <returns></returns>
+        public string GetMainTemplateDirectoryName()
+        {
+            return Path.GetDirectoryName(Path.Combine(WorkingDirectory, MainTemplatePath));
+        }
     }
 }
 

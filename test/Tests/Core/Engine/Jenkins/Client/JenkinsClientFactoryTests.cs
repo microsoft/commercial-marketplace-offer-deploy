@@ -23,7 +23,7 @@ namespace Modm.Tests.Core.Engine.Jenkins.Client
                 ApiToken = "test"
             });
 
-            var httpClient = new System.Net.Http.HttpClient();
+            var httpClient = new HttpClient();
             mockClientFactory.Setup(factory => factory.CreateClient(It.IsAny<string>())).Returns(httpClient);
 
             var jenkinsClientFactory = new JenkinsClientFactory(mockClientFactory.Object, mockApiTokenClient.Object, mockOptions.Object);
