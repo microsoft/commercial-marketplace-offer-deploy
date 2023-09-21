@@ -36,7 +36,7 @@ namespace Modm.ServiceHost
 
             var userDataProcessed = false;
 
-            while (!cancellationToken.IsCancellationRequested || userDataProcessed)
+            while (!cancellationToken.IsCancellationRequested || !userDataProcessed)
             {
                 userDataProcessed = await TryToProcessUserData(cancellationToken);
             }
