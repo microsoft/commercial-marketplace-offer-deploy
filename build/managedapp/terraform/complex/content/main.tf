@@ -12,6 +12,13 @@ variable "location" {
   default     = "West US"
 }
 
+locals {
+  timestamp_suffix  = formatdate("YYYYMMDDHHmmss", timestamp())
+  storage_name      = "stg${substr(local.timestamp_suffix, 8, 6)}" # Will look like stg123456 (Azure Storage Account names must be between 3 and 24 characters in length, use lowercase letters and numbers only)
+  sql_server_name   = "sqlsrv-${local.timestamp_suffix}"
+  cosmosdb_name     = "cosmosdb-${local.timestamp_suffix}"
+}
+
 resource "azurerm_virtual_network" "example_vnet" {
   name                = "example-vnet"
   address_space       = ["10.0.0.0/16"]
@@ -75,7 +82,7 @@ resource "azurerm_virtual_machine" "example_vm" {
 }
 
 resource "azurerm_storage_account" "example_sa" {
-  name                     = "examplestoracc"
+  name                     = local.storage_name
   resource_group_name      = var.resource_group_name
   location                 = var.location
   account_tier             = "Standard"
@@ -140,7 +147,7 @@ resource "azurerm_app_service" "example_app_service" {
 }
 
 resource "azurerm_sql_server" "example_sql_server" {
-  name                         = "examplesqlserver"
+  name                         = local.sql_server_name
   resource_group_name          = var.resource_group_name
   location                     = var.location
   version                      = "12.0"
@@ -164,7 +171,7 @@ resource "azurerm_sql_database" "example_sql_db" {
 }
 
 resource "azurerm_cosmosdb_account" "example_cosmosdb" {
-  name                = "example-cosmosdb"
+  name                = local.cosmosdb_name
   location            = var.location
   resource_group_name = var.resource_group_name
   offer_type          = "Standard"
