@@ -149,7 +149,7 @@ resource "azurerm_service_plan" "example_asp" {
   location            = var.location
   resource_group_name = var.resource_group_name
   os_type = "Linux"
-  sku_name = "F1"
+  sku_name = "S1"
 }
 
 resource "azurerm_app_service" "example_app_service" {
