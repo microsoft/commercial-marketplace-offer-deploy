@@ -150,7 +150,6 @@ resource "azurerm_service_plan" "example_asp" {
   resource_group_name = var.resource_group_name
   os_type = "Linux"
   sku_name = "F1"
-  sku_tier = "Free"
 }
 
 resource "azurerm_app_service" "example_app_service" {
@@ -168,7 +167,7 @@ resource "azurerm_app_service" "example_app_service" {
   }
 }
 
-resource "azurerm_sql_server" "example_sql_server" {
+resource "azurerm_mssql_server" "example_sql_server" {
   name                         = local.sql_server_name
   resource_group_name          = var.resource_group_name
   location                     = var.location
@@ -185,7 +184,7 @@ resource "azurerm_sql_database" "example_sql_db" {
   name                = local.sql_db_name
   resource_group_name = var.resource_group_name
   location            = var.location
-  server_name         = azurerm_sql_server.example_sql_server.name
+  server_name         = azurerm_mssql_server.example_sql_server.name
 
   tags = {
     environment = "testing"
