@@ -175,21 +175,7 @@
             "sku": {
                 "name": "[variables('publicIpAddressSku')]"
             }
-        },
-        {
-            "type": "Microsoft.Authorization/roleAssignments",
-            "apiVersion": "2022-04-01",
-            "name": "[guid(concat('contributorAssignment-', resourceGroup().id))]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]"
-            ],
-            "properties": {
-                "roleDefinitionId": "[variables('Contributor')]",
-                "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), '2022-03-01', 'Full').identity.principalId]",
-                "scope": "[subscription().id]",
-                "principalType": "ServicePrincipal"
-            }
-        },        
+        },     
         {
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2022-04-01",
@@ -209,7 +195,10 @@
             "name": "[variables('virtualMachineName')]",
             "location": "[parameters('location')]",
             "identity": {
-                "type": "SystemAssigned"
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                    "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourcegroups/modm-dev/providers/Microsoft.ManagedIdentity/userAssignedIdentities/modmuserassignedmi": {}
+                }
             },
             "dependsOn": [
                 "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]",
