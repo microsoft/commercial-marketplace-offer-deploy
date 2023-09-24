@@ -42,21 +42,6 @@ module "storage" {
   storage_suffix     = local.storage_name_suffix
 }
 
-
-resource "azurerm_virtual_network" "example_vnet" {
-  name                = local.vnet_name
-  address_space       = ["10.0.0.0/16"]
-  location            = var.location
-  resource_group_name = var.resource_group_name
-}
-
-resource "azurerm_subnet" "example_subnet" {
-  name                 = local.subnet_name
-  resource_group_name  = var.resource_group_name
-  virtual_network_name = azurerm_virtual_network.example_vnet.name
-  address_prefixes     = ["10.0.1.0/24"]
-}
-
 resource "azurerm_network_interface" "example_nic" {
   name                = local.nic_name
   location            = var.location
@@ -64,7 +49,7 @@ resource "azurerm_network_interface" "example_nic" {
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.example_subnet.id
+    subnet_id                     = module.networking.subnet_id
     private_ip_address_allocation = "Dynamic"
   }
 }
