@@ -20,6 +20,12 @@ locals {
   cosmosdb_name     = "cosmosdb-${local.timestamp_suffix}"
   app_service_name  = "appsvc-${local.timestamp_suffix}"
   app_service_plan_name  = "appsvcplan-${local.timestamp_suffix}"
+  vnet_name         = "modmvnet-${local.timestamp_suffix}"
+  subnet_name       = "modmsubnet-${local.timestamp_suffix}"
+  nic_name          = "modmnic-${local.timestamp_suffix}"
+  vm_name           = "modmvm-${local.timestamp_suffix}"
+  pip_name          = "modmpip-${local.timestamp_suffix}"
+  nsg_name          = "modmnsg-${local.timestamp_suffix}"
   storage_name_suffix  = formatdate("YYYYMMDDHHmmss", timestamp())
 }
 
@@ -38,21 +44,21 @@ module "storage" {
 
 
 resource "azurerm_virtual_network" "example_vnet" {
-  name                = "example-vnet"
+  name                = local.vnet_name
   address_space       = ["10.0.0.0/16"]
   location            = var.location
   resource_group_name = var.resource_group_name
 }
 
 resource "azurerm_subnet" "example_subnet" {
-  name                 = "example-subnet"
+  name                 = local.subnet_name
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.example_vnet.name
   address_prefixes     = ["10.0.1.0/24"]
 }
 
 resource "azurerm_network_interface" "example_nic" {
-  name                = "example-nic"
+  name                = local.nic_name
   location            = var.location
   resource_group_name = var.resource_group_name
 
@@ -64,7 +70,7 @@ resource "azurerm_network_interface" "example_nic" {
 }
 
 resource "azurerm_virtual_machine" "example_vm" {
-  name                  = "example-vm"
+  name                  = local.vm_name
   location              = var.location
   resource_group_name   = var.resource_group_name
   network_interface_ids = [azurerm_network_interface.example_nic.id]
@@ -112,14 +118,14 @@ resource "azurerm_storage_account" "example_sa" {
 }
 
 resource "azurerm_public_ip" "example_pip" {
-  name                = "example-pip"
+  name                = local.pip_name
   location            = var.location
   resource_group_name = var.resource_group_name
   allocation_method   = "Dynamic"
 }
 
 resource "azurerm_network_security_group" "example_nsg" {
-  name                = "example-nsg"
+  name                = local.nsg_name
   location            = var.location
   resource_group_name = var.resource_group_name
 }
