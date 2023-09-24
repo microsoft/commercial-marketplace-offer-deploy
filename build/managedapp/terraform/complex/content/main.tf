@@ -144,7 +144,7 @@ resource "azurerm_network_security_rule" "example_nsr" {
   network_security_group_name = azurerm_network_security_group.example_nsg.name
 }
 
-resource "azurerm_app_service_plan" "example_asp" {
+resource "azurerm_service_plan" "example_asp" {
   name                = local.app_service_plan_name
   location            = var.location
   resource_group_name = var.resource_group_name
@@ -159,7 +159,7 @@ resource "azurerm_app_service" "example_app_service" {
   name                = local.app_service_name
   location            = var.location
   resource_group_name = var.resource_group_name
-  app_service_plan_id = azurerm_app_service_plan.example_asp.id
+  app_service_plan_id = azurerm_service_plan.example_asp.id
 
   site_config {
     dotnet_framework_version = "v5.0"
