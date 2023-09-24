@@ -17,7 +17,22 @@ locals {
   storage_name      = "stg${substr(local.timestamp_suffix, 8, 6)}" # Will look like stg123456 (Azure Storage Account names must be between 3 and 24 characters in length, use lowercase letters and numbers only)
   sql_server_name   = "sqlsrv-${local.timestamp_suffix}"
   cosmosdb_name     = "cosmosdb-${local.timestamp_suffix}"
+  storage_name_suffix  = formatdate("YYYYMMDDHHmmss", timestamp())
 }
+
+module "networking" {
+  source             = "./modules/networking"
+  location           = var.location
+  resource_group_name = var.resource_group_name
+}
+
+module "storage" {
+  source             = "./modules/storage"
+  location           = var.location
+  resource_group_name = var.resource_group_name
+  storage_suffix     = local.storage_name_suffix
+}
+
 
 resource "azurerm_virtual_network" "example_vnet" {
   name                = "example-vnet"
