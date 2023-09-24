@@ -16,7 +16,10 @@ locals {
   timestamp_suffix  = formatdate("YYYYMMDDHHmmss", timestamp())
   storage_name      = "stg${substr(local.timestamp_suffix, 8, 6)}" # Will look like stg123456 (Azure Storage Account names must be between 3 and 24 characters in length, use lowercase letters and numbers only)
   sql_server_name   = "sqlsrv-${local.timestamp_suffix}"
+  sql_db_name       = "sqldb-${local.timestamp_suffix}"
   cosmosdb_name     = "cosmosdb-${local.timestamp_suffix}"
+  app_service_name  = "appsvc-${local.timestamp_suffix}"
+  app_service_plan_name  = "appsvcplan-${local.timestamp_suffix}"
   storage_name_suffix  = formatdate("YYYYMMDDHHmmss", timestamp())
 }
 
@@ -136,7 +139,7 @@ resource "azurerm_network_security_rule" "example_nsr" {
 }
 
 resource "azurerm_app_service_plan" "example_asp" {
-  name                = "example-asp"
+  name                = local.app_service_plan_name
   location            = var.location
   resource_group_name = var.resource_group_name
 
@@ -147,7 +150,7 @@ resource "azurerm_app_service_plan" "example_asp" {
 }
 
 resource "azurerm_app_service" "example_app_service" {
-  name                = "example-app-service"
+  name                = local.app_service_name
   location            = var.location
   resource_group_name = var.resource_group_name
   app_service_plan_id = azurerm_app_service_plan.example_asp.id
@@ -175,7 +178,7 @@ resource "azurerm_sql_server" "example_sql_server" {
 }
 
 resource "azurerm_sql_database" "example_sql_db" {
-  name                = "examplesqldb"
+  name                = local.sql_db_name
   resource_group_name = var.resource_group_name
   location            = var.location
   server_name         = azurerm_sql_server.example_sql_server.name
