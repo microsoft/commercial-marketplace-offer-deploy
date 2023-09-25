@@ -136,7 +136,6 @@ namespace Modm.Engine.Pipelines
                     return false;
                 }
 
-                
                 var lastBuild = await client.Builds.GetAsync<JenkinsBuildBase>(deployment.Definition.DeploymentType, "lastBuild");
 
                 if (lastBuild == null)
