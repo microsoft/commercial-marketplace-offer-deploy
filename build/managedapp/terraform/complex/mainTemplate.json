@@ -40,7 +40,8 @@
             "artifactsUri": "[concat(variables('artifactsContainerLocation'), '/', 'content.zip')]",
             "parameters": {
                 "resource_group_name": "[resourceGroup().name]",
-                "location": "[resourceGroup().location]"
+                "location": "[resourceGroup().location]",
+                "sql_admin_password": "[parameters('adminPassword')]"
             }
         }
     },

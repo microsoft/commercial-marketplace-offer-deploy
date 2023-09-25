@@ -12,6 +12,12 @@ variable "location" {
   default     = "West US"
 }
 
+variable "sql_admin_password" {
+  description = "The password for the SQL administrator login"
+  type        = string
+  sensitive   = true
+}
+
 locals {
   timestamp_suffix  = formatdate("YYYYMMDDHHmmss", timestamp())
   storage_name      = "stg${substr(local.timestamp_suffix, 8, 6)}" # Will look like stg123456 (Azure Storage Account names must be between 3 and 24 characters in length, use lowercase letters and numbers only)
@@ -158,7 +164,7 @@ resource "azurerm_mssql_server" "example_sql_server" {
   location                     = var.location
   version                      = "12.0"
   administrator_login          = "adminuser"
-  administrator_login_password = "Password1234!"
+  administrator_login_password = var.sql_admin_password
 
   tags = {
     environment = "testing"
