@@ -21,7 +21,9 @@ namespace Modm.Deployments
                     expand: "provisioningState,"
                     ).ToListAsync();
 
-                return resources.Select(r => new DeploymentResource
+                var filteredResources = resources.Where(r => !(r.Data.Tags?.ContainsKey("modm") == true && r.Data.Tags["modm"] == "true"));
+
+                return filteredResources.Select(r => new DeploymentResource
                 {
                     Name = r.Data.Name,
                     Type = r.Data.ResourceType.ToString(),
