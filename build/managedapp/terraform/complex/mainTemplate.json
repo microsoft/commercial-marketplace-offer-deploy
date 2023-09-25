@@ -68,7 +68,6 @@
             "type": "Microsoft.Network/virtualNetworks/subnets",
             "apiVersion": "2021-08-01",
             "location": "[parameters('location')]",
-            "tags": "[variables('commonTags')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
             ],
