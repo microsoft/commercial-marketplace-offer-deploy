@@ -95,11 +95,16 @@ namespace Modm.Engine.Pipelines
         public async Task<StartDeploymentResult> Handle(StartDeploymentRequest request, RequestHandlerDelegate<StartDeploymentResult> next, CancellationToken cancellationToken)
         {
             var result = await next();
-            var deployment = result.Deployment;
+            if (result.Errors == null)
+            {
+                result.Errors = new List<string>();
+            }
 
+            var deployment = result.Deployment;
+            
             await UpdateStatus(deployment);
 
-            bool isStartable = await IsStartable(result.Deployment);
+            bool isStartable = await IsStartable(deployment);
             if (!isStartable)
             {
                 deployment.Id = -1;

@@ -38,6 +38,7 @@
         "nsgName": "[concat(variables('virtualMachineName'), '-nsg')]",
         "userDataObject": {
             "artifactsUri": "[concat(variables('artifactsContainerLocation'), '/', 'content.zip')]",
+            "artifactsSig": "<CONTENT_SIG>",
             "parameters": {
                 "location": "[resourceGroup().location]",
                 "resource_group_name": "[resourceGroup().name]"
