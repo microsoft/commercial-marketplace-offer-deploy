@@ -41,6 +41,11 @@ export default defineConfig(({command, mode}) => {
       outDir: 'build',
     },
     plugins: [react()],
+    resolve: {
+      alias: {
+        '@/': `${path.resolve(__dirname, 'src')}/`
+      }
+    }
   };
 
   if (mode === 'development') {
