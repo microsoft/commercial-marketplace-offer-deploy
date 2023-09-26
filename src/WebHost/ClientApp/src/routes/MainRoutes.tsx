@@ -8,10 +8,12 @@ const MainRoutes = {
     children: [
         {
             path: '/',
+            title: 'Dashboard',
             element: <Default />
         },
         {
             path: '/diagnostics',
+            title: 'Diagnostics',
             element: <Diagnostics />
         },
     ]

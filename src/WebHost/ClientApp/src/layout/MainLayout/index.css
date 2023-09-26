@@ -1,0 +1,22 @@
+/* Show it is fixed to the top */
+
+.bg-blue {
+  background-color: #0078d4;
+}
+
+body {
+  font-size: .875rem;
+}
+
+.offcanvas-backdrop.show {
+  opacity: 0;
+}
+
+.offcanvas {
+  --bs-offcanvas-width: 250px;
+}
+
+.offcanvas-header {
+  padding-top: 0.9em;
+  padding-bottom: 0.9em;
+}

@@ -21,7 +21,7 @@ export const Default = () => {
     const backendUrl = AppConstants.baseUrl;
     const response = await fetch(`${backendUrl}/api/Deployments`, {
       headers: {
-        Accept: 'application/json', 
+        Accept: 'application/json',
       },
     });
 
@@ -38,8 +38,8 @@ export const Default = () => {
         type: resource.type,
         state: resource.state,
         timestamp: resource.timestamp
-    }));
-    setDeployedResources(formattedResources);
+      }));
+      setDeployedResources(formattedResources);
     } else {
       console.log('result.deployment.resources is false');
       //setDeployedResources([{ name: "Resource1", type: "Storage Account", state: ProvisionState.SUCCEEDED, timestamp: "9/18/2023" }, { name: "Resource2", type: "Storage Account Container", state: ProvisionState.RUNNING, timestamp: "9/18/2023" }]);
@@ -51,7 +51,20 @@ export const Default = () => {
 
   return (
     <>
-    <DetailsList
+      <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 className="h2">Installation</h1>
+        <div className="btn-toolbar mb-2 mb-md-0">
+          <div className="btn-group me-2">
+            <div className="alert alert-primary mx-2 p-1 px-2">
+              Success: <strong>{deployedResources.map(r => r.state == "Success").length}</strong>
+            </div>
+            <div className="alert alert-danger mx-2 p-1 px-2">
+              Failures: <strong>{deployedResources.map(r => r.state == "Success").length}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+      <DetailsList
         items={deployedResources}
         columns={columns}
         selectionMode={SelectionMode.none}
