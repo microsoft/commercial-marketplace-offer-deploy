@@ -1,4 +1,5 @@
 ﻿using JenkinsNET.Models;
+using JenkinsNET.Exceptions;
 using MediatR;
 using MediatR.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
@@ -150,6 +151,11 @@ namespace Modm.Engine.Pipelines
                     return false;
                 }
 
+                return true;
+            }
+            catch (JenkinsNET.Exceptions.JenkinsJobGetBuildException ex)
+            {
+                logger.LogWarning($"No previous builds found for {deployment.Definition.DeploymentType} due to a 404 response. Assuming the job is startable.");
                 return true;
             }
             catch (Exception ex)
