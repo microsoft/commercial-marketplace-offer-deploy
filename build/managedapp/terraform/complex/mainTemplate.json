@@ -43,6 +43,9 @@
                 "location": "[resourceGroup().location]",
                 "sql_admin_password": "[parameters('adminPassword')]"
             }
+        },
+        "commonTags": {
+            "modm": "true"
         }
     },
     "resources": [
@@ -51,6 +54,7 @@
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2021-08-01",
             "location": "[parameters('location')]",
+            "tags": "[variables('commonTags')]",
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
@@ -76,6 +80,7 @@
             "apiVersion": "2021-08-01",
             "name": "[variables('nsgName')]",
             "location": "[parameters('location')]",
+            "tags": "[variables('commonTags')]",
             "properties": {
                 "securityRules": [
                     {
@@ -112,6 +117,7 @@
             "name": "[variables('networkInterfaceName')]",
             "apiVersion": "2021-08-01",
             "location": "[parameters('location')]",
+            "tags": "[variables('commonTags')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]",
                 "[resourceId('Microsoft.Network/publicIpAddresses/', variables('publicIpAddressName'))]",
@@ -148,6 +154,7 @@
             "apiVersion": "2020-08-01",
             "name": "[variables('publicIpAddressName')]",
             "location": "[parameters('location')]",
+            "tags": "[variables('commonTags')]",
             "properties": {
                 "publicIpAllocationMethod": "[variables('publicIpAddressType')]",
                 "dnsSettings": {
@@ -176,6 +183,7 @@
             "apiVersion": "2022-03-01",
             "name": "[variables('virtualMachineName')]",
             "location": "[parameters('location')]",
+            "tags": "[variables('commonTags')]",
             "identity": {
                 "type": "SystemAssigned"
             },

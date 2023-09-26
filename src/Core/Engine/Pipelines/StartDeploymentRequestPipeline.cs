@@ -98,7 +98,8 @@ namespace Modm.Engine.Pipelines
 
             await UpdateStatus(deployment);
 
-            if (!result.Deployment.IsStartable)
+            bool isStartable = await IsStartable(result.Deployment);
+            if (!isStartable)
             {
                 deployment.Id = -1;
                 result.Errors.Add("Deployment is not startable");
@@ -122,6 +123,42 @@ namespace Modm.Engine.Pipelines
 
             return result;
         }
+
+        private async Task<bool> IsStartable(Deployment deployment)
+        {
+            try
+            {
+                var queueItems = await client.Queue.GetAllItemsAsync();
+
+                if (queueItems.Any(item => item.Task?.Name == deployment.Definition.DeploymentType))
+                {
+                    logger.LogDebug($"Deployment {deployment.Definition.DeploymentType} is already in the queue.");
+                    return false;
+                }
+
+                var lastBuild = await client.Builds.GetAsync<JenkinsBuildBase>(deployment.Definition.DeploymentType, "lastBuild");
+
+                if (lastBuild == null)
+                {
+                    logger.LogWarning($"Unable to fetch last build details for {deployment.Definition.DeploymentType}");
+                    return true;
+                }
+
+                if (lastBuild.Building.GetValueOrDefault(false) || !string.IsNullOrEmpty(lastBuild.Result))
+                {
+                    logger.LogDebug($"Deployment {deployment.Definition.DeploymentType} either is currently building or already completed.");
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Failed to check if the deployment is startable for {deployment.Definition.DeploymentType}");
+                return false;
+            }
+        }
+
 
         private async Task Publish(Deployment deployment, CancellationToken cancellationToken)
         {
