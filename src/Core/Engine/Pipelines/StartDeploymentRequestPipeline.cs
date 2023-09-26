@@ -108,7 +108,7 @@ namespace Modm.Engine.Pipelines
             if (!isStartable)
             {
                 deployment.Id = -1;
-                result.Errors.Add("Deployment is not startable");
+                AddError(result, "Deployment is not startable");
                 return result;
             }
 
@@ -121,13 +121,23 @@ namespace Modm.Engine.Pipelines
             }
             catch (Exception ex)
             {
-                result.Errors.Add(ex.Message);
+                AddError(result, ex.Message);
                 logger.LogError(ex, "Failure to submit to jenkins");
             }
 
             result.Deployment = deployment;
 
             return result;
+        }
+
+        private void AddError(StartDeploymentResult result, string error)
+        {
+            if (result.Errors == null)
+            {
+                result.Errors = new List<string>();
+            }
+
+            result.Errors.Add(error);
         }
 
         private async Task<bool> IsStartable(Deployment deployment)

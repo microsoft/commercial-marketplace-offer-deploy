@@ -63,10 +63,13 @@ namespace Modm.Engine.Pipelines
             var definition = await next();
 
             var artifactsFile = await downloader.DownloadAsync(definition.Source);
-            artifactsFile.Extract();
 
-            definition.WorkingDirectory = artifactsFile.ExtractedTo;
-
+            if (!artifactsFile.IsValidSignature(request.ArtifactsSig))
+            {
+                artifactsFile.Extract();
+                definition.WorkingDirectory = artifactsFile.ExtractedTo;
+            }
+            
             return definition;
         }
     }

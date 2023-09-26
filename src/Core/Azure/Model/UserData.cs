@@ -17,6 +17,8 @@ namespace Modm.Azure.Model
 
         public required string ArtifactsUri { get; set; }
 
+        public required string ArtifactsSig { get; set; }
+
         [JsonConverter(typeof(DictionaryStringObjectJsonConverter))]
         public Dictionary<string, object> Parameters { get; set; }
 
@@ -41,6 +43,7 @@ namespace Modm.Azure.Model
         public bool IsValid()
         {
             return !string.IsNullOrEmpty(this.ArtifactsUri)
+                && !string.IsNullOrEmpty(this.ArtifactsSig)
                 && Uri.IsWellFormedUriString(this.ArtifactsUri, UriKind.Absolute);
         }
     }
