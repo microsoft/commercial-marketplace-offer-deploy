@@ -35,10 +35,12 @@ namespace Modm.Tests
 			var builds = Substitute.For<JenkinsNET.JenkinsClientBuilds>();
 			builds.GetAsync<JenkinsBuildBase>(Arg.Any<string>(), Arg.Any<string>())
 				.Returns(new JenkinsBuildBase(new XDocument()));
-
             jenkinsClient.Builds.Returns(builds);
 
-
+            var jenkinsQueue = Substitute.For<JenkinsNET.JenkinsClientQueue>();
+			jenkinsQueue.GetAllItemsAsync().Returns(new JenkinsQueueItem[] { });
+			jenkinsClient.Queue.Returns(jenkinsQueue);
+            
             configuration = Substitute.For<IConfiguration>();
 
 			homePath = Path.GetTempPath();
@@ -60,8 +62,18 @@ namespace Modm.Tests
 
 		}
 
+        [Fact]
+		public async Task should_detect_not_startable()
+		{
+            var result = await pipeline.Execute(new StartDeploymentRequest
+            {
+                ArtifactsUri = "https://amastorageprodus.blob.core.windows.net/applicationdefinitions/A00B7_31E9F9A09FD24294A0A30101246D9700_D688E1539FCEA5BF3E9A2A0FE44B8625FE5CE8F431AD872520418A7B6116BCB8/f61384f88a23433f9b7943151d825d26/content.zip",
+                Parameters = new Dictionary<string, object>()
+            });
+        }
 
-		private StartDeploymentRequestPipeline GetInstance()
+
+        private StartDeploymentRequestPipeline GetInstance()
 		{
 			var services = new ServiceCollection();
 
