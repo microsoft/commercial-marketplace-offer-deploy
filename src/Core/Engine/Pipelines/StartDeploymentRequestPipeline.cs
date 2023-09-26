@@ -153,7 +153,7 @@ namespace Modm.Engine.Pipelines
 
                 return true;
             }
-            catch (JenkinsNET.Exceptions.JenkinsJobGetBuildException ex)
+            catch (JenkinsJobGetBuildException)
             {
                 logger.LogWarning($"No previous builds found for {deployment.Definition.DeploymentType} due to a 404 response. Assuming the job is startable.");
                 return true;
