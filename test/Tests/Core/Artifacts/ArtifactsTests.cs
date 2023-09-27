@@ -34,6 +34,25 @@ namespace Modm.Tests.Core.Artifacts
                 Directory.Delete(tempDir, true);
             }
         }
+
+        [Fact]
+        public async Task signature_should_validate()
+        {
+            string expectedSig = "3be95f70f2a217ac0278cd62d72fdf12732f9a69e92db77f2a70f5f3e6996e2a";
+            // Get the current executing directory.
+            string currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            currentDirectory = Path.Combine(currentDirectory, "Core");
+            currentDirectory = Path.Combine(currentDirectory, "Artifacts");
+
+            // Construct the path to the content.zip file.
+            string filePath = Path.Combine(currentDirectory, "content.zip");
+            //string filePath = "./content.zip";
+
+            var artifactsFile = new ArtifactsFile(filePath);
+            bool isValid = artifactsFile.IsValidSignature(expectedSig);
+
+            Assert.True(isValid);
+        }
     }
 }
 

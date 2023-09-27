@@ -8,6 +8,7 @@ namespace Modm.Deployments
         internal CreateDeploymentDefinition(StartDeploymentRequest request)
         {
             this.ArtifactsUri = request.ArtifactsUri;
+            this.ArtifactsHash = request.ArtifactsHash;
             this.Parameters = request.Parameters;
         }
     }

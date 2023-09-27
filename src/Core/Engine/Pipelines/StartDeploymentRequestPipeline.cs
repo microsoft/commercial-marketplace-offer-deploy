@@ -1,4 +1,5 @@
 ﻿using JenkinsNET.Models;
+using JenkinsNET.Exceptions;
 using MediatR;
 using MediatR.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
@@ -94,15 +95,20 @@ namespace Modm.Engine.Pipelines
         public async Task<StartDeploymentResult> Handle(StartDeploymentRequest request, RequestHandlerDelegate<StartDeploymentResult> next, CancellationToken cancellationToken)
         {
             var result = await next();
-            var deployment = result.Deployment;
+            if (result.Errors == null)
+            {
+                result.Errors = new List<string>();
+            }
 
+            var deployment = result.Deployment;
+            
             await UpdateStatus(deployment);
 
-            bool isStartable = await IsStartable(result.Deployment);
+            bool isStartable = await IsStartable(deployment);
             if (!isStartable)
             {
                 deployment.Id = -1;
-                result.Errors.Add("Deployment is not startable");
+                AddError(result, "Deployment is not startable");
                 return result;
             }
 
@@ -115,13 +121,23 @@ namespace Modm.Engine.Pipelines
             }
             catch (Exception ex)
             {
-                result.Errors.Add(ex.Message);
+                AddError(result, ex.Message);
                 logger.LogError(ex, "Failure to submit to jenkins");
             }
 
             result.Deployment = deployment;
 
             return result;
+        }
+
+        private void AddError(StartDeploymentResult result, string error)
+        {
+            if (result.Errors == null)
+            {
+                result.Errors = new List<string>();
+            }
+
+            result.Errors.Add(error);
         }
 
         private async Task<bool> IsStartable(Deployment deployment)
@@ -150,6 +166,11 @@ namespace Modm.Engine.Pipelines
                     return false;
                 }
 
+                return true;
+            }
+            catch (JenkinsJobGetBuildException)
+            {
+                logger.LogWarning($"No previous builds found for {deployment.Definition.DeploymentType} due to a 404 response. Assuming the job is startable.");
                 return true;
             }
             catch (Exception ex)

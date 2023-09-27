@@ -47,4 +47,9 @@
     <Folder Include="Core\Engine\Jenkins\Client\" />
     <Folder Include="Fakes\" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Core\Artifacts\content.zip">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+</ItemGroup>
 </Project>
