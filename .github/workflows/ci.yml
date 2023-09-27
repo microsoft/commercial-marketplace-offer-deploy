@@ -1,86 +1,57 @@
-name: Build and Publish Virtual Machine Images
-
-permissions:
-  id-token: write
-  contents: read
+name: Build and Test Solution
 
 on:
+  pull_request:
+    types:
+      - opened
+    # target only main branch that the PR is attempting to merge to
+    branches:
+      - main
+  # support manually triggering
   workflow_dispatch:
 
 env:
-  image_version: 0.0.${{ github.run_number }}
+  working_directory: src/
 
-  # reference
-  # conditional steps: https://www.meziantou.net/executing-github-actions-jobs-or-steps-only-when-specific-files-change.htm
 jobs:
-  build-vm-images:
+  build:
     runs-on: ubuntu-latest
-    environment: dev  
-    env:
-      PKR_VAR_client_id: ${{ secrets.PACKER_CLIENT_ID }}
-      PKR_VAR_client_secret: ${{ secrets.PACKER_CLIENT_SECRET }}
-      PKR_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      PKR_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
-      PKR_VAR_resource_group: ${{ vars.resource_group }}
-      PKR_VAR_location: ${{ vars.location }}
-      PKR_VAR_image_gallery_name: ${{ vars.image_gallery_name }}
-      PKR_VAR_base_image_name: ${{ vars.base_image_name }}
-      PKR_VAR_build_resource_group_name: ${{ vars.build_resource_group_name }}
-
+    strategy:
+      matrix:
+        dotnet-version: [ '7.0.x' ]
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: '100'
-  
-      # Give an id to the step, so we can reference it later
-    - name: Check If Base Image Should Be Built
-      id: check_base_changed
-      run: |
-        # Diff HEAD with the previous commit
-        diff=$(git diff --name-only HEAD^ HEAD)
+      - uses: actions/checkout@v4
+      - name: Setup dotnet ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
 
-        if [ "$(echo $diff | grep -c "^build/vmi/modm-base")" -ge 1 ]; then
-          echo "base_changed=true" >> "$GITHUB_OUTPUT"
-        else
-          echo "base_changed=false" >> "$GITHUB_OUTPUT"
-        fi
-    - name: Azure Login
-      uses: azure/login@v1
-      with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    
-    - name: Install Packer
-      uses: hashicorp/packer-github-actions@master
-      with:
-        command: version
-        target: .
-  
-      # only build the VMI base if the base files have changed in some way
-      # This guarantees that the base image image will be built first if there's
-      # changes made to it. 
-      #
-      # Given that the modm vmi packer defaults to "latest" base image version,
-      # it will pick up the base VMI built here
-    - name: Build Base VMI
-      if: steps.check_base_changed.outputs.base_changed == 'true'
-      run: |
-        source ./build/vmi/scripts/nextversion.sh
-        local image_version=$(get_next_image_version \
-          --image-name ${{ vars.base_image_name }} \
-          --gallery-name ${{ vars.image_gallery_name }} \
-          --resource-group ${{ vars.resource_group }})
+      # print current dotnet version
+      - name: Display dotnet version
+        run: dotnet --version
 
-        ./scripts/build-vmi.sh \
-          --image-name ${{ vars.base_image_name }} \
-          --image-version $image_version \
-          --image-offer ${{ vars.base_image_offer }} 
- 
-    - name: Build VMI
-      run: |
-        ./scripts/build-vmi.sh \
-          --image-name ${{ vars.image_name }} \
-          --image-version ${{ env.image_version }} \
-          --image-offer ${{ vars.image_offer }} 
+      - name: Cache packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          # Look to see if there is a cache hit for the corresponding requirements file
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget
+
+      - name: Build
+        run: dotnet build
+        working-directory: ${{ env.working_directory }}
+
+      - name: Test with the dotnet CLI
+        run: dotnet test --logger trx --results-directory "TestResults-${{ matrix.dotnet-version }}"
+        working-directory: ${{ env.working_directory }}
+
+      - name: Upload dotnet test results
+        uses: actions/upload-artifact@v3
+        # Use always() to always run this step to publish test results when there are test failures
+        if: ${{ always() }}
+        with:
+          name: dotnet-results-${{ matrix.dotnet-version }}
+          path: ${{ env.working_directory }}/TestResults-${{ matrix.dotnet-version }}
+        
