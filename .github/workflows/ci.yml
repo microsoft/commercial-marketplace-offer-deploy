@@ -1,4 +1,4 @@
-name: d
+name: Build and Test Solution
 
 on:
   pull_request:
