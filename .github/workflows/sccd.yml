@@ -1,4 +1,4 @@
-name: Build Service Catalog Managed Application
+name: Build Service Catalog Managed Applications
 
 permissions:
   id-token: write
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  app_version: 0.0.${{ github.run_number }}
+  app_version: ${{ vars.major_version_number }}.${{ vars.minor_version_number }}.${{ github.run_number }}
 
   # reference
   # conditional steps: https://www.meziantou.net/executing-github-actions-jobs-or-steps-only-when-specific-files-change.htm
