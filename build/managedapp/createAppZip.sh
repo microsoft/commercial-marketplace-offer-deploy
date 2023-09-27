@@ -39,7 +39,7 @@ echo "removing TEMP_FILE: $TEMP_FILE"
 rm $TEMP_FILE 2> /dev/null
 echo "$(ls -la ./obj)"
 echo "creating TEMP_FILE with replacement: $TEMP_FILE"
-sed "s|<CONTENT_SIG>|$hash_value|g" "$main_template_file" > "$TEMP_FILE"
+sed "s|<CONTENT_HASH>|$hash_value|g" "$main_template_file" > "$TEMP_FILE"
 echo "$(ls -la ./obj)"
 
 echo "removing main_template_file: $main_template_file"

@@ -11,7 +11,7 @@ namespace Modm.Deployments
 				return Uri.TryCreate(value, new UriCreationOptions { DangerousDisablePathAndQueryCanonicalization = false }, out var result);
 			});
 
-			RuleFor(x => x.ArtifactsSig).NotEmpty().NotNull();
+			RuleFor(x => x.ArtifactsHash).NotEmpty().NotNull();
 
 			RuleFor(x => x.Parameters).NotNull();
 		} 

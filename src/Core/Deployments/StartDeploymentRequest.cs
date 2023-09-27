@@ -16,7 +16,7 @@ namespace Modm.Deployments
 		/// <summary>
 		/// The origional signature of the Artifacts located at ArtifactsUri, used to verify it hasn't been tampered with
 		/// </summary>
-		public string ArtifactsSig { get; set; }
+		public string ArtifactsHash { get; set; }
 
 		/// <summary>
 		/// The deployment parameters
