@@ -32,6 +32,11 @@ namespace Modm.Deployments
         /// </summary>
         public ArtifactsUri Source { get; set; }
 
+        /// <summary>
+        /// The origional hash of the Artifacts content
+        /// </summary>
+        public string ArtifactsSig { get; set; }
+
         [JsonConverter(typeof(DictionaryStringObjectJsonConverter))]
         public Dictionary<string, object> Parameters { get; set; }
 

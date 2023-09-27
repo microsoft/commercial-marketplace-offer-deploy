@@ -40,6 +40,7 @@ namespace Modm.Engine.Pipelines
             return Task.FromResult(new DeploymentDefinition
             {
                 Source = request.GetUri(),
+                ArtifactsSig = request.ArtifactsSig,
                 Parameters = request.Parameters
             });
         }
@@ -61,10 +62,11 @@ namespace Modm.Engine.Pipelines
         public async Task<DeploymentDefinition> Handle(CreateDeploymentDefinition request, RequestHandlerDelegate<DeploymentDefinition> next, CancellationToken cancellationToken)
         {
             var definition = await next();
+            definition.ArtifactsSig = request.ArtifactsSig;
 
             var artifactsFile = await downloader.DownloadAsync(definition.Source);
 
-            if (!artifactsFile.IsValidSignature(request.ArtifactsSig))
+            if (artifactsFile.IsValidSignature(request.ArtifactsSig))
             {
                 artifactsFile.Extract();
                 definition.WorkingDirectory = artifactsFile.ExtractedTo;
