@@ -56,6 +56,7 @@ cp -f "$TEMP_FILE" "$main_template_file"
 echo "$(ls -la ./obj)"
 
 # Create the zip file including the specified files and directories
-zip -FS -j "$package_file" "$main_template_file" "$create_ui_definition_file" "$view_definition_file" ./obj/content.zip
+# reoving "$view_definition_file" for now
+zip -FS -j "$package_file" "$main_template_file" "$create_ui_definition_file" ./obj/content.zip
 
 echo "Package app.zip created in the bin directory."
