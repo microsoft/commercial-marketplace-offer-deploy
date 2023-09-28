@@ -6,7 +6,7 @@ Today, the Azure Marketplace primarily supports deployments via ARM templates. T
 
 Enter the Marketplace Offer Deployment Module (MODM). MODM is designed to bridge this gap, allowing publishers to bring their existing solutions, even those based on Terraform, to the Azure Marketplace with ease. By using MODM, publishers can seamlessly package their solutions and ensure their compatibility with the Azure Marketplace's deployment mechanisms.
 
-When packaging a solution, publishers will include a `manifest.json` within their `content.zip`. This manifest informs the MODM about the solution type and how to process it. A sample `manifest.json` is provided below:
+When packaging a solution, publishers will include a `manifest.json` within their solution in a file called `content.zip`. This manifest informs the MODM about the solution type and how to process it. A sample `manifest.json` is provided below:
 
 ```json
 {
