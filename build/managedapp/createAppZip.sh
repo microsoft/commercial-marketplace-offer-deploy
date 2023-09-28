@@ -12,6 +12,10 @@ main_template_file="./obj/mainTemplate.json"
 create_ui_definition_file="./obj/createUiDefinition.json"
 view_definition_file="./obj/viewDefinition.json"
 
+# Clean directories
+rm ./obj/content.zip 2> /dev/null
+rm "$package_file" 2> /dev/null
+
 original_dir=$(pwd)
 echo "The original directory is: $original_dir"
 # Change the directory to the scenario's location

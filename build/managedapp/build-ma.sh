@@ -35,9 +35,10 @@ sed "s|<IMAGE_REFERENCE>|$DEPLOYED_IMAGE_REFERENCE|g" "$UIDEF_FILE" > "$TEMP_FIL
 
 rm ./obj/mainTemplate.json 2> /dev/null
 rm ./obj/viewDefinition.json 2> /dev/null
+rm ./obj/viewDefinition.json 2> /dev/null
+
 cp -f ./build/managedapp/$SCENARIO/mainTemplate.json ./obj/mainTemplate.json
 cp -f ./build/managedapp/$SCENARIO/viewDefinition.json ./obj/viewDefinition.json
-#cp -f ./build/managedapp/content.zip ./obj/content.zip
 
 echo "The ./obj directory contains: $(ls -la ./obj)"
 
