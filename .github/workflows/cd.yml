@@ -19,7 +19,7 @@ env:
   # conditional steps: https://www.meziantou.net/executing-github-actions-jobs-or-steps-only-when-specific-files-change.htm
 jobs:
   build-publish-vmis:
-    if: github.event.pull_request.merged == true
+    if: (github.event.pull_request.merged == true) || (github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     environment: dev  
     env:
@@ -71,7 +71,7 @@ jobs:
       # Given that the modm vmi packer defaults to "latest" base image version,
       # it will pick up the base VMI built here
     - name: Build Base VMI
-      if: (github.event.pull_request.merged == true) || (github.event_name == 'workflow_dispatch')
+      if: steps.check_base_changed.outputs.base_changed == 'true'
       run: |
         source ./build/vmi/scripts/nextversion.sh
         local image_version=$(get_next_image_version \
