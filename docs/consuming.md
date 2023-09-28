@@ -32,13 +32,17 @@ The ARM template provided is the backbone of the MODM solution. It provisions re
 
 Key aspects of the ARM template:
 
-- **Parameters**: Essential details required for deployment, like `location`, `adminUsername`, `adminPassword`, and `imageReference`.
+- **Parameters**: Essential details required for deployment, like `location`, `adminUsername`, `adminPassword`, and `imageReference`.  The value of these parameters are sent from the output of the `createUiDefinition.json` file. 
 - **Variables**: Pre-defined values and dynamically constructed strings used throughout the template, like VM size, network configurations, and more.
 - **Resources**: The Azure resources that will be provisioned. This includes:
   - Virtual Network and Subnet for networking.
   - Network Security Groups with rules for HTTP and HTTPS.
   - Public IP Address.
   - Virtual Machine with the specified `plan` and `imageReference` which represents the MODM offer.
+- **userDataObject**: The content that is sent to the MODM installer virtual machine.
+  - **artifactsUri**: The uri of where the `content.zip` can be downloaded.
+  - **artifactsHash**: The SHA256 hash of the `content.zip`. This hash is used by the MODM virtual machine to verify the contents of the `content.zip` file has not been tampered with after being uploaded.
+  - **parameters**: These are the parameters that will be sent as input to the solution packaged in the `content.zip` file. In the case of a terraform solution, the parameters will be converted into a variables file before exeuting the terraform template.
 - **Outputs**: Any value that needs to be returned post-deployment. In this template, it's the `adminUsername`.
 
 ## Deployment Process
