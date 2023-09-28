@@ -1,11 +1,11 @@
 ﻿using System;
 using Modm.Azure.Model;
 
-namespace Modm.Tests
+namespace Modm.Tests.UnitTests
 {
 	public class UserDataTests
 	{
-		const string Base64UserData = "eyJhcnRpZmFjdHNVcmkiOiJodHRwczovL2FtYXN0b3JhZ2Vwcm9kdXMuYmxvYi5jb3JlLndpbmRvd3MubmV0L2FwcGxpY2F0aW9uZGVmaW5pdGlvbnMvQTAwQjdfMzFFOUY5QTA5RkQyNDI5NEEwQTMwMTAxMjQ2RDk3MDBfNkE2MzM0OThBNUUzOTAyMjM4NkI3MjIzMjEwRUEwOTUwOEU0NTZCQzZFRUJGQzFDMURGN0Q4NzlCOEE5QjY4MC9jZDM3ZGIwMmE5MzM0ZWZjYmFiYzVmMDM3ZDU0ODM1MC9jb250ZW50LnppcCIsInBhcmFtZXRlcnMiOnsibG9jYXRpb24iOiJlYXN0dXMiLCJyZXNvdXJjZV9ncm91cF9uYW1lIjoicmctNjQtMjAyMzA5MjExMDE5MTUifX0=";
+		const string Base64UserData = "ewogICJhcnRpZmFjdHNVcmkiOiAiaHR0cHM6Ly9hbWFzdG9yYWdlcHJvZHVzLmJsb2IuY29yZS53aW5kb3dzLm5ldC9hcHBsaWNhdGlvbmRlZmluaXRpb25zL0EwMEI3XzMxRTlGOUEwOUZEMjQyOTRBMEEzMDEwMTI0NkQ5NzAwXzZBNjMzNDk4QTVFMzkwMjIzODZCNzIyMzIxMEVBMDk1MDhFNDU2QkM2RUVCRkMxQzFERjdEODc5QjhBOUI2ODAvY2QzN2RiMDJhOTMzNGVmY2JhYmM1ZjAzN2Q1NDgzNTAvY29udGVudC56aXAiLAogICJhcnRpZmFjdHNIYXNoIjogIiIsCiAgInBhcmFtZXRlcnMiOiB7CiAgICAibG9jYXRpb24iOiAiZWFzdHVzIiwKICAgICJyZXNvdXJjZV9ncm91cF9uYW1lIjogInJnLTY0LTIwMjMwOTIxMTAxOTE1IgogIH0KfQ==";
 
         public UserDataTests()
 		{
@@ -31,8 +31,8 @@ namespace Modm.Tests
             Assert.Equal(original.ArtifactsUri, deserialized.ArtifactsUri);
 
 			Assert.Equal(original.Parameters.Count, deserialized.Parameters.Count);
-			Assert.NotStrictEqual(original.Parameters["location"], deserialized.Parameters["location"]);
-            Assert.NotStrictEqual(original.Parameters["resource_group_name"], deserialized.Parameters["resource_group_name"]);
+			Assert.StrictEqual(original.Parameters["location"], deserialized.Parameters["location"]);
+            Assert.StrictEqual(original.Parameters["resource_group_name"], deserialized.Parameters["resource_group_name"]);
         }
     }
 }

@@ -1,0 +1,8 @@
+[*.{cs}]
+
+dotnet_style_qualification_for_method = false:silent
+# IDE0055: Fix formatting
+dotnet_diagnostic.IDE0055.severity = silent
+
+# IDE1006: Naming Styles
+dotnet_diagnostic.IDE1006.severity = none

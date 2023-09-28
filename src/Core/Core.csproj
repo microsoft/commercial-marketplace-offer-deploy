@@ -32,6 +32,10 @@
       </AssemblyAttribute>
   </ItemGroup>
 
+  <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
+    <DefineConstants>_Linux</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="Configuration\" />
     <None Remove="Azure\Model\" />
@@ -43,6 +47,7 @@
     <None Remove="Http\" />
     <None Remove="Serialization\" />
     <None Remove="Diagnostics\" />
+    <None Remove="IO\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Configuration\" />
@@ -55,5 +60,6 @@
     <Folder Include="Http\" />
     <Folder Include="Serialization\" />
     <Folder Include="Diagnostics\" />
+    <Folder Include="IO\" />
   </ItemGroup>
 </Project>

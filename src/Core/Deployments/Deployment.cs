@@ -16,6 +16,8 @@ namespace Modm.Deployments
 
 		public IEnumerable<DeploymentResource> Resources { get; set; }
 
+		public bool IsStartable { get; internal set; }
+
 		public Deployment()
 		{
 			Resources = new List<DeploymentResource>();

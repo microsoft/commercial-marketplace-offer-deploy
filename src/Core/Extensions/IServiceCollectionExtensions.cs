@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using FluentValidation;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Modm.Artifacts;
@@ -37,6 +38,8 @@ namespace Modm.Extensions
         /// <exception cref="NullReferenceException"></exception>
 		public static IServiceCollection AddDeploymentEngine(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
 		{
+            services.AddScoped<IValidator<ArtifactsFile>, ArtifactsFileValidator>();
+
             if (environment.IsDevelopment())
             {
                 services.AddSingleton<IMetadataService, LocalMetadataService>();
@@ -48,7 +51,7 @@ namespace Modm.Extensions
                 services.AddSingleton<IManagedIdentityService, DefaultManagedIdentityService>();
             }
 
-            services.AddSingleton<ArtifactsDownloader>();
+            services.AddSingleton<IArtifactsDownloader, ArtifactsDownloader>();
 
             services.AddSingleton<ApiTokenClient>();
             services.AddSingleton<JenkinsClientFactory>();
