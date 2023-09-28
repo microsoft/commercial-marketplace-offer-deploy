@@ -1,0 +1,8 @@
+{
+    "deploymentType": "terraform",
+    "mainTemplate": "main.tf",
+    "offer": {
+        "name": "VMOffer",
+        "description": "VMOffer just for you!"
+    }
+}
