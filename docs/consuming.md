@@ -33,7 +33,7 @@ The ARM template provided is the backbone of the MODM solution. It provisions re
 
 Key aspects of the ARM template:
 
-- **Parameters**: Essential details required for deployment, like `location`, `adminUsername`, `adminPassword`, and `imageReference`.  The value of these parameters are sent from the output of the `createUiDefinition.json` file. 
+- **Parameters**: Essential details required for deployment, like `location`, `adminUsername`, `adminPassword`, and `imageReference`.  The value of these parameters are sent from the output of the `createUiDefinition.json` file.  
 - **Variables**: Pre-defined values and dynamically constructed strings used throughout the template, like VM size, network configurations, and more.
 - **Resources**: The Azure resources that will be provisioned. This includes:
   - Virtual Network and Subnet for networking.
@@ -49,9 +49,17 @@ Key aspects of the ARM template:
 ## Deployment Process
 
 1. **Deploy your `app.zip`**: You will deploy your `app.zip` either through the Azure Service Catalog or the Partnercenter Marketplace.  Detailed instructions on deploying your `app.zip` can be found at [https://github.com/microsoft/commercial-marketplace-offer-deploy/blob/main/docs/deploy-app-zip.md](https://github.com/microsoft/commercial-marketplace-offer-deploy/blob/main/docs/deploy-app-zip.md).
+
 2. **Deploy using ARM Template**: Use the provided ARM template to deploy. Ensure the `_artifactsLocation` parameter points to the URI where `app.zip` resides.
-3. **MODM Execution**: Once deployed, the MODM VM will boot up, retrieve the `content.zip` from the specified `artifactsUri`, and kick off the installation process.
-4. **Accessing Your Solution**: Once MODM completes the installation, you should be able to access and interact with your solution as defined in your packaged `content.zip`.
+
+3. **MODM Execution**: Once deployed, the MODM VM will boot up, and perform the following:
+
+- Retrieve the `content.zip` from the specified `artifactsUri` 
+- Pull the parameters from the userDataObject via the verify [Azure Instance Metadata Service](https://learn.microsoft.com/en-us/azure/virtual-machines/instance-metadata-service?tabs=linux) 
+- Verify the hash to ensure `content.zip` has not been tampered with
+- Kick off the installation process.
+
+1. **Accessing Your Solution**: Once MODM completes the installation, you should be able to access and interact with your solution as defined in your packaged `content.zip`.
 
 ## Conclusion
 
