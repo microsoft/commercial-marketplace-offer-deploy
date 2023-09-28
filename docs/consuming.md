@@ -54,8 +54,8 @@ Key aspects of the ARM template:
 
 3. **MODM Execution**: Once deployed, the MODM VM will boot up, and perform the following:
 
-- Retrieve the `content.zip` from the specified `artifactsUri` 
-- Pull the parameters from the userDataObject via the verify [Azure Instance Metadata Service](https://learn.microsoft.com/en-us/azure/virtual-machines/instance-metadata-service?tabs=linux) 
+- Retrieve the `content.zip` from the specified `artifactsUri`  
+- Pull the parameters from the userDataObject via the verify [Azure Instance Metadata Service](https://learn.microsoft.com/en-us/azure/virtual-machines/instance-metadata-service?tabs=linux)  
 - Verify the hash to ensure `content.zip` has not been tampered with
 - Kick off the installation process.
 
