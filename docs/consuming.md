@@ -2,14 +2,27 @@
 
 ## Introduction
 
-The Marketplace Offer Deployment Module (MODM) is designed to streamline and automate the deployment process for the Azure Marketplace. Publishers often need to create various artifacts like `mainTemplate.json`, `createUiDefinition`, and package them into `app.zip` to have their offerings on the marketplace.
+Today, the Azure Marketplace primarily supports deployments via ARM templates. This poses a challenge for many publishers who have crafted solutions using different tools, such as Terraform. These solutions align well with the transactional nature of the Azure Marketplace, but the deployment mechanism creates a barrier.
 
-MODM offers an elegant solution to this challenge. It allows publishers to package existing solutions without getting entangled in the intricacies of marketplace artifact preparation. The essence of MODM is a VM offer that can deploy any solution compatible with Jenkins. However, the underlying Jenkins implementation is abstracted away for simplicity and future flexibility.
+Enter the Marketplace Offer Deployment Module (MODM). MODM is designed to bridge this gap, allowing publishers to bring their existing solutions, even those based on Terraform, to the Azure Marketplace with ease. By using MODM, publishers can seamlessly package their solutions and ensure their compatibility with the Azure Marketplace's deployment mechanisms.
+
+When packaging a solution, publishers will include a `manifest.json` within their `content.zip`. This manifest informs the MODM about the solution type and how to process it. A sample `manifest.json` is provided below:
+
+```json
+{
+    "deploymentType": "terraform",
+    "mainTemplate": "main.tf",
+    "offer": {
+        "name": "VMOffer",
+        "description": "VMOffer just for you!"
+    }
+}
+
 
 ## Packaging Your Solution
 
 1. **Prepare your Solution**: Ensure your solution is in a state ready for deployment.
-2. **Packaging**: Compress your solution into a file named `content.zip`.
+2. **Packaging**: Compress your solution along with `manifest.json` the  into a file named `content.zip`.
 3. **Artifacts Preparation**: Alongside your `content.zip`, ensure you have the `createUiDefinition` and `mainTemplate.json` ready. These are essential for Azure Marketplace deployments.
 4. **Final Packaging**: All the above files (`content.zip`, `createUiDefinition`, and `mainTemplate.json`) should be packaged into a single `app.zip` for deployment.
 
