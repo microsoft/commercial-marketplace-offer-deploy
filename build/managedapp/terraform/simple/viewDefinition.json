@@ -1,0 +1,29 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/0.0.1-preview/CreateUIDefinition.View.json#",
+    "views": [
+      {
+        "name": "overview",
+        "label": "Overview",
+        "sections": [
+          {
+            "name": "vmDetails",
+            "label": "Virtual Machine Details",
+            "elements": [
+              {
+                "name": "vmFQDN",
+                "type": "TextBlock",
+                "label": "Virtual Machine FQDN",
+                "value": "[[vmFQDN]]",
+                "link": {
+                  "uri": "[concat('http://', [[vmFQDN]])]",
+                  "label": "[[vmFQDN]]",
+                  "openInNewTab": true
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+  
