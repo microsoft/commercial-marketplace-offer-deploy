@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using MediatR;
 using MediatR.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Modm.Artifacts;
@@ -52,11 +53,13 @@ namespace Modm.Engine.Pipelines
     /// </summary>
 	public class DownloadAndExtractArtifactsFile : IPipelineBehavior<CreateDeploymentDefinition, DeploymentDefinition>
     {
-        private readonly ArtifactsDownloader downloader;
+        private readonly IArtifactsDownloader downloader;
+        private readonly IValidator<ArtifactsFile> validator;
 
-        public DownloadAndExtractArtifactsFile(ArtifactsDownloader downloader)
+        public DownloadAndExtractArtifactsFile(IArtifactsDownloader downloader, IValidator<ArtifactsFile> validator)
         {
             this.downloader = downloader;
+            this.validator = validator;
         }
 
         public async Task<DeploymentDefinition> Handle(CreateDeploymentDefinition request, RequestHandlerDelegate<DeploymentDefinition> next, CancellationToken cancellationToken)
@@ -66,12 +69,19 @@ namespace Modm.Engine.Pipelines
 
             var artifactsFile = await downloader.DownloadAsync(definition.Source);
 
-            if (artifactsFile.IsValidSignature(request.ArtifactsHash))
+            var context = new ValidationContext<ArtifactsFile>(artifactsFile);
+            context.RootContextData[ArtifactsFile.HashAttributeName] = request.ArtifactsHash;
+
+            var validationResult = validator.Validate(context);
+
+            if (!validationResult.IsValid)
             {
-                artifactsFile.Extract();
-                definition.WorkingDirectory = artifactsFile.ExtractedTo;
+                throw new ValidationException("Error handling artifacts extraction", validationResult.Errors);
             }
-            
+
+            artifactsFile.Extract();
+            definition.WorkingDirectory = artifactsFile.ExtractedTo;
+
             return definition;
         }
     }

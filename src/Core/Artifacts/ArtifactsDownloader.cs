@@ -3,15 +3,17 @@ using Modm.Extensions;
 
 namespace Modm.Artifacts
 {
-    public class ArtifactsDownloader
-	{
+    public class ArtifactsDownloader : IArtifactsDownloader
+    {
         private readonly HttpClient client;
         private readonly IConfiguration configuration;
+        private readonly ArtifactsFileFactory artifactsFileFactory;
 
-        public ArtifactsDownloader(HttpClient client, IConfiguration configuration)
-		{
+        public ArtifactsDownloader(HttpClient client, IConfiguration configuration, ArtifactsFileFactory artifactsFileFactory)
+        {
             this.client = client;
             this.configuration = configuration;
+            this.artifactsFileFactory = artifactsFileFactory;
         }
 
         /// <summary>
@@ -35,7 +37,7 @@ namespace Modm.Artifacts
             return artifactsFile;
         }
 
-        private static async Task<ArtifactsFile> DownloadFile(HttpResponseMessage httpResult, ArtifactsDownloadOptions options)
+        private async Task<ArtifactsFile> DownloadFile(HttpResponseMessage httpResult, ArtifactsDownloadOptions options)
         {
             var archiveFilePath = Path.GetFullPath(Path.Combine(options.SavePath, ArtifactsFile.FileName));
 
@@ -45,7 +47,7 @@ namespace Modm.Artifacts
             await resultStream.CopyToAsync(fileStream);
             await resultStream.FlushAsync();
 
-            return new ArtifactsFile(archiveFilePath);
+            return artifactsFileFactory.Create(archiveFilePath);
         }
     }
 }

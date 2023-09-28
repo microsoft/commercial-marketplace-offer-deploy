@@ -40,22 +40,7 @@ namespace Modm.Engine
         public async Task<string> GetLogs()
         {
             var deployment = await file.Read();
-
-            try
-            {
-                var text = await client.Builds.GetConsoleTextAsync(deployment.Definition.DeploymentType, deployment.Id.ToString());
-
-                if (string.IsNullOrEmpty(text))
-                {
-                    var bytes = Encoding.Default.GetBytes(text);
-                    text = Encoding.UTF8.GetString(bytes);
-                }
-                return text;
-            }
-            catch
-            {
-            }
-            return string.Empty;
+            return await client.GetBuildLogs(deployment.Definition.DeploymentType, deployment.Id);
         }
 
         public async Task<Deployment> Get()

@@ -8,7 +8,7 @@ namespace Modm.Engine.Jenkins.Client
 	/// Decorating client of the <see cref="JenkinsNET.IJenkinsClient"/> so we can include additional functionality
 	/// to interact with Jenkins
 	/// </summary>
-	public interface IJenkinsClient : JenkinsNET.IJenkinsClient
+	public interface IJenkinsClient
     {
         /// <summary>
         /// Gets information about Hudson including the version
@@ -21,6 +21,17 @@ namespace Modm.Engine.Jenkins.Client
         /// </summary>
         /// <returns></returns>
         Task<MasterComputer> GetBuiltInNode();
+
+
+        Task<string> GetBuildStatus(string jobName, int buildNumber);
+
+        Task<bool> IsJobRunningOrWasAlreadyQueued(string jobName);
+
+        Task<(int?, string)> Build(string jobName);
+
+        Task<string> GetBuildLogs(string jobName, int buildNumber);
+
+        Task<bool> IsBuilding(string jobName, int buildNumber, CancellationToken cancellationToken = default);
 	}
 }
 
