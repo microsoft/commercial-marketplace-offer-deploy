@@ -19,6 +19,7 @@ When packaging a solution, publishers will include a `manifest.json` within thei
 }
 ```
 
+A detailed specification of the `manifest.json` file can be found at [https://github.com/microsoft/commercial-marketplace-offer-deploy/blob/main/docs/manifest-json.md](https://github.com/microsoft/commercial-marketplace-offer-deploy/blob/main/docs/manifest-json.md).
 
 ## Packaging Your Solution
 
