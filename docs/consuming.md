@@ -23,7 +23,7 @@ When packaging a solution, publishers will include a `manifest.json` within thei
 
 1. **Prepare your Solution**: Ensure your solution is in a state ready for deployment.
 2. **Packaging**: Compress your solution along with `manifest.json` the  into a file named `content.zip`.
-3. **Artifacts Preparation**: Alongside your `content.zip`, ensure you have the `createUiDefinition` and `mainTemplate.json` ready. These are essential for Azure Marketplace deployments.
+3. **Artifacts Preparation**: Alongside your `content.zip`, ensure you have the `createUiDefinition` and `mainTemplate.json` ready. These are essential for Azure Marketplace deployments. An example of these files can be found at [mainTemplate.json](https://github.com/microsoft/commercial-marketplace-offer-deploy/blob/main/build/managedapp/terraform/complex/mainTemplate.json) and [createUiDefinition.json]([mainTemplate.json](https://github.com/microsoft/commercial-marketplace-offer-deploy/blob/main/build/managedapp/terraform/complex/createUiDefinition.json)).
 4. **Final Packaging**: All the above files (`content.zip`, `createUiDefinition`, and `mainTemplate.json`) should be packaged into a single `app.zip` for deployment.
 
 ## ARM Template Details
