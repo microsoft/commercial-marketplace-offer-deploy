@@ -17,7 +17,7 @@ When packaging a solution, publishers will include a `manifest.json` within thei
         "description": "VMOffer just for you!"
     }
 }
-```json
+```
 
 ## Packaging Your Solution
 
