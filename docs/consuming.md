@@ -19,6 +19,7 @@ When packaging a solution, publishers will include a `manifest.json` within thei
 }
 ```
 
+
 ## Packaging Your Solution
 
 1. **Prepare your Solution**: Ensure your solution is in a state ready for deployment.
@@ -47,7 +48,7 @@ Key aspects of the ARM template:
 
 ## Deployment Process
 
-1. **Upload your `app.zip`**: Ensure your `app.zip` (containing `content.zip`, `createUiDefinition`, and `mainTemplate.json`) is uploaded to a location accessible by Azure.
+1. **Deploy your `app.zip`**: You will deploy your `app.zip` either through the Azure Service Catalog or the Partnercenter Marketplace.  Detailed instructions on deploying your `app.zip` can be found at [https://github.com/microsoft/commercial-marketplace-offer-deploy/blob/main/docs/deploy-app-zip.md](https://github.com/microsoft/commercial-marketplace-offer-deploy/blob/main/docs/deploy-app-zip.md).
 2. **Deploy using ARM Template**: Use the provided ARM template to deploy. Ensure the `_artifactsLocation` parameter points to the URI where `app.zip` resides.
 3. **MODM Execution**: Once deployed, the MODM VM will boot up, retrieve the `content.zip` from the specified `artifactsUri`, and kick off the installation process.
 4. **Accessing Your Solution**: Once MODM completes the installation, you should be able to access and interact with your solution as defined in your packaged `content.zip`.
