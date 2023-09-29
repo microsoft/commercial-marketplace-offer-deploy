@@ -1,5 +1,6 @@
-﻿using Microsoft.Extensions.Options;
-using Modm.Http;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Modm.Engine.Jenkins.Client
 {
@@ -8,25 +9,32 @@ namespace Modm.Engine.Jenkins.Client
         private readonly JenkinsOptions options;
         private readonly HttpClient httpClient;
         private readonly ApiTokenClient apiTokenClient;
+        private readonly IServiceProvider serviceProvider;
 
-        public JenkinsClientFactory(HttpClient client, ApiTokenClient apiTokenClient, IOptions<JenkinsOptions> options)
+        public JenkinsClientFactory()
+        {
+        }
+
+        public JenkinsClientFactory(HttpClient client, ApiTokenClient apiTokenClient, IServiceProvider serviceProvider, IOptions<JenkinsOptions> options)
 		{
             this.options = options.Value;
             this.httpClient = client;
             this.apiTokenClient = apiTokenClient;
+            this.serviceProvider = serviceProvider;
         }
 
-        public async Task<IJenkinsClient> Create()
+        public virtual async Task<IJenkinsClient> Create()
         {
             // to start making calls to Jenkins, an API Token is required. Fetch this token using the provider
             var apiToken = await apiTokenClient.Get();
-
-            var client = new JenkinsClient(httpClient, options)
+            var jenkinsNetClient = new JenkinsNET.JenkinsClient(options.BaseUrl)
             {
-                BaseUrl = options.BaseUrl,
                 UserName = options.UserName,
-                ApiToken = apiToken,
+                ApiToken = apiToken
             };
+
+            var logger = serviceProvider.GetRequiredService<ILogger<JenkinsClient>>();
+            var client = new JenkinsClient(httpClient, jenkinsNetClient, logger, options);
 
             return client;
         }

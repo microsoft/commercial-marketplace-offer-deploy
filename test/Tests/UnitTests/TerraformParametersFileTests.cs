@@ -1,7 +1,7 @@
 ﻿using System;
 using Modm.Deployments;
 
-namespace Modm.Tests
+namespace Modm.Tests.UnitTests
 {
 	public class TerraformParametersFileTests
 	{

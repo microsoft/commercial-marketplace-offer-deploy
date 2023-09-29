@@ -50,14 +50,14 @@ namespace Modm.Engine
 
         async Task MonitorDeployment(CancellationToken cancellationToken)
         {
-            var isBuilding = await GetBuild(cancellationToken);
+            var isBuilding = await client.IsBuilding(name, id, cancellationToken);
 
             // wait for the deployment to complete
             while (isBuilding)
             {
                 try
                 {
-                    isBuilding = await GetBuild(cancellationToken);
+                    isBuilding = await client.IsBuilding(name, id, cancellationToken);
                 }
                 catch (Exception ex)
                 {
@@ -76,26 +76,6 @@ namespace Modm.Engine
             deploymentStarted = false;
             id = 0;
             name = string.Empty;
-        }
-
-        async Task<bool> GetBuild(CancellationToken cancellationToken)
-        {
-            try
-            {
-                var build = await client.Builds.GetAsync<JenkinsBuildBase>(name, id.ToString(), cancellationToken);
-                if (build == null)
-                {
-                    return false;
-                }
-
-                return build.Building.GetValueOrDefault(false);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Exception thrown while trying to get build status");
-            }
-
-            return false;
         }
 
         public class DeploymentStartedHandler : INotificationHandler<DeploymentStarted>

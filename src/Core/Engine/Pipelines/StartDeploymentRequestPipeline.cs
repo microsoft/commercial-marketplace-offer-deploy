@@ -31,7 +31,7 @@ namespace Modm.Engine.Pipelines
 
             c.AddRequestPostProcessor<WriteDeploymentToDisk>();
             c.AddBehavior<SubmitDeployment>();
-            c.AddBehavior<ReadDeploymentFromDisk>();
+            c.AddBehavior<ReadDeploymentFromRepository>();
             return c;
         }
     }
@@ -44,7 +44,11 @@ namespace Modm.Engine.Pipelines
     public class StartDeploymentRequestHandler : IRequestHandler<StartDeploymentRequest, StartDeploymentResult>
     {
         readonly IMediator mediator;
-        public StartDeploymentRequestHandler(IMediator mediator) => this.mediator = mediator;
+
+        public StartDeploymentRequestHandler(IMediator mediator)
+        {
+            this.mediator = mediator;
+        }
 
         public async Task<StartDeploymentResult> Handle(StartDeploymentRequest request, CancellationToken cancellationToken)
         {
@@ -64,15 +68,15 @@ namespace Modm.Engine.Pipelines
     }
 
     // #1
-    public class ReadDeploymentFromDisk : IPipelineBehavior<StartDeploymentRequest, StartDeploymentResult>
+    public class ReadDeploymentFromRepository : IPipelineBehavior<StartDeploymentRequest, StartDeploymentResult>
     {
-        private readonly DeploymentFile file;
-        public ReadDeploymentFromDisk(DeploymentFile file) => this.file = file;
+        private readonly IDeploymentRepository repository;
+        public ReadDeploymentFromRepository(IDeploymentRepository repository) => this.repository = repository;
 
         public async Task<StartDeploymentResult> Handle(StartDeploymentRequest request, RequestHandlerDelegate<StartDeploymentResult> next, CancellationToken cancellationToken)
         {
             var result = await next();
-            result.Deployment = await file.Read(cancellationToken);
+            result.Deployment = await repository.Get(cancellationToken);
 
             return result;
         }
@@ -102,10 +106,7 @@ namespace Modm.Engine.Pipelines
 
             var deployment = result.Deployment;
             
-            await UpdateStatus(deployment);
-
-            bool isStartable = await IsStartable(deployment);
-            if (!isStartable)
+            if (!deployment.IsStartable)
             {
                 deployment.Id = -1;
                 AddError(result, "Deployment is not startable");
@@ -130,7 +131,7 @@ namespace Modm.Engine.Pipelines
             return result;
         }
 
-        private void AddError(StartDeploymentResult result, string error)
+        private static void AddError(StartDeploymentResult result, string error)
         {
             if (result.Errors == null)
             {
@@ -138,46 +139,6 @@ namespace Modm.Engine.Pipelines
             }
 
             result.Errors.Add(error);
-        }
-
-        private async Task<bool> IsStartable(Deployment deployment)
-        {
-            try
-            {
-                var queueItems = await client.Queue.GetAllItemsAsync();
-
-                if (queueItems.Any(item => item.Task?.Name == deployment.Definition.DeploymentType))
-                {
-                    logger.LogDebug($"Deployment {deployment.Definition.DeploymentType} is already in the queue.");
-                    return false;
-                }
-
-                var lastBuild = await client.Builds.GetAsync<JenkinsBuildBase>(deployment.Definition.DeploymentType, "lastBuild");
-
-                if (lastBuild == null)
-                {
-                    logger.LogWarning($"Unable to fetch last build details for {deployment.Definition.DeploymentType}");
-                    return true;
-                }
-
-                if (lastBuild.Building.GetValueOrDefault(false) || !string.IsNullOrEmpty(lastBuild.Result))
-                {
-                    logger.LogDebug($"Deployment {deployment.Definition.DeploymentType} either is currently building or already completed.");
-                    return false;
-                }
-
-                return true;
-            }
-            catch (JenkinsJobGetBuildException)
-            {
-                logger.LogWarning($"No previous builds found for {deployment.Definition.DeploymentType} due to a 404 response. Assuming the job is startable.");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, $"Failed to check if the deployment is startable for {deployment.Definition.DeploymentType}");
-                return false;
-            }
         }
 
 
@@ -192,52 +153,15 @@ namespace Modm.Engine.Pipelines
 
         private async Task<bool> TryToSubmit(Deployment deployment)
         {
-            var response = await client.Jobs.BuildAsync(deployment.Definition.DeploymentType);
-            var queueId = response.GetQueueItemNumber().GetValueOrDefault(0);
+            var (id, status) = await client.Build(deployment.Definition.DeploymentType);
+            deployment.Status = status;
 
-            var failedToEnqueue = queueId == 0;
-
-            if (failedToEnqueue)
+            if (id.HasValue)
             {
-                return false;
+                deployment.Id = id.Value;
+                return true;
             }
-
-            var queueItem = await client.Queue.GetItemAsync(queueId);
-            var deploymentId = queueItem?.Executable?.Number;
-
-            if (!deploymentId.HasValue)
-            {
-                return false;
-            }
-
-            deployment.Id = deploymentId.Value;
-            deployment.Status = DeploymentStatus.Running;
-            return true;
-        }
-
-        private async Task UpdateStatus(Deployment deployment)
-        {
-            if (deployment.Id == 0 || deployment.Status == DeploymentStatus.Undefined)
-            {
-                logger.LogDebug("Deployment id is 0 or status is undefined.");
-                deployment.Status = DeploymentStatus.Undefined;
-                return;
-            }
-
-            try
-            {
-                var build = await client.Builds.GetAsync<JenkinsBuildBase>(deployment.Definition.DeploymentType, deployment.Id.ToString());
-                if (build == null)
-                {
-                    deployment.Status = DeploymentStatus.Undefined;
-                    return;
-                }
-                deployment.Status = build.Result.ToLower();
-            }
-            catch (Exception ex)
-            {
-                logger.LogWarning(ex, "Failed to get build information");
-            }
+            return false;
         }
     }
 

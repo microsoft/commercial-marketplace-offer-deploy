@@ -1,12 +1,7 @@
-
-using Azure;
 using Azure.ResourceManager;
-using Azure.ResourceManager.Resources;
 using Microsoft.AspNetCore.Mvc;
-using Modm;
-using Modm.Engine;
 
-namespace WebHost.Deployments
+namespace WebHost.WebHost.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

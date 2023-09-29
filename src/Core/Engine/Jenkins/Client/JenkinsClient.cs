@@ -1,25 +1,30 @@
-﻿using System;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.Options;
-using Polly;
-using Polly.Retry;
+using System.Threading;
+using JenkinsNET;
+using JenkinsNET.Exceptions;
+using JenkinsNET.Models;
+using Microsoft.Extensions.Logging;
+using Modm.Deployments;
 using Modm.Engine.Jenkins.Model;
 using Modm.Extensions;
 
 namespace Modm.Engine.Jenkins.Client
 {
-    class JenkinsClient : JenkinsNET.JenkinsClient, IJenkinsClient
+    class JenkinsClient : IJenkinsClient
 	{
         const string JenkinsVersionHeaderName = "X-Jenkins";
 
         private readonly HttpClient client;
+        private readonly JenkinsNET.JenkinsClient jenkinsNetClient;
         private readonly JenkinsOptions options;
-        //private readonly AsyncRetryPolicy retryPolicy;
+        private readonly ILogger<JenkinsClient> logger;
 
-        public JenkinsClient(HttpClient client, JenkinsOptions options)
+        public JenkinsClient(HttpClient client, JenkinsNET.JenkinsClient jenkinsNetClient, ILogger<JenkinsClient> logger, JenkinsOptions options)
         {
             this.client = client;
+            this.jenkinsNetClient = jenkinsNetClient;
             this.options = options;
         }
 
@@ -94,6 +99,127 @@ namespace Modm.Engine.Jenkins.Client
         private static async Task<T> Deserialize<T>(HttpResponseMessage response)
         {
             return await JsonSerializer.DeserializeAsync<T>(response.Content.ReadAsStream());
+        }
+
+        public async Task<string> GetBuildStatus(string jobName, int buildNumber)
+        {
+            var status = DeploymentStatus.Undefined;
+
+            try
+            {
+                var build = await jenkinsNetClient.Builds.GetAsync<JenkinsBuildBase>(jobName, buildNumber.ToString());
+                if (build != null && !string.IsNullOrEmpty(build.Result))
+                {
+                    status = build.Result.ToLower();
+                }
+            }
+            catch // unfortunately we have to just catch all since the jenkinsNet client will throw if it doesn't exist
+            {
+            }
+
+            return status;
+        }
+
+        public async Task<(int?, string)> Build(string jobName)
+        {
+            var response = await jenkinsNetClient.Jobs.BuildAsync(jobName);
+            var queueId = response.GetQueueItemNumber().GetValueOrDefault(0);
+
+            var failedToEnqueue = queueId == 0;
+
+            if (failedToEnqueue)
+            {
+                return (null, DeploymentStatus.Undefined);
+            }
+
+            var queueItem = await jenkinsNetClient.Queue.GetItemAsync(queueId);
+            var buildNumber = queueItem?.Executable?.Number;
+
+            if (!buildNumber.HasValue)
+            {
+                return(null, DeploymentStatus.Undefined);
+            }
+
+            return (buildNumber.Value, DeploymentStatus.Running);
+        }
+
+        public async Task<bool> IsJobRunningOrWasAlreadyQueued(string jobName)
+        {
+            try
+            {
+                var queueItems = await jenkinsNetClient.Queue.GetAllItemsAsync();
+
+                if (queueItems.Any(item => item.Task?.Name == jobName))
+                {
+                    logger.LogDebug($"Deployment {jobName} is already in the queue.");
+                    return false;
+                }
+
+                var lastBuild = await jenkinsNetClient.Builds.GetAsync<JenkinsBuildBase>(jobName, "lastBuild");
+
+                if (lastBuild == null)
+                {
+                    logger.LogWarning($"Unable to fetch last build details for {jobName}");
+                    return true;
+                }
+
+                if (lastBuild.Building.GetValueOrDefault(false) || !string.IsNullOrEmpty(lastBuild.Result))
+                {
+                    logger.LogDebug($"Deployment {jobName} either is currently building or already completed.");
+                    return false;
+                }
+
+                return true;
+            }
+            catch (JenkinsJobGetBuildException)
+            {
+                logger.LogWarning($"No previous builds found for {jobName} due to a 404 response. Assuming the job is startable.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Failed to check if the deployment is startable for {jobName}");
+                return false;
+            }
+        }
+
+        public async Task<string> GetBuildLogs(string jobName, int buildNumber)
+        {
+            try
+            {
+                var text = await jenkinsNetClient.Builds.GetConsoleTextAsync(jobName, buildNumber.ToString());
+
+                if (string.IsNullOrEmpty(text))
+                {
+                    var bytes = Encoding.Default.GetBytes(text);
+                    text = Encoding.UTF8.GetString(bytes);
+                }
+                return text;
+            }
+            catch
+            {
+            }
+            return string.Empty;
+        }
+
+        public async Task<bool> IsBuilding(string jobName, int buildNumber, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var build = await jenkinsNetClient.Builds.GetAsync<JenkinsBuildBase>(jobName, buildNumber.ToString(), cancellationToken);
+                if (build == null)
+                {
+                    return false;
+                }
+
+                return build.Building.GetValueOrDefault(false);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Exception thrown while trying to get build status");
+            }
+
+            return false;
         }
     }
 }
