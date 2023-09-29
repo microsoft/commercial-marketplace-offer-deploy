@@ -19,7 +19,7 @@ env:
   # conditional steps: https://www.meziantou.net/executing-github-actions-jobs-or-steps-only-when-specific-files-change.htm
 jobs:
   build-publish-vmis:
-    if: github.event.pull_request.merged == true
+    if: (github.event.pull_request.merged == true) || (github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     environment: dev  
     env:

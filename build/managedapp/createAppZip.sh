@@ -10,6 +10,11 @@ echo "The scenario name is: $scenario_name"
 package_file="./bin/app.zip"  # Change the path to the bin directory
 main_template_file="./obj/mainTemplate.json"
 create_ui_definition_file="./obj/createUiDefinition.json"
+view_definition_file="./obj/viewDefinition.json"
+
+# Clean directories
+rm ./obj/content.zip 2> /dev/null
+rm "$package_file" 2> /dev/null
 
 original_dir=$(pwd)
 echo "The original directory is: $original_dir"
@@ -51,6 +56,7 @@ cp -f "$TEMP_FILE" "$main_template_file"
 echo "$(ls -la ./obj)"
 
 # Create the zip file including the specified files and directories
-zip -FS -j "$package_file" "$main_template_file" "$create_ui_definition_file" ./obj/content.zip
+# reoving "$view_definition_file" for now
+zip -FS -j "$package_file" "$main_template_file" "$create_ui_definition_file" "$view_definition_file" ./obj/content.zip
 
 echo "Package app.zip created in the bin directory."

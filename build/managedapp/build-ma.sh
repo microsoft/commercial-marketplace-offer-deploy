@@ -34,8 +34,11 @@ rm $TEMP_FILE 2> /dev/null
 sed "s|<IMAGE_REFERENCE>|$DEPLOYED_IMAGE_REFERENCE|g" "$UIDEF_FILE" > "$TEMP_FILE"
 
 rm ./obj/mainTemplate.json 2> /dev/null
+rm ./obj/viewDefinition.json 2> /dev/null
+rm ./obj/viewDefinition.json 2> /dev/null
+
 cp -f ./build/managedapp/$SCENARIO/mainTemplate.json ./obj/mainTemplate.json
-#cp -f ./build/managedapp/content.zip ./obj/content.zip
+cp -f ./build/managedapp/$SCENARIO/viewDefinition.json ./obj/viewDefinition.json
 
 echo "The ./obj directory contains: $(ls -la ./obj)"
 
@@ -46,10 +49,11 @@ echo "The ./obj directory contains: $(ls -la ./obj)"
 STORAGE_ACC_RESOURCE_GROUP=$MANAGED_APP_STORAGE_RG
 STORAGE_ACC_NAME=$MANAGED_APP_STORAGE_NAME
 BUILDNUM=$(echo "$MANAGED_APP_VERSION" | awk -F. '{print $3}')
-STORAGE_CONTAINER_NAME="modm$BUILDNUM"
 MA_RESOURCE_GROUP=$STORAGE_ACC_RESOURCE_GROUP
 MODIFIED_SCENARIO=${SCENARIO//\//-}
 MA_DEFINITION_NAME="modm-$MODIFIED_SCENARIO-$MANAGED_APP_VERSION"
+MODIFIED_VERSION=${MANAGED_APP_VERSION//./-}
+STORAGE_CONTAINER_NAME="modm$MODIFIED_SCENARIO-$MODIFIED_VERSION"
 
 ./build/managedapp/createServiceDefinition.sh $STORAGE_ACC_RESOURCE_GROUP $STORAGE_ACC_NAME $STORAGE_CONTAINER_NAME $MA_RESOURCE_GROUP $MA_DEFINITION_NAME
 

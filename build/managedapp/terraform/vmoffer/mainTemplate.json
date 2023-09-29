@@ -249,6 +249,10 @@
         "adminUsername": {
             "type": "string",
             "value": "[parameters('adminUsername')]"
+        },
+        "vmFQDN": {
+            "type": "string",
+            "value": "[variables('dnsLabel')]"
         }
     }
 }
