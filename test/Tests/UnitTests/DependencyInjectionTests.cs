@@ -12,8 +12,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Modm.Tests.UnitTests
 {
-	public class DependencyInjectionTests
-	{
+    public class DependencyInjectionTests
+    {
         private readonly ITestOutputHelper output;
 
         public DependencyInjectionTests(ITestOutputHelper output)
@@ -21,9 +21,9 @@ namespace Modm.Tests.UnitTests
             this.output = output;
         }
 
-		[Fact]
-		public void ServiceHost_should_wire_up_successfully()
-		{
+        [Fact]
+        public void ServiceHost_should_wire_up_successfully()
+        {
             var context = GetHostBuilderContext();
             var services = GetServiceCollection(context);
 
@@ -95,6 +95,6 @@ namespace Modm.Tests.UnitTests
 
             return context;
         }
-	}
+    }
 }
 
