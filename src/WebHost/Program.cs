@@ -1,37 +1,7 @@
-using WebHost.Deployments;
-using FluentValidation;
-using Microsoft.Extensions.Azure;
-using Azure.Identity;
-using Modm.Extensions;
-using Modm.Deployments;
-using Modm.Engine.Behaviors;
+using Modm.WebHost;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddDefaultHttpClient();
-
-builder.Services.AddDeploymentEngine(builder.Configuration, builder.Environment);
-
-builder.Services.Configure<HostOptions>(hostOptions =>
-{
-    hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
-});
-
-builder.Services.AddControllersWithViews();
-builder.Services.AddAzureClients(clientBuilder =>
-{
-    clientBuilder.AddArmClient(builder.Configuration.GetSection("Azure"));
-    clientBuilder.UseCredential(new DefaultAzureCredential());
-});
-
-builder.Services.AddMediatR(c =>
-{
-    c.RegisterServicesFromAssemblyContaining<DeploymentsController>();
-    //c.AddOpenBehavior(typeof(LoggingBehaviour<,>));
-    //c.AddOpenBehavior(typeof(ValidationBehavior<,>));
-});
-
-builder.Services.AddValidatorsFromAssemblyContaining<StartDeploymentRequestValidator>();
+builder.Services.AddWebHost(builder.Configuration, builder.Environment);
 
 builder.Services.AddCors(options =>
 {

@@ -39,6 +39,7 @@ namespace Modm.Extensions
 		public static IServiceCollection AddDeploymentEngine(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
 		{
             services.AddScoped<IValidator<ArtifactsFile>, ArtifactsFileValidator>();
+            services.AddSingleton<ArtifactsFileFactory>();
 
             if (environment.IsDevelopment())
             {
@@ -56,6 +57,7 @@ namespace Modm.Extensions
             services.AddSingleton<ApiTokenClient>();
             services.AddSingleton<JenkinsClientFactory>();
             services.AddSingleton<DeploymentFile>();
+            services.AddSingleton<IDeploymentRepository, DefaultDeploymentRepository>();
 
             services.AddSingleton<IJenkinsClient>(provider =>
             {
