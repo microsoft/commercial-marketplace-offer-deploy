@@ -9,9 +9,13 @@ namespace Modm.Engine.Jenkins.Client
         private readonly JenkinsOptions options;
         private readonly HttpClient httpClient;
         private readonly ApiTokenClient apiTokenClient;
-        private readonly ServiceProvider serviceProvider;
+        private readonly IServiceProvider serviceProvider;
 
-        public JenkinsClientFactory(HttpClient client, ApiTokenClient apiTokenClient, ServiceProvider serviceProvider, IOptions<JenkinsOptions> options)
+        public JenkinsClientFactory()
+        {
+        }
+
+        public JenkinsClientFactory(HttpClient client, ApiTokenClient apiTokenClient, IServiceProvider serviceProvider, IOptions<JenkinsOptions> options)
 		{
             this.options = options.Value;
             this.httpClient = client;
@@ -19,7 +23,7 @@ namespace Modm.Engine.Jenkins.Client
             this.serviceProvider = serviceProvider;
         }
 
-        public async Task<IJenkinsClient> Create()
+        public virtual async Task<IJenkinsClient> Create()
         {
             // to start making calls to Jenkins, an API Token is required. Fetch this token using the provider
             var apiToken = await apiTokenClient.Get();

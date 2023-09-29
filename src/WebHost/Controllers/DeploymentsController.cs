@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Modm.Deployments;
 using Modm.Engine;
 
-namespace WebHost.Deployments
+namespace WebHost.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

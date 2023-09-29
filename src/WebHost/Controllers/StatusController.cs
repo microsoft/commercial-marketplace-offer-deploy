@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using JenkinsNET;
-using Modm.Engine.Jenkins;
+﻿using Microsoft.AspNetCore.Mvc;
 using Modm.Engine;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace WebHost.Status
+namespace WebHost.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

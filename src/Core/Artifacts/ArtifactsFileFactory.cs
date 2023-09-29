@@ -6,9 +6,9 @@ namespace Modm.Artifacts
 {
 	public class ArtifactsFileFactory
 	{
-        private readonly ServiceProvider provider;
+        private readonly IServiceProvider provider;
 
-        public ArtifactsFileFactory(ServiceProvider provider)
+        public ArtifactsFileFactory(IServiceProvider provider)
 		{
             this.provider = provider;
         }
