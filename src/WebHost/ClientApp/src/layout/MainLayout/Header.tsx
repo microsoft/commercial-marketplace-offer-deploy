@@ -18,7 +18,7 @@ const Header = () => {
   };
 
   return (
-    <header className="navbar navbar-dark sticky-top bg-blue flex-md-nowrap p-0 shadow">
+    <header className="navbar navbar-dark sticky-top bg-blue flex-md-nowrap p-0">
        <a className="position-absolute btn-link" role="button"  
        style={{ left: '20px'}}
         data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
@@ -26,7 +26,7 @@ const Header = () => {
         </a>
 
       <a className="navbar-brand col-md-3 col-lg-2 me-0 px-5 pt-2 pb-2" style={{ fontSize: 16 }} href="#">
-        Azure Marketplace Offer Deployment Manager
+        Azure Marketplace Application Installer 
       </a>
     
 

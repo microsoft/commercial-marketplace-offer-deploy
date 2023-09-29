@@ -1,37 +1,40 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBars, faDashboard, faArchive } from '@fortawesome/free-solid-svg-icons'
+import { faDashboard, faArchive } from '@fortawesome/free-solid-svg-icons'
 
-const Sidebar = () => {
+import { useState } from "react";
+import Offcanvas from "react-bootstrap/Offcanvas";
+
+export interface SidebarProps {
+  className?: string | undefined;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ className }) => {
+  const [show, setShow] = useState(true);
+
   return (
-    <>
-      <div className="offcanvas offcanvas-start offcanvas-sm-1 sidebar" tabIndex={-1} id="sidebar" 
-        data-bs-keyboard="false"  aria-labelledby="sidebarLabel">
-        <div className="offcanvas-header navbar-light" id="sidebarLabel">
-        <button className="navbar-toggler" type="button" data-bs-toggle="collapse"
-          data-bs-dismiss="offcanvas" 
-          aria-expanded="false" aria-label="Toggle navigation">
-          <FontAwesomeIcon icon={faBars} />
-        </button>
+    <Offcanvas id="offcanvas" placement="start" backdrop={false} show={show} onHide={() => setShow(false)}>
+        <Offcanvas.Header>
+          <Offcanvas.Title as="h5">Dashboard</Offcanvas.Title>
+        </Offcanvas.Header>
+        <Offcanvas.Body >
 
-        </div>
-        <div className="offcanvas-body px-0">
           <ul className="nav nav-pills flex-column mb-sm-auto mb-0 align-items-start" id="menu">
             <li className="nav-item">
               <a href={'/'} className="nav-link text-truncate">
-                <FontAwesomeIcon icon={faDashboard} />
-                <span className="ms-1 d-none d-sm-inline">Dashboard</span>
+                <FontAwesomeIcon icon={faDashboard} size='xl' />
+                <span className="ms-1 d-none d-sm-inline text-dark">Deployment</span>
               </a>
             </li>
             <li>
               <a href={'/diagnostics'} className="nav-link text-truncate">
-                <FontAwesomeIcon icon={faArchive} />
-                <span className="ms-1 d-none d-sm-inline">Diagnostics</span> 
+                <FontAwesomeIcon icon={faArchive} size='xl' />
+                <span className="ms-1 d-none d-sm-inline text-dark ml-2">Diagnostics</span> 
                 </a>
             </li>
           </ul>
-        </div>
-      </div>
-    </>
+          
+        </Offcanvas.Body>
+      </Offcanvas>
   )
 }
 

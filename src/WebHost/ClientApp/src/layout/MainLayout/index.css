@@ -8,10 +8,6 @@ body {
   font-size: .875rem;
 }
 
-.offcanvas-backdrop.show {
-  opacity: 0;
-}
-
 .offcanvas {
   --bs-offcanvas-width: 250px;
 }
@@ -19,4 +15,8 @@ body {
 .offcanvas-header {
   padding-top: 0.9em;
   padding-bottom: 0.9em;
+}
+
+.offcanvas.offcanvas-start {
+  top: 40px;
 }

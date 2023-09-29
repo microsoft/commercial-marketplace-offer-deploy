@@ -1,25 +1,32 @@
 {
-  "short_name": "MODM",
-  "name": "Azure Marketplace Offer Deployment Manager",
+  "$schema": "https://json.schemastore.org/web-manifest-combined.json",
+  "name": "Microsoft Azure Marketplace Application Installer",
+  "short_name": "Azure",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": ".",
   "icons": [
-    {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "logo192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "logo512.png",
-      "type": "image/png",
-      "sizes": "512x512"
+      {
+          "src": "./Azure.png",
+          "type": "image/png",
+          "sizes": "48x48"
+      },
+      {
+        "src": "./Azure-512p-maskable.png",
+        "type": "image/png",
+        "sizes": "512x512"
     }
   ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "prefer_related_applications": true,
+  "related_applications": [
+      {
+          "platform": "play",
+          "id": "com.microsoft.azure",
+          "url": "https://aka.ms/ReferAzureAndroidAppHome"
+      },
+      {
+          "platform": "itunes",
+          "url": "https://aka.ms/ReferAzureIOSPortalHome"
+      }
+  ]
 }
