@@ -1,37 +1,34 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBars, faDashboard, faArchive } from '@fortawesome/free-solid-svg-icons'
+import { faDashboard, faArchive } from '@fortawesome/free-solid-svg-icons'
 
-const Sidebar = () => {
+import { useState } from "react";
+import Offcanvas from "react-bootstrap/Offcanvas";
+import { Link } from 'react-router-dom';
+
+export interface SidebarProps {
+  className?: string | undefined;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ className }) => {
+  const [show, setShow] = useState(true);
+
   return (
-    <>
-      <div className="offcanvas offcanvas-start offcanvas-sm-1 sidebar" tabIndex={-1} id="sidebar" 
-        data-bs-keyboard="false"  aria-labelledby="sidebarLabel">
-        <div className="offcanvas-header navbar-light" id="sidebarLabel">
-        <button className="navbar-toggler" type="button" data-bs-toggle="collapse"
-          data-bs-dismiss="offcanvas" 
-          aria-expanded="false" aria-label="Toggle navigation">
-          <FontAwesomeIcon icon={faBars} />
-        </button>
 
-        </div>
-        <div className="offcanvas-body px-0">
-          <ul className="nav nav-pills flex-column mb-sm-auto mb-0 align-items-start" id="menu">
-            <li className="nav-item">
-              <a href={'/'} className="nav-link text-truncate">
-                <FontAwesomeIcon icon={faDashboard} />
-                <span className="ms-1 d-none d-sm-inline">Dashboard</span>
-              </a>
-            </li>
-            <li>
-              <a href={'/diagnostics'} className="nav-link text-truncate">
-                <FontAwesomeIcon icon={faArchive} />
-                <span className="ms-1 d-none d-sm-inline">Diagnostics</span> 
-                </a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </>
+    <div className="d-flex flex-column flex-shrink-0 bg-light px-2 fixed-top" style={{ zIndex: 1, width: '225px', height: '100%', top: 0, paddingTop: 65 }}>
+
+      <ul className="nav flex-column mb-auto">
+        <li className="nav-item p-2">
+          <Link to={'/'} className='nav-link text-dark' >
+            <FontAwesomeIcon icon={faDashboard} size='xl' className='text-primary' /> <span className='ml-1'>Deployment</span>
+          </Link>
+        </li>
+        <li className="nav-item p-2">
+          <Link to={'/diagnostics'} className='nav-link text-dark' >
+            <FontAwesomeIcon icon={faArchive} size='xl' className='text-primary' /> Diagnostics
+          </Link>
+        </li>
+      </ul>
+    </div>
   )
 }
 

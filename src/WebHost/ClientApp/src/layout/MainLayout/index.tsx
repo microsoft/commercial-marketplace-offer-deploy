@@ -9,10 +9,11 @@ import Container from "./Container";
 const MainLayout = () => {
   return (
     <>
-    <Sidebar></Sidebar>
     <Header />
+    <div className='d-flex'>
+    <Sidebar></Sidebar>
     <Container></Container>
-
+    </div>
     </>)
 }
 
