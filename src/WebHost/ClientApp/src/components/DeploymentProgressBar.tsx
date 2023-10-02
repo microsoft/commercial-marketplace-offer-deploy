@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ProgressIndicator } from '@fluentui/react/lib/ProgressIndicator';
 
-const intervalDelay = 100;
+const intervalDelay = 10000;
 const intervalIncrement = 0.01;
 
 export const DeploymentProgressBar: React.FunctionComponent = () => {
@@ -17,6 +17,6 @@ export const DeploymentProgressBar: React.FunctionComponent = () => {
   });
 
   return (
-    <ProgressIndicator  description="Installation progress" percentComplete={percentComplete} />
+    <ProgressIndicator barHeight={10} description="Progress" percentComplete={percentComplete} />
   );
 };

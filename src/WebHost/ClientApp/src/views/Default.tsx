@@ -57,10 +57,10 @@ export const Default = () => {
         <div className="btn-toolbar mb-2 mb-md-0">
           <div className="btn-group me-2">
             <div className="alert alert-primary mx-2 p-1 px-2">
-              Success: <strong>{deployedResources.map(r => r.state == "Success").length}</strong>
+              Success: <strong>{deployedResources.filter(r => r.state == "Succeeded").length}</strong>
             </div>
             <div className="alert alert-danger mx-2 p-1 px-2">
-              Failures: <strong>{deployedResources.map(r => r.state == "Success").length}</strong>
+              Failures: <strong>{deployedResources.filter(r => r.state == "Failed").length}</strong>
             </div>
           </div>
         </div>
