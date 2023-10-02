@@ -14,7 +14,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
 
   return (
 
-    <div className="d-flex flex-column flex-shrink-0 bg-light px-2 fixed-top" style={{ zIndex: 1, width: '250px', height: '100%', top: 0, paddingTop: 65 }}>
+    <div className="d-flex flex-column flex-shrink-0 bg-light px-2 fixed-top" style={{ zIndex: 1, width: '225px', height: '100%', top: 0, paddingTop: 65 }}>
 
       <ul className="nav flex-column mb-auto">
         <li className="nav-item p-2">

@@ -28,8 +28,8 @@ const Header = () => {
           <FontAwesomeIcon icon={faBars} size="sm" inverse />
         </a>
 
-      <a className="navbar-brand col-md-3 col-lg-2 me-0 px-5 pt-2 pb-2" style={{ fontSize: 16 }} href="#">
-        Azure Marketplace Application Installer 
+      <a className="navbar-brand col-md-3 col-lg-2 me-0 px-5 pt-2 pb-2 font-weight-bold" style={{ fontSize: 15, marginLeft: '2em' }} href={'/'}>
+        Marketplace Application Installer 
       </a>
     
 
