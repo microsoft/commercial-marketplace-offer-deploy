@@ -3,6 +3,7 @@ import { faDashboard, faArchive } from '@fortawesome/free-solid-svg-icons'
 
 import { useState } from "react";
 import Offcanvas from "react-bootstrap/Offcanvas";
+import { Link } from 'react-router-dom';
 
 export interface SidebarProps {
   className?: string | undefined;
@@ -12,29 +13,22 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   const [show, setShow] = useState(true);
 
   return (
-    <Offcanvas id="offcanvas" placement="start" backdrop={false} show={show} onHide={() => setShow(false)}>
-        <Offcanvas.Header>
-          <Offcanvas.Title as="h5">Dashboard</Offcanvas.Title>
-        </Offcanvas.Header>
-        <Offcanvas.Body >
 
-          <ul className="nav nav-pills flex-column mb-sm-auto mb-0 align-items-start" id="menu">
-            <li className="nav-item">
-              <a href={'/'} className="nav-link text-truncate">
-                <FontAwesomeIcon icon={faDashboard} size='xl' />
-                <span className="ms-1 d-none d-sm-inline text-dark">Deployment</span>
-              </a>
-            </li>
-            <li>
-              <a href={'/diagnostics'} className="nav-link text-truncate">
-                <FontAwesomeIcon icon={faArchive} size='xl' />
-                <span className="ms-1 d-none d-sm-inline text-dark ml-2">Diagnostics</span> 
-                </a>
-            </li>
-          </ul>
-          
-        </Offcanvas.Body>
-      </Offcanvas>
+    <div className="d-flex flex-column flex-shrink-0 bg-light px-2 fixed-top" style={{ zIndex: 1, width: '250px', height: '100%', top: 0, paddingTop: 65 }}>
+
+      <ul className="nav flex-column mb-auto">
+        <li className="nav-item p-2">
+          <Link to={'/'} className='nav-link text-dark' >
+            <FontAwesomeIcon icon={faDashboard} size='xl' className='text-primary' /> <span className='ml-1'>Deployment</span>
+          </Link>
+        </li>
+        <li className="nav-item p-2">
+          <Link to={'/diagnostics'} className='nav-link text-dark' >
+            <FontAwesomeIcon icon={faArchive} size='xl' className='text-primary' /> Diagnostics
+          </Link>
+        </li>
+      </ul>
+    </div>
   )
 }
 

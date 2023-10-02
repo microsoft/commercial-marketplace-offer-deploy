@@ -8,15 +8,11 @@ body {
   font-size: .875rem;
 }
 
-.offcanvas {
-  --bs-offcanvas-width: 250px;
+html, body {
+  height: 100%;
+  overflow: scroll;
 }
 
-.offcanvas-header {
-  padding-top: 0.9em;
-  padding-bottom: 0.9em;
-}
-
-.offcanvas.offcanvas-start {
-  top: 40px;
+.nav-flush .nav-link {
+  border-radius: 0;
 }

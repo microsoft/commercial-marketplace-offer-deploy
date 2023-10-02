@@ -1,7 +1,8 @@
-import { IPersonaSharedProps, Persona, PersonaSize, PersonaPresence, PersonaInitialsColor } from '@fluentui/react/lib/Persona';
+import { IPersonaSharedProps, Persona, PersonaSize, PersonaPresence, PersonaInitialsColor, IPersonaProps } from '@fluentui/react/lib/Persona';
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars, faDashboard, faArchive } from '@fortawesome/free-solid-svg-icons'
+import { IRenderFunction } from '@fluentui/react';
 
 const Header = () => {
   const [renderDetails, updateRenderDetails] = useState(true);
@@ -12,10 +13,12 @@ const Header = () => {
   const examplePersona: IPersonaSharedProps = {
     imageInitials: 'AL',
     text: 'Annie Lindqvist',
-    secondaryText: 'Software Engineer',
-    tertiaryText: 'In a meeting',
-    optionalText: 'Available at 4:00pm'
   };
+
+  const renderPrimaryTextHandler: IRenderFunction<IPersonaProps> = (props) => {
+    return <span className='position-absolute text-white' style={{ left: 'auto', right: 50, top: 0 }}>{props?.text}</span>;
+  };
+
 
   return (
     <header className="navbar navbar-dark sticky-top bg-blue flex-md-nowrap p-0">
@@ -37,13 +40,13 @@ const Header = () => {
         <div className="nav-item text-nowrap">
         <Persona
           {...examplePersona}
-          text="Annie Lindqvist (Available)"
+          text="Annie Lindqvist"
           size={PersonaSize.size24}
-          presence={PersonaPresence.online}
+          presence={PersonaPresence.none}
           hidePersonaDetails={!renderDetails}
-          initialsColor={PersonaInitialsColor.coolGray}
+          initialsColor={PersonaInitialsColor.gray}
+          onRenderPrimaryText={renderPrimaryTextHandler}
           color='white'
-          imageAlt="Annie Lindqvist, status is online"
         />
         </div>
         

@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { DetailsList, DetailsListLayoutMode, SelectionMode, IColumn } from '@fluentui/react/lib/DetailsList';
 import { AppConstants } from '../constants/app-constants';
-import { DeploymentResource } from 'models/deployment-models';
+import { DeploymentResource } from '@/models/deployment-models';
+import { DeploymentProgressBar } from '@/components/DeploymentProgressBar';
 
 
 export const Default = () => {
@@ -51,8 +52,8 @@ export const Default = () => {
 
   return (
     <>
-      <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 className="h2">Installation</h1>
+      <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
+        <h1 className="h2">Deployment Details</h1>
         <div className="btn-toolbar mb-2 mb-md-0">
           <div className="btn-group me-2">
             <div className="alert alert-primary mx-2 p-1 px-2">
@@ -63,6 +64,9 @@ export const Default = () => {
             </div>
           </div>
         </div>
+      </div>
+      <div className='border-bottom pb-5'>
+      <DeploymentProgressBar />
       </div>
       <DetailsList
         items={deployedResources}
