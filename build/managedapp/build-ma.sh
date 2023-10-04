@@ -10,8 +10,10 @@ MANAGED_APP_VERSION="$1"
 
 # in the format of {deploymentType}/{name}
 SCENARIO="$3"
+SCENARIO=${SCENARIO//$'\n'/}
+SCENARIO=${SCENARIO//$'\r'/}
+
 echo "The scenario: $SCENARIO"
-echo ""
 
 echo "creating directories in $(pwd)"
 mkdir -p ./obj
@@ -23,6 +25,7 @@ echo "The deployed image reference is: $DEPLOYED_IMAGE_REFERENCE"
 UIDEF_FILE="./build/managedapp/$SCENARIO/createUiDefinition.json"
 TEMP_FILE="./obj/createUiDefinition.json"
 
+echo "The UIDEF_FILE is: $UIDEF_FILE"
 
 # Assign the Reader role to the Managed Application Service Principal
 az role assignment create --assignee c3551f1c-671e-4495-b9aa-8d4adcd62976 --role acdd72a7-3385-48ef-bd42-f606fba81ae7 --scope "$DEPLOYED_IMAGE_REFERENCE"
@@ -31,6 +34,9 @@ az role assignment create --assignee c3551f1c-671e-4495-b9aa-8d4adcd62976 --role
 # The -i option has issues with certain platform implementations of the sed command,
 # so we use a temporary file for the output and then overwrite the original file
 rm $TEMP_FILE 2> /dev/null
+
+echo "prior to sed command, the UIDEF_FILE contains: $(cat $UIDEF_FILE)"
+
 sed "s|<IMAGE_REFERENCE>|$DEPLOYED_IMAGE_REFERENCE|g" "$UIDEF_FILE" > "$TEMP_FILE"
 
 rm ./obj/mainTemplate.json 2> /dev/null
