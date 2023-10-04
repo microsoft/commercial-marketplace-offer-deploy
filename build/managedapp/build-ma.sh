@@ -10,6 +10,7 @@ MANAGED_APP_VERSION="$1"
 
 # in the format of {deploymentType}/{name}
 SCENARIO="$3"
+SCENARIO=$(echo "$SCENARIO" | tr -d '\n')  # Removing newline using tr
 echo "The scenario: $SCENARIO"
 echo ""
 
