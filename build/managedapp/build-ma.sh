@@ -12,7 +12,6 @@ MANAGED_APP_VERSION="$1"
 SCENARIO="$3"
 SCENARIO=$(echo "$SCENARIO" | tr -d '\n')  # Removing newline using tr
 echo "The scenario: $SCENARIO"
-echo ""
 
 echo "creating directories in $(pwd)"
 mkdir -p ./obj
