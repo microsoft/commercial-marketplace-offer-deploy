@@ -23,6 +23,7 @@ echo "The deployed image reference is: $DEPLOYED_IMAGE_REFERENCE"
 UIDEF_FILE="./build/managedapp/$SCENARIO/createUiDefinition.json"
 TEMP_FILE="./obj/createUiDefinition.json"
 
+echo "The UIDEF_FILE is: $UIDEF_FILE"
 
 # Assign the Reader role to the Managed Application Service Principal
 az role assignment create --assignee c3551f1c-671e-4495-b9aa-8d4adcd62976 --role acdd72a7-3385-48ef-bd42-f606fba81ae7 --scope "$DEPLOYED_IMAGE_REFERENCE"
