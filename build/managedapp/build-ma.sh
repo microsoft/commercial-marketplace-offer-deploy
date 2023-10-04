@@ -35,9 +35,6 @@ az role assignment create --assignee c3551f1c-671e-4495-b9aa-8d4adcd62976 --role
 # so we use a temporary file for the output and then overwrite the original file
 rm $TEMP_FILE 2> /dev/null
 
-echo "prior to sed command - pwd is $(pwd)"
-echo "prior to sed command - ls of ./build/managedapp/terraform/vmoffer is $(ls -la ./build/managedapp/terraform/vmoffer)"
-echo "prior to sed comannd - the content of the ./build/managedapp/$SCENARIO directory is $(ls -la ./build/managedapp/$SCENARIO)"
 echo "prior to sed command, the UIDEF_FILE contains: $(cat $UIDEF_FILE)"
 
 sed "s|<IMAGE_REFERENCE>|$DEPLOYED_IMAGE_REFERENCE|g" "$UIDEF_FILE" > "$TEMP_FILE"
