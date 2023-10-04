@@ -1,8 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
-using JenkinsNET;
 using JenkinsNET.Exceptions;
 using JenkinsNET.Models;
 using Microsoft.Extensions.Logging;
@@ -25,6 +23,7 @@ namespace Modm.Engine.Jenkins.Client
         {
             this.client = client;
             this.jenkinsNetClient = jenkinsNetClient;
+            this.logger = logger;
             this.options = options;
         }
 
