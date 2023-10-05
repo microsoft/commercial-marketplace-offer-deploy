@@ -57,6 +57,7 @@ sed -e "s|<IMAGE_REFERENCE>|$DEPLOYED_IMAGE_REFERENCE|g" -e "s|<ZIPPED_FUNCTION>
 echo "Before sed command, the VIEWDEF_FILE contains: $(cat $VIEWDEF_FILE)"
 sed -e "s|<FUNCTION_URL>|$FUNCTION_URL|g" "$VIEWDEF_FILE" > "$TEMP_VIEWDEF_FILE"
 echo "After sed command, the TEMP_VIEWDEF_FILE contains: $(cat $TEMP_VIEWDEF_FILE)"
+echo "the location of the TEMP_VIEWDEF_FILE is: $(pwd)/$TEMP_VIEWDEF_FILE"
 
 rm ./obj/mainTemplate.json 2> /dev/null
 # rm ./obj/viewDefinition.json 2> /dev/null
