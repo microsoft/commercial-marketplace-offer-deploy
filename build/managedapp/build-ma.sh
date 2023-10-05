@@ -47,7 +47,7 @@ rm $TEMP_FILE 2> /dev/null
 echo "prior to sed command, the UIDEF_FILE contains: $(cat $UIDEF_FILE)"
 
 ./build/managedapp/createAzureFunction.sh $STORAGE_ACC_RESOURCE_GROUP $STORAGE_ACC_NAME $STORAGE_CONTAINER_NAME
-$FUNCTION_BLOB=$(az storage blob url --account-name "$STORAGE_ACC_NAME" --container-name "$STORAGE_CONTAINER_NAME" --name functionapp.zip --output tsv)
+FUNCTION_BLOB=$(az storage blob url --account-name "$STORAGE_ACC_NAME" --container-name "$STORAGE_CONTAINER_NAME" --name functionapp.zip --output tsv)
 
 sed -e "s|<IMAGE_REFERENCE>|$DEPLOYED_IMAGE_REFERENCE|g" -e "s|<ZIPPED_FUNCTION>|$FUNCTION_BLOB|g" "$UIDEF_FILE" > "$TEMP_FILE"
 
