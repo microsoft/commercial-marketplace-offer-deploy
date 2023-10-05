@@ -52,8 +52,5 @@ az storage container create \
 az storage blob upload \
     --account-name $STORAGE_ACC_NAME \
     --container-name $STORAGE_CONTAINER_NAME \
-    --type application/zip \
     --name functionapp.zip \
-    --type application/zip \
     --file $original_dir/bin/functionapp.zip
-
