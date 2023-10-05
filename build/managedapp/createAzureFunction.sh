@@ -27,33 +27,3 @@ echo "zipping the Azure Function."
 zip -r $original_dir/bin/functionapp.zip .
 echo "ls -la $original_dir/bin: $(ls -la $original_dir/bin)"
 
-# az storage account show --name "$STORAGE_ACC_NAME" --resource-group "$STORAGE_ACC_RESOURCE_GROUP" &>/dev/null
-# if [ $? -eq 0 ]; then
-#     echo "Storage account $STORAGE_ACC_NAME exists in resource group $STORAGE_ACC_RESOURCE_GROUP."
-# else
-#     echo "Storage account $STORAGE_ACC_NAME does not exist in resource group $STORAGE_ACC_RESOURCE_GROUP."
-#     echo "Creating storage account $STORAGE_ACC_NAME in resource group $STORAGE_ACC_RESOURCE_GROUP."
-#     az storage account create \
-#         --name "$STORAGE_ACC_NAME"  \
-#         --resource-group "$STORAGE_ACC_RESOURCE_GROUP" \
-#         --location eastus2  \
-#         --sku Standard_LRS \
-#         --kind StorageV2 \
-#         --allow-blob-public-access true
-# fi
-
-# echo "Creating storage account container $STORAGE_CONTAINER_NAME in storage account $STORAGE_ACC_NAME."
-# az storage container create \
-#     --account-name "$STORAGE_ACC_NAME" \
-#     --name "$STORAGE_CONTAINER_NAME" \
-#     --auth-mode login \
-#     --public-access blob
-
-# az storage blob upload \
-#     --account-name $STORAGE_ACC_NAME \
-#     --container-name $STORAGE_CONTAINER_NAME \
-#     --type application/zip \
-#     --name functionapp.zip \
-#     --type application/zip \
-#     --file ./functionapp.zip
-
