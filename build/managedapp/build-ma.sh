@@ -59,11 +59,11 @@ sed -e "s|<FUNCTION_URL>|$FUNCTION_URL|g" "$VIEWDEF_FILE" > "$TEMP_VIEWDEF_FILE"
 echo "After sed command, the TEMP_VIEWDEF_FILE contains: $(cat $TEMP_VIEWDEF_FILE)"
 
 rm ./obj/mainTemplate.json 2> /dev/null
-rm ./obj/viewDefinition.json 2> /dev/null
-rm ./obj/viewDefinition.json 2> /dev/null
+# rm ./obj/viewDefinition.json 2> /dev/null
+# rm ./obj/viewDefinition.json 2> /dev/null
 
 cp -f ./build/managedapp/$SCENARIO/mainTemplate.json ./obj/mainTemplate.json
-cp -f ./build/managedapp/$SCENARIO/viewDefinition.json ./obj/viewDefinition.json
+# cp -f ./build/managedapp/$SCENARIO/viewDefinition.json ./obj/viewDefinition.json
 
 echo "The ./obj directory contains: $(ls -la ./obj)"
 
