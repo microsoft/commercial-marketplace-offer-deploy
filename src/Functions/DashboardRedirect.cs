@@ -19,10 +19,8 @@ namespace Functions
         {
             _logger.LogInformation("C# HTTP trigger function processed a request.");
 
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
-
-            response.WriteString("Welcome to Azure Functions!");
+            var response = req.CreateResponse(HttpStatusCode.Found);
+            response.Headers.Add("Location", "http://www.microsoft.com");
 
             return response;
         }
