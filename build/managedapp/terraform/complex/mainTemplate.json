@@ -17,6 +17,9 @@
         "zippedFunction": {
             "type": "string"
         },
+        "functionAppName": {
+            "type": "string"
+        },
         "_artifactsLocation": {
             "type": "string",
             "metadata": {
@@ -54,10 +57,46 @@
     },
     "resources": [
         {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2020-12-01",
+            "name": "[parameters('functionAppName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "functionapp",
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppName'))]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "dotnet-isolated"
+                        },
+                        {
+                            "name": "WEBSITE_RUN_FROM_PACKAGE",
+                            "value": "[parameters('zippedFunction')]"
+                        }
+                    ]
+                },
+                "httpsOnly": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2020-12-01",
+            "name": "[parameters('functionAppName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "reserved": true
+            },
+            "sku": {
+                "name": "B1",
+                "tier": "Basic"
+            }
+        },
+        {
             "name": "[variables('vnetName')]",
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2021-08-01",
-            "location": "[parameters('location')]",
+            "location": "[resourceGroup().location]",
             "tags": "[variables('commonTags')]",
             "properties": {
                 "addressSpace": {
