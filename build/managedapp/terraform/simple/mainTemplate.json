@@ -17,6 +17,9 @@
         "zippedFunction": {
             "type": "string"
         },
+        "functionAppName": {
+            "type": "string"
+        },
         "_artifactsLocation": {
             "type": "string",
             "metadata": {
@@ -43,17 +46,61 @@
             "artifactsUri": "[concat(variables('artifactsContainerLocation'), '/', 'content.zip')]",
             "artifactsHash": "<CONTENT_HASH>",
             "parameters": {
+                "resource_group_name": "[resourceGroup().name]",
                 "location": "[resourceGroup().location]",
-                "resource_group_name": "[resourceGroup().name]"
+                "sql_admin_password": "[parameters('adminPassword')]"
             }
+        },
+        "commonTags": {
+            "modm": "true"
         }
     },
     "resources": [
         {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2020-12-01",
+            "name": "[parameters('functionAppName')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppName'))]"
+            ],
+            "kind": "functionapp",
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppName'))]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "dotnet-isolated"
+                        },
+                        {
+                            "name": "WEBSITE_RUN_FROM_PACKAGE",
+                            "value": "[parameters('zippedFunction')]"
+                        }
+                    ]
+                },
+                "httpsOnly": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2020-12-01",
+            "name": "[parameters('functionAppName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "reserved": true
+            },
+            "sku": {
+                "name": "B1",
+                "tier": "Basic"
+            }
+        },
+        {
             "name": "[variables('vnetName')]",
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2021-08-01",
-            "location": "[parameters('location')]",
+            "location": "[resourceGroup().location]",
+            "tags": "[variables('commonTags')]",
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
@@ -79,6 +126,7 @@
             "apiVersion": "2021-08-01",
             "name": "[variables('nsgName')]",
             "location": "[parameters('location')]",
+            "tags": "[variables('commonTags')]",
             "properties": {
                 "securityRules": [
                     {
@@ -115,6 +163,7 @@
             "name": "[variables('networkInterfaceName')]",
             "apiVersion": "2021-08-01",
             "location": "[parameters('location')]",
+            "tags": "[variables('commonTags')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]",
                 "[resourceId('Microsoft.Network/publicIpAddresses/', variables('publicIpAddressName'))]",
@@ -151,6 +200,7 @@
             "apiVersion": "2020-08-01",
             "name": "[variables('publicIpAddressName')]",
             "location": "[parameters('location')]",
+            "tags": "[variables('commonTags')]",
             "properties": {
                 "publicIpAllocationMethod": "[variables('publicIpAddressType')]",
                 "dnsSettings": {
@@ -179,6 +229,7 @@
             "apiVersion": "2022-03-01",
             "name": "[variables('virtualMachineName')]",
             "location": "[parameters('location')]",
+            "tags": "[variables('commonTags')]",
             "identity": {
                 "type": "SystemAssigned"
             },
