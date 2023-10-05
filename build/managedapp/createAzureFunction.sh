@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [ $# -ne 2 ]; then
-  echo "Usage: $0 <storage_account_name> <container_name>"
+if [ $# -ne 3 ]; then
+  echo "Usage: $0 <storage_account_resource_group> <storage_account_name> <container_name>"
   exit 1
 fi
 
