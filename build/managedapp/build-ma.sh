@@ -54,7 +54,9 @@ echo "prior to sed command, the UIDEF_FILE contains: $(cat $UIDEF_FILE)"
 FUNCTION_BLOB=$(az storage blob url --account-name "$STORAGE_ACC_NAME" --container-name "$STORAGE_CONTAINER_NAME" --name functionapp.zip --output tsv)
 
 sed -e "s|<IMAGE_REFERENCE>|$DEPLOYED_IMAGE_REFERENCE|g" -e "s|<ZIPPED_FUNCTION>|$FUNCTION_BLOB|g" "$UIDEF_FILE" > "$TEMP_FILE"
+echo "Before sed command, the VIEWDEF_FILE contains: $(cat $VIEWDEF_FILE)"
 sed -e "s|<FUNCTION_URL>|$FUNCTION_URL|g" "$VIEWDEF_FILE" > "$TEMP_VIEWDEF_FILE"
+echo "After sed command, the TEMP_VIEWDEF_FILE contains: $(cat $TEMP_VIEWDEF_FILE)"
 
 rm ./obj/mainTemplate.json 2> /dev/null
 rm ./obj/viewDefinition.json 2> /dev/null
