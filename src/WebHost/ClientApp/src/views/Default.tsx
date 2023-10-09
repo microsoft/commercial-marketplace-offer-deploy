@@ -4,8 +4,8 @@ import { Icon } from '@fluentui/react/lib/Icon';
 import { AppConstants } from '../constants/app-constants';
 import { DeploymentResource } from '@/models/deployment-models';
 import { DeploymentProgressBar } from '@/components/DeploymentProgressBar';
-import SuccessIcon from './SuccessIcon';
-import FailureIcon from './FailureIcon';
+import StyledSuccessIcon from './StyledSuccessIcon';
+import StyledFailureIcon from './StyledFailureIcon';
 import { toLocalDateTime } from '../utils/DateUtils';
 
 export const Default = () => {
@@ -21,13 +21,17 @@ export const Default = () => {
       onRender: (item: DeploymentResource) => {
         if (item.state === "Succeeded") {
           return <>
-            <SuccessIcon />
-            {item.state}
+            <span>
+              <StyledSuccessIcon style={{ marginRight: '4px' }}/>
+              {item.state}
+            </span>
           </>;
         } else if (item.state === "Failed") {
           return <>
-            <FailureIcon />
-            {item.state}
+            <span>
+              <StyledFailureIcon style={{ marginRight: '4px' }}/>
+              {item.state}
+            </span>
           </>;
         } else {
           return item.state;
@@ -76,7 +80,6 @@ export const Default = () => {
       setDeployedResources(formattedResources);
     } else {
       console.log('result.deployment.resources is false');
-      //setDeployedResources([{ name: "Resource1", type: "Storage Account", state: ProvisionState.SUCCEEDED, timestamp: "9/18/2023" }, { name: "Resource2", type: "Storage Account Container", state: ProvisionState.RUNNING, timestamp: "9/18/2023" }]);
     }
   }
 
