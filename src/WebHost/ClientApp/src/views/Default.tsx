@@ -10,6 +10,7 @@ import { toLocalDateTime } from '../utils/DateUtils';
 import { Separator } from '@fluentui/react';
 
 export const Default = () => {
+  const [filter, setFilter] = React.useState<'All' | 'Succeeded' | 'Failed'>('All');
   const [deploymentId, setDeploymentId] = React.useState<string | null>(null);
   const [subscriptionId, setSubscriptionId] = React.useState<string | null>(null);
   const [deploymentResourceGroup, setDeploymentResourceGroup] = React.useState<string | null>(null);
@@ -58,6 +59,13 @@ export const Default = () => {
   React.useEffect(() => {
     doGetDeployedResources();
   }, []);
+
+  const filteredDeployedResources = React.useMemo(() => {
+    if (filter === 'All') {
+        return deployedResources;
+    }
+    return deployedResources.filter(r => r.state === filter);
+  }, [deployedResources, filter]);
 
   const doGetDeployedResources = async () => {
     try {
@@ -110,10 +118,30 @@ export const Default = () => {
         <h1 className="h2">Deployment Details</h1>
         <div className="btn-toolbar mb-2 mb-md-0">
           <div className="btn-group me-2">
-            <div className="alert alert-primary mx-2 p-1 px-2">
+            <div 
+              className="alert alert-primary mx-2 p-1 px-2"
+              onClick={() => {
+                if (filter === 'Succeeded') {
+                    setFilter('All');
+                } else {
+                    setFilter('Succeeded');
+                }
+            }} 
+              style={{cursor: 'pointer'}}
+            >
               Success: <strong>{deployedResources.filter(r => r.state == "Succeeded").length}</strong>
             </div>
-            <div className="alert alert-danger mx-2 p-1 px-2">
+            <div 
+              className="alert alert-danger mx-2 p-1 px-2"
+              onClick={() => {
+                if (filter === 'Failed') {
+                    setFilter('All');
+                } else {
+                    setFilter('Failed');
+                }
+            }}
+              style={{cursor: 'pointer'}}
+            >
               Failures: <strong>{deployedResources.filter(r => r.state == "Failed").length}</strong>
             </div>
           </div>
@@ -161,7 +189,7 @@ export const Default = () => {
       </div>
       <Separator />
       <DetailsList
-        items={deployedResources}
+        items={filteredDeployedResources}
         columns={columns}
         selectionMode={SelectionMode.none}
         layoutMode={DetailsListLayoutMode.fixedColumns}
