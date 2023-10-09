@@ -6,6 +6,7 @@ import { DeploymentResource } from '@/models/deployment-models';
 import { DeploymentProgressBar } from '@/components/DeploymentProgressBar';
 import SuccessIcon from './SuccessIcon';
 import FailureIcon from './FailureIcon';
+import { toLocalDateTime } from '../utils/DateUtils';
 
 export const Default = () => {
   const [deployedResources, setDeployedResources] = React.useState<DeploymentResource[]>([]);
@@ -34,7 +35,15 @@ export const Default = () => {
       }
     },
     { key: 'type', name: 'Type', fieldName: 'type', minWidth: 100, maxWidth: 200, isResizable: true },
-    { key: 'timestamp', name: 'Timestamp', fieldName: 'timestamp', minWidth: 100, maxWidth: 200, isResizable: true },
+    {
+      key: 'timestamp',
+      name: 'Timestamp',
+      fieldName: 'timestamp',
+      minWidth: 100,
+      maxWidth: 200,
+      isResizable: true,
+      onRender: (item: DeploymentResource) => toLocalDateTime(item.timestamp)
+    },
   ];
 
   React.useEffect(() => {
@@ -63,6 +72,7 @@ export const Default = () => {
         type: resource.type,
         timestamp: resource.timestamp
       }));
+      console.log(`Got formatted resources ${formattedResources}`);
       setDeployedResources(formattedResources);
     } else {
       console.log('result.deployment.resources is false');
