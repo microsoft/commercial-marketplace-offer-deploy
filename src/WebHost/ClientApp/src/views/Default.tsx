@@ -1,16 +1,39 @@
 import * as React from 'react';
 import { DetailsList, DetailsListLayoutMode, SelectionMode, IColumn } from '@fluentui/react/lib/DetailsList';
+import { Icon } from '@fluentui/react/lib/Icon';
 import { AppConstants } from '../constants/app-constants';
 import { DeploymentResource } from '@/models/deployment-models';
 import { DeploymentProgressBar } from '@/components/DeploymentProgressBar';
-
+import SuccessIcon from './SuccessIcon';
+import FailureIcon from './FailureIcon';
 
 export const Default = () => {
   const [deployedResources, setDeployedResources] = React.useState<DeploymentResource[]>([]);
   const columns: IColumn[] = [
     { key: 'name', name: 'Name', fieldName: 'name', minWidth: 100, maxWidth: 200, isResizable: true },
+    {
+      key: 'state',
+      name: 'State',
+      minWidth: 100,
+      maxWidth: 200,
+      isResizable: true,
+      onRender: (item: DeploymentResource) => {
+        if (item.state === "Succeeded") {
+          return <>
+            <SuccessIcon />
+            {item.state}
+          </>;
+        } else if (item.state === "Failed") {
+          return <>
+            <FailureIcon />
+            {item.state}
+          </>;
+        } else {
+          return item.state;
+        }
+      }
+    },
     { key: 'type', name: 'Type', fieldName: 'type', minWidth: 100, maxWidth: 200, isResizable: true },
-    { key: 'state', name: 'State', fieldName: 'state', minWidth: 100, maxWidth: 200, isResizable: true },
     { key: 'timestamp', name: 'Timestamp', fieldName: 'timestamp', minWidth: 100, maxWidth: 200, isResizable: true },
   ];
 
@@ -36,8 +59,8 @@ export const Default = () => {
       console.log('result.deployment.resources is true');
       const formattedResources = result.deployment.resources.map((resource: any) => ({
         name: resource.name,
-        type: resource.type,
         state: resource.state,
+        type: resource.type,
         timestamp: resource.timestamp
       }));
       setDeployedResources(formattedResources);
@@ -45,8 +68,6 @@ export const Default = () => {
       console.log('result.deployment.resources is false');
       //setDeployedResources([{ name: "Resource1", type: "Storage Account", state: ProvisionState.SUCCEEDED, timestamp: "9/18/2023" }, { name: "Resource2", type: "Storage Account Container", state: ProvisionState.RUNNING, timestamp: "9/18/2023" }]);
     }
-
-    //console.log(result);
   }
 
 
