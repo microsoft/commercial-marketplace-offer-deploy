@@ -12,6 +12,10 @@ namespace Modm.Deployments
 
 		public string Status { get; set; }
 
+		public string ResourceGroup { get; set; }
+
+		public string SubscriptionId { get; set; }
+
 		public DeploymentDefinition Definition { get; set; }
 
 		public IEnumerable<DeploymentResource> Resources { get; set; }

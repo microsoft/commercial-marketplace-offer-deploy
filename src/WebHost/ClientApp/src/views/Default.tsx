@@ -7,9 +7,12 @@ import { DeploymentProgressBar } from '@/components/DeploymentProgressBar';
 import StyledSuccessIcon from './StyledSuccessIcon';
 import StyledFailureIcon from './StyledFailureIcon';
 import { toLocalDateTime } from '../utils/DateUtils';
+import { Separator } from '@fluentui/react';
 
 export const Default = () => {
   const [deploymentId, setDeploymentId] = React.useState<string | null>(null);
+  const [subscriptionId, setSubscriptionId] = React.useState<string | null>(null);
+  const [deploymentResourceGroup, setDeploymentResourceGroup] = React.useState<string | null>(null);
   const [deployedResources, setDeployedResources] = React.useState<DeploymentResource[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
   const columns: IColumn[] = [
@@ -72,8 +75,13 @@ export const Default = () => {
       const result = await response.json();
       console.log(JSON.stringify(result, null, 2));
       if (result.deployment && result.deployment.id !== undefined && result.deployment.id !== null) {
-        console.log(`Deployment Id: ${result.deployment.id}`);
         setDeploymentId(result.deployment.id);
+      }
+      if (result.deployment && result.deployment.resourceGroup !== undefined && result.deployment.resourceGroup !== null) {
+        setDeploymentResourceGroup(result.deployment.resourceGroup);
+      }
+      if (result.deployment && result.deployment.subscriptionId !== undefined && result.deployment.subscriptionId !== null) {
+        setSubscriptionId(result.deployment.subscriptionId);
       }
 
       if (result.deployment.resources) {
@@ -111,6 +119,7 @@ export const Default = () => {
           </div>
         </div>
       </div>
+      <Separator />
       <div>
             {(() => {
               if (loading) return <h4>Loading...</h4>; 
@@ -144,13 +153,13 @@ export const Default = () => {
 
       <div className="row mt-3">
         <div className="col-md-6">
-          <strong>Subscription: </strong> Placeholder text
+          <strong>Subscription: </strong> {subscriptionId}
         </div>
         <div className="col-md-6">
-          <strong>Resource Group: </strong> Placeholder text
+          <strong>Resource Group: </strong> {deploymentResourceGroup}
         </div>
       </div>
-
+      <Separator />
       <DetailsList
         items={deployedResources}
         columns={columns}
@@ -158,6 +167,7 @@ export const Default = () => {
         layoutMode={DetailsListLayoutMode.fixedColumns}
         constrainMode={ConstrainMode.unconstrained}
       />
+
     </>
   );
 }
