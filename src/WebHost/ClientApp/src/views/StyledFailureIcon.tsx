@@ -1,7 +1,7 @@
 import React from 'react';
 import FailureIcon from './FailureIcon';
 
-const StyledFailureIcon = (props) => (
+const StyledFailureIcon = (props: { style: React.CSSProperties | undefined; }) => (
     <span style={props.style}>
       <FailureIcon />
     </span>

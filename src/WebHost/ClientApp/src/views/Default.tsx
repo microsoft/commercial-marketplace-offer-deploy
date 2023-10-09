@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { DetailsList, DetailsListLayoutMode, SelectionMode, IColumn } from '@fluentui/react/lib/DetailsList';
+import { DetailsList, DetailsListLayoutMode, SelectionMode, IColumn, ConstrainMode } from '@fluentui/react/lib/DetailsList';
 import { Icon } from '@fluentui/react/lib/Icon';
 import { AppConstants } from '../constants/app-constants';
 import { DeploymentResource } from '@/models/deployment-models';
@@ -9,14 +9,16 @@ import StyledFailureIcon from './StyledFailureIcon';
 import { toLocalDateTime } from '../utils/DateUtils';
 
 export const Default = () => {
+  const [deploymentId, setDeploymentId] = React.useState<string | null>(null);
   const [deployedResources, setDeployedResources] = React.useState<DeploymentResource[]>([]);
+  const [loading, setLoading] = React.useState<boolean>(true);
   const columns: IColumn[] = [
     { key: 'name', name: 'Name', fieldName: 'name', minWidth: 100, maxWidth: 200, isResizable: true },
     {
       key: 'state',
-      name: 'State',
-      minWidth: 100,
-      maxWidth: 200,
+      name: 'Status',
+      minWidth: 50,
+      maxWidth: 150,
       isResizable: true,
       onRender: (item: DeploymentResource) => {
         if (item.state === "Succeeded") {
@@ -55,34 +57,44 @@ export const Default = () => {
   }, []);
 
   const doGetDeployedResources = async () => {
-    const backendUrl = AppConstants.baseUrl;
-    const response = await fetch(`${backendUrl}/api/Deployments`, {
-      headers: {
-        Accept: 'application/json',
-      },
-    });
+    try {
+      const backendUrl = AppConstants.baseUrl;
+      const response = await fetch(`${backendUrl}/api/Deployments`, {
+        headers: {
+          Accept: 'application/json',
+        },
+      });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-    const result = await response.json();
+      const result = await response.json();
+      console.log(JSON.stringify(result, null, 2));
+      if (result.deployment && result.deployment.id !== undefined && result.deployment.id !== null) {
+        console.log(`Deployment Id: ${result.deployment.id}`);
+        setDeploymentId(result.deployment.id);
+      }
 
-    if (result.deployment.resources) {
-      console.log('result.deployment.resources is true');
-      const formattedResources = result.deployment.resources.map((resource: any) => ({
-        name: resource.name,
-        state: resource.state,
-        type: resource.type,
-        timestamp: resource.timestamp
-      }));
-      console.log(`Got formatted resources ${formattedResources}`);
-      setDeployedResources(formattedResources);
-    } else {
-      console.log('result.deployment.resources is false');
+      if (result.deployment.resources) {
+        const formattedResources = result.deployment.resources.map((resource: any) => ({
+          name: resource.name,
+          state: resource.state,
+          type: resource.type,
+          timestamp: resource.timestamp
+        }));
+        setDeployedResources(formattedResources);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false); // Set loading to false once data is fetched or an error occurred
     }
   }
 
+  const earliestTimestamp = deployedResources.length > 0
+  ? new Date(Math.min(...deployedResources.map(resource => new Date(resource.timestamp).getTime())))
+  : null;
 
   return (
     <>
@@ -99,14 +111,52 @@ export const Default = () => {
           </div>
         </div>
       </div>
-      <div className='border-bottom pb-5'>
-      <DeploymentProgressBar />
+      <div>
+            {(() => {
+              if (loading) return <h4>Loading...</h4>; 
+
+              const failedCount = deployedResources.filter(r => r.state === "Failed").length;
+              const successCount = deployedResources.filter(r => r.state === "Succeeded").length;
+
+              if (failedCount > 0 && (failedCount + successCount) === deployedResources.length) {
+                return <h4>Your deployment failed</h4>;
+              }
+              if (successCount === deployedResources.length) {
+                return (
+                  <h4 style={{ display: 'inline-flex', alignItems: 'center' }}>
+                    <StyledSuccessIcon style={{ marginRight: '4px' }} />
+                    <span>Your deployment succeeded</span>
+                  </h4>
+                );
+              }
+              return <h4>... Deployment is in progress</h4>;
+            })()}
       </div>
+
+      <div className="row mt-3"> {/* Added margin-top for some spacing */}
+        <div className="col-md-6">
+          <strong>Deployment Id: </strong> {deploymentId}
+        </div>
+        <div className="col-md-6">
+          <strong>Start time: </strong> {earliestTimestamp ? toLocalDateTime(earliestTimestamp.toISOString()) : 'N/A'}
+        </div>
+      </div>
+
+      <div className="row mt-3">
+        <div className="col-md-6">
+          <strong>Subscription: </strong> Placeholder text
+        </div>
+        <div className="col-md-6">
+          <strong>Resource Group: </strong> Placeholder text
+        </div>
+      </div>
+
       <DetailsList
         items={deployedResources}
         columns={columns}
         selectionMode={SelectionMode.none}
-        layoutMode={DetailsListLayoutMode.justified}
+        layoutMode={DetailsListLayoutMode.fixedColumns}
+        constrainMode={ConstrainMode.unconstrained}
       />
     </>
   );
