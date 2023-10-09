@@ -33,7 +33,9 @@ namespace Modm.Azure
                     Provider = "",
                     Publisher = "",
                     ResourceGroupName = configuration.GetSection("Azure").GetValue<string>("DefaultResourceGroupName"),
-                    SubscriptionId  = Guid.Parse(configuration.GetSection("Azure").GetValue<string>("DefaultSubscriptionId")),
+                    SubscriptionId = string.IsNullOrEmpty(configuration.GetSection("Azure").GetValue<string>("DefaultSubscriptionId"))
+                        ? Guid.Empty
+                        : Guid.Parse(configuration.GetSection("Azure").GetValue<string>("DefaultSubscriptionId")),
                     ResourceId = "",
                     Sku = "",
                     StorageProfile = new StorageProfile {
