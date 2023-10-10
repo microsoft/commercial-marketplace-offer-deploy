@@ -57,7 +57,16 @@ export const Default = () => {
   ];
 
   React.useEffect(() => {
-    doGetDeployedResources();
+    // Initial fetch
+    doGetDeployedResources(); 
+    
+    // Start the interval
+    const intervalId = setInterval(() => {
+      doGetDeployedResources();
+    }, 5000); // 5 seconds
+
+    // Clear the interval when the component unmounts
+    return () => clearInterval(intervalId);
   }, []);
 
   const filteredDeployedResources = React.useMemo(() => {
