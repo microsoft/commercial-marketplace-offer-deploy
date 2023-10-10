@@ -23,7 +23,7 @@ export const Default = () => {
   const [enableFocusTrap, setEnableFocusTrap] = React.useState(false);
 
   const columns: IColumn[] = [
-    { key: 'name', name: 'Name', fieldName: 'name', minWidth: 100, maxWidth: 200, isResizable: true },
+    { key: 'name', name: 'Name', fieldName: 'name', minWidth: 100, maxWidth: 300, isResizable: true },
     {
       key: 'state',
       name: 'Status',
@@ -50,13 +50,13 @@ export const Default = () => {
         }
       }
     },
-    { key: 'type', name: 'Type', fieldName: 'type', minWidth: 100, maxWidth: 200, isResizable: true },
+    { key: 'type', name: 'Type', fieldName: 'type', minWidth: 100, maxWidth: 300, isResizable: true },
     {
       key: 'timestamp',
       name: 'Timestamp',
       fieldName: 'timestamp',
       minWidth: 100,
-      maxWidth: 200,
+      maxWidth: 300,
       isResizable: true,
       onRender: (item: DeploymentResource) => toLocalDateTime(item.timestamp)
     },
