@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "commercial-marketplace-offer-deploy"
+version = "0.1.0"
+authors = [
+  { name="Kevin Hillinger", email="kevin.hillinger@outlook.com" },
+]
+description = "A small example package"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.7"
+dependencies = []
+classifiers=[
+  "Programming Language :: Python :: 3",
+  'Intended Audience :: Developers',
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/microsoft/commercial-marketplace-offer-deploy"
+"Bug Tracker" = "https://github.com/microsoft/commercial-marketplace-offer-deploy/issues"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"] 
+include = ["modm*"]
+exclude = ["tests*"]
