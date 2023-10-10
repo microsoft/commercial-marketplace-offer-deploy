@@ -18,7 +18,7 @@ namespace Modm.Deployments
                 var subscription = await client.GetDefaultSubscriptionAsync();
                 var resourceGroup = await subscription.GetResourceGroupAsync(resourceGroupName);
                 var resources = await resourceGroup.Value.GetGenericResourcesAsync(
-                    expand: "provisioningState,"
+                    expand: "provisioningState,createdTime,changedTime"
                     ).ToListAsync();
 
                 var filteredResources = resources.Where(r => !(r.Data.Tags?.ContainsKey("modm") == true && r.Data.Tags["modm"] == "true"));
