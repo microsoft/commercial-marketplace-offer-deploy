@@ -152,21 +152,9 @@ export const Default = () => {
 
   return (
     <>
-      
-      <FocusTrapZone disabled={!enableFocusTrap}>
-      <CommandBar
-        items={_items}
- //       overflowItems={_overflowItems}
- //       overflowButtonProps={overflowProps}
- //       farItems={_farItems}
-        ariaLabel="Inbox actions"
-        primaryGroupAriaLabel="Email actions"
-        farItemsGroupAriaLabel="More actions"
-      />
-      {/* <Checkbox label="Trap focus around command bar" checked={enableFocusTrap} onChange={onChangeEnableFocusTrap} /> */}
-    </FocusTrapZone>       
-    <Separator />
-      <div>
+      <Separator />
+
+      <div style={{ display: 'flex', alignItems: 'center' }}>
     
             {(() => {
               if (loading) return <h4>Loading...</h4>; 
@@ -188,9 +176,35 @@ export const Default = () => {
               return <h4>... {offerName} is in progress</h4>;
             })()}
 
-<div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
-        {/* <h1 className="h2">Deployment Details</h1> */}
-        <div className="btn-toolbar mb-2 mb-md-0">
+          <FocusTrapZone style={{ marginTop: '-5px' }}  disabled={!enableFocusTrap}>
+                <CommandBar
+                  items={_items}
+                  ariaLabel="Inbox actions"
+                  primaryGroupAriaLabel="Email actions"
+                  farItemsGroupAriaLabel="More actions"
+                />
+          </FocusTrapZone>  
+      </div>
+
+      <div className="row mt-3"> {/* Added margin-top for some spacing */}
+        <div className="col-md-6">
+          <strong>Deployment Id: </strong> {deploymentId}
+        </div>
+        <div className="col-md-6">
+          <strong>Start time: </strong> {earliestTimestamp ? toLocalDateTime(earliestTimestamp.toISOString()) : 'N/A'}
+        </div>
+      </div>
+
+      <div className="row mt-3">
+        <div className="col-md-6">
+          <strong>Subscription: </strong> {subscriptionId}
+        </div>
+        <div className="col-md-6">
+          <strong>Resource Group: </strong> {deploymentResourceGroup}
+        </div>
+      </div>
+
+      <div className="btn-toolbar mb-2 mb-md-0 mt-4">
           <div className="btn-group me-2">
             <div 
               className="alert alert-primary mx-2 p-1 px-2"
@@ -220,32 +234,8 @@ export const Default = () => {
             </div>
           </div>
         </div>
-      </div>
-  
-      </div>
 
-      <div className="row mt-3"> {/* Added margin-top for some spacing */}
-        <div className="col-md-6">
-          <strong>Deployment Id: </strong> {deploymentId}
-        </div>
-        <div className="col-md-6">
-          <strong>Start time: </strong> {earliestTimestamp ? toLocalDateTime(earliestTimestamp.toISOString()) : 'N/A'}
-        </div>
-      </div>
-
-      <div className="row mt-3">
-        <div className="col-md-6">
-          <strong>Subscription: </strong> {subscriptionId}
-        </div>
-        <div className="col-md-6">
-          <strong>Resource Group: </strong> {deploymentResourceGroup}
-        </div>
-      </div>
-      
       <Separator />
-
-      
-
       
       <DetailsList
         items={filteredDeployedResources}
