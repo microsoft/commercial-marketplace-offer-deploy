@@ -16,6 +16,8 @@ namespace Modm.Deployments
 
 		public string SubscriptionId { get; set; }
 
+		public string OfferName { get; set; }
+
 		public DeploymentDefinition Definition { get; set; }
 
 		public IEnumerable<DeploymentResource> Resources { get; set; }

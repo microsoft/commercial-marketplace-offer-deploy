@@ -24,7 +24,7 @@ namespace Modm.Azure
                     LicenseType = "",
                     Location = "",
                     Name = "",
-                    Offer = "",
+                    Offer = "Local Offer",
                     OsProfile = new OsProfile { AdminUsername = "", ComputerName = "", DisablePasswordAuthentication = false },
                     OsType = "",
                     PlacementGroupId = "",
