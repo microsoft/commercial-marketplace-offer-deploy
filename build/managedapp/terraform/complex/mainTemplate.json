@@ -113,7 +113,11 @@
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
                             "value": "~4"
-                          },
+                        },
+                        {
+                            "name": "DOTNET_FUNCTION_APP_LANG_VERSION",
+                            "value": "7.0"
+                        },
                         {
                             "name": "AzureWebJobsStorage",
                             "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', concat('storage', uniqueString(resourceGroup().id)), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id))), '2021-04-01').keys[0].value)]"
