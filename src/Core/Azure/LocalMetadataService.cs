@@ -24,7 +24,7 @@ namespace Modm.Azure
                     LicenseType = "",
                     Location = "",
                     Name = "",
-                    Offer = "",
+                    Offer = "Local Offer",
                     OsProfile = new OsProfile { AdminUsername = "", ComputerName = "", DisablePasswordAuthentication = false },
                     OsType = "",
                     PlacementGroupId = "",
@@ -33,6 +33,9 @@ namespace Modm.Azure
                     Provider = "",
                     Publisher = "",
                     ResourceGroupName = configuration.GetSection("Azure").GetValue<string>("DefaultResourceGroupName"),
+                    SubscriptionId = string.IsNullOrEmpty(configuration.GetSection("Azure").GetValue<string>("DefaultSubscriptionId"))
+                        ? Guid.Empty
+                        : Guid.Parse(configuration.GetSection("Azure").GetValue<string>("DefaultSubscriptionId")),
                     ResourceId = "",
                     Sku = "",
                     StorageProfile = new StorageProfile {

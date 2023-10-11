@@ -5,6 +5,13 @@ import "./index.css"
 import Sidebar from "./Sidebar";
 import Header from "./Header"
 import Container from "./Container";
+import { initializeIcons, registerIcons } from '@fluentui/react';
+
+//import { initializeIcons, registerIcons } from '@fluentui/react/lib/Icons';
+
+// This will initialize and register the Fluent UI icons.
+initializeIcons();
+
 
 const MainLayout = () => {
   return (
