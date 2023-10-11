@@ -19,6 +19,8 @@ namespace Modm.Azure.Model
 
         public required string ArtifactsHash { get; set; }
 
+        public required string FunctionAppName { get; set; }
+
         [JsonConverter(typeof(DictionaryStringObjectJsonConverter))]
         public Dictionary<string, object> Parameters { get; set; }
 

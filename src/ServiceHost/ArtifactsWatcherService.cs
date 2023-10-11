@@ -4,6 +4,7 @@ using Modm.ServiceHost.Notifications;
 using Modm.Azure.Model;
 using Modm.Azure;
 using System.Text.Json;
+using Modm.Extensions;
 
 namespace Modm.ServiceHost
 {
@@ -14,6 +15,7 @@ namespace Modm.ServiceHost
 
         private readonly IMetadataService metadataService;
         private ILogger<ArtifactsWatcherService> logger;
+        private readonly IConfiguration config;
 
         ArtifactsWatcherOptions? options;
 
@@ -22,10 +24,11 @@ namespace Modm.ServiceHost
 
         private readonly HttpClient httpClient;
 
-        public ArtifactsWatcherService(IMetadataService metadataService, HttpClient httpClient, ILogger<ArtifactsWatcherService> logger)
+        public ArtifactsWatcherService(IMetadataService metadataService, HttpClient httpClient, IConfiguration config, ILogger<ArtifactsWatcherService> logger)
 		{
             this.metadataService = metadataService;
             this.httpClient = httpClient;
+            this.config = config;
             this.logger = logger;
         }
 
@@ -39,6 +42,11 @@ namespace Modm.ServiceHost
             {
                 userDataProcessed = await TryToProcessUserData(cancellationToken);
             }
+        }
+
+        private string GetAzureFunctionPath()
+        {
+            return Path.Combine(this.config.GetHomeDirectory(), "source/src/Functions");
         }
 
         private async Task<bool> TryToProcessUserData(CancellationToken cancellation)
@@ -75,6 +83,10 @@ namespace Modm.ServiceHost
 
                 if (userData.IsValid())
                 {
+
+                    var functionPublisher = new FunctionPublisher(GetAzureFunctionPath());
+                    await functionPublisher.PublishAsync(userData.FunctionAppName);
+
                     var request = new StartDeploymentRequest
                     {
                         ArtifactsUri = userData.ArtifactsUri,
@@ -82,6 +94,7 @@ namespace Modm.ServiceHost
                         Parameters = userData.Parameters ?? new Dictionary<string, object>()
                     };
 
+                    
                     var response = await StartDeployment(request);
                     logger.LogInformation("Received deployment result, Id: {id}", response?.Deployment.Id);
 
