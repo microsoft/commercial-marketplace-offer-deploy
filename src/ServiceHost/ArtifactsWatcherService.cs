@@ -49,6 +49,19 @@ namespace Modm.ServiceHost
             return Path.Combine(this.config.GetHomeDirectory(), "source/src/Functions");
         }
 
+        private async Task PublishAzureFunctions(string functionAppName)
+        {
+            try
+            {
+                var functionPublisher = new FunctionPublisher(GetAzureFunctionPath());
+                await functionPublisher.PublishAsync(functionAppName);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error deserializing UserData or starting deployment.");
+            }
+        }
+
         private async Task<bool> TryToProcessUserData(CancellationToken cancellation)
         {
             if (attempts > MaxAttempts)
@@ -83,9 +96,9 @@ namespace Modm.ServiceHost
 
                 if (userData.IsValid())
                 {
+                    logger.LogInformation("UserData was valid");
 
-                    var functionPublisher = new FunctionPublisher(GetAzureFunctionPath());
-                    await functionPublisher.PublishAsync(userData.FunctionAppName);
+                    await PublishAzureFunctions(userData.FunctionAppName);
 
                     var request = new StartDeploymentRequest
                     {

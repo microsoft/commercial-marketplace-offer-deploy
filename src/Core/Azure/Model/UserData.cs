@@ -46,6 +46,7 @@ namespace Modm.Azure.Model
         {
             return !string.IsNullOrEmpty(this.ArtifactsUri)
                 && !string.IsNullOrEmpty(this.ArtifactsHash)
+                && !string.IsNullOrEmpty(this.FunctionAppName)
                 && Uri.IsWellFormedUriString(this.ArtifactsUri, UriKind.Absolute);
         }
     }
