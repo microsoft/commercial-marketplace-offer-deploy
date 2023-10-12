@@ -1,14 +1,10 @@
-
-# create a class called InstallerPackage
-# it has a static field on it called file_name
 import os
 from pathlib import Path
-from packaging import manifest_file
-from packaging.deployment_type import DeploymentType
-from packaging.manifest import ManifestInfo
 import packaging.zip_utils as ziputils
 import shutil
 import tempfile
+import packaging.manifest as manifest
+from .manifest import ManifestInfo
 
 class InstallerPackage:
   file_name = 'installer.pkg'
@@ -23,7 +19,7 @@ class InstallerPackage:
 
     temp_dir, templates_dir = self._get_copy_of_templates_dir()
 
-    manifest_file.write(templates_dir, self.manifest)
+    manifest.write(templates_dir, self.manifest)
     dest_file_path = Path(os.path.join(temp_dir, InstallerPackage.file_name))
 
     file = ziputils.zip_dir(templates_dir, dest_file_path)

@@ -2,9 +2,7 @@ import shutil
 import tempfile
 import unittest
 import os
-from packaging.deployment_type import DeploymentType
-from packaging.installer_package import InstallerPackage
-from packaging.manifest import ManifestInfo
+from packaging import ManifestInfo, InstallerPackage, DeploymentType
 
 class TestInstallerPackage(unittest.TestCase):
     def setUp(self):
@@ -30,7 +28,6 @@ class TestInstallerPackage(unittest.TestCase):
         temp_dir = tempfile.mkdtemp()
         self.installer_package.unpack(file, temp_dir)
 
-        print(temp_dir)
         self.assertTrue(os.path.exists(os.path.join(temp_dir, 'main.tf')))
 
         # clean up

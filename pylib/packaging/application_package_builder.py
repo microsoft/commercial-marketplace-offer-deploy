@@ -1,5 +1,3 @@
-
-
 from zipfile import ZipFile
 
 
