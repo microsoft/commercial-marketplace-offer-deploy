@@ -45,7 +45,6 @@ class InstallerPackage:
   
   def _get_copy_of_templates_dir(self):
     source_templates_dir = Path(self.manifest.main_template).parent
-    print(source_templates_dir)
     temp_dir =  tempfile.mkdtemp()
     templates_dir = Path(os.path.join(temp_dir, source_templates_dir.name))
 

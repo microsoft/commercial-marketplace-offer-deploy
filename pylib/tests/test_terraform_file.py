@@ -11,8 +11,6 @@ class TestTerraformFile(unittest.TestCase):
         variables = self.terraform_file.parse_variables()
         self.assertEqual(len(variables), 7)
 
-        
-
         self.assertEqual(variables[0].name, 'string_variable')
         self.assertEqual(variables[0].type, 'string')
 
