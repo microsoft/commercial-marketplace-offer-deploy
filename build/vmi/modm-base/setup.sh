@@ -42,7 +42,8 @@ sudo apt-get install -y dotnet-sdk-7.0
 
 echo "Installing Azure CLI"
 
-# Install Azure Functions Core needed for the Azure Function App 
+# Install Azure Functions Core needed for the Azure Function App
+# This will be used to publish the dashboard redirect
 curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
 sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
 
