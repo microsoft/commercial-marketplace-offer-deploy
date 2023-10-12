@@ -74,7 +74,8 @@ jobs:
       if: steps.check_base_changed.outputs.base_changed == 'true'
       run: |
         source ./build/vmi/scripts/nextversion.sh
-        local image_version=$(get_next_image_version \
+        echo "after sourcing nextversion.sh"
+        image_version=$(get_next_image_version \
           --image-name ${{ vars.base_image_name }} \
           --gallery-name ${{ vars.image_gallery_name }} \
           --resource-group ${{ vars.resource_group }})
