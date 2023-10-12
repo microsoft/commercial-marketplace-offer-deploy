@@ -19,6 +19,8 @@ namespace Modm.Azure.Model
 
         public required string ArtifactsHash { get; set; }
 
+        public required string FunctionAppName { get; set; }
+
         [JsonConverter(typeof(DictionaryStringObjectJsonConverter))]
         public Dictionary<string, object> Parameters { get; set; }
 
@@ -44,6 +46,7 @@ namespace Modm.Azure.Model
         {
             return !string.IsNullOrEmpty(this.ArtifactsUri)
                 && !string.IsNullOrEmpty(this.ArtifactsHash)
+                && !string.IsNullOrEmpty(this.FunctionAppName)
                 && Uri.IsWellFormedUriString(this.ArtifactsUri, UriKind.Absolute);
         }
     }

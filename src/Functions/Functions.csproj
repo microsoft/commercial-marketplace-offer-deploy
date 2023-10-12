@@ -23,9 +23,9 @@
   <ItemGroup>
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
   </ItemGroup>
-  <ItemGroup>
+  <!-- <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
-  </ItemGroup>
+  </ItemGroup> -->
 </Project>

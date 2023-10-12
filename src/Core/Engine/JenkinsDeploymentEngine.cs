@@ -46,15 +46,14 @@ namespace Modm.Engine
         public async Task<Deployment> Get()
         {
             var deployment = await file.Read();
-
+           
             // load up the resources
             var compute = (await metadataService.GetAsync()).Compute;
-            var resourceGroupName = compute.ResourceGroupName;
-            var subscriptionId = compute.SubscriptionId;
 
             deployment.SubscriptionId = compute.SubscriptionId.ToString();
-            deployment.ResourceGroup = resourceGroupName;
-            deployment.Resources = await deploymentResourcesClient.Get(resourceGroupName);
+            deployment.ResourceGroup = compute.ResourceGroupName;
+            deployment.OfferName = compute.Offer;
+            deployment.Resources = await deploymentResourcesClient.Get(compute.ResourceGroupName);
 
             return deployment;
         }

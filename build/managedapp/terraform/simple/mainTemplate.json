@@ -14,6 +14,12 @@
         "imageReference": {
             "type": "string"
         },
+        "zippedFunction": {
+            "type": "string"
+        },
+        "functionAppName": {
+            "type": "string"
+        },
         "_artifactsLocation": {
             "type": "string",
             "metadata": {
@@ -39,18 +45,107 @@
         "userDataObject": {
             "artifactsUri": "[concat(variables('artifactsContainerLocation'), '/', 'content.zip')]",
             "artifactsHash": "<CONTENT_HASH>",
+            "functionAppName": "[parameters('functionAppName')]",
             "parameters": {
+                "resource_group_name": "[resourceGroup().name]",
                 "location": "[resourceGroup().location]",
-                "resource_group_name": "[resourceGroup().name]"
+                "sql_admin_password": "[parameters('adminPassword')]"
             }
+        },
+        "commonTags": {
+            "modm": "true"
         }
     },
     "resources": [
         {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2021-04-01",
+            "name": "[concat('storage', uniqueString(resourceGroup().id))]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "supportsHttpsTrafficOnly": true
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
+            "apiVersion": "2021-04-01-preview",
+            "name": "[concat('storage', uniqueString(resourceGroup().id), '/Microsoft.Authorization/', guid(resourceGroup().id, 'storagerole'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id)))]"
+            ], 
+            "properties": {
+                "roleDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",  
+                "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionAppName')), '2020-12-01', 'Full').identity.principalId]"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2022-03-01",
+            "name": "[parameters('functionAppName')]",
+            "location": "[resourceGroup().location]",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id)))]"
+            ],
+            "kind": "functionapp,linux",
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppName'))]",
+                "linuxFxVersion": "DOTNET-ISOLATED|7.0",
+                "siteConfig": {
+                    "alwaysOn": true,
+                    "appSettings": [
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "dotnet-isolated"
+                        },
+                        {
+                            "name": "WEBSITE_RUN_FROM_PACKAGE",
+                            "value": "[parameters('zippedFunction')]"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~4"
+                        },
+                        {
+                            "name": "DOTNET_FUNCTION_APP_LANG_VERSION",
+                            "value": "7.0"
+                        },
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', concat('storage', uniqueString(resourceGroup().id)), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id))), '2021-04-01').keys[0].value)]"
+                        }
+                    ]
+                },
+                "httpsOnly": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2020-12-01",
+            "name": "[parameters('functionAppName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "reserved": true
+            },
+            "sku": {
+                "name": "B1",
+                "tier": "Basic"
+            }
+        },
+        {
             "name": "[variables('vnetName')]",
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2021-08-01",
-            "location": "[parameters('location')]",
+            "location": "[resourceGroup().location]",
+            "tags": "[variables('commonTags')]",
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
@@ -76,6 +171,7 @@
             "apiVersion": "2021-08-01",
             "name": "[variables('nsgName')]",
             "location": "[parameters('location')]",
+            "tags": "[variables('commonTags')]",
             "properties": {
                 "securityRules": [
                     {
@@ -112,6 +208,7 @@
             "name": "[variables('networkInterfaceName')]",
             "apiVersion": "2021-08-01",
             "location": "[parameters('location')]",
+            "tags": "[variables('commonTags')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]",
                 "[resourceId('Microsoft.Network/publicIpAddresses/', variables('publicIpAddressName'))]",
@@ -148,6 +245,7 @@
             "apiVersion": "2020-08-01",
             "name": "[variables('publicIpAddressName')]",
             "location": "[parameters('location')]",
+            "tags": "[variables('commonTags')]",
             "properties": {
                 "publicIpAllocationMethod": "[variables('publicIpAddressType')]",
                 "dnsSettings": {
@@ -176,6 +274,7 @@
             "apiVersion": "2022-03-01",
             "name": "[variables('virtualMachineName')]",
             "location": "[parameters('location')]",
+            "tags": "[variables('commonTags')]",
             "identity": {
                 "type": "SystemAssigned"
             },

@@ -14,6 +14,9 @@
         "imageReference": {
             "type": "string"
         },
+        "zippedFunction": {
+            "type": "string"
+        },
         "_artifactsLocation": {
             "type": "string",
             "metadata": {
@@ -39,6 +42,8 @@
         "nsgName": "[concat(variables('virtualMachineName'), '-nsg')]",
         "userDataObject": {
             "artifactsUri": "[concat(variables('artifactsContainerLocation'), '/', 'content.zip')]",
+            "artifactsHash": "<CONTENT_HASH>",
+            "functionAppName": "[parameters('functionAppName')]",
             "parameters": {
                 "subscriptionID": "[subscription().subscriptionId]",
                 "tenantID": "[subscription().tenantId]",

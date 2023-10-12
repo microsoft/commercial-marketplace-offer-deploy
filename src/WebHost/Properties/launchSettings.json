@@ -15,7 +15,8 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy",
-        "MODM_HOME": "/Users/kehilli/Workspace/github.com/microsoft/commercial-marketplace-offer-deploy/home"
+        "MODM_HOME": "/Users/bobjacobs/work/src/github.com/microsoft/commercial-marketplace-offer-deploy/home",
+        "AZURE_SUBSCRIPTION_ID": " "
       }
     },
     "IIS Express": {
