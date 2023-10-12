@@ -40,7 +40,7 @@ sudo apt-get install docker-buildx-plugin docker-compose -y
 # Install .NET 7
 sudo apt-get install -y dotnet-sdk-7.0
 
-# Install Azure Functions Core
+# Install Azure Functions Core needed for the Azure Function App
 curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
 sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
 
