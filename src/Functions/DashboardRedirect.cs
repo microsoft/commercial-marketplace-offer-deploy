@@ -15,14 +15,12 @@ namespace Functions
         }
 
         [Function("DashboardRedirect")]
-        public HttpResponseData Run([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestData req)
+        public HttpResponseData Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req)
         {
             _logger.LogInformation("C# HTTP trigger function processed a request.");
 
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
-
-            response.WriteString("Welcome to Azure Functions!");
+            var response = req.CreateResponse(HttpStatusCode.Found);
+            response.Headers.Add("Location", "http://www.microsoft.com");
 
             return response;
         }

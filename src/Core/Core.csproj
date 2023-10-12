@@ -48,6 +48,7 @@
     <None Remove="Serialization\" />
     <None Remove="Diagnostics\" />
     <None Remove="IO\" />
+    <None Remove="Compression\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Configuration\" />
@@ -61,5 +62,6 @@
     <Folder Include="Serialization\" />
     <Folder Include="Diagnostics\" />
     <Folder Include="IO\" />
+    <Folder Include="Compression\" />
   </ItemGroup>
 </Project>
