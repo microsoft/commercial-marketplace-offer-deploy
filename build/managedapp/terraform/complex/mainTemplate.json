@@ -78,6 +78,7 @@
                 "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id)))]"
             ], 
+            "properties": {
                 "principalType": "ServicePrincipal",
                 "roleDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",  
                 "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionAppName')), '2020-12-01', 'Full').identity.principalId]"
