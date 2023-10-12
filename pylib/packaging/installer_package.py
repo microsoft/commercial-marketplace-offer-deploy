@@ -6,7 +6,13 @@ import tempfile
 import packaging.manifest as manifest
 from .manifest import ManifestInfo
 
+
 class InstallerPackage:
+  """
+  The installer package, e.g. the installer.pkg, which is a zip archive
+  containing the application's templates and the manifest file
+  """
+    
   file_name = 'installer.pkg'
 
   def __init__(self, manifest: ManifestInfo):

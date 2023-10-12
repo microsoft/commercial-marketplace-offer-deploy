@@ -25,12 +25,15 @@ class ManifestInfo(Model):
   def to_json(self):
     return json.dumps(self.serialize(), indent=2)
   
+  def get_parameters() -> dict:
+
   def validate(self):
     validation_results = super().validate()
     
     if validation_results is None:
       validation_results = []
 
+    # validate the app's main template exists and is matching the deployment type
     main_template_file = Path(self.main_template)
     
     if not main_template_file.exists():
