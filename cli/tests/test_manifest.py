@@ -16,6 +16,13 @@ class TestManifest(unittest.TestCase):
 
         self.assertIsInstance(manifest.offer, OfferInfo)
 
+    def test_manifest_info_uses_file_ext_to_set_deployment_type(self):
+        manifest = ManifestInfo(main_template="main.tf")
+        self.assertEqual(manifest.deployment_type, DeploymentType.terraform)
+
+        manifest = ManifestInfo(main_template="main.bicep")
+        self.assertEqual(manifest.deployment_type, DeploymentType.bicep)
+
     def test_manifest_info_serialization(self):
         manifest = ManifestInfo(main_template="main.tf", deployment_type=DeploymentType.terraform)
 
@@ -42,7 +49,3 @@ class TestManifest(unittest.TestCase):
         offer = OfferInfo()
         self.assertEqual(offer.name, "")
         self.assertEqual(offer.name, "")
-
-
-if __name__ == '__main__':
-    unittest.main()

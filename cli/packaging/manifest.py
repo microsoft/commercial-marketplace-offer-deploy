@@ -21,6 +21,12 @@ class ManifestInfo(Model):
     self.main_template = kwargs.get('main_template', '')
     self.deployment_type = kwargs.get('deployment_type', '')
     self.offer = OfferInfo()
+
+    if self.deployment_type == '':
+      if self.main_template.endswith('.tf'):
+        self.deployment_type = DeploymentType.terraform
+      elif self.main_template.endswith('.bicep'):
+        self.deployment_type = DeploymentType.bicep
   
   def to_json(self):
     return json.dumps(self.serialize(), indent=2)

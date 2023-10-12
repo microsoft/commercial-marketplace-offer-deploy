@@ -10,7 +10,7 @@ from .manifest import ManifestInfo
 class InstallerPackage:
   """
   The installer package, e.g. the installer.pkg, which is a zip archive
-  containing the application's templates and the manifest file
+  containing the installer's main template (and all dependencies) and the manifest file
   """
     
   file_name = 'installer.pkg'
