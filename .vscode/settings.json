@@ -1,6 +1,6 @@
 {
     "editor.foldingStrategy": "indentation",
     "python.analysis.extraPaths": [
-        "./pylib/src"
+        "./pylib"
     ]
 }
