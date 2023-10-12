@@ -45,6 +45,7 @@ jobs:
       run: |
         # Diff HEAD with the previous commit
         diff=$(git diff --name-only HEAD^ HEAD)
+        echo "diff is $diff"
 
         if [ "$(echo $diff | grep -c "^build/vmi/modm-base")" -ge 1 ]; then
           echo "base_changed=true" >> "$GITHUB_OUTPUT"
