@@ -26,7 +26,8 @@ class ManifestInfo(Model):
     return json.dumps(self.serialize(), indent=2)
   
   def get_parameters() -> dict:
-
+    pass
+  
   def validate(self):
     validation_results = super().validate()
     

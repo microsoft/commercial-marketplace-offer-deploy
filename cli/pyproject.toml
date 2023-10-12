@@ -28,6 +28,5 @@ classifiers=[
 include-package-data = true
 
 [tool.setuptools.packages.find]
-where = ["src"] 
-include = ["modm*"]
+where = ["."] 
 exclude = ["tests*"]
