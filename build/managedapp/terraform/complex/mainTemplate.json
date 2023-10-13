@@ -29,6 +29,7 @@
         }
     },
     "variables": {
+        "isReserved": "[true()]",
         "virtualMachineSize": "Standard_D2s_v3",
         "virtualMachineName": "modm",
         "vnetName": "[concat(variables('virtualMachineName'), '-vnet')]",
@@ -98,10 +99,11 @@
             ],
             "kind": "functionapp,linux",
             "properties": {
+                "reserved": "[variables('isReserved')]",
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppName'))]",
-                "linuxFxVersion": "DOTNET-ISOLATED|7.0",
                 "siteConfig": {
                     "alwaysOn": true,
+                    "linuxFxVersion": "DOTNET-ISOLATED|7.0",
                     "appSettings": [
                         {
                             "name": "FUNCTIONS_WORKER_RUNTIME",
@@ -109,7 +111,7 @@
                         },
                         {
                             "name": "WEBSITE_RUN_FROM_PACKAGE",
-                            "value": "[parameters('zippedFunction')]"
+                            "value": "0"
                         },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
@@ -123,24 +125,33 @@
                             "name": "AzureWebJobsStorage",
                             "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', concat('storage', uniqueString(resourceGroup().id)), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id))), '2021-04-01').keys[0].value)]"
                         }
-                    ]
+                    ],
+                    "netFrameworkVersion": "7.0",
+                    "cors": {
+                        "allowedOrigins": [
+                            "*"
+                        ],
+                        "supportCredentials": false
+                    }
                 },
                 "httpsOnly": true
             }
         },
         {
             "type": "Microsoft.Web/serverfarms",
-            "apiVersion": "2020-12-01",
+            "apiVersion": "2021-02-01",
             "name": "[parameters('functionAppName')]",
             "location": "[resourceGroup().location]",
-            "properties": {
-                "reserved": true
-            },
             "sku": {
-                "name": "B1",
-                "tier": "Basic"
+              "tier": "Standard",
+              "name": "[parameters('functionAppPlanSku')]",
+              "family": "S",
+              "capacity": 1
+            },
+            "properties": {
+              "reserved": "[variables('isReserved')]"
             }
-        },
+          },
         {
             "name": "[variables('vnetName')]",
             "type": "Microsoft.Network/virtualNetworks",
