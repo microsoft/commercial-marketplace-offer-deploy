@@ -30,6 +30,7 @@
     },
     "variables": {
         "isReserved": "[true()]",
+        "functionAppPlanSku": "S1",
         "virtualMachineSize": "Standard_D2s_v3",
         "virtualMachineName": "modm",
         "vnetName": "[concat(variables('virtualMachineName'), '-vnet')]",
@@ -144,7 +145,7 @@
             "location": "[resourceGroup().location]",
             "sku": {
               "tier": "Standard",
-              "name": "[parameters('functionAppPlanSku')]",
+              "name": "[variables('functionAppPlanSku')]",
               "family": "S",
               "capacity": 1
             },
