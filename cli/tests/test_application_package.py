@@ -21,7 +21,7 @@ class TestApplicationPackage(unittest.TestCase):
 
         self.fake_create_ui_definition = self._create_fake_file('fake_create_ui_definition.json')
 
-        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s:  %(message)s')
+        logging.basicConfig(level=logging.WARN, format='%(levelname)s:  %(message)s')
 
     def tearDown(self):
         shutil.rmtree(self.test_dir)
