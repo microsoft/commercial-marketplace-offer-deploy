@@ -22,7 +22,7 @@ class ArmTemplate:
 
   def insert_parameter(self, parameter: ArmTemplateParameter):
     parameters = self.document['parameters']
-    parameters[parameter.name] = { 'type': parameter.type }
+    parameters[parameter.name] = { 'type': parameter.type.value }
 
   def to_json(self):
     return json.dumps(self.document, indent=4)

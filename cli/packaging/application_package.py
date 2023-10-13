@@ -24,7 +24,7 @@ class ApplicationPackage:
 
     """
 
-    def __init__(self, main_template: ArmTemplate, create_ui_definition: CreateUiDefinition, name="", description="") -> None:
+    def __init__(self, main_template: ArmTemplate, create_ui_definition: str | CreateUiDefinition, name="", description="") -> None:
         """
         Args:
         main_template (str): The path to the application's main template.
@@ -49,9 +49,13 @@ class ApplicationPackage:
         self.manifest.offer.description = description
 
         self.main_template = self._get_main_template()
-        self.create_ui_definition = create_ui_definition
 
-    def create(self):
+        if isinstance(create_ui_definition, str) or isinstance(create_ui_definition, Path):
+            self.create_ui_definition = CreateUiDefinition.from_file(create_ui_definition)
+        else:
+            self.create_ui_definition = create_ui_definition
+
+    def create(self) -> Path:
         template_parameters = self.manifest.get_parameters()
 
         validation_results = self.manifest.validate()
@@ -62,7 +66,9 @@ class ApplicationPackage:
             raise ValueError(f"Invalid application package: {validation_results}")
         
         self._finalize_main_template(template_parameters)
-        self._zip()
+        file = self._zip()
+
+        return file
 
     def _finalize_main_template(self, template_parameters):
         """
@@ -75,8 +81,11 @@ class ApplicationPackage:
         """
         
         self.main_template.insert_parameters(template_parameters)
+        self.main_template.document["variables"]["userData"]["parameters"] = {}
+        user_data_parameters = self.main_template.document["variables"]["userData"]["parameters"]
+
         for parameter in template_parameters:
-            self.main_template.document["variables"]["userData"][parameter.name] = f"[parameters('{parameter.name}')]"
+            user_data_parameters[parameter.name] = f"[parameters('{parameter.name}')]"
 
     def _zip(self):
         installer_package = create_installer_package(self.manifest)

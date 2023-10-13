@@ -24,7 +24,7 @@ def from_terraform_input_variable(input_variable: TerraformInputVariable) -> Arm
 
     if input_variable.type == TerraformInputVariableType.string.value:
         if input_variable.sensitive:
-            parameter_type = ArmTemplateParameterType.securestring.value
+            parameter_type = ArmTemplateParameterType.securestring
         else:
             parameter_type = ArmTemplateParameterType.string
     

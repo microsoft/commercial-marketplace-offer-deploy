@@ -25,9 +25,10 @@ class ManifestInfo(Model):
         self.offer = OfferInfo()
 
         if self.deployment_type == "":
-            if self.main_template.endswith(".tf"):
+            template = Path(self.main_template).name
+            if template.endswith(".tf"):
                 self.deployment_type = DeploymentType.terraform
-            elif self.main_template.endswith(".bicep"):
+            elif template.endswith(".bicep"):
                 self.deployment_type = DeploymentType.bicep
 
     def to_json(self):
@@ -39,8 +40,10 @@ class ManifestInfo(Model):
         """
         if self.deployment_type == DeploymentType.terraform:
             terraform_file = TerraformFile(self.main_template)
-            input_variables = terraform_file.get_input_variables()
+            input_variables = terraform_file.parse_variables()
             parameters = list(map(from_terraform_input_variable, input_variables))
+
+            return parameters
         else:
             # TODO: support bicep parameters. We'll need to convert the bicep template to ARM template first, then
             # extract the parameters from the ARM template, directly

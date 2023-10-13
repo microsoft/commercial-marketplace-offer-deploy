@@ -36,7 +36,7 @@ class CreateUiDefinition:
     @staticmethod
     def from_file(file_path):
         if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Could not find ARM template file at {file_path}")
+            raise FileNotFoundError(f"Could not find create ui definition file at {file_path}")
 
         with open(file_path, "r") as f:
             document = json.load(f)
