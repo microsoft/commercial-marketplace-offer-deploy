@@ -2,7 +2,7 @@
 # create a class enum for the terraform variable types
 from enum import Enum
 
-class VariableType(Enum):
+class TerraformInputVariableType(Enum):
   """
   An enumeration of Terraform variable types.
 
@@ -33,7 +33,7 @@ class VariableType(Enum):
         Returns:
           list: A list of all the variable types as strings.
         """
-        return list(map(lambda c: c.value, VariableType))
+        return list(map(lambda c: c.value, TerraformInputVariableType))
   
   @staticmethod
   def is_valid_type(type_string: str) -> bool:
@@ -48,5 +48,5 @@ class VariableType(Enum):
     Returns:
       bool: True if the string is a valid variable type, False otherwise.
     """
-    return type_string in VariableType.to_list()
+    return type_string in TerraformInputVariableType.to_list()
     

@@ -1,6 +1,8 @@
 import os
 import json
 
+from packaging.azure.arm_template_parameter import ArmTemplateParameter
+
 class ArmTemplate:
   def __init__(self, document):
     self.document = document
@@ -13,6 +15,17 @@ class ArmTemplate:
     # Write formatted JSON to file
     with open(file_path, 'w') as f:
       json.dump(self.document, f, indent=4)
+  
+  def insert_parameters(self, parameters: list[ArmTemplateParameter]):
+    for parameter in parameters:
+      self.insert_parameter(parameter)
+
+  def insert_parameter(self, parameter: ArmTemplateParameter):
+    parameters = self.document['parameters']
+    parameters[parameter.name] = { 'type': parameter.type }
+
+  def to_json(self):
+    return json.dumps(self.document, indent=4)
 
   @staticmethod
   def from_file(file_path):

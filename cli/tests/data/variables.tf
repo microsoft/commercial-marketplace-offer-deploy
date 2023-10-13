@@ -6,6 +6,12 @@ variable "string_variable" {
   type = string
 }
 
+variable "string_variable_sensitive" {
+  type = string
+  sensitive = true
+}
+
+
 variable "bool_variable" {
   type = bool
 }

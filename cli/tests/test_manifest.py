@@ -34,7 +34,7 @@ class TestManifest(unittest.TestCase):
         manifest = ManifestInfo(main_template="main.tf", deployment_type=DeploymentType.terraform)
 
         json_str = manifest.to_json()
-        from_json = ManifestInfo().deserialize(json.loads(json_str))
+        from_json = manifest.deserialize(json.loads(json_str))
         self.assertEqual(from_json.main_template, manifest.main_template)
 
     def test_manifest_info_serialization(self):

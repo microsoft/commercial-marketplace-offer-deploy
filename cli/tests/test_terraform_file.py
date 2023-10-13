@@ -9,25 +9,28 @@ class TestTerraformFile(unittest.TestCase):
 
     def test_parse_variables(self):
         variables = self.terraform_file.parse_variables()
-        self.assertEqual(len(variables), 7)
+        self.assertEqual(len(variables), 8)
 
         self.assertEqual(variables[0].name, 'string_variable')
         self.assertEqual(variables[0].type, 'string')
 
-        self.assertEqual(variables[1].name, 'bool_variable')
-        self.assertEqual(variables[1].type, 'bool')
+        self.assertEqual(variables[1].name, 'string_variable_sensitive')
+        self.assertEqual(variables[1].type, 'string')
 
-        self.assertEqual(variables[2].name, 'number_variable')
-        self.assertEqual(variables[2].type, 'number')
+        self.assertEqual(variables[2].name, 'bool_variable')
+        self.assertEqual(variables[2].type, 'bool')
 
-        self.assertEqual(variables[3].name, 'list_variable')
-        self.assertEqual(variables[3].type, 'list')
+        self.assertEqual(variables[3].name, 'number_variable')
+        self.assertEqual(variables[3].type, 'number')
+
+        self.assertEqual(variables[4].name, 'list_variable')
+        self.assertEqual(variables[4].type, 'list')
         
-        self.assertEqual(variables[4].name, 'set_variable')
-        self.assertEqual(variables[4].type, 'set')
+        self.assertEqual(variables[5].name, 'set_variable')
+        self.assertEqual(variables[5].type, 'set')
 
-        self.assertEqual(variables[5].name, 'object_variable')
-        self.assertEqual(variables[5].type, 'object')
+        self.assertEqual(variables[6].name, 'object_variable')
+        self.assertEqual(variables[6].type, 'object')
 
-        self.assertEqual(variables[6].name, 'map_variable')
-        self.assertEqual(variables[6].type, 'map')
+        self.assertEqual(variables[7].name, 'map_variable')
+        self.assertEqual(variables[7].type, 'map')

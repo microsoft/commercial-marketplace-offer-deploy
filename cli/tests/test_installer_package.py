@@ -21,7 +21,7 @@ class TestInstallerPackage(unittest.TestCase):
         self.assertEqual(self.installer_package.manifest.main_template, self.manifest.main_template)
 
     def test_create(self):
-        file, out_dir = self.installer_package.create()
+        file = self.installer_package.create()
         self.assertTrue(file.exists())
 
         # now unpack and verify
@@ -31,5 +31,5 @@ class TestInstallerPackage(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(temp_dir, 'main.tf')))
 
         # clean up
-        shutil.rmtree(out_dir)
+        shutil.rmtree(file.parent)
         shutil.rmtree(temp_dir)
