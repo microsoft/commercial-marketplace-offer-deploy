@@ -1,3 +1,12 @@
 {
-    "editor.foldingStrategy": "indentation"
+    "editor.foldingStrategy": "indentation",
+    "python.analysis.extraPaths": [
+        "./cli"
+    ],
+    "editor.detectIndentation": false,
+    "editor.tabSize": 4,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+    },
+    "black-formatter.args": ["--line-length", "130"]
 }
