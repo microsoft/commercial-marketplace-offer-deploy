@@ -17,7 +17,7 @@ VIEW_DEFINITION_FILE_NAME = "viewDefinition.json"
 class CreateApplicationPackageResult(Model):
     _attribute_map = {
         "file": {"key": "file", "type": "str"},
-        "validation_results": {"key": "validationResults", "type": "[any]"},
+        "validation_results": {"key": "validationResults", "type": "[object]"},
     }
     def __init__(self) -> None:
         self.file = None
@@ -34,7 +34,7 @@ class ApplicationPackage:
 
     """
 
-    def __init__(self, main_template: ArmTemplate, create_ui_definition: str | CreateUiDefinition, name="", description="") -> None:
+    def __init__(self, main_template: str, create_ui_definition: str | CreateUiDefinition, name="", description="") -> None:
         """
         Args:
         main_template (str): The path to the application's main template.
@@ -65,7 +65,19 @@ class ApplicationPackage:
         else:
             self.create_ui_definition = create_ui_definition
 
-    def create(self) -> CreateApplicationPackageResult:
+    def create(self, out_dir = None) -> CreateApplicationPackageResult:
+        """
+        Creates an application package based on the current manifest and UI definition.
+
+        Args:
+            out_dir (Optional[str]): The output directory for the application package. 
+            If not specified, the package will be created in a randomly generated temp directory.
+
+        Returns:
+            CreateApplicationPackageResult: A result object containing the validation results and the path to the 
+            created application package file.
+        """
+
         result = CreateApplicationPackageResult()
 
         template_parameters = self.manifest.get_parameters()
@@ -79,12 +91,11 @@ class ApplicationPackage:
             return result
         
         self._finalize_main_template(template_parameters)
-        result.file = self._zip()
+        result.file = self._zip(out_dir)
 
         if result.file is None or not result.file.exists():
             result.validation_results.append(Exception("Failed to create application package"))
             return result
-        
 
         return result
 
@@ -105,9 +116,9 @@ class ApplicationPackage:
         for parameter in template_parameters:
             user_data_parameters[parameter.name] = f"[parameters('{parameter.name}')]"
 
-    def _zip(self):
+    def _zip(self, out_dir = None) -> Path:
         installer_package = create_installer_package(self.manifest)
-        file = Path(tempfile.mkdtemp()).joinpath(self.file_name)
+        file = Path(out_dir if out_dir is not None else tempfile.mkdtemp()).joinpath(self.file_name)
 
         with ZipFile(file, "w") as zip_file:
             zip_file.write(installer_package, installer_package.name)
