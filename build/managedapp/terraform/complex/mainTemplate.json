@@ -87,6 +87,20 @@
             }
         },
         {
+            "type": "Microsoft.Web/sites/providers/roleAssignments",
+            "apiVersion": "2021-04-01-preview",
+            "name": "[concat(parameters('functionAppName'), '/Microsoft.Authorization/', guid(variables('virtualMachineName'), 'websitecontribrole'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]",
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]"
+            ],
+            "properties": {
+                "principalType": "ServicePrincipal",
+                "roleDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",  
+                "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), '2022-03-01', 'Full').identity.principalId]"
+            }
+        },
+        {
             "type": "Microsoft.Web/sites",
             "apiVersion": "2022-03-01",
             "name": "[parameters('functionAppName')]",
