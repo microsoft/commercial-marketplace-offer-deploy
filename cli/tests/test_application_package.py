@@ -39,9 +39,11 @@ class TestApplicationPackage(unittest.TestCase):
 
     def test_create(self):
         app_package = ApplicationPackage(self.main_template, self.create_ui_definition)
-        file = app_package.create()
+        result = app_package.create()
 
-        unzip_file(file, self.test_dir)
+        self.assertEqual(len(result.validation_results), 0)
+
+        unzip_file(result.file, self.test_dir)
         log.info(os.listdir(self.test_dir))
 
         main_template_path = Path(self.test_dir).joinpath('mainTemplate.json')
@@ -53,7 +55,7 @@ class TestApplicationPackage(unittest.TestCase):
 
         # verify the contents of the installer.pkg
 
-        shutil.rmtree(file.parent)
+        shutil.rmtree(result.file.parent)
 
     def _create_fake_file(self, file_name):
         file_path = Path(self.test_dir).joinpath(file_name)

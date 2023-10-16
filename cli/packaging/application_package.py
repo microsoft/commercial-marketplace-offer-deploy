@@ -1,17 +1,27 @@
 from pathlib import Path
 import tempfile
 from zipfile import ZipFile
-from packaging import ManifestInfo, InstallerPackage
+from packaging import ManifestInfo
 from packaging.azure.create_ui_definition import CreateUiDefinition
 from packaging.installer_package import create_installer_package
 from packaging.azure import ArmTemplate
 import packaging.manifest as manifest
 from importlib.resources import files, as_file
-
+from msrest.serialization import Model
 
 MAIN_TEMPLATE_FILE_NAME = "mainTemplate.json"
 CREATE_UI_DEFINITION_FILE_NAME = "createUiDefinition.json"
 VIEW_DEFINITION_FILE_NAME = "viewDefinition.json"
+
+
+class CreateApplicationPackageResult(Model):
+    _attribute_map = {
+        "file": {"key": "file", "type": "str"},
+        "validation_results": {"key": "validationResults", "type": "[any]"},
+    }
+    def __init__(self) -> None:
+        self.file = None
+        self.validation_results = [any]
 
 
 class ApplicationPackage:
@@ -55,20 +65,28 @@ class ApplicationPackage:
         else:
             self.create_ui_definition = create_ui_definition
 
-    def create(self) -> Path:
+    def create(self) -> CreateApplicationPackageResult:
+        result = CreateApplicationPackageResult()
+
         template_parameters = self.manifest.get_parameters()
 
         validation_results = self.manifest.validate()
         validation_results += self.create_ui_definition.validate(template_parameters)
 
+        result.validation_results = validation_results
+
         if len(validation_results) > 0:
-            # TODO: create an aggregate exception type that can hold multiple exceptions
-            raise ValueError(f"Invalid application package: {validation_results}")
+            return result
         
         self._finalize_main_template(template_parameters)
-        file = self._zip()
+        result.file = self._zip()
 
-        return file
+        if result.file is None or not result.file.exists():
+            result.validation_results.append(Exception("Failed to create application package"))
+            return result
+        
+
+        return result
 
     def _finalize_main_template(self, template_parameters):
         """
