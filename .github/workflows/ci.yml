@@ -16,6 +16,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: dev
     strategy:
       matrix:
         dotnet-version: [ '7.0.x' ]
