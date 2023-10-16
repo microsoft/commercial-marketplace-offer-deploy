@@ -40,15 +40,17 @@ sudo apt-get install docker-buildx-plugin docker-compose -y
 # Install .NET 7
 sudo apt-get install -y dotnet-sdk-7.0
 
-# Install Azure Functions Core
-curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
-sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
+echo "Installing Azure CLI"
 
-sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-$(lsb_release -cs)-prod $(lsb_release -cs) main" > /etc/apt/sources.list.d/dotnetdev.list'
+# Install Azure Functions Core needed for the Azure Function App
+# This will be used to publish the dashboard redirect
+#curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+#sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
 
-sudo apt-get update
-sudo apt-get install azure-functions-core-tools-4
+#sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-$(lsb_release -cs)-prod $(lsb_release -cs) main" > /etc/apt/sources.list.d/dotnetdev.list'
 
+#sudo apt-get update
+#sudo apt-get install azure-functions-core-tools-4
 
 # clone the MODM source into source
 sudo git clone --depth=1 --branch $MODM_REPO_BRANCH https://github.com/microsoft/commercial-marketplace-offer-deploy.git $MODM_HOME/source

@@ -19,8 +19,11 @@ namespace Functions
         {
             _logger.LogInformation("C# HTTP trigger function processed a request.");
 
+            // Read the redirect URL from application settings
+            var redirectUrl = System.Environment.GetEnvironmentVariable("RedirectUrl", EnvironmentVariableTarget.Process);
+
             var response = req.CreateResponse(HttpStatusCode.Found);
-            response.Headers.Add("Location", "http://www.microsoft.com");
+            response.Headers.Add("Location", redirectUrl);
 
             return response;
         }
