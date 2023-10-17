@@ -7,6 +7,7 @@ import tempfile
 import unittest
 from packaging import ApplicationPackage, DeploymentType
 from packaging.application_package import CreateApplicationPackageOptions
+from packaging.function_app_package import FunctionAppPackage
 from packaging.zip_utils import unzip_file
 
 
@@ -19,8 +20,8 @@ class TestApplicationPackage(unittest.TestCase):
 
         self.main_template = self.data_dir / 'templates' / 'main.tf'
         self.create_ui_definition = self.data_dir / 'createUIDefinition.json'
-
         self.fake_create_ui_definition = self._create_fake_file('fake_create_ui_definition.json')
+        self.fake_function_app_package = FunctionAppPackage(self._create_fake_file('fake_function_app_package.zip'))
 
     def tearDown(self):
         shutil.rmtree(self.test_dir)
@@ -38,7 +39,8 @@ class TestApplicationPackage(unittest.TestCase):
 
     def test_create(self):
         app_package = ApplicationPackage(self.main_template, self.create_ui_definition)
-        options = CreateApplicationPackageOptions(vmi_reference_id = "test-vmi")
+        options = CreateApplicationPackageOptions(vmi_reference_id = "test-vmi", 
+                                                  function_app_package = self.fake_function_app_package)
         result = app_package.create(options)
 
         self.assertEqual(len(result.validation_results), 0)

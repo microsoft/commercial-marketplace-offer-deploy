@@ -4,6 +4,7 @@ from zipfile import ZipFile
 from packaging import ManifestInfo
 from packaging import azure
 from packaging.azure.create_ui_definition import CreateUiDefinition
+from packaging.function_app_package import FunctionAppPackage
 from packaging.installer_package import CreateInstallerPackageResult, create_installer_package
 from packaging.azure import ArmTemplate
 import packaging.manifest as manifest
@@ -35,14 +36,17 @@ class CreateApplicationPackageResult(Model):
     def installer_package(self):
         return self._installer_package
 
+
 class CreateApplicationPackageOptions:
     function_app_name_variable = 'functionAppName'
     vmi_reference_id_variable = 'vmiReferenceId'
     default_function_app_name_prefix = "modmfunc"
 
-    def __init__(self, vmi_reference_id) -> None:
+    def __init__(self, vmi_reference_id: str, function_app_package: FunctionAppPackage) -> None:
         self.vmi_reference_id = vmi_reference_id
         self.function_app_name = azure.create_function_app_name(self.default_function_app_name_prefix)
+        self.function_app_package = function_app_package
+
 
 class ApplicationPackage:
     file_name = "app.zip"
@@ -111,7 +115,7 @@ class ApplicationPackage:
         result = CreateApplicationPackageResult(installer_package = installer_package, function_app_name = options.function_app_name)
 
         self._finalize_main_template(template_parameters, installer_package, options)
-        result.file = self._zip(installer_package, out_dir)
+        result.file = self._zip(installer_package, options, out_dir)
 
         if result.file is None or not result.file.exists():
             result.validation_results.append(Exception("Failed to create application package"))
@@ -149,10 +153,13 @@ class ApplicationPackage:
         for parameter in template_parameters:
             user_data_parameters[parameter.name] = f"[parameters('{parameter.name}')]"
 
-    def _zip(self, installer_package, out_dir = None) -> Path:
-        file = Path(out_dir if out_dir is not None else tempfile.mkdtemp()).joinpath(self.file_name)
+    def _zip(self, installer_package, options: CreateApplicationPackageOptions, out_dir = None) -> Path:
+        out_dir = out_dir if out_dir is not None else tempfile.mkdtemp()
+        file = Path(out_dir).joinpath(self.file_name)
 
         with ZipFile(file, "w") as zip_file:
+            
+            zip_file.write(options.function_app_package.path, options.function_app_package.name)
             zip_file.write(installer_package.path, installer_package.name)
             zip_file.writestr(MAIN_TEMPLATE_FILE_NAME, self.main_template.to_json())
             zip_file.writestr(CREATE_UI_DEFINITION_FILE_NAME, self.create_ui_definition.to_json())
