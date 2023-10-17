@@ -1,7 +1,7 @@
 
 import json
 import click
-from .commands import build
+from .commands import build_application_package, build_function_app_package
 
 
 @click.group()
@@ -12,7 +12,23 @@ def cli():
     """
     pass
 
-cli.add_command(build)
+@cli.group('functionapp')
+def functionapp():
+    """
+    Package commands
+    """
+    pass
+
+functionapp.add_command(build_function_app_package)
+
+@cli.group('package')
+def package():
+    """
+    Package commands
+    """
+    pass
+
+package.add_command(build_application_package)
 
 if __name__ == '__main__':
     cli()
