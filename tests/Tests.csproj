@@ -40,11 +40,21 @@
     <None Remove="Utils\Fakes\" />
     <None Remove="Data\content.zip" />
     <None Remove="Data\" />
+    <None Remove="Data\azurefunction.zip" />
+    <None Remove="Data\installer.zip" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="UnitTests\" />
     <Folder Include="Utils\" />
     <Folder Include="Utils\Fakes\" />
     <Folder Include="Data\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Data\azurefunction.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\installer.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

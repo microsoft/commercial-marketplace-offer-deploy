@@ -67,8 +67,7 @@ namespace Modm.Packaging
                 Directory.Delete(ExtractedTo, recursive: true);
             }
 
-            // because unzip will use the name of the zip file when extracting, unzip directly to ./installer
-            var destinationDirectoryName = Path.GetDirectoryName(filePath);
+            var destinationDirectoryName = Path.Combine(Path.GetDirectoryName(filePath), DestinationDirectoryName);
 
             ZipFile.ExtractToDirectory(filePath, destinationDirectoryName, overwriteFiles: true);
             DirectoryPermissions.AllowFullControl(ExtractedTo);
