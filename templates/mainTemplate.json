@@ -33,7 +33,7 @@
         "userData": {
             "dashboardUrl": "[format('https://{0}.azurewebsites.net/dashboard', variables('functionAppName'))]",
             "installerPackage": {
-                "uri": "[concat(variables('artifactsContainerLocation'), '/', 'installer.pkg')]",
+                "uri": "[concat(variables('artifactsContainerLocation'), '/', 'installer.zip')]",
                 "hash": "{{INSTALLER_PACKAGE_HASH}}"
             },
             "parameters": {}

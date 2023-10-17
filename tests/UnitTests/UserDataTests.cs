@@ -18,9 +18,11 @@ namespace Modm.Tests.UnitTests
             // Value of $(openssl dgst -sha256 "../Data/content.zip" | awk '{print $2}')
             string hashValue = "3be95f70f2a217ac0278cd62d72fdf12732f9a69e92db77f2a70f5f3e6996e2a";
 
-			var parameters = new Dictionary<string, object>();
-			parameters.Add("location", "eastus");
-            parameters.Add("resource_group_name", "testrg");
+            var parameters = new Dictionary<string, object>
+            {
+                { "location", "eastus" },
+                { "resource_group_name", "testrg" }
+            };
 
             var userData = new UserData
 			{
@@ -32,7 +34,7 @@ namespace Modm.Tests.UnitTests
 
 			var base64 = userData.ToBase64Json();
 
-			Assert.Equal(base64, Base64UserData);
+			Assert.Equal(Base64UserData, base64);
 		}
 
 		[Fact]

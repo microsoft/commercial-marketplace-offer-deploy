@@ -15,7 +15,7 @@ class TestInstallerPackage(unittest.TestCase):
         self.installer_package = InstallerPackage(self.manifest)
 
     def test_file_name(self):
-        self.assertEqual(InstallerPackage.file_name, 'installer.pkg')
+        self.assertEqual(InstallerPackage.file_name, 'installer.zip')
 
     def test_init(self):
         self.assertEqual(self.installer_package.manifest.main_template, self.manifest.main_template)

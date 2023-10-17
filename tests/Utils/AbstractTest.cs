@@ -25,7 +25,7 @@ namespace Modm.Tests.Utils
             provider = Services.BuildServiceProvider();
         }
 
-        public abstract void ConfigureServices();
+        protected abstract void ConfigureServices();
 
         protected void ConfigureMocks(Action<MockConfigurator> configure)
         {

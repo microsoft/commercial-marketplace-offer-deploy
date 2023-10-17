@@ -9,11 +9,11 @@ from .manifest import ManifestInfo
 
 class InstallerPackage:
     """
-    The installer package, e.g. the installer.pkg, which is a zip archive
+    The installer package, e.g. the installer.zip, which is a zip archive
     containing the installer's main template (and all dependencies) and the manifest file
     """
 
-    file_name = "installer.pkg"
+    file_name = "installer.zip"
 
     def __init__(self, manifest: ManifestInfo):
         self.manifest = manifest
@@ -41,13 +41,7 @@ class InstallerPackage:
         if not file.is_file():
             raise ValueError(f"Destination path {file_path} is not a file")
 
-        if file.suffix != ".pkg":
-            raise ValueError(f"Destination file {file_path} must have a .pkg extension")
-
-        archive_file = file.with_suffix(".zip")
-        shutil.copyfile(str(file), archive_file)
-
-        shutil.unpack_archive(archive_file, extract_dir)
+        shutil.unpack_archive(file, extract_dir)
 
     def _get_copy_of_templates_dir(self):
         source_templates_dir = Path(self.manifest.main_template).parent

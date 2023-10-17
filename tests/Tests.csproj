@@ -29,15 +29,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Core\Core.csproj" />
-    <ProjectReference Include="..\..\src\ServiceHost\ServiceHost.csproj" />
-    <ProjectReference Include="..\..\src\WebHost\WebHost.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-      <Content Include="Data\installer.pkg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
+    <ProjectReference Include="..\src\Core\Core.csproj" />
+    <ProjectReference Include="..\src\ServiceHost\ServiceHost.csproj" />
+    <ProjectReference Include="..\src\WebHost\WebHost.csproj" />
   </ItemGroup>
 
   <ItemGroup>

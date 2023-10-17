@@ -76,7 +76,7 @@ namespace Modm.Engine.Pipelines
 
             if (!validationResult.IsValid)
             {
-                throw new ValidationException("Error handling artifacts extraction", validationResult.Errors);
+                throw new ValidationException("Error handling installer package extraction", validationResult.Errors);
             }
 
             artifactsFile.Extract();

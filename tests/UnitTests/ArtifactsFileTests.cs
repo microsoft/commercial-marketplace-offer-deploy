@@ -36,7 +36,7 @@ namespace Modm.Tests.UnitTests
             Assert.True(result);
         }
 
-        public override void ConfigureServices()
+        protected override void ConfigureServices()
         {
             var file = Test.DataFile.Get(PackageFile.FileName);
             Services.AddSingleton<PackageFile>(new PackageFile(file.FullName, Mock.Logger<PackageFile>()));

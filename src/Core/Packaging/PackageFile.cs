@@ -12,7 +12,7 @@ namespace Modm.Packaging
     /// </summary>
 	public class PackageFile
     {
-        public const string Extension = "pkg";
+        public const string Extension = ".zip";
 
         public const string HashAttributeName = "packageHash";
 
@@ -20,7 +20,7 @@ namespace Modm.Packaging
         /// the name of the installer package file that must always be used.
         /// This file will be included in the app.zip file at the root
         /// </summary>
-        public const string FileName = "installer.pkg";
+        public const string FileName = "installer.zip";
 
         /// <summary>
         /// the default directory name where the installer package file will be extracted to
@@ -70,13 +70,8 @@ namespace Modm.Packaging
             // because unzip will use the name of the zip file when extracting, unzip directly to ./installer
             var destinationDirectoryName = Path.GetDirectoryName(filePath);
 
-            var zipFile = Path.ChangeExtension(filePath, $".zip");
-            File.Copy(filePath, zipFile, overwrite: true);
-
-            ZipFile.ExtractToDirectory(zipFile, destinationDirectoryName, overwriteFiles: true);
+            ZipFile.ExtractToDirectory(filePath, destinationDirectoryName, overwriteFiles: true);
             DirectoryPermissions.AllowFullControl(ExtractedTo);
-
-            File.Delete(zipFile);
 
             IsExtracted = true;
         }

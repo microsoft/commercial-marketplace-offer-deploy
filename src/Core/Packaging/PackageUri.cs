@@ -23,7 +23,7 @@ namespace Modm.Packaging
             if (uri.Scheme.Equals("file", StringComparison.OrdinalIgnoreCase))
             {
                 // For local files, check if the file extension is correct
-                return Path.GetExtension(uri.LocalPath).Equals($".{PackageFile.Extension}", StringComparison.OrdinalIgnoreCase);
+                return Path.GetExtension(uri.LocalPath).Equals(PackageFile.Extension, StringComparison.OrdinalIgnoreCase);
             }
             else if (uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
             {

@@ -58,7 +58,7 @@ namespace Modm.Tests.UnitTests
             return (StartDeploymentRequestPipeline)pipeline;
         }
 
-        public override void ConfigureServices()
+        protected override void ConfigureServices()
         {
             ConfigureMocks(m =>
             {
