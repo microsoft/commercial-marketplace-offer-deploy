@@ -39,6 +39,7 @@ class CreateApplicationPackageResult(Model):
 
 
 class CreateApplicationPackageOptions:
+    dashboard_url_user_data_variable = 'dashboardUrl'
     function_app_name_variable = 'functionAppName'
     vmi_reference_id_variable = 'vmiReferenceId'
     default_function_app_name_prefix = "modmfunc"
@@ -50,7 +51,7 @@ class CreateApplicationPackageOptions:
 
     @property
     def dashboard_url(self):
-        return f"https://{self.function_app_name}.azurewebsites.net"
+        return f"https://{self.function_app_name}.azurewebsites.net/dashboard"
 
 class ApplicationPackage:
     file_name = "app.zip"
@@ -121,7 +122,7 @@ class ApplicationPackage:
         result = CreateApplicationPackageResult(installer_package = installer_package, function_app_name = options.function_app_name)
 
         self._finalize_main_template(template_parameters, installer_package, options)
-        self._finalize_view_definition(template_parameters)
+        self._finalize_view_definition(options)
 
         result.file = self._zip(installer_package, options, out_dir)
 
@@ -134,6 +135,7 @@ class ApplicationPackage:
     def _finalize_view_definition(self, options: CreateApplicationPackageOptions):
         self.view_definition.add_input("dashboardUrl", options.dashboard_url)
         self.view_definition.add_input("offerName", self.manifest.offer.name)
+        self.view_definition.add_input("offerDescription", self.manifest.offer.description)
 
     def _finalize_main_template(self, template_parameters, installer_package: CreateInstallerPackageResult, 
                                 options: CreateApplicationPackageOptions):
@@ -149,18 +151,24 @@ class ApplicationPackage:
         self.main_template.insert_parameters(template_parameters)
 
         # variables
-        self.main_template.document["variables"][options.function_app_name_variable] = options.function_app_name
-        self.main_template.document["variables"][options.vmi_reference_id_variable] = options.vmi_reference_id
+        variables = self.main_template.document["variables"]
+
+        variables[options.function_app_name_variable] = options.function_app_name
+        variables[options.vmi_reference_id_variable] = options.vmi_reference_id
 
         # verify that the userData's installerPackage uri is set
-        if "installerPackage" not in self.main_template.document["variables"]["userData"]:
+        userData = variables["userData"]
+
+        userData[options.dashboard_url_user_data_variable] = options.dashboard_url
+
+        if "installerPackage" not in userData:
             raise ValueError("failed to identify installerPackage property on userData. Invalid mainTemplate.json")
         
-        self.main_template.document["variables"]["userData"]["installerPackage"]['hash'] = installer_package.hash
+        userData["installerPackage"]['hash'] = installer_package.hash
 
         # parameters to userData
-        self.main_template.document["variables"]["userData"]["parameters"] = {}
-        user_data_parameters = self.main_template.document["variables"]["userData"]["parameters"]
+        userData["parameters"] = {}
+        user_data_parameters = userData["parameters"]
 
         for parameter in template_parameters:
             user_data_parameters[parameter.name] = f"[parameters('{parameter.name}')]"

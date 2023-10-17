@@ -12,10 +12,10 @@
     },
     "variables": {
         "location": "[resourceGroup().location]",
-        "functionAppName": "{{FUNCTION_APP_NAME}}",
+        "functionAppName": "{{functionAppName}}",
         "functionAppStorageAccountName": "[format('{0}modmfunc', uniqueString(resourceGroup().id))]",
-        "functionAppPackageUrl": "[concat(variables('artifactsContainerLocation'), '/', 'azurefunction.zip')]",
-        "vmiReferenceId": "{{VMI_REFERENCE_ID}}",
+        "functionAppPackageUrl": "[concat(variables('artifactsContainerLocation'), '/', 'function.zip')]",
+        "vmiReferenceId": "{{vmiReferenceId}}",
         "virtualMachineSize": "Standard_D2s_v3",
         "virtualMachineName": "modm",
         "vnetName": "[concat(variables('virtualMachineName'), '-vnet')]",
@@ -32,10 +32,10 @@
         "publicIpAddressName": "[concat(variables('virtualMachineName'), '-publicip')]",
         "nsgName": "[concat(variables('virtualMachineName'), '-nsg')]",
         "userData": {
-            "dashboardUrl": "[format('https://{0}.azurewebsites.net/dashboard', variables('functionAppName'))]",
+            "dashboardUrl": "{{dashboardUrl}}",
             "installerPackage": {
                 "uri": "[concat(variables('artifactsContainerLocation'), '/', 'installer.zip')]",
-                "hash": "{{INSTALLER_PACKAGE_HASH}}"
+                "hash": "{{installerPackageHash}}"
             },
             "parameters": {}
         },

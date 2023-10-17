@@ -9,7 +9,7 @@
           "displayName": "Overview",
           "version": "1.0.0",
           "header": "{{offerName}} Details",   
-          "description": "This section provides details of the deployed virtual machine.  <a href=\"{{dashboardUrl}}\">Dashboard</a>",
+          "description": "{{offerDescription}}  <br /><a href=\"{{dashboardUrl}}\">Dashboard</a>",
           "commands": [
             {
               "displayName": "Visit VM FQDN",

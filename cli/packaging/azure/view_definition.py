@@ -23,9 +23,8 @@ class ViewDefinition:
             self._template = f.read()
         
         self._template = self._compiler.compile(self._template)
-        rendered_json = self._template(self.inputs)
+        rendered_json = json.loads(self._template(self.inputs))
         return json.dumps(rendered_json, indent=4)
-            
 
     @staticmethod
     def from_resource():
