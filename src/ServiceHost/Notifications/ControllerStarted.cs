@@ -8,8 +8,8 @@ namespace Modm.ServiceHost.Notifications
 	/// </summary>
 	public class ControllerStarted : INotification
 	{
-		public required string DeploymentsUrl { get; set; }
-		public required string ArtifactsPath { get; set; }
+        public required string PackagePath { get; set; }
+        public required string DeploymentsUrl { get; set; }
 	}
 }
 

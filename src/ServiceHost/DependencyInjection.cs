@@ -31,7 +31,7 @@ namespace Modm.ServiceHost
             }
 
             services.AddSingletonHostedService<ControllerService>();
-            services.AddSingletonHostedService<ArtifactsWatcherService>();
+            services.AddSingletonHostedService<PackageWatcherService>();
             services.AddSingletonHostedService<ManagedIdentityMonitorService>();
 
             services.AddMediatR(c => c.RegisterServicesFromAssemblyContaining<ControllerService>());

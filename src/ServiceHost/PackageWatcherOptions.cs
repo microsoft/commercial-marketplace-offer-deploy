@@ -1,9 +1,9 @@
 ﻿using System;
 namespace Modm.ServiceHost
 {
-	public class ArtifactsWatcherOptions
+	public class PackageWatcherOptions
 	{
-		public required string ArtifactsPath { get; set; }
+		public required string PackagePath { get; set; }
 		public required string DeploymentsUrl { get; set; }
 	}
 }

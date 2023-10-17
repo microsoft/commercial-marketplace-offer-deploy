@@ -7,27 +7,28 @@ using System.Text.Json;
 
 namespace Modm.ServiceHost
 {
-    public class ArtifactsWatcherService : BackgroundService
+    /// <summary>
+    /// Watcher service that handles the installer package
+    /// </summary>
+    public class PackageWatcherService : BackgroundService
     {
         const int DefaultWaitDelaySeconds = 10;
         const int MaxAttempts = 10;
 
         private readonly IMetadataService metadataService;
-        private ILogger<ArtifactsWatcherService> logger;
-        private readonly IConfiguration config;
+        private readonly ILogger<PackageWatcherService> logger;
 
-        ArtifactsWatcherOptions? options;
+        PackageWatcherOptions? options;
 
         bool controllerStarted;
         int attempts = 0;
 
         private readonly HttpClient httpClient;
 
-        public ArtifactsWatcherService(IMetadataService metadataService, HttpClient httpClient, IConfiguration config, ILogger<ArtifactsWatcherService> logger)
+        public PackageWatcherService(IMetadataService metadataService, HttpClient httpClient, ILogger<PackageWatcherService> logger)
 		{
             this.metadataService = metadataService;
             this.httpClient = httpClient;
-            this.config = config;
             this.logger = logger;
         }
 
@@ -131,18 +132,18 @@ namespace Modm.ServiceHost
 
         class ControllerStartedHandler : INotificationHandler<ControllerStarted>
         {
-            private readonly ArtifactsWatcherService service;
+            private readonly PackageWatcherService service;
 
-            public ControllerStartedHandler(ArtifactsWatcherService service)
+            public ControllerStartedHandler(PackageWatcherService service)
             {
                 this.service = service;
             }
 
             public Task Handle(ControllerStarted notification, CancellationToken cancellationToken)
             {
-                service.options = new ArtifactsWatcherOptions
+                service.options = new PackageWatcherOptions
                 {
-                    ArtifactsPath = notification.ArtifactsPath,
+                    PackagePath = notification.PackagePath,
                     DeploymentsUrl = notification.DeploymentsUrl
                 };
                 service.controllerStarted = true;
