@@ -4,6 +4,7 @@ from zipfile import ZipFile
 from packaging import ManifestInfo
 from packaging import azure
 from packaging.azure.create_ui_definition import CreateUiDefinition
+from packaging.azure.view_definition import ViewDefinition
 from packaging.function_app_package import FunctionAppPackage
 from packaging.installer_package import CreateInstallerPackageResult, create_installer_package
 from packaging.azure import ArmTemplate
@@ -47,6 +48,9 @@ class CreateApplicationPackageOptions:
         self.function_app_name = azure.create_function_app_name(self.default_function_app_name_prefix)
         self.function_app_package = function_app_package
 
+    @property
+    def dashboard_url(self):
+        return f"https://{self.function_app_name}.azurewebsites.net"
 
 class ApplicationPackage:
     file_name = "app.zip"
@@ -89,6 +93,8 @@ class ApplicationPackage:
         else:
             self.create_ui_definition = create_ui_definition
 
+        self.view_definition = ViewDefinition.from_resource()
+
     def create(self, options: CreateApplicationPackageOptions, out_dir = None) -> CreateApplicationPackageResult:
         """
         Creates an application package based on the current manifest and UI definition.
@@ -115,6 +121,8 @@ class ApplicationPackage:
         result = CreateApplicationPackageResult(installer_package = installer_package, function_app_name = options.function_app_name)
 
         self._finalize_main_template(template_parameters, installer_package, options)
+        self._finalize_view_definition(template_parameters)
+
         result.file = self._zip(installer_package, options, out_dir)
 
         if result.file is None or not result.file.exists():
@@ -122,6 +130,10 @@ class ApplicationPackage:
             return result
         
         return result
+
+    def _finalize_view_definition(self, options: CreateApplicationPackageOptions):
+        self.view_definition.add_input("dashboardUrl", options.dashboard_url)
+        self.view_definition.add_input("offerName", self.manifest.offer.name)
 
     def _finalize_main_template(self, template_parameters, installer_package: CreateInstallerPackageResult, 
                                 options: CreateApplicationPackageOptions):
@@ -162,6 +174,7 @@ class ApplicationPackage:
             zip_file.write(options.function_app_package.path, options.function_app_package.name)
             zip_file.write(installer_package.path, installer_package.name)
             zip_file.writestr(MAIN_TEMPLATE_FILE_NAME, self.main_template.to_json())
+            zip_file.writestr(VIEW_DEFINITION_FILE_NAME, self.view_definition.to_json())
             zip_file.writestr(CREATE_UI_DEFINITION_FILE_NAME, self.create_ui_definition.to_json())
             zip_file.close()
         
