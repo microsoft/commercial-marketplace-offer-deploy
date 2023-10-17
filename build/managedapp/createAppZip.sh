@@ -15,6 +15,7 @@ view_definition_file="./obj/viewDefinition.json"
 # Clean directories
 rm ./obj/content.zip 2> /dev/null
 rm "$package_file" 2> /dev/null
+rm ./obj/azurefunction.zip 2> /dev/null
 
 original_dir=$(pwd)
 echo "The original directory is: $original_dir"
@@ -55,8 +56,11 @@ echo "copying TEMP_FILE to main_template_file: $main_template_file"
 cp -f "$TEMP_FILE" "$main_template_file"
 echo "$(ls -la ./obj)"
 
+echo "copying azurefunction.zip to ./obj/azurefunction.zip"
+cp -f "$original_dir/artifacts/azurefunction.zip" "$original_dir/obj/azurefunction.zip"
+
 # Create the zip file including the specified files and directories
 echo "before final zip command, view_definition_file contains: $(cat $view_definition_file)"
-zip -FS -j "$package_file" "$main_template_file" "$create_ui_definition_file" "$view_definition_file" ./obj/content.zip
+zip -FS -j "$package_file" "$main_template_file" "$create_ui_definition_file" "$view_definition_file" ./obj/content.zip ./obj/azurefunction.zip
 
 echo "Package app.zip created in the bin directory."
