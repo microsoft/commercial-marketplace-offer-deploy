@@ -35,6 +35,14 @@ class CreateApplicationPackageResult(Model):
     def installer_package(self):
         return self._installer_package
 
+class CreateApplicationPackageOptions:
+    function_app_name_variable = 'functionAppName'
+    vmi_reference_id_variable = 'vmiReferenceId'
+    default_function_app_name_prefix = "modmfunc"
+
+    def __init__(self, vmi_reference_id) -> None:
+        self.vmi_reference_id = vmi_reference_id
+        self.function_app_name = azure.create_function_app_name(self.default_function_app_name_prefix)
 
 class ApplicationPackage:
     file_name = "app.zip"
@@ -77,7 +85,7 @@ class ApplicationPackage:
         else:
             self.create_ui_definition = create_ui_definition
 
-    def create(self, out_dir = None) -> CreateApplicationPackageResult:
+    def create(self, options: CreateApplicationPackageOptions, out_dir = None) -> CreateApplicationPackageResult:
         """
         Creates an application package based on the current manifest and UI definition.
 
@@ -98,12 +106,11 @@ class ApplicationPackage:
         if len(validation_results) > 0:
             return CreateApplicationPackageResult(validation_results = validation_results)
         
-        function_app_name = azure.create_function_app_name("modmfunc")
         installer_package = create_installer_package(self.manifest)
 
-        result = CreateApplicationPackageResult(installer_package = installer_package, function_app_name = function_app_name)
+        result = CreateApplicationPackageResult(installer_package = installer_package, function_app_name = options.function_app_name)
 
-        self._finalize_main_template(template_parameters, installer_package, function_app_name)
+        self._finalize_main_template(template_parameters, installer_package, options)
         result.file = self._zip(installer_package, out_dir)
 
         if result.file is None or not result.file.exists():
@@ -112,7 +119,8 @@ class ApplicationPackage:
         
         return result
 
-    def _finalize_main_template(self, template_parameters, installer_package: CreateInstallerPackageResult, function_app_name: str):
+    def _finalize_main_template(self, template_parameters, installer_package: CreateInstallerPackageResult, 
+                                options: CreateApplicationPackageOptions):
         """
         Updates the (installer's) main template with the parameters from the app's main template.
         This results in a flow of: createUiDefinition.json/parameters/outputs --> mainTemplate.json/parameters
@@ -125,7 +133,8 @@ class ApplicationPackage:
         self.main_template.insert_parameters(template_parameters)
 
         # variables
-        self.main_template.document["variables"]["functionAppName"] = function_app_name
+        self.main_template.document["variables"][options.function_app_name_variable] = options.function_app_name
+        self.main_template.document["variables"][options.vmi_reference_id_variable] = options.vmi_reference_id
 
         # verify that the userData's installerPackage uri is set
         if "installerPackage" not in self.main_template.document["variables"]["userData"]:

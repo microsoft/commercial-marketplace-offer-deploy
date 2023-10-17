@@ -1,4 +1,3 @@
-import hashlib
 import json
 import logging
 import os
@@ -7,8 +6,7 @@ import shutil
 import tempfile
 import unittest
 from packaging import ApplicationPackage, DeploymentType
-from packaging.installer_package import CreateInstallerPackageResult
-from packaging.manifest import ManifestInfo
+from packaging.application_package import CreateApplicationPackageOptions
 from packaging.zip_utils import unzip_file
 
 
@@ -40,7 +38,8 @@ class TestApplicationPackage(unittest.TestCase):
 
     def test_create(self):
         app_package = ApplicationPackage(self.main_template, self.create_ui_definition)
-        result = app_package.create()
+        options = CreateApplicationPackageOptions(vmi_reference_id = "test-vmi")
+        result = app_package.create(options)
 
         self.assertEqual(len(result.validation_results), 0)
 
@@ -54,7 +53,8 @@ class TestApplicationPackage(unittest.TestCase):
             self.assertIsNotNone(main_template["variables"]["userData"])
             self.assertEqual(len(main_template["variables"]["userData"]["parameters"].keys()), 3)
 
-            self.assertEqual(main_template["variables"]["functionAppName"], result.function_app_name)
+            self.assertEqual(main_template["variables"][options.vmi_reference_id_variable], options.vmi_reference_id)
+            self.assertEqual(main_template["variables"][options.function_app_name_variable], result.function_app_name)
             self.assertEqual(main_template["variables"]["userData"]["installerPackage"]["hash"], result.installer_package.hash)
 
         # verify the contents of the installer.zip
