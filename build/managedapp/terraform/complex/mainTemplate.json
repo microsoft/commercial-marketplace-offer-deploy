@@ -297,6 +297,33 @@
             }
         },
         {
+            "type": "Microsoft.Resources/deploymentScripts",
+            "apiVersion": "2021-02-01",
+            "name": "addManagedIdentityToADGroupScript",
+            "properties": {
+              "scriptContent": "#!/bin/bash\naz login --identity\naz ad group member add --group <group-object-id> --member-id <managed-identity-object-id>",
+              "scriptType": "Shell",
+              "azCliVersion": "2.26.2",  
+              "timeout": "PT15M",  
+              "cleanupPreference": "Always",
+              "retentionInterval": "P1D",  
+              "arguments": {
+                "group-object-id": {
+                  "type": "string",
+                  "defaultValue": "d391271a-216a-49e1-a36e-c24b2c619f14"
+                },
+                "managed-identity-object-id": {
+                  "type": "string",
+                  "defaultValue": "[reference(variables('virtualMachineName')).identity.principalId]"
+                }
+              }
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]"
+            ]
+          },
+        {
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2022-03-01",
             "name": "[variables('virtualMachineName')]",
