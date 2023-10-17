@@ -43,7 +43,6 @@ namespace Modm.ServiceHost
                 userDataProcessed = await TryToProcessUserData(cancellationToken);
             }
         }
-
         private async Task<bool> TryToProcessUserData(CancellationToken cancellation)
         {
             if (attempts > MaxAttempts)

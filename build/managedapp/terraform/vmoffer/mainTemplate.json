@@ -42,7 +42,6 @@
         "userDataObject": {
             "artifactsUri": "[concat(variables('artifactsContainerLocation'), '/', 'content.zip')]",
             "artifactsHash": "<CONTENT_HASH>",
-            "functionAppName": "[parameters('functionAppName')]",
             "parameters": {
                 "resource_group_name": "[resourceGroup().name]",
                 "location": "[resourceGroup().location]",

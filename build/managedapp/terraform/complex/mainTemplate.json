@@ -35,6 +35,9 @@
         "virtualMachineName": "modm",
         "vnetName": "[concat(variables('virtualMachineName'), '-vnet')]",
         "subnetName": "default",
+        "location": "[resourceGroup().location]",
+        "publicFqdn": "[concat(variables('dnsLabel'), '.', variables('location'), '.cloudapp.azure.com')]",
+        "publicUrl": "[concat('https://', variables('publicFqdn'), '/')]",
         "artifactsContainerLocation": "[substring(parameters('_artifactsLocation'), 0, lastIndexOf(parameters('_artifactsLocation'), '/'))]",
         "vmResourceId": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]",
         "dnsLabel": "[concat('modm', uniqueString(variables('vmResourceId')))]",
@@ -73,20 +76,6 @@
             }
         },
         {
-            "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
-            "apiVersion": "2021-04-01-preview",
-            "name": "[concat('storage', uniqueString(resourceGroup().id), '/Microsoft.Authorization/', guid(resourceGroup().id, 'storagerole'))]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id)))]"
-            ], 
-            "properties": {
-                "principalType": "ServicePrincipal",
-                "roleDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",  
-                "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionAppName')), '2020-12-01', 'Full').identity.principalId]"
-            }
-        },
-        {
             "type": "Microsoft.Web/sites",
             "apiVersion": "2022-03-01",
             "name": "[parameters('functionAppName')]",
@@ -112,7 +101,7 @@
                         },
                         {
                             "name": "WEBSITE_RUN_FROM_PACKAGE",
-                            "value": "0"
+                            "value": "[concat(variables('artifactsContainerLocation'), '/', 'azurefunction.zip')]"
                         },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
@@ -125,6 +114,10 @@
                         {
                             "name": "AzureWebJobsStorage",
                             "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', concat('storage', uniqueString(resourceGroup().id)), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id))), '2021-04-01').keys[0].value)]"
+                        },
+                        {
+                            "name": "RedirectUrl",
+                            "value": "[variables('publicUrl')]"
                         }
                     ],
                     "netFrameworkVersion": "7.0",
