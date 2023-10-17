@@ -23,7 +23,7 @@ namespace Modm.Tests.UnitTests
             pipeline = GetPipeline();
             request = new StartDeploymentRequest
             {
-                PackageUri = "https://dummy-artifacts-url/installer.zip",
+                PackageUri = "https://dummy-package-installer-url/installer.zip",
                 Parameters = new Dictionary<string, object>()
             };
         }
@@ -62,7 +62,7 @@ namespace Modm.Tests.UnitTests
         {
             ConfigureMocks(m =>
             {
-                m.ArtifactsDownloader();
+                m.PackageDownloader();
                 m.DeploymentRepository();
                 m.JenkinsClient();
                 m.Configuration();

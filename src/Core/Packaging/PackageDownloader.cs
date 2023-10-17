@@ -10,17 +10,17 @@ namespace Modm.Packaging
     {
         private readonly HttpClient client;
         private readonly IConfiguration configuration;
-        private readonly PackageFileFactory artifactsFileFactory;
+        private readonly PackageFileFactory factory;
 
-        public PackageDownloader(HttpClient client, IConfiguration configuration, PackageFileFactory artifactsFileFactory)
+        public PackageDownloader(HttpClient client, IConfiguration configuration, PackageFileFactory factory)
         {
             this.client = client;
             this.configuration = configuration;
-            this.artifactsFileFactory = artifactsFileFactory;
+            this.factory = factory;
         }
 
         /// <summary>
-        /// save the artifacts from uri to the configured save path in appsettings
+        /// save the package from uri to the configured save path in appsettings
         /// </summary>
         /// <param name="uri"></param>
         /// <returns></returns>
@@ -35,9 +35,9 @@ namespace Modm.Packaging
         public async Task<PackageFile> DownloadAsync(PackageUri uri, PackageDownloadOptions options)
         {
             var httpResult = await client.GetAsync(uri);
-            var artifactsFile = await DownloadFile(httpResult, options);
+            var file = await DownloadFile(httpResult, options);
 
-            return artifactsFile;
+            return file;
         }
 
         private async Task<PackageFile> DownloadFile(HttpResponseMessage httpResult, PackageDownloadOptions options)
@@ -50,7 +50,7 @@ namespace Modm.Packaging
             await resultStream.CopyToAsync(fileStream);
             await resultStream.FlushAsync();
 
-            return artifactsFileFactory.Create(archiveFilePath);
+            return factory.Create(archiveFilePath);
         }
     }
 }

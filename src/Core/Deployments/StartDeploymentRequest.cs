@@ -26,7 +26,7 @@ namespace Modm.Deployments
 
 
         /// <summary>
-        /// Gets the artifacts uri as an <see cref="Packaging.PackageUri"/>
+        /// Gets the installer package uri as an <see cref="Packaging.PackageUri"/>
         /// </summary>
         /// <returns></returns>
         public PackageUri GetUri()

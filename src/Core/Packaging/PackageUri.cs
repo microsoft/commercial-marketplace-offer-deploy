@@ -41,7 +41,7 @@ namespace Modm.Packaging
 
 
         /// <summary>
-        /// The the URI value of the artifacts file for MODM to perform a deployment. The artifact file
+        /// The the URI value of the installer package file for MODM to perform a deployment. The file
         /// is expected to be a .zip file that was contained in the app.zip.
         /// 
         /// <see cref="https://learn.microsoft.com/en-us/azure/azure-resource-manager/managed-applications/publish-service-catalog-app"/>

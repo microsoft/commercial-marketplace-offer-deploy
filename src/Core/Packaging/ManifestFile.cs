@@ -11,7 +11,7 @@ namespace Modm.Packaging
         /// </summary>
         /// <remarks>
         /// This value must never change as it's a convention that the Partner Center CLI must conform to
-        /// when generating the artifacts file
+        /// when generating the installer package file
         /// </remarks>
         public const string FileName = "manifest.json";
 

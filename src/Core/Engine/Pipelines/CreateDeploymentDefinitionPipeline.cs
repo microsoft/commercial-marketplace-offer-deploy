@@ -19,7 +19,7 @@ namespace Modm.Engine.Pipelines
    
             c.AddBehavior<CreateParametersFile>();
             c.AddBehavior<ReadManifestFile>();
-            c.AddBehavior<DownloadAndExtractArtifactsFile>();
+            c.AddBehavior<DownloadAndExtractInstallerPackage>();
             c.AddRequestPostProcessor<WriteToDisk>();
 
             c.RegisterServicesFromAssemblyContaining<CreateDeploymentDefinitionHandler>();
@@ -41,7 +41,7 @@ namespace Modm.Engine.Pipelines
             return Task.FromResult(new DeploymentDefinition
             {
                 Source = request.GetUri(),
-                ArtifactsHash = request.PackageHash,
+                InstallerPackageHash = request.PackageHash,
                 Parameters = request.Parameters
             });
         }
@@ -51,12 +51,12 @@ namespace Modm.Engine.Pipelines
     /// <summary>
     /// first in the pipeline for creating a definition file
     /// </summary>
-	public class DownloadAndExtractArtifactsFile : IPipelineBehavior<CreateDeploymentDefinition, DeploymentDefinition>
+	public class DownloadAndExtractInstallerPackage : IPipelineBehavior<CreateDeploymentDefinition, DeploymentDefinition>
     {
         private readonly IPackageDownloader downloader;
         private readonly IValidator<PackageFile> validator;
 
-        public DownloadAndExtractArtifactsFile(IPackageDownloader downloader, IValidator<PackageFile> validator)
+        public DownloadAndExtractInstallerPackage(IPackageDownloader downloader, IValidator<PackageFile> validator)
         {
             this.downloader = downloader;
             this.validator = validator;
@@ -65,11 +65,11 @@ namespace Modm.Engine.Pipelines
         public async Task<DeploymentDefinition> Handle(CreateDeploymentDefinition request, RequestHandlerDelegate<DeploymentDefinition> next, CancellationToken cancellationToken)
         {
             var definition = await next();
-            definition.ArtifactsHash = request.PackageHash;
+            definition.InstallerPackageHash = request.PackageHash;
 
-            var artifactsFile = await downloader.DownloadAsync(definition.Source);
+            var file = await downloader.DownloadAsync(definition.Source);
 
-            var context = new ValidationContext<PackageFile>(artifactsFile);
+            var context = new ValidationContext<PackageFile>(file);
             context.RootContextData[PackageFile.HashAttributeName] = request.PackageHash;
 
             var validationResult = validator.Validate(context);
@@ -79,8 +79,8 @@ namespace Modm.Engine.Pipelines
                 throw new ValidationException("Error handling installer package extraction", validationResult.Errors);
             }
 
-            artifactsFile.Extract();
-            definition.WorkingDirectory = artifactsFile.ExtractedTo;
+            file.Extract();
+            definition.WorkingDirectory = file.ExtractedTo;
 
             return definition;
         }

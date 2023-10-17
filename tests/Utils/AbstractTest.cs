@@ -97,19 +97,19 @@ namespace Modm.Tests.Utils
                 return configuration;
             }
 
-            public IPackageDownloader ArtifactsDownloader()
+            public IPackageDownloader PackageDownloader()
             {
                 var file = Test.DataFile.Get(PackageFile.FileName);
                 var dir = Test.Directory<TTest>();
                 disposables.Add(dir);
 
                 // copy our file to the temp dir
-                var artifactsFilePath = Path.Combine(dir.FullName, file.Name);
-                File.Copy(file.FullName, artifactsFilePath, true);
+                var filePath = Path.Combine(dir.FullName, file.Name);
+                File.Copy(file.FullName, filePath, true);
 
                 var instance = Substitute.For<IPackageDownloader>();
                 instance.DownloadAsync(Arg.Any<PackageUri>())
-                    .Returns(new PackageFile(artifactsFilePath, Logger<PackageFile>()));
+                    .Returns(new PackageFile(filePath, Logger<PackageFile>()));
 
                 services.AddSingleton(instance);
 

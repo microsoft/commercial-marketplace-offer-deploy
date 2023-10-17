@@ -54,7 +54,7 @@ namespace Modm.ServiceHost
 
             if (options == null)
             {
-                throw new InvalidOperationException("Cannot start artifacts watcher. Options are null");
+                throw new InvalidOperationException("Cannot start installer package watcher. Options are null");
             }
 
             string base64UserData;

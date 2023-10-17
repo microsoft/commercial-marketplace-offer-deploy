@@ -8,7 +8,7 @@ using Modm.IO;
 namespace Modm.Packaging
 {
     /// <summary>
-    /// The installer file that represents the artifacts used for the installation of an app by modm
+    /// The installer file that represents the package installer file used for the installation of an app by modm
     /// </summary>
 	public class PackageFile
     {
@@ -92,9 +92,9 @@ namespace Modm.Packaging
         }
 
         /// <summary>
-        /// Computes the Sha256 Hash for the Artifacts file path
+        /// Computes the Sha256 Hash for the file path
         /// </summary>
-        /// <param name="filePath">The location of the ArtifactsUri</param>
+        /// <param name="filePath">The location of the package file</param>
         /// <returns></returns>
         private static string ComputeSha256Hash(string filePath)
         {
