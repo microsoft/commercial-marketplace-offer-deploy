@@ -15,6 +15,7 @@ sudo rm -rf $MODM_HOME/source
 sudo git clone --depth=1 --branch $MODM_REPO_BRANCH https://github.com/microsoft/commercial-marketplace-offer-deploy.git $MODM_HOME/source
 sudo git config --global --add safe.directory $MODM_HOME/source
 
+
 # build service host and install it
 # ----------------------------------
 cd $MODM_HOME/source
@@ -26,8 +27,25 @@ out_path=./bin/service
 sudo mkdir -p $out_path
 
 sudo dotnet restore $csproj
-sudo dotnet build $csproj -c Release -o $out_path/build
 sudo dotnet publish $csproj -c Release -o $out_path/publish
+
+
+# build azure function and zip output | purpose: to support dashboard link
+# ----------------------------------
+echo ""
+echo "Building Azure Function"
+func_csproj=./src/Functions/Functions.csproj
+func_out_path=./bin/function
+
+sudo dotnet restore $func_csproj
+sudo dotnet publish $func_csproj -c Release -o $func_out_path/publish
+
+pushd $func_out_path/publish
+    sudo zip -r ../function.zip ./
+popd
+
+# copy zip to the service path
+sudo cp $func_out_path/function.zip $service_path
 
 
 # build final docker images that will represent MODM backend and its deployment engine (jenkins)
