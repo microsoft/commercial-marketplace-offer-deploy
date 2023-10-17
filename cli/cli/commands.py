@@ -26,15 +26,14 @@ def build_application_package(vmi_reference_id, template_file, create_ui_definit
     cwd = Path(current_working_dir)
     out_dir = cwd.joinpath(out_dir).resolve() if out_dir else cwd.joinpath(".").resolve()
     
-    # module will get executed under ./cli dir context, so let's go up one level
     resolved_template_file = cwd.joinpath(template_file).resolve()
     resolved_create_ui_definition = cwd.joinpath(create_ui_definition).resolve()
 
     package = ApplicationPackage(resolved_template_file, resolved_create_ui_definition, name, description)
 
-    function_app_package = FunctionAppPackage.from_uri(FUNCTION_APP_PACKAGE_URL, out_dir)
-
+    function_app_package = FunctionAppPackage.from_resource()
     options = CreateApplicationPackageOptions(vmi_reference_id, function_app_package)
+    
     result = package.create(options, out_dir)
 
     click.echo(json.dumps(result.serialize(), indent=2))
