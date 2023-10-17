@@ -35,6 +35,9 @@
         "virtualMachineName": "modm",
         "vnetName": "[concat(variables('virtualMachineName'), '-vnet')]",
         "subnetName": "default",
+        "location": "[resourceGroup().location]",
+        "publicFqdn": "[concat(variables('dnsLabel'), '.', variables('location'), '.cloudapp.azure.com')]",
+        "publicUrl": "[concat('https://', variables('publicFqdn'), '/')]",
         "artifactsContainerLocation": "[substring(parameters('_artifactsLocation'), 0, lastIndexOf(parameters('_artifactsLocation'), '/'))]",
         "vmResourceId": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]",
         "dnsLabel": "[concat('modm', uniqueString(variables('vmResourceId')))]",
@@ -111,6 +114,10 @@
                         {
                             "name": "AzureWebJobsStorage",
                             "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', concat('storage', uniqueString(resourceGroup().id)), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id))), '2021-04-01').keys[0].value)]"
+                        },
+                        {
+                            "name": "RedirectUrl",
+                            "value": "[variables('publicUrl')]"
                         }
                     ],
                     "netFrameworkVersion": "7.0",
