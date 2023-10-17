@@ -1,8 +1,0 @@
-{
-    "deploymentType": "terraform",
-    "mainTemplate": "main.tf",
-    "offer": {
-        "name": "TerraformVNETPeeroing",
-        "description": "VNet Peering Sample"
-    }
-}
