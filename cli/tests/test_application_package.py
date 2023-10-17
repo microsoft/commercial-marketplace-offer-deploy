@@ -1,3 +1,4 @@
+import hashlib
 import json
 import logging
 import os
@@ -6,6 +7,8 @@ import shutil
 import tempfile
 import unittest
 from packaging import ApplicationPackage, DeploymentType
+from packaging.installer_package import CreateInstallerPackageResult
+from packaging.manifest import ManifestInfo
 from packaging.zip_utils import unzip_file
 
 
@@ -51,10 +54,13 @@ class TestApplicationPackage(unittest.TestCase):
             self.assertIsNotNone(main_template["variables"]["userData"])
             self.assertEqual(len(main_template["variables"]["userData"]["parameters"].keys()), 3)
 
+            self.assertEqual(main_template["variables"]["functionAppName"], result.function_app_name)
+            self.assertEqual(main_template["variables"]["userData"]["installerPackage"]["hash"], result.installer_package.hash)
+
         # verify the contents of the installer.zip
 
         shutil.rmtree(result.file.parent)
-
+    
     def _create_fake_file(self, file_name):
         file_path = Path(self.test_dir).joinpath(file_name)
         with open(file_path, 'w') as fp: 

@@ -41,7 +41,7 @@ namespace Modm.Engine.Pipelines
             return Task.FromResult(new DeploymentDefinition
             {
                 Source = request.GetUri(),
-                ArtifactsHash = request.ArtifactsHash,
+                ArtifactsHash = request.PackageHash,
                 Parameters = request.Parameters
             });
         }
@@ -65,12 +65,12 @@ namespace Modm.Engine.Pipelines
         public async Task<DeploymentDefinition> Handle(CreateDeploymentDefinition request, RequestHandlerDelegate<DeploymentDefinition> next, CancellationToken cancellationToken)
         {
             var definition = await next();
-            definition.ArtifactsHash = request.ArtifactsHash;
+            definition.ArtifactsHash = request.PackageHash;
 
             var artifactsFile = await downloader.DownloadAsync(definition.Source);
 
             var context = new ValidationContext<PackageFile>(artifactsFile);
-            context.RootContextData[PackageFile.HashAttributeName] = request.ArtifactsHash;
+            context.RootContextData[PackageFile.HashAttributeName] = request.PackageHash;
 
             var validationResult = validator.Validate(context);
 

@@ -1,8 +1,11 @@
+import hashlib
+from pathlib import Path
 import shutil
 import tempfile
 import unittest
 import os
 from packaging import ManifestInfo, InstallerPackage, DeploymentType
+from packaging.installer_package import CreateInstallerPackageResult
 
 class TestInstallerPackage(unittest.TestCase):
     def setUp(self):
@@ -21,15 +24,29 @@ class TestInstallerPackage(unittest.TestCase):
         self.assertEqual(self.installer_package.manifest.main_template, self.manifest.main_template)
 
     def test_create(self):
-        file = self.installer_package.create()
-        self.assertTrue(file.exists())
+        result = self.installer_package.create()
+        self.assertTrue(result.file.exists())
 
         # now unpack and verify
         temp_dir = tempfile.mkdtemp()
-        self.installer_package.unpack(file, temp_dir)
+        self.installer_package.unpack(result.file, temp_dir)
 
         self.assertTrue(os.path.exists(os.path.join(temp_dir, 'main.tf')))
 
         # clean up
-        shutil.rmtree(file.parent)
+        shutil.rmtree(result.file.parent)
         shutil.rmtree(temp_dir)
+    
+    def test_result_hash(self):
+        # create a temporary file with some content
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+            f.write(b"hello world")
+            f.close()
+            file_path = f.name
+
+            result = CreateInstallerPackageResult(Path(file_path))
+            expected_hash = hashlib.sha256(b"hello world").hexdigest()
+
+            self.assertEqual(result.hash, expected_hash)
+            # clean up
+            os.remove(file_path)

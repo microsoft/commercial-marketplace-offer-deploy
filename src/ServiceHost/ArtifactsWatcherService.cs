@@ -4,8 +4,6 @@ using Modm.ServiceHost.Notifications;
 using Modm.Azure.Model;
 using Modm.Azure;
 using System.Text.Json;
-using Modm.Extensions;
-using Microsoft.WindowsAzure.ResourceStack.Common.Extensions;
 
 namespace Modm.ServiceHost
 {
@@ -45,42 +43,6 @@ namespace Modm.ServiceHost
             }
         }
 
-        private string GetAzureFunctionPath()
-        {
-            return Path.Combine(this.config.GetHomeDirectory(), "source/src/Functions");
-        }
-
-        private string GetZipLocation()
-        {
-            return Path.Combine(this.config.GetHomeDirectory(), "source/artifacts/azurefunction.zip");
-        }
-
-        private async Task PublishAzureFunctions(string functionAppName)
-        {
-            try
-            {
-                var zipLocation = GetZipLocation();
-                var kuduApi = new KuduApi(functionAppName, new HttpClient());
-                await kuduApi.DeployZipAsync(zipLocation);
-
-                var fqdn = await this.metadataService.GetFqdnAsync();
-                var instanceMetadata = await this.metadataService.GetAsync();
-                var resourceGroupName = instanceMetadata.Compute.ResourceGroupName;
-                var subscriptionId = instanceMetadata.Compute.SubscriptionId.ToString();
-
-                var appSettingsManager = new AzureAppSettingsManager(subscriptionId);
-                var redirectUrl = $"https://{fqdn}";
-                await appSettingsManager.UpdateAppSettingsAsync(resourceGroupName, functionAppName, new Dictionary<string, string>
-                {
-                    { "RedirectUrl", redirectUrl }
-                });
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error deserializing UserData or starting deployment.");
-            }
-        }
-
         private async Task<bool> TryToProcessUserData(CancellationToken cancellation)
         {
             if (attempts > MaxAttempts)
@@ -99,7 +61,7 @@ namespace Modm.ServiceHost
             while (true)
             {
                 var instanceData = await this.metadataService.GetAsync();
-                base64UserData = instanceData?.Compute.UserData;
+                base64UserData = instanceData.Compute.UserData;
 
                 if (!string.IsNullOrEmpty(base64UserData))
                 {
@@ -117,12 +79,10 @@ namespace Modm.ServiceHost
                 {
                     logger.LogInformation("UserData was valid");
 
-                    await PublishAzureFunctions(userData.FunctionAppName);
-
                     var request = new StartDeploymentRequest
                     {
-                        ArtifactsUri = userData.ArtifactsUri,
-                        ArtifactsHash = userData.ArtifactsHash,
+                        PackageUri = userData.InstallerPackage.Uri,
+                        PackageHash = userData.InstallerPackage.Hash,
                         Parameters = userData.Parameters ?? new Dictionary<string, object>()
                     };
 
