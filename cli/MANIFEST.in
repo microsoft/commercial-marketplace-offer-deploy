@@ -1,1 +1,2 @@
 include resources/**/*.json
+include resources/function.zip
