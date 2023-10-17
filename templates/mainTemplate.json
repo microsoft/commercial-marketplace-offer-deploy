@@ -5,24 +5,18 @@
         "location": {
             "type": "string"
         },
-        "adminUsername": {
-            "type": "string"
-        },
-        "adminPassword": {
-            "type": "secureString"
-        },
-        "imageReference": {
-            "type": "string"
-        },
         "_artifactsLocation": {
             "type": "string",
             "metadata": {
-              "description": "The base URI where artifacts required by this template are located including a trailing '/'"
+                "description": "The base URI where artifacts required by this template are located including a trailing '/'"
             },
             "defaultValue": "[deployment().properties.templateLink.uri]"
         }
     },
     "variables": {
+        "functionAppName": "{{FUNCTION_APP_NAME}}",
+        "functionAppStorageAccountName": "[format('{0}modmfunc', uniqueString(resourceGroup().id))]",
+        "vmiReferenceId": "{{VMI_REFERENCE_ID}}",
         "virtualMachineSize": "Standard_D2s_v3",
         "virtualMachineName": "modm",
         "vnetName": "[concat(variables('virtualMachineName'), '-vnet')]",
@@ -36,20 +30,112 @@
         "publicIpAddressSku": "Standard",
         "publicIpAddressName": "[concat(variables('virtualMachineName'), '-publicip')]",
         "nsgName": "[concat(variables('virtualMachineName'), '-nsg')]",
-        "userDataObject": {
-            "artifactsUri": "[concat(variables('artifactsContainerLocation'), '/', 'content.zip')]",
-            "artifactsHash": "<CONTENT_HASH>",
-            "parameters": {
-                "resource_group_name": "[resourceGroup().name]",
-                "location": "[resourceGroup().location]",
-                "sql_admin_password": "[parameters('adminPassword')]"
-            }
+        "userData": {
+            "installerPackage": {
+                "uri": "[concat(variables('artifactsContainerLocation'), '/', 'installer.pkg')]",
+                "hash": "{{INSTALLER_PACKAGE_HASH}}"
+            },
+            "parameters": {}
         },
         "commonTags": {
             "modm": "true"
         }
     },
     "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2022-05-01",
+            "name": "[variables('functionAppStorageAccountName')]",
+            "comments": "Storage account for the azure function which will serve up the dashboard",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "Storage",
+            "properties": {
+                "supportsHttpsTrafficOnly": true,
+                "minimumTlsVersion": "TLS1_2",
+                "defaultToOAuthAuthentication": true
+            },
+            "tags": "[variables('commonTags')]"
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2022-03-01",
+            "name": "[variables('functionAppName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Y1",
+                "tier": "Dynamic",
+                "size": "Y1",
+                "family": "Y"
+            },
+            "properties": {
+                "reserved": true
+            },
+            "tags": "[variables('commonTags')]"
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2022-03-01",
+            "name": "[variables('functionAppName')]",
+            "location": "[resourceGroup().location]",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('functionAppName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id)))]"
+            ],
+            "tags": "[variables('commonTags')]",
+            "kind": "functionapp,linux",
+            "properties": {
+                "reserved": true,
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('functionAppName'))]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "dotnet-isolated"
+                        },
+                        {
+                            "name": "WEBSITE_RUN_FROM_PACKAGE",
+                            "value": "0"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~4"
+                        },
+                        {
+                            "name": "DOTNET_FUNCTION_APP_LANG_VERSION",
+                            "value": "7.0"
+                        },
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('functionAppStorageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('functionAppStorageAccountName')), '2022-05-01').keys[0].value)]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                            "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('functionAppStorageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('functionAppStorageAccountName')), '2022-05-01').keys[0].value)]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTSHARE",
+                            "value": "[toLower(variables('functionAppName'))]"
+                        }
+                    ],
+                    "linuxFxVersion": "DOTNET-ISOLATED|7.0",
+                    "netFrameworkVersion": "7.0",
+                    "cors": {
+                        "allowedOrigins": [
+                            "https://portal.azure.com"
+                        ],
+                        "supportCredentials": false
+                    }
+                },
+                "publicNetworkAccess": "Enabled",
+                "httpsOnly": true
+            }
+        },
         {
             "name": "[variables('vnetName')]",
             "type": "Microsoft.Network/virtualNetworks",
@@ -59,7 +145,7 @@
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
-                        "10.0.0.0/16" 
+                        "10.0.0.0/16"
                     ]
                 }
             }
@@ -73,7 +159,7 @@
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
             ],
             "properties": {
-                "addressPrefix": "10.0.0.0/24" 
+                "addressPrefix": "10.0.0.0/24"
             }
         },
         {
@@ -122,7 +208,7 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]",
                 "[resourceId('Microsoft.Network/publicIpAddresses/', variables('publicIpAddressName'))]",
-                "[resourceId('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]" 
+                "[resourceId('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
             ],
             "properties": {
                 "ipConfigurations": [
@@ -146,7 +232,7 @@
                     }
                 ],
                 "networkSecurityGroup": {
-                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]" 
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
                 }
             }
         },
@@ -171,7 +257,7 @@
             "apiVersion": "2022-04-01",
             "name": "[guid(concat('ownerAssignment-', resourceGroup().id))]",
             "dependsOn": [
-              "[resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]"
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]"
             ],
             "properties": {
                 "principalType": "ServicePrincipal",
@@ -196,7 +282,7 @@
                 "hardwareProfile": {
                     "vmSize": "[variables('virtualMachineSize')]"
                 },
-                "userData": "[base64(string(variables('userDataObject')))]",
+                "userData": "[base64(string(variables('userData')))]",
                 "storageProfile": {
                     "osDisk": {
                         "createOption": "fromImage",
@@ -206,7 +292,7 @@
                         "deleteOption": "Delete"
                     },
                     "imageReference": {
-                        "id": "[parameters('imageReference')]"
+                        "id": "[variables('vmiReferenceId')]"
                     }
                 },
                 "networkProfile": {
