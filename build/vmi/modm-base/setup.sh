@@ -40,7 +40,7 @@ sudo apt-get install docker-buildx-plugin docker-compose -y
 # Install .NET 7
 sudo apt-get install -y dotnet-sdk-7.0
 
-echo "Installing Azure CLI"
+#echo "Installing Azure CLI"
 
 # Install Azure Functions Core needed for the Azure Function App
 # This will be used to publish the dashboard redirect

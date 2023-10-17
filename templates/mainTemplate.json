@@ -14,6 +14,12 @@
         "imageReference": {
             "type": "string"
         },
+        "zippedFunction": {
+            "type": "string"
+        },
+        "functionAppName": {
+            "type": "string"
+        },
         "_artifactsLocation": {
             "type": "string",
             "metadata": {
@@ -23,10 +29,15 @@
         }
     },
     "variables": {
+        "isReserved": "[true()]",
+        "functionAppPlanSku": "S1",
         "virtualMachineSize": "Standard_D2s_v3",
         "virtualMachineName": "modm",
         "vnetName": "[concat(variables('virtualMachineName'), '-vnet')]",
         "subnetName": "default",
+        "location": "[resourceGroup().location]",
+        "publicFqdn": "[concat(variables('dnsLabel'), '.', variables('location'), '.cloudapp.azure.com')]",
+        "publicUrl": "[concat('https://', variables('publicFqdn'), '/')]",
         "artifactsContainerLocation": "[substring(parameters('_artifactsLocation'), 0, lastIndexOf(parameters('_artifactsLocation'), '/'))]",
         "vmResourceId": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]",
         "dnsLabel": "[concat('modm', uniqueString(variables('vmResourceId')))]",
@@ -39,6 +50,7 @@
         "userDataObject": {
             "artifactsUri": "[concat(variables('artifactsContainerLocation'), '/', 'content.zip')]",
             "artifactsHash": "<CONTENT_HASH>",
+            "functionAppName": "[parameters('functionAppName')]",
             "parameters": {
                 "resource_group_name": "[resourceGroup().name]",
                 "location": "[resourceGroup().location]",
@@ -51,10 +63,94 @@
     },
     "resources": [
         {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2021-04-01",
+            "name": "[concat('storage', uniqueString(resourceGroup().id))]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "supportsHttpsTrafficOnly": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2022-03-01",
+            "name": "[parameters('functionAppName')]",
+            "location": "[resourceGroup().location]",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id)))]"
+            ],
+            "kind": "functionapp,linux",
+            "properties": {
+                "reserved": "[variables('isReserved')]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppName'))]",
+                "siteConfig": {
+                    "alwaysOn": true,
+                    "linuxFxVersion": "DOTNET-ISOLATED|7.0",
+                    "appSettings": [
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "dotnet-isolated"
+                        },
+                        {
+                            "name": "WEBSITE_RUN_FROM_PACKAGE",
+                            "value": "[concat(variables('artifactsContainerLocation'), '/', 'azurefunction.zip')]"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~4"
+                        },
+                        {
+                            "name": "DOTNET_FUNCTION_APP_LANG_VERSION",
+                            "value": "7.0"
+                        },
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', concat('storage', uniqueString(resourceGroup().id)), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id))), '2021-04-01').keys[0].value)]"
+                        },
+                        {
+                            "name": "RedirectUrl",
+                            "value": "[variables('publicUrl')]"
+                        }
+                    ],
+                    "netFrameworkVersion": "7.0",
+                    "cors": {
+                        "allowedOrigins": [
+                            "*"
+                        ],
+                        "supportCredentials": false
+                    }
+                },
+                "httpsOnly": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2021-02-01",
+            "name": "[parameters('functionAppName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+              "tier": "Standard",
+              "name": "[variables('functionAppPlanSku')]",
+              "family": "S",
+              "capacity": 1
+            },
+            "properties": {
+              "reserved": "[variables('isReserved')]"
+            }
+          },
+        {
             "name": "[variables('vnetName')]",
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2021-08-01",
-            "location": "[parameters('location')]",
+            "location": "[resourceGroup().location]",
             "tags": "[variables('commonTags')]",
             "properties": {
                 "addressSpace": {

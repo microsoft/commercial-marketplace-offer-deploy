@@ -55,31 +55,6 @@ namespace Modm.ServiceHost
             return Path.Combine(this.config.GetHomeDirectory(), "source/artifacts/azurefunction.zip");
         }
 
-        private async Task PublishAzureFunctions(string functionAppName)
-        {
-            try
-            {
-                var zipLocation = GetZipLocation();
-                var kuduApi = new KuduApi(functionAppName, new HttpClient());
-                await kuduApi.DeployZipAsync(zipLocation);
-
-                var fqdn = await this.metadataService.GetFqdnAsync();
-                var instanceMetadata = await this.metadataService.GetAsync();
-                var resourceGroupName = instanceMetadata.Compute.ResourceGroupName;
-                var subscriptionId = instanceMetadata.Compute.SubscriptionId.ToString();
-
-                var appSettingsManager = new AzureAppSettingsManager(subscriptionId);
-                var redirectUrl = $"https://{fqdn}";
-                await appSettingsManager.UpdateAppSettingsAsync(resourceGroupName, functionAppName, new Dictionary<string, string>
-                {
-                    { "RedirectUrl", redirectUrl }
-                });
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error deserializing UserData or starting deployment.");
-            }
-        }
 
         private async Task<bool> TryToProcessUserData(CancellationToken cancellation)
         {
@@ -116,8 +91,6 @@ namespace Modm.ServiceHost
                 if (userData.IsValid())
                 {
                     logger.LogInformation("UserData was valid");
-
-                    await PublishAzureFunctions(userData.FunctionAppName);
 
                     var request = new StartDeploymentRequest
                     {
