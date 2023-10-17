@@ -7,23 +7,49 @@ namespace Functions
 {
     public class DashboardRedirect
     {
-        private readonly ILogger _logger;
+        public const string RedirectUrlAppSettingName = "RedirectUrl";
+        public const string FallbackRedirectUrl = "https://portal.azure.com";
+
+        private readonly ILogger logger;
 
         public DashboardRedirect(ILoggerFactory loggerFactory)
         {
-            _logger = loggerFactory.CreateLogger<DashboardRedirect>();
+            logger = loggerFactory.CreateLogger<DashboardRedirect>();
         }
 
-        [Function("DashboardRedirect")]
-        public HttpResponseData Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req)
+        /// <summary>
+        /// Performs a 302 redirect to create a known dashboard URL
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [Function("dashboard")]
+        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData request)
         {
-            _logger.LogInformation("C# HTTP trigger function processed a request.");
+            var redirectUrl = Environment.GetEnvironmentVariable(RedirectUrlAppSettingName, EnvironmentVariableTarget.Process) ?? string.Empty;
 
-            // Read the redirect URL from application settings
-            var redirectUrl = System.Environment.GetEnvironmentVariable("RedirectUrl", EnvironmentVariableTarget.Process);
+            if (string.IsNullOrEmpty(redirectUrl))
+            {
+                logger.LogError("The {settingName} returned an empty value. Serving up default /index.html", RedirectUrlAppSettingName);
+                return await ReturnIndexPage(request);
+            }
 
-            var response = req.CreateResponse(HttpStatusCode.Found);
+            logger.LogInformation("Redirecting request to: {url}", redirectUrl);
+
+            var response = request.CreateResponse(HttpStatusCode.Found);
             response.Headers.Add("Location", redirectUrl);
+
+            return response;
+        }
+
+        private async Task<HttpResponseData> ReturnIndexPage(HttpRequestData request)
+        {
+            var homeDirectory = $"{Environment.GetEnvironmentVariable("HOME")}/site/wwwroot";
+            var page = Path.Combine(homeDirectory, "index.html");
+
+            var response = request.CreateResponse(HttpStatusCode.OK);
+            response.Headers.Add("Content-Type", "text/html; charset=utf-8");
+
+            await response.WriteBytesAsync(await File.ReadAllBytesAsync(page));
 
             return response;
         }

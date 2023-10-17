@@ -28,10 +28,6 @@ class MainTemplate(ArmTemplate):
         self.document["variables"][self.vmi_reference_id_variable] = value
     
     @property
-    def dashboard_url(self):
-        return f'https://{self.function_app_name}.azurewebsites.net/dashboard'
-
-    @property
     def function_app_name(self):
         """The function app name used to create a FunctionApp which will drive the dashboard"""
         return self.document["variables"][self.function_app_name_variable]
