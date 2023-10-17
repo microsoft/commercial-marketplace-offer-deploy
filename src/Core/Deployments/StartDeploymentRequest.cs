@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 using MediatR;
-using Modm.Artifacts;
+using Modm.Packaging;
 using Modm.Serialization;
 
 namespace Modm.Deployments
@@ -29,9 +29,9 @@ namespace Modm.Deployments
 		/// Gets the artifacts uri as an <see cref="ArtifactsUri"/>
 		/// </summary>
 		/// <returns></returns>
-		public ArtifactsUri GetUri()
+		public PackageUri GetUri()
 		{
-			return new ArtifactsUri(ArtifactsUri);
+			return new PackageUri(ArtifactsUri);
         }
 	}
 }

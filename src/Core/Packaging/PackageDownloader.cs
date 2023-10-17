@@ -1,15 +1,18 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Modm.Extensions;
 
-namespace Modm.Artifacts
+namespace Modm.Packaging
 {
-    public class ArtifactsDownloader : IArtifactsDownloader
+    /// <summary>
+    /// The installer package downloader
+    /// </summary>
+    public class PackageDownloader : IPackageDownloader
     {
         private readonly HttpClient client;
         private readonly IConfiguration configuration;
-        private readonly ArtifactsFileFactory artifactsFileFactory;
+        private readonly PackageFileFactory artifactsFileFactory;
 
-        public ArtifactsDownloader(HttpClient client, IConfiguration configuration, ArtifactsFileFactory artifactsFileFactory)
+        public PackageDownloader(HttpClient client, IConfiguration configuration, PackageFileFactory artifactsFileFactory)
         {
             this.client = client;
             this.configuration = configuration;
@@ -21,15 +24,15 @@ namespace Modm.Artifacts
         /// </summary>
         /// <param name="uri"></param>
         /// <returns></returns>
-        public Task<ArtifactsFile> DownloadAsync(ArtifactsUri uri)
+        public Task<PackageFile> DownloadAsync(PackageUri uri)
         {
-            return DownloadAsync(uri, new ArtifactsDownloadOptions
+            return DownloadAsync(uri, new PackageDownloadOptions
             {
                 SavePath = configuration.GetHomeDirectory()
             });
         }
 
-        public async Task<ArtifactsFile> DownloadAsync(ArtifactsUri uri, ArtifactsDownloadOptions options)
+        public async Task<PackageFile> DownloadAsync(PackageUri uri, PackageDownloadOptions options)
         {
             var httpResult = await client.GetAsync(uri);
             var artifactsFile = await DownloadFile(httpResult, options);
@@ -37,9 +40,9 @@ namespace Modm.Artifacts
             return artifactsFile;
         }
 
-        private async Task<ArtifactsFile> DownloadFile(HttpResponseMessage httpResult, ArtifactsDownloadOptions options)
+        private async Task<PackageFile> DownloadFile(HttpResponseMessage httpResult, PackageDownloadOptions options)
         {
-            var archiveFilePath = Path.GetFullPath(Path.Combine(options.SavePath, ArtifactsFile.FileName));
+            var archiveFilePath = Path.GetFullPath(Path.Combine(options.SavePath, PackageFile.FileName));
 
             using var resultStream = await httpResult.Content.ReadAsStreamAsync();
             using var fileStream = File.Create(archiveFilePath);

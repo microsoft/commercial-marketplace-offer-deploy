@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Modm.Artifacts;
+using Modm.Packaging;
 using Modm.Configuration;
 using Modm.Deployments;
 using Modm.Engine.Jenkins.Client;
@@ -97,9 +97,9 @@ namespace Modm.Tests.Utils
                 return configuration;
             }
 
-            public IArtifactsDownloader ArtifactsDownloader()
+            public IPackageDownloader ArtifactsDownloader()
             {
-                var file = Test.DataFile.Get(ArtifactsFile.FileName);
+                var file = Test.DataFile.Get(PackageFile.FileName);
                 var dir = Test.Directory<TTest>();
                 disposables.Add(dir);
 
@@ -107,9 +107,9 @@ namespace Modm.Tests.Utils
                 var artifactsFilePath = Path.Combine(dir.FullName, file.Name);
                 File.Copy(file.FullName, artifactsFilePath, true);
 
-                var instance = Substitute.For<IArtifactsDownloader>();
-                instance.DownloadAsync(Arg.Any<ArtifactsUri>())
-                    .Returns(new ArtifactsFile(artifactsFilePath, Logger<ArtifactsFile>()));
+                var instance = Substitute.For<IPackageDownloader>();
+                instance.DownloadAsync(Arg.Any<PackageUri>())
+                    .Returns(new PackageFile(artifactsFilePath, Logger<PackageFile>()));
 
                 services.AddSingleton(instance);
 

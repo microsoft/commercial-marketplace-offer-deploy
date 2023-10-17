@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Modm.Artifacts
+namespace Modm.Packaging
 {
     /// <summary>
     /// The content of a manifest file

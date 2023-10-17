@@ -5,7 +5,7 @@ using Modm.Engine.Pipelines;
 using Modm.Extensions;
 using Modm.Azure;
 using Modm.Tests.Utils;
-using Modm.Artifacts;
+using Modm.Packaging;
 using FluentValidation;
 using NSubstitute;
 using FluentValidation.Results;
@@ -23,7 +23,7 @@ namespace Modm.Tests.UnitTests
             pipeline = GetPipeline();
             request = new StartDeploymentRequest
             {
-                ArtifactsUri = "https://dummy-artifacts-url/content.zip",
+                ArtifactsUri = "https://dummy-artifacts-url/installer.pkg",
                 Parameters = new Dictionary<string, object>()
             };
         }
@@ -67,9 +67,9 @@ namespace Modm.Tests.UnitTests
                 m.JenkinsClient();
                 m.Configuration();
 
-                m.Create<IValidator<ArtifactsFile>>(instance =>
+                m.Create<IValidator<PackageFile>>(instance =>
                 {
-                    instance.Validate(Arg.Any<ArtifactsFile>()).Returns(new ValidationResult());
+                    instance.Validate(Arg.Any<PackageFile>()).Returns(new ValidationResult());
                     instance.Validate(Arg.Any<IValidationContext>()).Returns(new ValidationResult());
 
                     Services.AddScoped(x => instance);

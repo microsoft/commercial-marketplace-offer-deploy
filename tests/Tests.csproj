@@ -35,7 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-      <Content Include="Data\content.zip">
+      <Content Include="Data\installer.pkg">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
   </ItemGroup>

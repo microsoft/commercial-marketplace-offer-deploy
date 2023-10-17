@@ -2,7 +2,7 @@
 using MediatR;
 using MediatR.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
-using Modm.Artifacts;
+using Modm.Packaging;
 using Modm.Deployments;
 
 namespace Modm.Engine.Pipelines
@@ -53,10 +53,10 @@ namespace Modm.Engine.Pipelines
     /// </summary>
 	public class DownloadAndExtractArtifactsFile : IPipelineBehavior<CreateDeploymentDefinition, DeploymentDefinition>
     {
-        private readonly IArtifactsDownloader downloader;
-        private readonly IValidator<ArtifactsFile> validator;
+        private readonly IPackageDownloader downloader;
+        private readonly IValidator<PackageFile> validator;
 
-        public DownloadAndExtractArtifactsFile(IArtifactsDownloader downloader, IValidator<ArtifactsFile> validator)
+        public DownloadAndExtractArtifactsFile(IPackageDownloader downloader, IValidator<PackageFile> validator)
         {
             this.downloader = downloader;
             this.validator = validator;
@@ -69,8 +69,8 @@ namespace Modm.Engine.Pipelines
 
             var artifactsFile = await downloader.DownloadAsync(definition.Source);
 
-            var context = new ValidationContext<ArtifactsFile>(artifactsFile);
-            context.RootContextData[ArtifactsFile.HashAttributeName] = request.ArtifactsHash;
+            var context = new ValidationContext<PackageFile>(artifactsFile);
+            context.RootContextData[PackageFile.HashAttributeName] = request.ArtifactsHash;
 
             var validationResult = validator.Validate(context);
 

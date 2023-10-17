@@ -2,7 +2,7 @@
 using System.Text.Json;
 using Modm.Deployments;
 
-namespace Modm.Artifacts
+namespace Modm.Packaging
 {
 	public class ManifestFile
     {

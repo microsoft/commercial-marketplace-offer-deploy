@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Text.Json.Serialization;
-using Modm.Artifacts;
+using Modm.Packaging;
 using Modm.Serialization;
 
 namespace Modm.Deployments
@@ -30,7 +30,7 @@ namespace Modm.Deployments
         /// <summary>
         /// The source of the deployment definition
         /// </summary>
-        public ArtifactsUri Source { get; set; }
+        public PackageUri Source { get; set; }
 
         /// <summary>
         /// The origional hash of the Artifacts content

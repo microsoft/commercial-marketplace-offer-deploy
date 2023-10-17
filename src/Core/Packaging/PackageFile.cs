@@ -5,28 +5,30 @@ using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
 using Modm.IO;
 
-namespace Modm.Artifacts
+namespace Modm.Packaging
 {
     /// <summary>
-    /// The content.zip file that represents the artifacts used for the installation by MODM
+    /// The installer.pkg file that represents the artifacts used for the installation of an app by modm
     /// </summary>
-	public class ArtifactsFile
+	public class PackageFile
     {
-        public const string HashAttributeName = "artifactsHash";
+        public const string Extension = "pkg";
+
+        public const string HashAttributeName = "packageHash";
 
         /// <summary>
-        /// the name of the content file that must always be used.
+        /// the name of the installer package file that must always be used.
         /// This file will be included in the app.zip file at the root
         /// </summary>
-        public const string FileName = "content.zip";
+        public const string FileName = "installer.pkg";
 
         /// <summary>
-        /// the default directory name where the content file will be extracted to
+        /// the default directory name where the installer package file will be extracted to
         /// </summary>
-        public const string DestinationDirectoryName = "content";
+        public const string DestinationDirectoryName = "installer";
 
         private readonly string filePath;
-        private readonly ILogger<ArtifactsFile> logger;
+        private readonly ILogger<PackageFile> logger;
 
         /// <summary>
         /// Gets the extracted to directory path
@@ -43,7 +45,7 @@ namespace Modm.Artifacts
             }
         }
 
-        internal ArtifactsFile(string filePath, ILogger<ArtifactsFile> logger)
+        internal PackageFile(string filePath, ILogger<PackageFile> logger)
         {
             this.filePath = filePath;
             this.logger = logger;
@@ -51,7 +53,7 @@ namespace Modm.Artifacts
         }
 
         /// <summary>
-        /// Extracts the contents of the content.zip to a directory <see cref="DestinationDirectoryName"/> next to it
+        /// Extracts the contents of the installer package to a directory <see cref="DestinationDirectoryName"/> next to it
         /// and returns the directory path
         /// </summary>
         public void Extract()
@@ -65,11 +67,16 @@ namespace Modm.Artifacts
                 Directory.Delete(ExtractedTo, recursive: true);
             }
 
-            // because unzip will use the name of the zip file when extracting, unzip directly to ./content
+            // because unzip will use the name of the zip file when extracting, unzip directly to ./installer
             var destinationDirectoryName = Path.GetDirectoryName(filePath);
-            
-            ZipFile.ExtractToDirectory(filePath, destinationDirectoryName, overwriteFiles: true);
+
+            var zipFile = Path.ChangeExtension(filePath, $".zip");
+            File.Copy(filePath, zipFile, overwrite: true);
+
+            ZipFile.ExtractToDirectory(zipFile, destinationDirectoryName, overwriteFiles: true);
             DirectoryPermissions.AllowFullControl(ExtractedTo);
+
+            File.Delete(zipFile);
 
             IsExtracted = true;
         }

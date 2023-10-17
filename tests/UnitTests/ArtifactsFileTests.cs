@@ -1,16 +1,23 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Modm.Artifacts;
+using Modm.Packaging;
 using Modm.Tests.Utils;
 
 namespace Modm.Tests.UnitTests
 {
-    public class ArtifactsFileTests : AbstractTest<ArtifactsFileTests>
+    public class PackageFileTests : AbstractTest<PackageFileTests>
     {
-        readonly ArtifactsFile artifactsFile;
+        readonly PackageFile artifactsFile;
 
-		public ArtifactsFileTests() : base()
+		public PackageFileTests() : base()
 		{
-            artifactsFile = Provider.GetRequiredService<ArtifactsFile>();
+            artifactsFile = Provider.GetRequiredService<PackageFile>();
+        }
+
+        [Fact]
+        public void should_extract_to_DestinationDirectoryName()
+        {
+            artifactsFile.Extract();
+            Assert.True(Directory.Exists(artifactsFile.ExtractedTo));
         }
 
         [Fact]
@@ -31,8 +38,8 @@ namespace Modm.Tests.UnitTests
 
         public override void ConfigureServices()
         {
-            var file = Test.DataFile.Get(ArtifactsFile.FileName);
-            Services.AddSingleton<ArtifactsFile>(new ArtifactsFile(file.FullName, Mock.Logger<ArtifactsFile>()));
+            var file = Test.DataFile.Get(PackageFile.FileName);
+            Services.AddSingleton<PackageFile>(new PackageFile(file.FullName, Mock.Logger<PackageFile>()));
         }
     }
 }

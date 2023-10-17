@@ -1,7 +1,7 @@
 ﻿using System;
-namespace Modm.Artifacts
+namespace Modm.Packaging
 {
-	public class ArtifactsDownloadOptions
+	public class PackageDownloadOptions
 	{
         public required string SavePath { get; set; }
     }
