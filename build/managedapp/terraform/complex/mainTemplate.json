@@ -48,7 +48,6 @@
             "artifactsUri": "[concat(variables('artifactsContainerLocation'), '/', 'content.zip')]",
             "artifactsHash": "<CONTENT_HASH>",
             "functionAppName": "[parameters('functionAppName')]",
-            "functionManagedGroup": "d391271a-216a-49e1-a36e-c24b2c619f14",
             "parameters": {
                 "resource_group_name": "[resourceGroup().name]",
                 "location": "[resourceGroup().location]",
@@ -127,7 +126,7 @@
                         },
                         {
                             "name": "WEBSITE_RUN_FROM_PACKAGE",
-                            "value": "[concat(variables('artifactsContainerLocation'), '/', 'functions.zip')]"
+                            "value": "[concat(variables('artifactsContainerLocation'), '/', 'azurefunction.zip')]"
                         },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
@@ -297,33 +296,6 @@
                 "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), '2022-03-01', 'Full').identity.principalId]"
             }
         },
-        {
-            "type": "Microsoft.Resources/deploymentScripts",
-            "apiVersion": "2021-02-01",
-            "name": "addManagedIdentityToADGroupScript",
-            "properties": {
-              "scriptContent": "#!/bin/bash\naz login --identity\naz ad group member add --group <group-object-id> --member-id <managed-identity-object-id>",
-              "scriptType": "Shell",
-              "azCliVersion": "2.26.2",  
-              "timeout": "PT15M",  
-              "cleanupPreference": "Always",
-              "retentionInterval": "P1D",  
-              "arguments": {
-                "group-object-id": {
-                  "type": "string",
-                  "defaultValue": "d391271a-216a-49e1-a36e-c24b2c619f14"
-                },
-                "managed-identity-object-id": {
-                  "type": "string",
-                  "defaultValue": "[reference(variables('virtualMachineName')).identity.principalId]"
-                }
-              }
-            },
-            "dependsOn": [
-                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]",
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]"
-            ]
-          },
         {
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2022-03-01",
