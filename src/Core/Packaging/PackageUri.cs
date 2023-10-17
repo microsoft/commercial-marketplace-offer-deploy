@@ -28,9 +28,9 @@ namespace Modm.Packaging
             else if (uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
             {
                 // For remote URIs, you might need to make an HTTP HEAD request
-                // to the URI to check if it exists and is a pkg file
+                // to the URI to check if it exists and is a zip file
                 // You can use HttpClient to do this, but it's beyond the scope of this code snippet
-                // Here, we assume that the URI is valid and points to a pkg file
+                // Here, we assume that the URI is valid and points to a zip file
                 return true;
             }
             else

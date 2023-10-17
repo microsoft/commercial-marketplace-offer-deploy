@@ -51,7 +51,7 @@ class TestApplicationPackage(unittest.TestCase):
             self.assertIsNotNone(main_template["variables"]["userData"])
             self.assertEqual(len(main_template["variables"]["userData"]["parameters"].keys()), 3)
 
-        # verify the contents of the installer.pkg
+        # verify the contents of the installer.zip
 
         shutil.rmtree(result.file.parent)
 

@@ -23,7 +23,7 @@ namespace Modm.Tests.UnitTests
             pipeline = GetPipeline();
             request = new StartDeploymentRequest
             {
-                ArtifactsUri = "https://dummy-artifacts-url/installer.pkg",
+                ArtifactsUri = "https://dummy-artifacts-url/installer.zip",
                 Parameters = new Dictionary<string, object>()
             };
         }

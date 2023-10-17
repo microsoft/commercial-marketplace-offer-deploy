@@ -29,7 +29,7 @@ class ApplicationPackage:
 
     """
     Represents the app package, e.g. the app.zip
-    The installer package (installer.pkg) will reside directly in the app.zip next to
+    The installer package (installer.zip) will reside directly in the app.zip next to
     the installer's mainTemplate.json and createUiDefinition.json, respectively
 
     """
@@ -47,7 +47,7 @@ class ApplicationPackage:
         - createUiDefinition.json
         - viewDefinition.json
         - installerFunction.zip
-        - installer.pkg
+        - installer.zip
             - manifest.json
             - main.ts (the installer's main template)
             - modules

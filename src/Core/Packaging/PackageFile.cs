@@ -8,7 +8,7 @@ using Modm.IO;
 namespace Modm.Packaging
 {
     /// <summary>
-    /// The installer.pkg file that represents the artifacts used for the installation of an app by modm
+    /// The installer file that represents the artifacts used for the installation of an app by modm
     /// </summary>
 	public class PackageFile
     {
