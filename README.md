@@ -2,30 +2,22 @@
 
 [![Build](https://github.com/microsoft/commercial-marketplace-offer-deploy/actions/workflows/ci.yml/badge.svg)](https://github.com/microsoft/commercial-marketplace-offer-deploy/actions/workflows/ci.yml)
 
-This marketplace offer deployment manager (MODM) simplifies the deployment of complex managed and packaged applications for the Azure Commercial Marketplace.
+The marketplace offer deployment manager (MODM) is an Application Installer for the 
+Azure Marketplace that supports deployment of Terraform and Bicep templates.
+
+Supported deployment templates:
+
+- Terraform
+- Bicep
 
 
 ## How it works
 
-- Create a `Controller` (some call it a driver--same thing) codebase that consumes the MODM client SDK
-- Build your controller binary into a Docker image along with your managed/package app templates
-- Create the createUIDefinition.json as usual, but now have the mainTemplate.json represent the deployment of your controller + MODM (See our starter bicep templates)
-- Create your marketplace package
+- Build your Application Package through the Partner Center CLI
+- Publish to the Partner Center (using the CLI or through the portal)
 
 
 <img src="https://github.com/microsoft/commercial-marketplace-offer-deploy/blob/main/docs/img/modm-architecture.png?raw=true" />
-
-
-## Feature Overview
-
-- Simplified deployment semantics including deployment "Stages" for child Azure deployments
-- Automatic retries
-- Dry Run operation support
-- Async operations built-in
-- Web Hook registration to receive only relevant deployment events
-- Client SDK (Go, C#, Python) 
-
-A full description of each feature can be found in the [features](./docs/features.md) documentation.
 
 
 ## Contributing
@@ -43,23 +35,6 @@ For more information see the [Code of Conduct FAQ](https://opensource.microsoft.
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
 
-### Development Setup
-
-**Prerequisites**
-- Go Version: 1.18+
-- Docker Version: v4+
-- An Azure subscription
-- Azure CLI (latest)
-- IDE that works with Go
-- Ngrok ([Create a free account](https://ngrok.com/))
-* Setup a .env file in /bin (see ./configs for the template)
-
-**Developer activities**
-
-- [Building the Docker image](./docs/docker-image.md)
-- [Running locally](./docs/run-locally.md)
-- [Client SDK usage (Go)](./docs/sdk-usage-go.md)
-
 ## Trademarks
 
 This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft 
@@ -72,4 +47,3 @@ Any use of third-party trademarks or logos are subject to those third-party's po
 
 - [Kevin Hillinger](https://github.com/kevinhillinger) (Author)
 - [Bob Jacobs](https://github.com/bobjac) (Author)
-- [Contributors](https://github.com/microsoft/commercial-marketplace-offer-deploy/graphs/contributors)
