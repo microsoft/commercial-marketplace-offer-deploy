@@ -41,10 +41,9 @@ namespace Functions
             return response;
         }
 
-        private async Task<HttpResponseData> ReturnIndexPage(HttpRequestData request)
+        private static async Task<HttpResponseData> ReturnIndexPage(HttpRequestData request)
         {
-            var homeDirectory = $"{Environment.GetEnvironmentVariable("HOME")}/site/wwwroot";
-            var page = Path.Combine(homeDirectory, "index.html");
+            var page = Path.Combine(Environment.CurrentDirectory, "index.html");
 
             var response = request.CreateResponse(HttpStatusCode.OK);
             response.Headers.Add("Content-Type", "text/html; charset=utf-8");
