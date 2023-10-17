@@ -9,7 +9,7 @@
           "displayName": "Overview",
           "version": "1.0.0",
           "header": "Virtual Machine Details",   
-          "description": "This section provides details of the deployed virtual machine.  <a href=\"https://<FUNCTION_APP_NAME>.net/api/dashboardredirect\">Dashboard</a>",
+          "description": "This section provides details of the deployed virtual machine.  <a href=\"https://<FUNCTION_APP_NAME>.azurewebsites.net/api/dashboardredirect\">Dashboard</a>",
           "commands": [
             {
               "displayName": "Visit VM FQDN",
