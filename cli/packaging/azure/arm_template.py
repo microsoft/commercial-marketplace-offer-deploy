@@ -1,7 +1,7 @@
 import os
 import json
 
-from packaging.azure.arm_template_parameter import ArmTemplateParameter
+from .arm_template_parameter import ArmTemplateParameter
 
 
 class ArmTemplate:

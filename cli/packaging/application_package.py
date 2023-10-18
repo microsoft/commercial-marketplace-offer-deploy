@@ -1,14 +1,10 @@
 from pathlib import Path
 import tempfile
 from zipfile import ZipFile
-from packaging import ManifestInfo
-from packaging import azure
-from packaging.azure.create_ui_definition import CreateUiDefinition
-from packaging.azure.view_definition import ViewDefinition
+from packaging.installer import ManifestInfo, CreateInstallerPackageResult, create_installer_package
+import packaging.azure as azure
+from packaging.azure import CreateUiDefinition, ViewDefinition, ArmTemplate
 from packaging.function_app_package import FunctionAppPackage
-from packaging.installer_package import CreateInstallerPackageResult, create_installer_package
-from packaging.azure import ArmTemplate
-import packaging.manifest as manifest
 from importlib.resources import files, as_file
 from msrest.serialization import Model
 

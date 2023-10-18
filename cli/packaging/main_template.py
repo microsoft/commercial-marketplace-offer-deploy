@@ -22,7 +22,7 @@ class MainTemplate(ArmTemplate):
     def vmi_reference_id(self):
         return self.document["variables"][self.vmi_reference_id_variable]
 
-    @property.setter
+    @vmi_reference_id.setter
     def vmi_reference_id(self, value):
         self.document["variables"][self.vmi_reference_id_variable] = value
 
@@ -31,7 +31,7 @@ class MainTemplate(ArmTemplate):
         """The function app name used to create a FunctionApp which will drive the dashboard"""
         return self.document["variables"][self.function_app_name_variable]
 
-    @property.setter
+    @function_app_name.setter
     def function_app_name(self, value):
         self.document["variables"][self.function_app_name_variable] = value
 

@@ -5,9 +5,8 @@ from pathlib import Path
 import shutil
 import tempfile
 import unittest
-from packaging import ApplicationPackage, DeploymentType
-from packaging.application_package import CreateApplicationPackageOptions
-from packaging.function_app_package import FunctionAppPackage
+from packaging.installer import DeploymentType
+from packaging import ApplicationPackage, FunctionAppPackage, CreateApplicationPackageOptions
 from packaging.zip_utils import unzip_file
 
 

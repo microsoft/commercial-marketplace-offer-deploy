@@ -3,8 +3,7 @@ from pathlib import Path
 import packaging.zip_utils as ziputils
 import shutil
 import tempfile
-import packaging.manifest as manifest
-from .manifest import ManifestInfo
+from .manifest import ManifestInfo, write_manifest
 import hashlib
 
 class CreateInstallerPackageResult:
@@ -58,7 +57,7 @@ class InstallerPackage:
 
         temp_dir, templates_dir = self._get_copy_of_templates_dir()
 
-        manifest.write(templates_dir, self.manifest)
+        write_manifest(templates_dir, self.manifest)
         dest_file_path = Path(os.path.join(temp_dir, InstallerPackage.file_name))
 
         file = ziputils.zip_dir(templates_dir, dest_file_path)
