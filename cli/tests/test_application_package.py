@@ -6,6 +6,8 @@ import shutil
 import tempfile
 import unittest
 from packaging import ApplicationPackage, DeploymentType
+from packaging.application_package import CreateApplicationPackageOptions
+from packaging.function_app_package import FunctionAppPackage
 from packaging.zip_utils import unzip_file
 
 
@@ -18,10 +20,8 @@ class TestApplicationPackage(unittest.TestCase):
 
         self.main_template = self.data_dir / 'templates' / 'main.tf'
         self.create_ui_definition = self.data_dir / 'createUIDefinition.json'
-
         self.fake_create_ui_definition = self._create_fake_file('fake_create_ui_definition.json')
-
-        logging.basicConfig(level=logging.WARN, format='%(levelname)s:  %(message)s')
+        self.fake_function_app_package = FunctionAppPackage(self._create_fake_file('fake_function_app_package.zip'))
 
     def tearDown(self):
         shutil.rmtree(self.test_dir)
@@ -39,9 +39,13 @@ class TestApplicationPackage(unittest.TestCase):
 
     def test_create(self):
         app_package = ApplicationPackage(self.main_template, self.create_ui_definition)
-        file = app_package.create()
+        options = CreateApplicationPackageOptions(vmi_reference_id = "test-vmi", 
+                                                  function_app_package = self.fake_function_app_package)
+        result = app_package.create(options)
 
-        unzip_file(file, self.test_dir)
+        self.assertEqual(len(result.validation_results), 0)
+
+        unzip_file(result.file, self.test_dir)
         log.info(os.listdir(self.test_dir))
 
         main_template_path = Path(self.test_dir).joinpath('mainTemplate.json')
@@ -51,10 +55,14 @@ class TestApplicationPackage(unittest.TestCase):
             self.assertIsNotNone(main_template["variables"]["userData"])
             self.assertEqual(len(main_template["variables"]["userData"]["parameters"].keys()), 3)
 
-        # verify the contents of the installer.pkg
+            self.assertEqual(main_template["variables"][options.vmi_reference_id_variable], options.vmi_reference_id)
+            self.assertEqual(main_template["variables"][options.function_app_name_variable], result.function_app_name)
+            self.assertEqual(main_template["variables"]["userData"]["installerPackage"]["hash"], result.installer_package.hash)
 
-        shutil.rmtree(file.parent)
+        # verify the contents of the installer.zip
 
+        shutil.rmtree(result.file.parent)
+    
     def _create_fake_file(self, file_name):
         file_path = Path(self.test_dir).joinpath(file_name)
         with open(file_path, 'w') as fp: 

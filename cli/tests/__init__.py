@@ -1,4 +1,3 @@
-import unittest
+import logging
 
-if __name__ == '__main__':
-    unittest.main()
+# logging.basicConfig(level=logging.DEBUG, format='%(levelname)s:  %(message)s')

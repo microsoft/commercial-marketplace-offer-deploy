@@ -6,20 +6,38 @@ using Modm.Serialization;
 
 namespace Modm.Azure.Model
 {
+    public class InstallerPackageInfo
+    {
+        [JsonPropertyName("uri")]
+        public required string Uri { get; set; }
+
+        [JsonPropertyName("hash")]
+        public required string Hash { get; set; }
+
+        internal bool IsValid()
+        {
+            return !string.IsNullOrEmpty(this.Hash) &&
+                   !string.IsNullOrEmpty(Uri) &&
+                   System.Uri.IsWellFormedUriString(this.Uri, UriKind.Absolute);
+        }
+    }
+
     public class UserData
     {
-        static readonly JsonSerializerOptions serializerOptions = new JsonSerializerOptions
+        static readonly JsonSerializerOptions serializerOptions = new()
         {
             PropertyNameCaseInsensitive = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             Converters = { new DictionaryStringObjectJsonConverter() }
         };
 
-        public required string ArtifactsUri { get; set; }
+        /// <summary>
+        /// The URL that points the function app which will redirect to MODM's dashboard
+        /// </summary>
+        public required string DashboardUrl { get; set; }
 
-        public required string ArtifactsHash { get; set; }
-
-        public required string FunctionAppName { get; set; }
+        [JsonPropertyName("installerPackage")]
+        public required InstallerPackageInfo InstallerPackage { get; set; }
 
         [JsonConverter(typeof(DictionaryStringObjectJsonConverter))]
         public Dictionary<string, object> Parameters { get; set; }
@@ -44,10 +62,7 @@ namespace Modm.Azure.Model
 
         public bool IsValid()
         {
-            return !string.IsNullOrEmpty(this.ArtifactsUri)
-                && !string.IsNullOrEmpty(this.ArtifactsHash)
-                && !string.IsNullOrEmpty(this.FunctionAppName)
-                && Uri.IsWellFormedUriString(this.ArtifactsUri, UriKind.Absolute);
+            return this.InstallerPackage.IsValid() && !string.IsNullOrEmpty(this.DashboardUrl);
         }
     }
 }

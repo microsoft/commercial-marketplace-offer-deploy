@@ -47,10 +47,6 @@
             }
         ],
         "outputs": {
-            "location": "[location()]",
-            "adminUsername": "[steps('setup').tbAdminUser]",
-            "adminPassword": "[steps('setup').pbAdminPassword]",
-            "imageReference": "<IMAGE_REFERENCE>"
         }
     }
 }

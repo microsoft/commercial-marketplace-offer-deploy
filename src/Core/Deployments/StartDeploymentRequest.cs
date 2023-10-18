@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 using MediatR;
-using Modm.Artifacts;
+using Modm.Packaging;
 using Modm.Serialization;
 
 namespace Modm.Deployments
@@ -9,14 +9,14 @@ namespace Modm.Deployments
 	public record StartDeploymentRequest : IRequest<StartDeploymentResult>, IRequest<DeploymentDefinition>
     {
 		/// <summary>
-		/// The location of where the artifacts to be used for deployment/install, e.g. content.zip file that was in the app.zip
+		/// The location of the installer package to be used for deployment/install, e.g. installer.zip file that was in the app.zip
 		/// </summary>
-		public string ArtifactsUri { get; set; }
+		public string PackageUri { get; set; }
 
 		/// <summary>
-		/// The origional signature of the Artifacts located at ArtifactsUri, used to verify it hasn't been tampered with
+		/// The origional signature of the installer package, used to verify it hasn't been tampered with
 		/// </summary>
-		public string ArtifactsHash { get; set; }
+		public string PackageHash { get; set; }
 
 		/// <summary>
 		/// The deployment parameters
@@ -25,13 +25,13 @@ namespace Modm.Deployments
 		public Dictionary<string,object> Parameters { get; set; }
 
 
-		/// <summary>
-		/// Gets the artifacts uri as an <see cref="ArtifactsUri"/>
-		/// </summary>
-		/// <returns></returns>
-		public ArtifactsUri GetUri()
+        /// <summary>
+        /// Gets the installer package uri as an <see cref="Packaging.PackageUri"/>
+        /// </summary>
+        /// <returns></returns>
+        public PackageUri GetUri()
 		{
-			return new ArtifactsUri(ArtifactsUri);
+			return new PackageUri(PackageUri);
         }
 	}
 }
