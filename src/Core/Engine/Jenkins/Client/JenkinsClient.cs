@@ -29,6 +29,7 @@ namespace Modm.Engine.Jenkins.Client
 
         public async Task<JenkinsInfo> GetInfo()
         {
+            
             var version = "";
             var hudson = await Send<Hudson>(HttpMethod.Get, "api/json", response =>
             {
@@ -70,6 +71,11 @@ namespace Modm.Engine.Jenkins.Client
         {
             var requestUri = new Uri(options.BaseUrl).Append(relativeUri).AbsoluteUri;
             var request = new HttpRequestMessage(method, requestUri);
+
+            if (String.IsNullOrEmpty(options.ApiToken))
+            {
+                options.ApiToken = this.jenkinsNetClient.ApiToken;
+            }
 
             request.Headers.Authorization = GetAuthenticationHeader(options);
 

@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core.DAG;
 using Modm.Azure;
 using Modm.Deployments;
 using Modm.Engine.Jenkins.Client;
@@ -26,15 +27,27 @@ namespace Modm.Engine
 
         public async Task<EngineInfo> GetInfo()
         {
-            var info = await client.GetInfo();
-            var node = await client.GetBuiltInNode();
-
-            return new EngineInfo
+            try
             {
-                EngineType = EngineType.Jenkins,
-                Version = info.Version,
-                IsHealthy = !node.Offline
-            };
+                var info = await client.GetInfo();
+                var node = await client.GetBuiltInNode();
+
+                return new EngineInfo
+                {
+                    EngineType = EngineType.Jenkins,
+                    Version = info.Version,
+                    IsHealthy = !node.Offline
+                };
+            }
+            catch (Exception)
+            {
+                return new EngineInfo
+                {
+                    EngineType = EngineType.Jenkins,
+                    Version = "NA",
+                    IsHealthy = false
+                };
+            }
         }
 
         public async Task<string> GetLogs()

@@ -13,6 +13,7 @@ import { toLocalDateTime } from '../utils/DateUtils';
 import { Separator } from '@fluentui/react';
 
 export const Default = () => {
+
   const [filter, setFilter] = React.useState<'All' | 'Succeeded' | 'Failed'>('All');
   const [offerName, setOfferName] = React.useState<string | null>(null);
   const [deploymentId, setDeploymentId] = React.useState<string | null>(null);
@@ -20,6 +21,7 @@ export const Default = () => {
   const [deploymentResourceGroup, setDeploymentResourceGroup] = React.useState<string | null>(null);
   const [deployedResources, setDeployedResources] = React.useState<DeploymentResource[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
+  const [isHealthy, setIsHealthy] = React.useState(false);
   const [enableFocusTrap, setEnableFocusTrap] = React.useState(false);
 
   const columns: IColumn[] = [
@@ -61,33 +63,6 @@ export const Default = () => {
       onRender: (item: DeploymentResource) => toLocalDateTime(item.timestamp)
     },
   ];
-
-  React.useEffect(() => {
-    // Initial fetch
-    doGetDeployedResources(); 
-    
-    // Start the interval
-    const intervalId = setInterval(() => {
-      doGetDeployedResources();
-    }, 5000); // 5 seconds
-
-    // Clear the interval when the component unmounts
-    return () => clearInterval(intervalId);
-  }, []);
-
-  const filteredDeployedResources = React.useMemo(() => {
-    if (filter === 'All') {
-        return deployedResources;
-    }
-    return deployedResources.filter(r => r.state === filter);
-  }, [deployedResources, filter]);
-
-  const onChangeEnableFocusTrap = React.useCallback(
-    (ev?: React.FormEvent<HTMLElement | HTMLInputElement> | undefined, checked?: boolean | undefined) => {
-      setEnableFocusTrap(!!checked);
-    },
-    [],
-  );
 
   const doGetDeployedResources = async () => {
     try {
@@ -137,6 +112,58 @@ export const Default = () => {
     }
   }
 
+  React.useEffect(() => {
+    const checkEngineHealth = async () => {
+        try {
+          const response = await fetch(`${AppConstants.baseUrl}/api/status`, {
+            headers: {
+              Accept: 'application/json',
+            },
+          });
+  
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+  
+          const statusData = await response.json();
+          console.log(JSON.stringify(statusData));
+          setIsHealthy(statusData.isHealthy);
+          
+          if (statusData.isHealthy) {
+            console.log('Engine is healthy');
+            doGetDeployedResources();
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
+    // Initial fetch
+    //doGetDeployedResources(); 
+    
+    // Start the interval
+    const intervalId = setInterval(() => {
+        checkEngineHealth();
+    }, 5000); // 5 seconds
+
+    // Clear the interval when the component unmounts
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const filteredDeployedResources = React.useMemo(() => {
+    if (filter === 'All') {
+        return deployedResources;
+    }
+    return deployedResources.filter(r => r.state === filter);
+  }, [deployedResources, filter]);
+
+  const onChangeEnableFocusTrap = React.useCallback(
+    (ev?: React.FormEvent<HTMLElement | HTMLInputElement> | undefined, checked?: boolean | undefined) => {
+      setEnableFocusTrap(!!checked);
+    },
+    [],
+  );
+
   const _items: ICommandBarItemProps[] = [
     {
       key: 'redeploy',
@@ -150,8 +177,13 @@ export const Default = () => {
   ? new Date(Math.min(...deployedResources.map(resource => new Date(resource.timestamp).getTime())))
   : null;
 
+  if (!isHealthy) {
+    return <h4>Engine is loading...</h4>;
+  }
+
   return (
     <>
+      
       <Separator />
 
       <div style={{ display: 'flex', alignItems: 'center' }}>
