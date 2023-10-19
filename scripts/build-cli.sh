@@ -12,11 +12,6 @@ exec 2> >(trap "" INT TERM; sed 's/^/   (stderr) /' >&2)
 
 echo "copying files to resources folder."
 
-mkdir -p ./cli/resources
-touch ./cli/resources/__init__.py
-cp -r ./templates ./cli/resources
-cp -r ./schemas ./cli/resources
-
 echo "Installing build tools."
 python -m pip install --upgrade build
 
