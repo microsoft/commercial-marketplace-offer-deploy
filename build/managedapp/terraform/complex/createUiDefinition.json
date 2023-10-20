@@ -48,11 +48,8 @@
         ],
         "outputs": {
             "location": "[location()]",
-            "adminUsername": "[steps('setup').tbAdminUser]",
-            "adminPassword": "[steps('setup').pbAdminPassword]",
-            "imageReference": "<IMAGE_REFERENCE>",
-            "zippedFunction": "<ZIPPED_FUNCTION>",
-            "functionAppName": "<HOSTING_PLAN_NAME>"
+            "resource_group_name": "[resourceGroup().name]",
+            "adminPassword": "[steps('setup').pbAdminPassword]"
         }
     }
 }

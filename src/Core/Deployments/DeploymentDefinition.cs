@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Text.Json.Serialization;
-using Modm.Artifacts;
+using Modm.Packaging;
 using Modm.Serialization;
 
 namespace Modm.Deployments
 {
     /// <summary>
-    /// Represents the contents of the manifest file contained in the artifacts archive file, e.g. the content.zip inside the app.zip
+    /// Represents the contents of the manifest file contained in the archive file, e.g. the installer.zip inside the app.zip
     /// </summary>
 	public class DeploymentDefinition
 	{
@@ -30,12 +30,12 @@ namespace Modm.Deployments
         /// <summary>
         /// The source of the deployment definition
         /// </summary>
-        public ArtifactsUri Source { get; set; }
+        public PackageUri Source { get; set; }
 
         /// <summary>
-        /// The origional hash of the Artifacts content
+        /// The origional hash of the installer package content
         /// </summary>
-        public string ArtifactsHash { get; set; }
+        public string InstallerPackageHash { get; set; }
 
         [JsonConverter(typeof(DictionaryStringObjectJsonConverter))]
         public Dictionary<string, object> Parameters { get; set; }

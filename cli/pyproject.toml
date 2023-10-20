@@ -15,7 +15,8 @@ requires-python = ">=3.7"
 dependencies = [
   'python-hcl2 >= 4.3.2',
   'click == 8.1.7',
-  'msrest == 0.7.1'
+  'msrest == 0.7.1',
+  'pybars3 == 0.9.7'
 ]
 classifiers=[
   "Programming Language :: Python :: 3",

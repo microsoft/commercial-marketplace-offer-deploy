@@ -24,8 +24,10 @@ class CreateUiDefinition:
         if len(diff) > 0:
             validation_results.append(
                 ValueError(
-                    "The outputs defined in createUiDefinition.json do not match the input parameters of your template."
-                )
+                    { 
+                    "message": "The outputs defined in createUiDefinition.json do not match the input parameters of your template.", 
+                    "properties": list(diff) 
+                    })
             )
 
         return validation_results

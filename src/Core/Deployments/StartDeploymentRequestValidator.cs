@@ -6,12 +6,12 @@ namespace Modm.Deployments
     {
 		public StartDeploymentRequestValidator()
 		{
-			RuleFor(x => x.ArtifactsUri).NotEmpty().NotNull().Must(value =>
+			RuleFor(x => x.PackageUri).NotEmpty().NotNull().Must(value =>
 			{
 				return Uri.TryCreate(value, new UriCreationOptions { DangerousDisablePathAndQueryCanonicalization = false }, out var result);
 			});
 
-			RuleFor(x => x.ArtifactsHash).NotEmpty().NotNull();
+			RuleFor(x => x.PackageHash).NotEmpty().NotNull();
 
 			RuleFor(x => x.Parameters).NotNull();
 		} 

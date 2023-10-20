@@ -2,7 +2,7 @@
 using MediatR;
 using MediatR.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
-using Modm.Artifacts;
+using Modm.Packaging;
 using Modm.Deployments;
 
 namespace Modm.Engine.Pipelines
@@ -19,7 +19,7 @@ namespace Modm.Engine.Pipelines
    
             c.AddBehavior<CreateParametersFile>();
             c.AddBehavior<ReadManifestFile>();
-            c.AddBehavior<DownloadAndExtractArtifactsFile>();
+            c.AddBehavior<DownloadAndExtractInstallerPackage>();
             c.AddRequestPostProcessor<WriteToDisk>();
 
             c.RegisterServicesFromAssemblyContaining<CreateDeploymentDefinitionHandler>();
@@ -41,7 +41,7 @@ namespace Modm.Engine.Pipelines
             return Task.FromResult(new DeploymentDefinition
             {
                 Source = request.GetUri(),
-                ArtifactsHash = request.ArtifactsHash,
+                InstallerPackageHash = request.PackageHash,
                 Parameters = request.Parameters
             });
         }
@@ -51,12 +51,12 @@ namespace Modm.Engine.Pipelines
     /// <summary>
     /// first in the pipeline for creating a definition file
     /// </summary>
-	public class DownloadAndExtractArtifactsFile : IPipelineBehavior<CreateDeploymentDefinition, DeploymentDefinition>
+	public class DownloadAndExtractInstallerPackage : IPipelineBehavior<CreateDeploymentDefinition, DeploymentDefinition>
     {
-        private readonly IArtifactsDownloader downloader;
-        private readonly IValidator<ArtifactsFile> validator;
+        private readonly IPackageDownloader downloader;
+        private readonly IValidator<PackageFile> validator;
 
-        public DownloadAndExtractArtifactsFile(IArtifactsDownloader downloader, IValidator<ArtifactsFile> validator)
+        public DownloadAndExtractInstallerPackage(IPackageDownloader downloader, IValidator<PackageFile> validator)
         {
             this.downloader = downloader;
             this.validator = validator;
@@ -65,22 +65,22 @@ namespace Modm.Engine.Pipelines
         public async Task<DeploymentDefinition> Handle(CreateDeploymentDefinition request, RequestHandlerDelegate<DeploymentDefinition> next, CancellationToken cancellationToken)
         {
             var definition = await next();
-            definition.ArtifactsHash = request.ArtifactsHash;
+            definition.InstallerPackageHash = request.PackageHash;
 
-            var artifactsFile = await downloader.DownloadAsync(definition.Source);
+            var file = await downloader.DownloadAsync(definition.Source);
 
-            var context = new ValidationContext<ArtifactsFile>(artifactsFile);
-            context.RootContextData[ArtifactsFile.HashAttributeName] = request.ArtifactsHash;
+            var context = new ValidationContext<PackageFile>(file);
+            context.RootContextData[PackageFile.HashAttributeName] = request.PackageHash;
 
             var validationResult = validator.Validate(context);
 
             if (!validationResult.IsValid)
             {
-                throw new ValidationException("Error handling artifacts extraction", validationResult.Errors);
+                throw new ValidationException("Error handling installer package extraction", validationResult.Errors);
             }
 
-            artifactsFile.Extract();
-            definition.WorkingDirectory = artifactsFile.ExtractedTo;
+            file.Extract();
+            definition.WorkingDirectory = file.ExtractedTo;
 
             return definition;
         }

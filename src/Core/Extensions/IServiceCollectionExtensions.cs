@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Modm.Artifacts;
+using Modm.Packaging;
 using Modm.Azure;
 using Modm.Deployments;
 using Modm.Engine;
@@ -38,8 +38,8 @@ namespace Modm.Extensions
         /// <exception cref="NullReferenceException"></exception>
 		public static IServiceCollection AddDeploymentEngine(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
 		{
-            services.AddScoped<IValidator<ArtifactsFile>, ArtifactsFileValidator>();
-            services.AddSingleton<ArtifactsFileFactory>();
+            services.AddScoped<IValidator<PackageFile>, PackageFileValidator>();
+            services.AddSingleton<PackageFileFactory>();
 
             if (environment.IsDevelopment())
             {
@@ -52,7 +52,7 @@ namespace Modm.Extensions
                 services.AddSingleton<IManagedIdentityService, DefaultManagedIdentityService>();
             }
 
-            services.AddSingleton<IArtifactsDownloader, ArtifactsDownloader>();
+            services.AddSingleton<IPackageDownloader, PackageDownloader>();
 
             services.AddSingleton<ApiTokenClient>();
             services.AddSingleton<JenkinsClientFactory>();

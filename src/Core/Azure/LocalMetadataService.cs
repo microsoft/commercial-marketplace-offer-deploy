@@ -45,7 +45,13 @@ namespace Modm.Azure
                     },
                     Tags = "",
                     TagsList = new List<KeyValuePair<string, string>>(),
-                    UserData = new UserData { ArtifactsUri = Environment.GetEnvironmentVariable("ARTIFACTS_URL") ?? "", ArtifactsHash = Environment.GetEnvironmentVariable("ARTIFACTS_HASH") ?? "", FunctionAppName = Environment.GetEnvironmentVariable("FUNCTION_APP_NAME") ?? "" }.ToBase64Json(),
+                    UserData = new UserData {
+                        InstallerPackage = new InstallerPackageInfo
+                        {
+                            Uri = Environment.GetEnvironmentVariable("INSTALLER_PACKAGE_URL") ?? "",
+                            Hash = Environment.GetEnvironmentVariable("INSTALLER_PACKAGE_HASH") ?? ""
+                        },
+                        DashboardUrl = Environment.GetEnvironmentVariable("DASHBOARD_URL") ?? "" }.ToBase64Json(),
                     Version = "",
                     VmScaleSetName = "",
                     VmSize = "",
