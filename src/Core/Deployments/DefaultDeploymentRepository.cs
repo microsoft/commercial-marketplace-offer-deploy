@@ -8,15 +8,29 @@ namespace Modm.Deployments
 {
     public class DefaultDeploymentRepository : IDeploymentRepository
 	{
-        private readonly IJenkinsClient client;
+        private IJenkinsClient client;
+        private readonly JenkinsClientFactory clientFactory;
         private readonly DeploymentFile file;
         private readonly ILogger<DefaultDeploymentRepository> logger;
 
-        public DefaultDeploymentRepository(IJenkinsClient client, DeploymentFile file, ILogger<DefaultDeploymentRepository> logger)
+        public DefaultDeploymentRepository(JenkinsClientFactory clientFactory, DeploymentFile file, ILogger<DefaultDeploymentRepository> logger)
 		{
-            this.client = client;
+            this.clientFactory = clientFactory;
+            this.client = clientFactory.Create().GetAwaiter().GetResult();
             this.file = file;
             this.logger = logger;
+        }
+
+        protected IJenkinsClient JenkinsClient
+        {
+            get
+            {
+                if (this.client == null)
+                {
+                    this.client = this.clientFactory.Create().GetAwaiter().GetResult();
+                }
+                return this.client;
+            }
         }
 
         public async Task<Deployment> Get(CancellationToken cancellationToken = default)

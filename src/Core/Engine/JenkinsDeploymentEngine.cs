@@ -10,27 +10,41 @@ namespace Modm.Engine
     class JenkinsDeploymentEngine : IDeploymentEngine
     {
         private readonly DeploymentFile file;
-        private readonly IJenkinsClient client;
+        private IJenkinsClient client;
+        private readonly JenkinsClientFactory clientFactory;
         private readonly DeploymentResourcesClient deploymentResourcesClient;
         private readonly IPipeline<StartDeploymentRequest, StartDeploymentResult> pipeline;
         private readonly IMetadataService metadataService;
 
-        public JenkinsDeploymentEngine(DeploymentFile file, IJenkinsClient client,DeploymentResourcesClient deploymentResourcesClient,
+        public JenkinsDeploymentEngine(DeploymentFile file, JenkinsClientFactory clientFactory, DeploymentResourcesClient deploymentResourcesClient,
             IPipeline<StartDeploymentRequest, StartDeploymentResult> pipeline, IMetadataService metadataService)
         {
             this.file = file;
-            this.client = client;
+            this.clientFactory = clientFactory;
+            this.client = clientFactory.Create().GetAwaiter().GetResult();
             this.deploymentResourcesClient = deploymentResourcesClient;
             this.pipeline = pipeline;
             this.metadataService = metadataService;
+        }
+
+        private IJenkinsClient JenkinsClient
+        {
+            get
+            {
+                if (this.client == null)
+                {
+                    this.client = this.clientFactory.Create().GetAwaiter().GetResult();
+                }
+                return this.client;
+            }
         }
 
         public async Task<EngineInfo> GetInfo()
         {
             try
             {
-                var info = await client.GetInfo();
-                var node = await client.GetBuiltInNode();
+                var info = await JenkinsClient.GetInfo();
+                var node = await JenkinsClient.GetBuiltInNode();
 
                 return new EngineInfo
                 {
@@ -39,8 +53,9 @@ namespace Modm.Engine
                     IsHealthy = !node.Offline
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                string errorMessage = ex.Message;
                 return new EngineInfo
                 {
                     EngineType = EngineType.Jenkins,
@@ -53,7 +68,7 @@ namespace Modm.Engine
         public async Task<string> GetLogs()
         {
             var deployment = await file.Read();
-            return await client.GetBuildLogs(deployment.Definition.DeploymentType, deployment.Id);
+            return await JenkinsClient.GetBuildLogs(deployment.Definition.DeploymentType, deployment.Id);
         }
 
         public async Task<Deployment> Get()

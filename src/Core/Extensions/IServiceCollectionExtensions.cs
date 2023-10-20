@@ -59,11 +59,13 @@ namespace Modm.Extensions
             services.AddSingleton<DeploymentFile>();
             services.AddSingleton<IDeploymentRepository, DefaultDeploymentRepository>();
 
-            services.AddSingleton<IJenkinsClient>(provider =>
-            {
-                var factory = provider.GetService<JenkinsClientFactory>();
-                return factory == null ? throw new NullReferenceException("JenkinsClientFactory not configured") : factory.Create().GetAwaiter().GetResult();
-            });
+            //services.AddSingleton<IJenkinsClient>(provider =>
+            //{
+            //    var factory = provider.GetService<JenkinsClientFactory>();
+            //    return factory == null ? throw new NullReferenceException("JenkinsClientFactory not configured") : factory.Create().GetAwaiter().GetResult();
+            //});
+
+            
 
             services.AddSingleton<IDeploymentEngine, JenkinsDeploymentEngine>();
             services.AddSingleton<DeploymentResourcesClient>();

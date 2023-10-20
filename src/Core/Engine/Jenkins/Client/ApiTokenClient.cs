@@ -14,7 +14,7 @@ namespace Modm.Engine.Jenkins.Client
     /// To get an API token, the username:password is used to authenticate.
     /// Get a crumb, use the crumb to create an API Token, then return the token value
     /// </remarks>
-	class ApiTokenClient
+	public class ApiTokenClient
 	{
         private readonly HttpClient client;
         private readonly JenkinsOptions options;
