@@ -27,14 +27,14 @@ class ResourcesInfo(Model):
 
 
 class InstallerResources:
-    def __init__(self, location: Path, installer_version):
+    def __init__(self, location: Path, installer_reference: dict, installer_version):
         self.installer_version = installer_version
         self.location = location
         self.main_template = main_template.from_file(location.joinpath("templates/mainTemplate.json"))
         self.view_definition = view_definition.from_file(location.joinpath("templates/viewDefinition.json"))
         self.function_app_package = location.joinpath("function.zip")
-        self.vmi_reference_id = None
-        self.vm_offer = None
+        self.vmi_reference_id = installer_reference["vmi"]
+        self.vm_offer = installer_reference["offer"]
 
 
 class InstallerResourcesProvider:
@@ -82,7 +82,10 @@ class InstallerResourcesProvider:
         if self._index is None:
             response = requests.get(Config().index_url(), headers={"Accept": "application/json"})
             response.raise_for_status()
-            self._index = response.json()
+            document = response.json()
+            self._index = {}
+            for release in document["releases"]:
+                self._index[release["version"]] = release
         return self._index
 
     def _load_from_disk(self):
@@ -92,7 +95,7 @@ class InstallerResourcesProvider:
         resources = {}
         for version_dir in version_dirs:
             version = InstallerVersion(version_dir.name)
-            resources[version] = InstallerResources(version_dir, version)
+            resources[version] = InstallerResources(version_dir, self._index version)
         self._entries = resources
 
     def _get_resources(self, version_name):
@@ -110,16 +113,10 @@ class InstallerResourcesProvider:
         if version in self._entries:
             return self._entries[version]
 
-        releases = self._index["releases"]
-        release = None
-        for r in releases:
-            if release["version"] == version.name:
-                release = r
-                break
-        if release is None:
+        if version.name not in self._index:
             raise Exception(f"Invalid version '{version.name}'. Not found in the official index.")
 
-        resources = self._get_resources(release["resources"], version)
+        resources = self._fetch_resources(self._index[version.name], version)
         self._entries[version] = resources
 
         return resources
@@ -129,8 +126,8 @@ class InstallerResourcesProvider:
         version_name = latest_release["tag_name"]
         return InstallerVersion(version_name)
 
-    def _get_resources(self, resources_dict: dict, version: InstallerVersion) -> InstallerResources:
-        resources: ResourcesInfo = ResourcesInfo.from_dict(resources_dict)
+    def _fetch_resources(self, release: dict, version: InstallerVersion) -> InstallerResources:
+        resources: ResourcesInfo = ResourcesInfo.from_dict(release["resources"])
         file_path = self._resources_dir / resources.filename
 
         httputil.download_file(resources.download_url, file_path)
