@@ -47,6 +47,7 @@ class InstallerResourcesProvider:
             instance = super(InstallerResourcesProvider, cls).__new__(cls)
             instance._home_dir = instance._get_home_dir()
             instance._resources_dir = instance._get_resources_dir()
+            instance._index = None
 
             instance._load_from_disk()
             cls.__instance = instance
@@ -64,7 +65,7 @@ class InstallerResourcesProvider:
         return home_dir
 
     def _get_resources_dir(self) -> Path:
-        resources_dir = self.home_dir.joinpath("resources")
+        resources_dir = self._home_dir.joinpath("resources")
         if not resources_dir.exists():
             resources_dir.mkdir()
         return resources_dir
@@ -79,13 +80,13 @@ class InstallerResourcesProvider:
         # TODO: we need to implement a mechanism for saving the file to disk to reduce the amount of http requests
 
         if self._index is None:
-            response = requests.get(Config.index_url(), headers={"Accept": "application/json"})
+            response = requests.get(Config().index_url(), headers={"Accept": "application/json"})
             response.raise_for_status()
             self._index = response.json()
         return self._index
 
     def _load_from_disk(self):
-        entries = os.listdir(self.resources_dir)
+        entries = os.listdir(self._resources_dir)
         version_dirs = [Path(entry) for entry in entries if os.path.isdir(entry)]
 
         resources = {}

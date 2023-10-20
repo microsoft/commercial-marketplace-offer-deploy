@@ -13,7 +13,7 @@ class Config:
 
     @classmethod
     def index_url(cls):
-        return cls.__instance.get_value("index_url")
+        return cls.get_value("index_url")
 
     @classmethod
     def get(cls):
@@ -24,5 +24,7 @@ class Config:
         return cls.__instance._config.get(key)
 
     def _load_from_package_resources(self):
-        with as_file(files("packaging.resources") / "config.json") as config_file:
-            self._config = json.load(config_file)
+        resources = files("packaging.resources")
+        with as_file(resources.joinpath("config.json")) as config_file:
+            with open(config_file, 'r') as config_file:
+                self._config = json.load(config_file)

@@ -48,9 +48,9 @@ class CreateApplicationPackageOptions:
         self, installer_version: InstallerVersion | str, delivery_type: ApplicationDelivery = ApplicationDelivery.MARKETPLACE
     ) -> None:
         if isinstance(installer_version, str):
-            installer_version = InstallerVersion(installer_version)
+            self.installer_version = InstallerVersion(installer_version)
         else:
-            installer_version = installer_version
+            self.installer_version = installer_version
 
         self.delivery_type = delivery_type
         self.function_app_name = azure.create_function_app_name(self.default_function_app_name_prefix)
@@ -96,6 +96,9 @@ class ApplicationPackage:
         self.manifest = ManifestInfo(main_template=main_template)
         self.manifest.offer.name = name
         self.manifest.offer.description = description
+
+        self.main_template = None
+        self.view_definition = None
 
         if isinstance(create_ui_definition, str) or isinstance(create_ui_definition, Path):
             self.create_ui_definition = CreateUiDefinition.from_file(create_ui_definition)
@@ -144,7 +147,7 @@ class ApplicationPackage:
         view_definition.add_input("offerName", self.manifest.offer.name)
         view_definition.add_input("offerDescription", self.manifest.offer.description)
 
-        self._view_definition = view_definition
+        self.view_definition = view_definition
 
     def _finalize_main_template(
         self, template_parameters, installer_package: CreateInstallerPackageResult, options: CreateApplicationPackageOptions
@@ -172,7 +175,7 @@ class ApplicationPackage:
         else:
             main_template.vmi_reference_id = installer_resources.vmi_reference_id
 
-        self._main_template = main_template
+        self.main_template = main_template
 
     def _zip(self, installer_package, options: CreateApplicationPackageOptions, out_dir=None) -> Path:
         out_dir = out_dir if out_dir is not None else tempfile.mkdtemp()
@@ -181,8 +184,8 @@ class ApplicationPackage:
         with ZipFile(file, "w") as zip_file:
             zip_file.write(options.function_app_package.path, options.function_app_package.name)
             zip_file.write(installer_package.path, installer_package.name)
-            zip_file.writestr(MAIN_TEMPLATE_FILE_NAME, self._main_template.to_json())
-            zip_file.writestr(VIEW_DEFINITION_FILE_NAME, self._view_definition.to_json())
+            zip_file.writestr(MAIN_TEMPLATE_FILE_NAME, self.main_template.to_json())
+            zip_file.writestr(VIEW_DEFINITION_FILE_NAME, self.view_definition.to_json())
             zip_file.writestr(CREATE_UI_DEFINITION_FILE_NAME, self.create_ui_definition.to_json())
             zip_file.close()
 

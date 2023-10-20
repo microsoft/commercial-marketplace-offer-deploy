@@ -30,13 +30,15 @@ class TestApplicationPackage(unittest.TestCase):
         self.assertEqual(app_package.manifest.main_template, "main.tf")
         self.assertEqual(app_package.manifest.deployment_type, DeploymentType.terraform)
 
-    def test_get_main_template(self):
+    def test_main_template(self):
         app_package = ApplicationPackage(self.main_template, self.fake_create_ui_definition)
-        app_package.create(CreateApplicationPackageOptions("v0.0.0"))
+        result = app_package.create(CreateApplicationPackageOptions("v0.0.0"))
 
-        self.assertEqual(app_package._main_template.name, "mainTemplate.json")
-        self.assertIsNotNone(app_package._main_template.document)
-        self.assertIsNotNone(app_package._main_template.document["variables"]["userData"])
+        print(result)
+
+        self.assertEqual(app_package.main_template.name, "mainTemplate.json")
+        self.assertIsNotNone(app_package.main_template.document)
+        self.assertIsNotNone(app_package.main_template.document["variables"]["userData"])
 
     def test_create(self):
         app_package = ApplicationPackage(self.main_template, self.create_ui_definition)
@@ -67,6 +69,6 @@ class TestApplicationPackage(unittest.TestCase):
     def _create_fake_file(self, file_name):
         file_path = Path(self.test_dir).joinpath(file_name)
         with open(file_path, 'w') as fp: 
-            fp.write('{"fake": "file"}')
+            fp.write('{"parameters": { "outputs": { "secure_variable": "", "location": "", "resource_group_name": "" } }}')
             fp.close()
         return file_path
