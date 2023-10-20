@@ -1,0 +1,112 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Generated schema for Root",
+    "type": "object",
+    "properties": {
+      "releases": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "version": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "reference": {
+              "type": "object",
+              "properties": {
+                "offer": {
+                  "type": "object",
+                  "properties": {
+                    "plan": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "publisher": {
+                          "type": "string"
+                        },
+                        "product": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "publisher",
+                        "product"
+                      ]
+                    },
+                    "imageReference": {
+                      "type": "object",
+                      "properties": {
+                        "publisher": {
+                          "type": "string"
+                        },
+                        "offer": {
+                          "type": "string"
+                        },
+                        "sku": {
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "publisher",
+                        "offer",
+                        "sku",
+                        "version"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "plan",
+                    "imageReference"
+                  ]
+                },
+                "vmi": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "offer",
+                "vmi"
+              ]
+            },
+            "resources": {
+              "type": "object",
+              "properties": {
+                "downloadUrl": {
+                  "type": "string"
+                },
+                "filename": {
+                  "type": "string"
+                },
+                "sha256Digest": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "downloadUrl",
+                "filename",
+                "sha256Digest"
+              ]
+            }
+          },
+          "required": [
+            "version",
+            "description",
+            "reference",
+            "resources"
+          ]
+        }
+      }
+    },
+    "required": [
+      "releases"
+    ]
+  }

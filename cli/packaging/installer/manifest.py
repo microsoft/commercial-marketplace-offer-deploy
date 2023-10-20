@@ -7,7 +7,7 @@ import jsonschema
 from pathlib import Path
 from packaging.terraform import TerraformFile
 from packaging.azure import ArmTemplateParameter, from_terraform_input_variable
-from packaging.deployment_type import DeploymentType
+from .deployment_type import DeploymentType
 
 
 class ManifestInfo(Model):
@@ -71,6 +71,9 @@ class ManifestInfo(Model):
 
 
 class OfferInfo(Model):
+    """
+    This is information about the publisher's offer NOT the app installer's offer. 
+    """
     _attribute_map = {"name": {"key": "name", "type": "str"}, "description": {"key": "description", "type": "str"}}
 
     def __init__(self, **kwargs):
@@ -101,5 +104,5 @@ class ManifestFile:
             raise err
 
 
-def write(dest_path, manifest: ManifestInfo):
+def write_manifest(dest_path, manifest: ManifestInfo):
     ManifestFile.write(dest_path, manifest)

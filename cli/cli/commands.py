@@ -3,7 +3,7 @@ from pathlib import Path
 import shutil
 import tempfile
 import click
-from packaging import ApplicationPackage, zip_utils
+from packaging import ApplicationPackage, _zip_utils
 from packaging.application_package import CreateApplicationPackageOptions
 from packaging.azure import ArmTemplate
 import os
@@ -69,7 +69,7 @@ def build_function_app_package(csproj_file, current_working_dir, out_dir = None)
             break
     
     click.echo("Creating function app package.")
-    zip_utils.zip_dir(temp_dir, out_dir / 'function.zip')
+    _zip_utils.zip_dir(temp_dir, out_dir / 'function.zip')
 
     shutil.rmtree(temp_dir)
     click.echo("Package created.")
