@@ -1,8 +1,7 @@
 import json
 import os
 
-from packaging.azure.arm_template_parameter import ArmTemplateParameter
-from .arm_template import ArmTemplate
+from .arm_template_parameter import ArmTemplateParameter
 
 
 class CreateUiDefinition:

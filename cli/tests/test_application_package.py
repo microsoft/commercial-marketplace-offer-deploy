@@ -5,10 +5,9 @@ from pathlib import Path
 import shutil
 import tempfile
 import unittest
-from packaging import ApplicationPackage, DeploymentType
-from packaging.application_package import CreateApplicationPackageOptions
-from packaging.function_app_package import FunctionAppPackage
-from packaging.zip_utils import unzip_file
+from packaging.installer import DeploymentType
+from packaging import ApplicationPackage, FunctionAppPackage, CreateApplicationPackageOptions
+from packaging._zip_utils import unzip_file
 
 
 log = logging.getLogger(__name__)
@@ -31,8 +30,12 @@ class TestApplicationPackage(unittest.TestCase):
         self.assertEqual(app_package.manifest.main_template, "main.tf")
         self.assertEqual(app_package.manifest.deployment_type, DeploymentType.terraform)
 
-    def test_get_main_template(self):
-        app_package = ApplicationPackage("", self.fake_create_ui_definition)
+    def test_main_template(self):
+        app_package = ApplicationPackage(self.main_template, self.fake_create_ui_definition)
+        result = app_package.create(CreateApplicationPackageOptions("v0.0.0"))
+
+        print(result)
+
         self.assertEqual(app_package.main_template.name, "mainTemplate.json")
         self.assertIsNotNone(app_package.main_template.document)
         self.assertIsNotNone(app_package.main_template.document["variables"]["userData"])
@@ -66,6 +69,6 @@ class TestApplicationPackage(unittest.TestCase):
     def _create_fake_file(self, file_name):
         file_path = Path(self.test_dir).joinpath(file_name)
         with open(file_path, 'w') as fp: 
-            fp.write('{"fake": "file"}')
+            fp.write('{"parameters": { "outputs": { "secure_variable": "", "location": "", "resource_group_name": "" } }}')
             fp.close()
         return file_path

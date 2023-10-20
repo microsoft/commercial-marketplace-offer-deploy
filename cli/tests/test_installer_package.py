@@ -4,8 +4,7 @@ import shutil
 import tempfile
 import unittest
 import os
-from packaging import ManifestInfo, InstallerPackage, DeploymentType
-from packaging.installer_package import CreateInstallerPackageResult
+from packaging.installer import CreateInstallerPackageResult, ManifestInfo, InstallerPackage, DeploymentType
 
 class TestInstallerPackage(unittest.TestCase):
     def setUp(self):

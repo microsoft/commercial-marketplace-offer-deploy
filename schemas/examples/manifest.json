@@ -1,0 +1,8 @@
+{
+    "mainTemplate": "main.tf",
+    "deploymentType": "terraform",
+    "offer": {
+      "name": "simple terraform app",
+      "description": "Simple Terraform application template that deploys a storage account"
+    }
+  }
