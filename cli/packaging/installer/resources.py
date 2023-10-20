@@ -95,7 +95,7 @@ class InstallerResourcesProvider:
         resources = {}
         for version_dir in version_dirs:
             version = InstallerVersion(version_dir.name)
-            resources[version] = InstallerResources(version_dir, self._index version)
+            resources[version] = InstallerResources(version_dir, self._index, version)
         self._entries = resources
 
     def _get_resources(self, version_name):
