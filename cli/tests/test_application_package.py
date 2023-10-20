@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from packaging.installer import DeploymentType
 from packaging import ApplicationPackage, FunctionAppPackage, CreateApplicationPackageOptions
-from packaging.zip_utils import unzip_file
+from packaging._zip_utils import unzip_file
 
 
 log = logging.getLogger(__name__)
@@ -31,10 +31,12 @@ class TestApplicationPackage(unittest.TestCase):
         self.assertEqual(app_package.manifest.deployment_type, DeploymentType.terraform)
 
     def test_get_main_template(self):
-        app_package = ApplicationPackage("", self.fake_create_ui_definition)
-        self.assertEqual(app_package.main_template.name, "mainTemplate.json")
-        self.assertIsNotNone(app_package.main_template.document)
-        self.assertIsNotNone(app_package.main_template.document["variables"]["userData"])
+        app_package = ApplicationPackage(self.main_template, self.fake_create_ui_definition)
+        app_package.create(CreateApplicationPackageOptions("v0.0.0"))
+
+        self.assertEqual(app_package._main_template.name, "mainTemplate.json")
+        self.assertIsNotNone(app_package._main_template.document)
+        self.assertIsNotNone(app_package._main_template.document["variables"]["userData"])
 
     def test_create(self):
         app_package = ApplicationPackage(self.main_template, self.create_ui_definition)

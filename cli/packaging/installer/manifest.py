@@ -71,6 +71,9 @@ class ManifestInfo(Model):
 
 
 class OfferInfo(Model):
+    """
+    This is information about the publisher's offer NOT the app installer's offer. 
+    """
     _attribute_map = {"name": {"key": "name", "type": "str"}, "description": {"key": "description", "type": "str"}}
 
     def __init__(self, **kwargs):

@@ -1,0 +1,31 @@
+{
+    "releases": [
+        {
+            "version": "v2.0.0",
+            "description": "",
+            "references": [
+                {
+                    "plan": {
+                        "name": "app-installer-v1.1.0",
+                        "publisher": "test_test_gps_americas_code-with1694019817347",
+                        "product": "modm-preview"
+                    },
+                    "imageReference": {
+                        "publisher": "test_test_gps_americas_code-with1694019817347",
+                        "offer": "modm-preview",
+                        "sku": "modmplan",
+                        "version": "latest"
+                    }
+                },
+                {
+                    "vmiReferenceId": ""
+                }
+            ],
+            "resources": {
+                "downloadUrl": "https://github.com/microsoft/commercial-marketplace-offer-deploy/releases/download/{tag_name}/resources-v1.0.0.tar.gz",
+                "filename": "resources-v1.0.0.tar.gz",
+                "sha256Digest": "a5613056e59cccaf4de58d9b108b0103f1b5a698345e6261b5bf83b3ff7637cf"
+            }  
+        }
+    ]
+}

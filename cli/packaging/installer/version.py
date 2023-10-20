@@ -8,7 +8,7 @@ class InstallerVersion:
         """
         Constructor for InstallerVersion class. The constructor can be called in the following ways:
 
-        1. InstallerVersion("v0.0.0")
+        1. InstallerVersion("v0.0.0") or InstallerVersion("v0.0.0-suffix") or InstallerVersion("0.0.0")
         2. InstallerVersion(0, 0, 0)
         3. InstallerVersion(0, 0, 0, "suffix")
 

@@ -26,9 +26,8 @@ class ViewDefinition:
         rendered_json = json.loads(self._template(self.inputs))
         return json.dumps(rendered_json, indent=4)
 
-    @staticmethod
-    def from_resource():
-        resource_files = files("resources.templates")
-        with as_file(resource_files.joinpath(ViewDefinition.file_name)) as resource_file:
-            viewDefinition = ViewDefinition(resource_file)
-            return viewDefinition
+
+def from_file(file_path) -> ViewDefinition:
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"Could not find view definition file at {file_path}")
+    return ViewDefinition(file_path)

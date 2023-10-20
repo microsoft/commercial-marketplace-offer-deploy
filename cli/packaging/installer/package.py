@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-import packaging.zip_utils as ziputils
+import packaging._zip_utils as ziputils
 import shutil
 import tempfile
 from .manifest import ManifestInfo, write_manifest
