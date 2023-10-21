@@ -14,6 +14,7 @@ namespace Modm.ServiceHost
     {
         const int DefaultWaitDelaySeconds = 10;
         const int MaxAttempts = 10;
+        private const int MillisecondsInASecond = 1000;
 
         private readonly IMetadataService metadataService;
         private readonly ILogger<PackageWatcherService> logger;
@@ -56,29 +57,62 @@ namespace Modm.ServiceHost
                 throw new InvalidOperationException("Cannot start installer package watcher. Options are null");
             }
 
-            string base64UserData;
+            var base64UserData = await FetchBase64UserData(cancellation);
 
+            if (string.IsNullOrEmpty(base64UserData))
+            {
+                logger.LogWarning("Unable to start deployment. Attempt {attempt}", attempts);
+                attempts++;
+                await Task.Delay(DefaultWaitDelaySeconds * MillisecondsInASecond, cancellation);
+                return false;
+            }
+
+            return await TryStartDeployment(base64UserData, cancellation);
+        }
+
+        private async Task<string> FetchBase64UserData(CancellationToken cancellation)
+        {
             while (true)
             {
                 var instanceData = await this.metadataService.GetAsync();
-                base64UserData = instanceData.Compute.UserData;
-
-                if (!string.IsNullOrEmpty(base64UserData))
+                if (!string.IsNullOrEmpty(instanceData.Compute.UserData))
                 {
-                    break;
+                    return instanceData.Compute.UserData;
                 }
 
-                await Task.Delay(DefaultWaitDelaySeconds * 1000, cancellation);
+                await Task.Delay(DefaultWaitDelaySeconds * MillisecondsInASecond, cancellation);
             }
+        }
 
+        private async Task<bool> TryStartDeployment(string base64UserData, CancellationToken cancellation)
+        {
             try
             {
                 var userData = UserData.Deserialize(base64UserData) ?? throw new InvalidDataException("The userData on the virtual machine instance is null");
 
-                if (userData.IsValid())
+                if (!userData.IsValid())
                 {
-                    logger.LogInformation("UserData was valid");
+                    logger.LogError("Invalid UserData.");
+                    return false;
+                }
 
+                logger.LogInformation("UserData was valid");
+                await SubmitDeployment(userData, cancellation);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error deserializing UserData or starting deployment.");
+                return false;
+            }
+        }
+
+        private async Task SubmitDeployment(UserData userData, CancellationToken cancellation)
+        {
+            while (true)
+            {
+                try
+                {
                     var request = new StartDeploymentRequest
                     {
                         PackageUri = userData.InstallerPackage.Uri,
@@ -86,24 +120,16 @@ namespace Modm.ServiceHost
                         Parameters = userData.Parameters ?? new Dictionary<string, object>()
                     };
 
-                    
                     var response = await StartDeployment(request);
                     logger.LogInformation("Received deployment result, Id: {id}", response?.Deployment.Id);
-
-                    return true;
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error submitting deployment.");
+                    await Task.Delay(DefaultWaitDelaySeconds * MillisecondsInASecond, cancellation);
                 }
             }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error deserializing UserData or starting deployment.");
-            }
-
-            logger.LogWarning("Unable to start deployment. Attempt {attempt}", attempts);
-
-            attempts++;
-            await Task.Delay(DefaultWaitDelaySeconds * 1000, cancellation);
-
-            return false;
         }
 
         private async Task<StartDeploymentResult?> StartDeployment(StartDeploymentRequest request)
