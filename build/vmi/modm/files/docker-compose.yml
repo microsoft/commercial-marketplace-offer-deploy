@@ -30,9 +30,6 @@ services:
       - Jenkins__Password=${DEFAULT_ADMIN_PASSWORD}
     volumes:
       - ${MODM_HOME}:/usr/local/modm
-    depends_on:
-      jenkins:
-        condition: service_healthy
     restart: always
   jenkins:
     image: jenkins:latest
