@@ -27,7 +27,7 @@ echo "The current directory is: $(pwd)"
 echo "current value of the .obj directory is $(ls -la $original_dir/obj)"
 
 # Create the content.zip file
-zip -r "$original_dir/obj/content.zip" ./content/*
+zip -r "$original_dir/obj/content.zip" ./templates/*
 echo "zipped content.zip"
 
 # Go back to the original directory
