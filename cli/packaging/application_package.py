@@ -43,14 +43,7 @@ class CreateApplicationPackageOptions:
         else:
             self.installer_version = installer_version
         self.vmi_reference = vmi_reference
-        self.function_app_name = azure.create_function_app_name(self.default_function_app_name_prefix)
-
-    @property
-    def dashboard_url(self):
-        return f"https://{self.function_app_name}.azurewebsites.net/dashboard"
-
-    def get_installer_resources(self) -> InstallerResources:
-        return InstallerResourcesProvider().get(self.installer_version.name)
+        self.installer_resources = InstallerResourcesProvider().get(self.installer_version.name)
 
 
 class ApplicationPackage:
@@ -121,7 +114,9 @@ class ApplicationPackage:
         self._finalize_main_template(template_parameters, installer_package, options)
         self._finalize_view_definition(options)
 
-        result = CreateApplicationPackageResult(installer_package=installer_package, function_app_name=options.function_app_name)
+        result = CreateApplicationPackageResult(
+            installer_package=installer_package, function_app_name=self.main_template.function_app_name
+        )
         result.file = self._zip(installer_package, options, out_dir)
 
         if result.file is None or not result.file.exists():
@@ -131,9 +126,9 @@ class ApplicationPackage:
         return result
 
     def _finalize_view_definition(self, options: CreateApplicationPackageOptions):
-        view_definition = options.get_installer_resources().view_definition
+        view_definition = options.installer_resources.view_definition
 
-        view_definition.add_input("dashboardUrl", options.dashboard_url)
+        view_definition.add_input("dashboardUrl", self.main_template.dashboard_url)
         view_definition.add_input("offerName", self.manifest.offer.name)
         view_definition.add_input("offerDescription", self.manifest.offer.description)
 
@@ -150,13 +145,10 @@ class ApplicationPackage:
             This allows the parameters to be passed to the mainTemplate.json/variables/userData
             so MODM can bootstrap the application with it's parameters when it performs the deployment
         """
-        installer_resources = options.get_installer_resources()
+        installer_resources = options.installer_resources
 
         main_template = installer_resources.main_template
         main_template.insert_parameters(template_parameters)
-
-        main_template.function_app_name = options.function_app_name
-        main_template.user_data.dashboard_url = options.dashboard_url
         main_template.user_data.set_installer_package_hash(installer_package.hash)
 
         # depending on the delivery type, the template will either use the VM offer or the VMI reference ID
@@ -168,11 +160,13 @@ class ApplicationPackage:
         self.main_template = main_template
 
     def _zip(self, installer_package, options: CreateApplicationPackageOptions, out_dir=None) -> Path:
+        installer_resources = options.installer_resources
+
         out_dir = out_dir if out_dir is not None else tempfile.mkdtemp()
         file = Path(out_dir).joinpath(self.file_name)
 
         with ZipFile(file, "w") as zip_file:
-            zip_file.write(options.function_app_package.path, options.function_app_package.name)
+            zip_file.write(installer_resources.function_app_package, installer_resources.function_app_package.name)
             zip_file.write(installer_package.path, installer_package.name)
             zip_file.writestr(MAIN_TEMPLATE_FILE_NAME, self.main_template.to_json())
             zip_file.writestr(VIEW_DEFINITION_FILE_NAME, self.view_definition.to_json())

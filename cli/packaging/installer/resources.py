@@ -133,7 +133,7 @@ class InstallerResourcesProvider:
         with tarfile.open(file_path, "r:gz") as tar:
             tar.extractall(path=extract_path)
 
-        return InstallerResources(extract_path, version)
+        return InstallerResources(extract_path, release["reference"], version)
 
     def _validate_sha256_digest(self, file: Path, expected_digest):
         actual_digest = hashlib.sha256(file.read_bytes()).hexdigest()

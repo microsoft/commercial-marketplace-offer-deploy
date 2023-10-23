@@ -1,3 +1,5 @@
+import json
+import os
 from packaging.azure import ArmTemplate
 from packaging.azure.arm_template_parameter import ArmTemplateParameter
 from packaging.azure.function_app import create_function_app_name
@@ -50,11 +52,13 @@ class MainTemplate(ArmTemplate):
         super().__init__(document)
         self._vm_offer = None
         self.function_app_name = create_function_app_name(self.function_app_name_prefix)
-        self.user_data = UserData(self.document["variables"]["userData"])
+        self.dashboard_url = f"https://{self.function_app_name}.azurewebsites.net/dashboard"
+        self._user_data = UserData(self.document["variables"]["userData"])
+        self._user_data.dashboard_url = self.dashboard_url
 
     def insert_parameters(self, parameters: list[ArmTemplateParameter]):
         super().insert_parameters(parameters)
-        self.user_data.insert_parameters(parameters)
+        self._user_data.insert_parameters(parameters)
 
     @property
     def vmi_reference_id(self):
@@ -90,8 +94,25 @@ class MainTemplate(ArmTemplate):
 
     @property
     def user_data(self) -> UserData:
-        return self.user_data
+        return self._user_data
 
+    @staticmethod
+    def from_file(file_path):
+        """
+        Load an ARM template from a file.
+
+        Args:
+          file_path (str): The path to the ARM template file.
+
+        Returns:
+          ArmTemplate: An instance of the ArmTemplate class representing the loaded ARM template.
+        """
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"Could not find ARM template file at {file_path}")
+
+        with open(file_path, "r") as f:
+            document = json.load(f)
+            return MainTemplate(document)
 
 def from_file(file_path: str) -> MainTemplate:
     instance = MainTemplate.from_file(file_path)
