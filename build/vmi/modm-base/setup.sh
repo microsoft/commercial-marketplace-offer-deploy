@@ -39,7 +39,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io -y
 # Optional: Install additional Docker-related packages
 sudo apt-get install docker-buildx-plugin docker-compose -y
 
-# Install .NET 7
+# Install .NET 7 
 sudo apt-get install -y dotnet-sdk-7.0
 
 # clone the MODM source into source
