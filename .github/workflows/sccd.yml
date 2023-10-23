@@ -48,7 +48,7 @@ jobs:
     - name: Build Service Catalog
       run: |
         #latest_version=$(az sig image-version list -g ${{ vars.RESOURCE_GROUP }} -i ${{ vars.IMAGE_NAME }} -r ${{ vars.IMAGE_GALLERY_NAME }} -o json | jq -r 'sort_by(.name | split(".") | map(tonumber))[-1].name')
-        latest_version=0.1.126
+        latest_version=0.1.121
         echo "pulled latest version $latest_version"
         
         deployed_image_reference="/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.RESOURCE_GROUP }}/providers/Microsoft.Compute/galleries/${{ vars.IMAGE_GALLERY_NAME }}/images/${{ vars.IMAGE_NAME }}/versions/$latest_version"
