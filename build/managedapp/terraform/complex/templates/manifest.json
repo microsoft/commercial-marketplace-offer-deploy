@@ -1,0 +1,8 @@
+{
+    "deploymentType": "terraform",
+    "mainTemplate": "main.tf",
+    "offer": {
+        "name": "TerraformComples",
+        "description": "Complex Acccount just for you!"
+    }
+}
