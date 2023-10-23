@@ -46,11 +46,11 @@ namespace Modm.ServiceHost
         }
         private async Task<bool> TryToProcessUserData(CancellationToken cancellation)
         {
-            if (attempts > MaxAttempts)
-            {
-                logger.LogWarning("Max attempts reached while processing user data.");
-                return true;
-            }
+            //if (attempts > MaxAttempts)
+            //{
+            //    logger.LogWarning("Max attempts reached while processing user data.");
+            //    return true;
+            //}
 
             if (options == null)
             {
