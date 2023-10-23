@@ -6,7 +6,7 @@
             "reference": {
                 "offer": {
                     "plan": {
-                        "name": "app-installer-v1.1.0",
+                        "name": "app-installer-v2.0.0",
                         "publisher": "test_test_gps_americas_code-with1694019817347",
                         "product": "modm-preview"
                     },
@@ -17,13 +17,13 @@
                         "version": "latest"
                     }
                 },
-                "vmi": ""
+                "vmi": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/modm-dev-vmi/providers/Microsoft.Compute/galleries/modm.dev.sig/images/modm/versions/0.1.96"
             },
             "resources": {
-                "downloadUrl": "https://github.com/microsoft/commercial-marketplace-offer-deploy/releases/download/{tag_name}/resources-v1.0.0.tar.gz",
-                "filename": "resources-v1.0.0.tar.gz",
-                "sha256Digest": "a5613056e59cccaf4de58d9b108b0103f1b5a698345e6261b5bf83b3ff7637cf"
-            }  
+                "downloadUrl": "https://github.com/microsoft/commercial-marketplace-offer-deploy/releases/download/v2.0.0/resources-v2.0.0.tar.gz",
+                "filename": "resources-v2.0.0.tar.gz",
+                "sha256Digest": "2b8489efd610fd66b04302e7aed24573aad01c55777962fcde61d0aa914084f6"
+            }
         }
     ]
 }

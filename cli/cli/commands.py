@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -72,6 +73,13 @@ def create_resources_tarball(version, templates_dir, csproj_file, current_workin
     
     click.echo(f"resources '{out_file.name}' created.")
 
+    result = {}
+    result['downloadUrl'] = f"https://github.com/microsoft/commercial-marketplace-offer-deploy/releases/download/{installer_version.name}/{out_file.name}"
+    result['filename'] = out_file.name
+    result['sha256Digest'] = _get_sha256_digest(out_file)
+
+    click.echo(json.dumps(result, indent=2))
+
 def _create_function_app_package(csproj_file, current_working_dir, out_dir = None):
     """creates a function.zip"""
     cwd = Path(current_working_dir)
@@ -102,7 +110,6 @@ def _create_function_app_package(csproj_file, current_working_dir, out_dir = Non
     _zip_utils.zip_dir(temp_dir, out_file)
 
     shutil.rmtree(temp_dir)
-    click.echo("Package created.")
     click.echo(out_file)
 
     return out_file
@@ -111,4 +118,12 @@ def _create_function_app_package(csproj_file, current_working_dir, out_dir = Non
 def _resolve_path(current_working_dir, path):
     cwd = Path(current_working_dir)
     return cwd.joinpath(path).resolve() if path else cwd.joinpath(".").resolve()
-    
+
+
+
+def _get_sha256_digest(file):
+    hash_sha256 = hashlib.sha256()
+    with open(file, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_sha256.update(chunk)
+    return hash_sha256.hexdigest()
