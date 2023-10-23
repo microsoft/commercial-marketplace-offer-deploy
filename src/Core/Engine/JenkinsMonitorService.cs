@@ -12,17 +12,31 @@ namespace Modm.Engine
     /// </summary>
 	public class JenkinsMonitorService : BackgroundService
 	{
-        private readonly IJenkinsClient client;
+        private IJenkinsClient client;
+        private JenkinsClientFactory clientFactory;
         private readonly ILogger<JenkinsMonitorService> logger;
 
         private bool deploymentStarted;
         private int id;
         private string name;
 
-        public JenkinsMonitorService(IJenkinsClient client, ILogger<JenkinsMonitorService> logger)
+        public JenkinsMonitorService(JenkinsClientFactory clientFactory, ILogger<JenkinsMonitorService> logger)
         {
-            this.client = client;
+            this.clientFactory = clientFactory;
+            this.client = clientFactory.Create().GetAwaiter().GetResult();
             this.logger = logger;
+        }
+
+        public IJenkinsClient JenkinsClient
+        {
+            get
+            {
+                if (this.client == null)
+                {
+                    this.client = clientFactory.Create().GetAwaiter().GetResult();
+                }
+                return this.client;
+            }
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -50,14 +64,14 @@ namespace Modm.Engine
 
         async Task MonitorDeployment(CancellationToken cancellationToken)
         {
-            var isBuilding = await client.IsBuilding(name, id, cancellationToken);
+            var isBuilding = await JenkinsClient.IsBuilding(name, id, cancellationToken);
 
             // wait for the deployment to complete
             while (isBuilding)
             {
                 try
                 {
-                    isBuilding = await client.IsBuilding(name, id, cancellationToken);
+                    isBuilding = await JenkinsClient.IsBuilding(name, id, cancellationToken);
                 }
                 catch (Exception ex)
                 {

@@ -85,15 +85,29 @@ namespace Modm.Engine.Pipelines
     // #2
     public class SubmitDeployment : IPipelineBehavior<StartDeploymentRequest, StartDeploymentResult>
     {
-        private readonly IJenkinsClient client;
+        private IJenkinsClient client;
+        private readonly JenkinsClientFactory clientFactory;
         private readonly IMediator mediator;
         private readonly ILogger<SubmitDeployment> logger;
 
-        public SubmitDeployment(IJenkinsClient client, IMediator mediator, ILogger<SubmitDeployment> logger)
+        public SubmitDeployment(JenkinsClientFactory clientFactory, IMediator mediator, ILogger<SubmitDeployment> logger)
         {
-            this.client = client;
+            this.clientFactory = clientFactory;
+            this.client = clientFactory.Create().GetAwaiter().GetResult();
             this.mediator = mediator;
             this.logger = logger;
+        }
+
+        public IJenkinsClient JenkinsClient
+        {
+            get
+            {
+                if (this.client == null)
+                {
+                    this.client = this.clientFactory.Create().GetAwaiter().GetResult();
+                }
+                return this.client;
+            }
         }
 
         public async Task<StartDeploymentResult> Handle(StartDeploymentRequest request, RequestHandlerDelegate<StartDeploymentResult> next, CancellationToken cancellationToken)
@@ -153,7 +167,7 @@ namespace Modm.Engine.Pipelines
 
         private async Task<bool> TryToSubmit(Deployment deployment)
         {
-            var (id, status) = await client.Build(deployment.Definition.DeploymentType);
+            var (id, status) = await JenkinsClient.Build(deployment.Definition.DeploymentType);
             deployment.Status = status;
 
             if (id.HasValue)

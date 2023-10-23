@@ -65,6 +65,7 @@ namespace Modm.Tests.UnitTests
                 m.PackageDownloader();
                 m.DeploymentRepository();
                 m.JenkinsClient();
+                m.JenkinsClientFactory();
                 m.Configuration();
 
                 m.Create<IValidator<PackageFile>>(instance =>

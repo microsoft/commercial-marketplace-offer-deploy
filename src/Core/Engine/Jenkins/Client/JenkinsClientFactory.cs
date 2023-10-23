@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace Modm.Engine.Jenkins.Client
 {
-    class JenkinsClientFactory
+    public class JenkinsClientFactory
 	{
         private readonly JenkinsOptions options;
         private readonly HttpClient httpClient;
@@ -25,18 +25,28 @@ namespace Modm.Engine.Jenkins.Client
 
         public virtual async Task<IJenkinsClient> Create()
         {
-            // to start making calls to Jenkins, an API Token is required. Fetch this token using the provider
-            var apiToken = await apiTokenClient.Get();
-            var jenkinsNetClient = new JenkinsNET.JenkinsClient(options.BaseUrl)
+            try
             {
-                UserName = options.UserName,
-                ApiToken = apiToken
-            };
+                // to start making calls to Jenkins, an API Token is required. Fetch this token using the provider
+                var apiToken = await apiTokenClient.Get();
+                var jenkinsNetClient = new JenkinsNET.JenkinsClient(options.BaseUrl)
+                {
+                    UserName = options.UserName,
+                    ApiToken = apiToken
+                };
 
-            var logger = serviceProvider.GetRequiredService<ILogger<JenkinsClient>>();
-            var client = new JenkinsClient(httpClient, jenkinsNetClient, logger, options);
+                // add the api token to the options 
 
-            return client;
+                var logger = serviceProvider.GetRequiredService<ILogger<JenkinsClient>>();
+                var client = new JenkinsClient(httpClient, jenkinsNetClient, logger, options);
+
+                return client;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+            
         }
     }
 }

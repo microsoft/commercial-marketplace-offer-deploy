@@ -84,6 +84,16 @@ namespace Modm.Tests.Utils
                 return instance;
             }
 
+            public JenkinsClientFactory JenkinsClientFactory(Action<JenkinsClientFactory>? configure = default)
+            {
+                var instance = Substitute.For<JenkinsClientFactory>();
+                configure?.Invoke(instance);
+
+                services.AddSingleton<JenkinsClientFactory>(instance);
+
+                return instance;
+            }
+
             public IConfiguration Configuration()
             {
                 var dir = Test.Directory<TTest>();
