@@ -5,8 +5,7 @@ from pathlib import Path
 import requests
 from packaging.config import Config
 from packaging.installer import main_template, view_definition
-from packaging.installer.version import InstallerVersion
-from . import _github_release as github
+from packaging.installer.version import InstallerVersion, VersionProvider
 from . import _httputil as httputil
 from msrest.serialization import Model
 import tarfile
@@ -30,8 +29,8 @@ class InstallerResources:
     def __init__(self, location: Path, installer_reference: dict, installer_version):
         self.installer_version = installer_version
         self.location = location
-        self.main_template = main_template.from_file(location.joinpath("templates/mainTemplate.json"))
-        self.view_definition = view_definition.from_file(location.joinpath("templates/viewDefinition.json"))
+        self.main_template = main_template.from_file(location.joinpath("mainTemplate.json"))
+        self.view_definition = view_definition.from_file(location.joinpath("viewDefinition.json"))
         self.function_app_package = location.joinpath("function.zip")
         self.vmi_reference_id = installer_reference["vmi"]
         self.vm_offer = installer_reference["offer"]
@@ -100,7 +99,7 @@ class InstallerResourcesProvider:
 
     def _get_resources(self, version_name):
         if version_name == "latest":
-            version = self._get_latest_version()
+            version = VersionProvider().get_latest()
         else:
             version = InstallerVersion(version_name)
 
@@ -120,11 +119,6 @@ class InstallerResourcesProvider:
         self._entries[version] = resources
 
         return resources
-
-    def _get_latest_version(self):
-        latest_release = github.get_latest_release()
-        version_name = latest_release["tag_name"]
-        return InstallerVersion(version_name)
 
     def _fetch_resources(self, release: dict, version: InstallerVersion) -> InstallerResources:
         resources: ResourcesInfo = ResourcesInfo.from_dict(release["resources"])

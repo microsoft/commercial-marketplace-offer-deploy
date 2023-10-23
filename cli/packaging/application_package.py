@@ -1,16 +1,14 @@
 from pathlib import Path
 import tempfile
 from zipfile import ZipFile
-from packaging.application_delivery import ApplicationDelivery
 from packaging.installer import ManifestInfo, CreateInstallerPackageResult, create_installer_package
 import packaging.azure as azure
 from packaging.azure import CreateUiDefinition
-from packaging.function_app_package import FunctionAppPackage
 from importlib.resources import files, as_file
 from msrest.serialization import Model
-
 from packaging.installer.resources import InstallerResources, InstallerResourcesProvider
 from packaging.installer.version import InstallerVersion
+
 
 MAIN_TEMPLATE_FILE_NAME = "mainTemplate.json"
 CREATE_UI_DEFINITION_FILE_NAME = "createUiDefinition.json"
@@ -39,20 +37,12 @@ class CreateApplicationPackageResult(Model):
 
 
 class CreateApplicationPackageOptions:
-    dashboard_url_user_data_variable = "dashboardUrl"
-    function_app_name_variable = "functionAppName"
-    vmi_reference_id_variable = "vmiReferenceId"
-    default_function_app_name_prefix = "modmfunc"
-
-    def __init__(
-        self, installer_version: InstallerVersion | str, delivery_type: ApplicationDelivery = ApplicationDelivery.MARKETPLACE
-    ) -> None:
+    def __init__(self, installer_version: InstallerVersion | str, vmi_reference: bool = False) -> None:
         if isinstance(installer_version, str):
             self.installer_version = InstallerVersion(installer_version)
         else:
             self.installer_version = installer_version
-
-        self.delivery_type = delivery_type
+        self.vmi_reference = vmi_reference
         self.function_app_name = azure.create_function_app_name(self.default_function_app_name_prefix)
 
     @property
@@ -170,10 +160,10 @@ class ApplicationPackage:
         main_template.user_data.set_installer_package_hash(installer_package.hash)
 
         # depending on the delivery type, the template will either use the VM offer or the VMI reference ID
-        if options.delivery_type == ApplicationDelivery.MARKETPLACE:
-            main_template.vm_offer = installer_resources.vm_offer
-        else:
+        if options.vmi_reference:
             main_template.vmi_reference_id = installer_resources.vmi_reference_id
+        else:
+            main_template.vm_offer = installer_resources.vm_offer
 
         self.main_template = main_template
 

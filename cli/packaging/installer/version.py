@@ -1,8 +1,11 @@
 import re
+import requests
+
+from packaging.config.config import Config
+from . import _github_release as github
 
 
 class InstallerVersion:
-
     def __init__(self, *args):
         # document the constructor options in the docstring
         """
@@ -88,3 +91,40 @@ class InstallerVersion:
         suffix = name.split("-")[1] if len(name.split("-")) == 2 else ""
 
         return major, minor, build, suffix
+
+
+class VersionProvider:
+    _instance = None
+    _versions = {}
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def get_latest(self):
+        self._load()
+        latest_release = github.get_latest_release()
+        return InstallerVersion(latest_release["tag_name"])
+
+    def get(self, version: str | InstallerVersion):
+        self._load()
+        value = version
+        if isinstance(value, str):
+            value = InstallerVersion(version)
+        return self._versions.get(value.name)
+
+    def list(self):
+        self._load()
+        return list(self._versions.values())
+
+    def _load(self):
+        if self._versions is None:
+            response = requests.get(Config().index_url(), headers={"Accept": "application/json"})
+            response.raise_for_status()
+            document = response.json()
+            self._versions = {}
+            for release in document["releases"]:
+                name = release["version"]
+                self._versions[name] = InstallerVersion(name)
+        return self._index
