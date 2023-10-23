@@ -91,7 +91,8 @@ namespace Modm.ServiceHost
             await mediator.Publish(new ControllerStarted
             {
                 DeploymentsUrl = $"http://localhost:{port}/api/deployments",
-                PackagePath = configuration.GetHomeDirectory()
+                PackagePath = configuration.GetHomeDirectory(),
+                StateFilePath = options.StateFilePath
             });
         }
 

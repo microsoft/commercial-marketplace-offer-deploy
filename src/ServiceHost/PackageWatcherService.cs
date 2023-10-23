@@ -97,8 +97,27 @@ namespace Modm.ServiceHost
                 }
 
                 logger.LogInformation("UserData was valid");
-                await SubmitDeployment(userData, cancellation);
-                return true;
+
+                if (File.Exists(this.options?.StateFilePath))
+                {
+                    return false;
+                }
+                else
+                {
+                    var request = new StartDeploymentRequest
+                    {
+                        PackageUri = userData.InstallerPackage.Uri,
+                        PackageHash = userData.InstallerPackage.Hash,
+                        Parameters = userData.Parameters ?? new Dictionary<string, object>()
+                    };
+
+                    // Serialize the request to JSON and write it to the state file
+                    var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true });
+                    await File.WriteAllTextAsync(this.options?.StateFilePath, json);
+
+                    await SubmitDeployment(request, cancellation);
+                    return true;
+                }
             }
             catch (Exception ex)
             {
@@ -107,18 +126,18 @@ namespace Modm.ServiceHost
             }
         }
 
-        private async Task SubmitDeployment(UserData userData, CancellationToken cancellation)
+        private async Task SubmitDeployment(StartDeploymentRequest request, CancellationToken cancellation)
         {
             while (true)
             {
                 try
                 {
-                    var request = new StartDeploymentRequest
-                    {
-                        PackageUri = userData.InstallerPackage.Uri,
-                        PackageHash = userData.InstallerPackage.Hash,
-                        Parameters = userData.Parameters ?? new Dictionary<string, object>()
-                    };
+                    //var request = new StartDeploymentRequest
+                    //{
+                    //    PackageUri = userData.InstallerPackage.Uri,
+                    //    PackageHash = userData.InstallerPackage.Hash,
+                    //    Parameters = userData.Parameters ?? new Dictionary<string, object>()
+                    //};
 
                     var response = await StartDeployment(request);
                     logger.LogInformation("Received deployment result, Id: {id}", response?.Deployment.Id);
@@ -139,7 +158,7 @@ namespace Modm.ServiceHost
 
             this.logger.LogInformation("HTTP Post to [{url}] successful.", this.options?.DeploymentsUrl);
 
-            return await JsonSerializer.DeserializeAsync<StartDeploymentResult>(
+            return await System.Text.Json.JsonSerializer.DeserializeAsync<StartDeploymentResult>(
                 response.Content.ReadAsStream(), new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true,
@@ -169,7 +188,8 @@ namespace Modm.ServiceHost
                 service.options = new PackageWatcherOptions
                 {
                     PackagePath = notification.PackagePath,
-                    DeploymentsUrl = notification.DeploymentsUrl
+                    DeploymentsUrl = notification.DeploymentsUrl,
+                    StateFilePath = notification.StateFilePath
                 };
                 service.controllerStarted = true;
 
