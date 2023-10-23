@@ -68,6 +68,12 @@ class MainTemplate(ArmTemplate):
     def vmi_reference_id(self, value):
         self.document["variables"][self.vmi_reference_id_variable] = value
 
+        resources = self.document["resources"]
+        for resource in resources:
+            if resource["type"] == "Microsoft.Compute/virtualMachines":
+                resource["properties"]["storageProfile"]["imageReference"] = { "id": "[variables('vmiReferenceId')]" }
+                break
+
     @property
     def vm_offer(self):
         return self._vm_offer
