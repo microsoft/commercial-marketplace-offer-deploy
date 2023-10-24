@@ -21,17 +21,23 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: '100'
-    
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10' 
+    - run: pip install -r cli/requirements.txt
+
+    - name: Setup .NET 7.0 SDK
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '7.0.x'
+
     - name: Setup tools
       run: |
         echo "installing jq"
         sudo apt-get update && sudo apt-get install -y jq
         source ./scripts/cli-setup.sh
-        
-    - name: Setup .NET 7.0 SDK
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '7.0.x'
 
     - name: Azure Login
       uses: azure/login@v1
