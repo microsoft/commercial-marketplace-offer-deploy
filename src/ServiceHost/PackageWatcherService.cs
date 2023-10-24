@@ -136,13 +136,6 @@ namespace Modm.ServiceHost
             {
                 try
                 {
-                    //var request = new StartDeploymentRequest
-                    //{
-                    //    PackageUri = userData.InstallerPackage.Uri,
-                    //    PackageHash = userData.InstallerPackage.Hash,
-                    //    Parameters = userData.Parameters ?? new Dictionary<string, object>()
-                    //};
-
                     var response = await StartDeployment(request);
                     logger.LogInformation("Received deployment result, Id: {id}", response?.Deployment.Id);
                     return;
