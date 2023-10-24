@@ -113,7 +113,7 @@ class InstallerResourcesProvider:
             return self._entries[version]
 
         if version.name not in self._index:
-            raise Exception(f"Invalid version '{version.name}'. Not found in the official index.")
+            raise Exception(f"Invalid version '{version.name}'. Not found in the installer release index.")
 
         resources = self._fetch_resources(self._index[version.name], version)
         self._entries[version] = resources

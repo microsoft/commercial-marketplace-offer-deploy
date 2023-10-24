@@ -19,12 +19,13 @@ FUNCTION_APP_PACKAGE_URL = ''
 @click.option("-n", "--name", help="The name of the application")
 @click.option("-d", "--description", help="The description of the application")
 @click.option("-v", "--version", default="latest", help="The version of the installer (modm) to package the application with.")
-@click.option("--vmi-reference", default=False, type=bool, help="Whether to reference the VMI directly when packaging. The default is false, and the 1st party offer will be used instead.")
+@click.option("--vmi-reference", default=False, type=bool, help="Whether to reference the VMI directly when packaging.")
+@click.option("--vmi-reference-id", default=None, type=str, help="The ID of the VMI reference to use to override the published reference.")
 @click.option("-f", "--template-file", help="The path to the application's main template.", required=True)
 @click.option("-u", "--create-ui-definition", help="The path to the createUiDefinition.json file", required=True)
 @click.option("-o", "--out-dir", help="The location where the application package will be created", required=True)
 @click.argument('current_working_dir', type=click.Path(exists=True))
-def build_application_package(name, description, version, vmi_reference, template_file, create_ui_definition, current_working_dir, out_dir = None):
+def build_application_package(name, description, version, vmi_reference, vmi_reference_id, template_file, create_ui_definition, current_working_dir, out_dir = None):
     """Builds an application package and produces an app.zip"""
     cwd = Path(current_working_dir)
     out_dir = _resolve_path(cwd, out_dir)
@@ -33,7 +34,7 @@ def build_application_package(name, description, version, vmi_reference, templat
     resolved_create_ui_definition = cwd.joinpath(create_ui_definition).resolve()
 
     package = ApplicationPackage(resolved_template_file, resolved_create_ui_definition, name, description)
-    result = package.create(CreateApplicationPackageOptions(version, vmi_reference), out_dir)
+    result = package.create(CreateApplicationPackageOptions(version, vmi_reference, vmi_reference_id), out_dir)
 
     click.echo(json.dumps(result.serialize(), indent=2))
 

@@ -71,8 +71,11 @@ class MainTemplate(ArmTemplate):
         resources = self.document["resources"]
         for resource in resources:
             if resource["type"] == "Microsoft.Compute/virtualMachines":
-                resource["properties"]["storageProfile"]["imageReference"] = { "id": "[variables('vmiReferenceId')]" }
+                resource["properties"]["storageProfile"]["imageReference"] = {"id": "[variables('vmiReferenceId')]"}
                 break
+
+        if "vmiReferenceId" in self.document["variables"]:
+            del self.document["variables"]["vmiReferenceId"]
 
     @property
     def vm_offer(self):
@@ -119,6 +122,7 @@ class MainTemplate(ArmTemplate):
         with open(file_path, "r") as f:
             document = json.load(f)
             return MainTemplate(document)
+
 
 def from_file(file_path: str) -> MainTemplate:
     instance = MainTemplate.from_file(file_path)

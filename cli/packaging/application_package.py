@@ -2,11 +2,11 @@ from pathlib import Path
 import tempfile
 from zipfile import ZipFile
 from packaging.installer import ManifestInfo, CreateInstallerPackageResult, create_installer_package
-import packaging.azure as azure
 from packaging.azure import CreateUiDefinition
 from importlib.resources import files, as_file
 from msrest.serialization import Model
-from packaging.installer.resources import InstallerResources, InstallerResourcesProvider
+from packaging.installer import MainTemplateFinalizer
+from packaging.installer.resources import InstallerResourcesProvider
 from packaging.installer.version import InstallerVersion
 
 
@@ -37,62 +37,101 @@ class CreateApplicationPackageResult(Model):
 
 
 class CreateApplicationPackageOptions:
-    def __init__(self, installer_version: InstallerVersion | str, vmi_reference: bool = False) -> None:
+    """
+    Options for creating an application package.
+
+    Args:
+        installer_version (InstallerVersion | str): The version of the installer to use.
+        vmi_reference (bool, optional): Whether to use a VMI reference of the published/released reference. Defaults to False.
+        vmi_reference_id (str, optional): The ID of the VMI reference to use to override the published reference.
+    """
+    def __init__(self, installer_version: InstallerVersion | str, vmi_reference: bool = False, vmi_reference_id: str = None) -> None:
+        self._use_vmi_reference = vmi_reference
+
         if isinstance(installer_version, str):
             self.installer_version = InstallerVersion(installer_version)
         else:
             self.installer_version = installer_version
-        self.vmi_reference = vmi_reference
-        self.installer_resources = InstallerResourcesProvider().get(self.installer_version.name)
+        
+        if vmi_reference_id is not None:
+            self._vmi_reference_id = vmi_reference_id
+            self._use_vmi_reference = True
+
+    @property
+    def vmi_reference_id(self):
+        """This is the ID of the VMI reference to use to override the published reference."""
+        return self._vmi_reference_id
+    
+    @property
+    def use_vmi_reference(self):
+        return self._use_vmi_reference
 
 
-class ApplicationPackage:
-    file_name = "app.zip"
+class ApplicationPackageInfo(Model):
+    def __init__(self, main_template: str | Path, create_ui_definition: str | CreateUiDefinition, name="", description=""):
+        super().__init__()
+        self.create_ui_definition = create_ui_definition
 
-    """
-    Represents the app package, e.g. the app.zip
-    The installer package (installer.zip) will reside directly in the app.zip next to
-    the installer's mainTemplate.json and createUiDefinition.json, respectively
-
-    """
-
-    def __init__(self, main_template: str, create_ui_definition: str | CreateUiDefinition, name="", description="") -> None:
-        """
-        Args:
-        main_template (str): The path to the application's main template.
-        name (str, optional): The name of the application. Defaults to ''.
-        description (str, optional): The description of the application. Defaults to ''.
-
-        Example Output (structure):
-        - app.zip
-        - mainTemplate.json
-        - createUiDefinition.json
-        - viewDefinition.json
-        - function.zip
-        - installer.zip
-            - manifest.json
-            - main.ts (the installer's main template)
-            - modules
-            - <modules>
-        """
-
-        self.manifest = ManifestInfo(main_template=main_template)
-        self.manifest.offer.name = name
-        self.manifest.offer.description = description
-
-        self.main_template = None
-        self.view_definition = None
-
+        # not to be confused with the main template of the application package.
+        # this is the main template for the app the installer will deploy
+        self.main_template = main_template
         if isinstance(create_ui_definition, str) or isinstance(create_ui_definition, Path):
             self.create_ui_definition = CreateUiDefinition.from_file(create_ui_definition)
         else:
             self.create_ui_definition = create_ui_definition
 
-    def create(self, options: CreateApplicationPackageOptions, out_dir=None) -> CreateApplicationPackageResult:
+        self.manifest = ManifestInfo(main_template=main_template)
+        self.manifest.offer.name = name
+        self.manifest.offer.description = description
+
+    @property
+    def name(self):
+        return self.manifest.offer.name
+    
+    @property
+    def description(self):
+        return self.manifest.offer.description
+    
+    @property
+    def template_parameters(self):
+        return self.manifest.get_parameters()
+
+    def validate(self):
+        template_parameters = self.manifest.get_parameters()
+        validation_results = self.manifest.validate()
+        validation_results += self.create_ui_definition.validate(template_parameters)
+
+        return validation_results
+
+class ApplicationPackage:    
+    """
+    Represents the app package, e.g. the app.zip
+    The installer package (installer.zip) will reside directly in the app.zip next to
+    the installer's mainTemplate.json and createUiDefinition.json, respectively
+
+    Example Output (structure):
+    - app.zip
+    - mainTemplate.json
+    - createUiDefinition.json
+    - viewDefinition.json
+    - function.zip
+    - installer.zip
+        - manifest.json
+        - main.ts (the installer's main template)
+        - modules
+        - <modules>
+    """
+    file_name = "app.zip"
+
+    def __init__(self, resourcesProvider: InstallerResourcesProvider) -> None:
+        self._resourcesProvider = resourcesProvider
+
+    def create(self, info: ApplicationPackageInfo, options: CreateApplicationPackageOptions, out_dir=None) -> CreateApplicationPackageResult:
         """
         Creates an application package based on the current manifest and UI definition.
 
         Args:
+            info (ApplicationPackageInfo): The application package info.
             out_dir (Optional[str]): The output directory for the application package.
             If not specified, the package will be created in a randomly generated temp directory.
 
@@ -100,18 +139,14 @@ class ApplicationPackage:
             CreateApplicationPackageResult: A result object containing the validation results and the path to the
             created application package file.
         """
-
-        template_parameters = self.manifest.get_parameters()
-
-        validation_results = self.manifest.validate()
-        validation_results += self.create_ui_definition.validate(template_parameters)
+        validation_results = info.validate()
 
         if len(validation_results) > 0:
             return CreateApplicationPackageResult(validation_results=validation_results)
 
-        installer_package = create_installer_package(self.manifest)
+        installer_package = create_installer_package(info.manifest)
 
-        self._finalize_main_template(template_parameters, installer_package, options)
+        self._finalize_main_template(info, installer_package, options)
         self._finalize_view_definition(options)
 
         result = CreateApplicationPackageResult(
@@ -125,42 +160,31 @@ class ApplicationPackage:
 
         return result
 
-    def _finalize_view_definition(self, options: CreateApplicationPackageOptions):
-        view_definition = options.installer_resources.view_definition
-
+    def _finalize_view_definition(self, info: ApplicationPackageInfo, options: CreateApplicationPackageOptions):
+        view_definition = self._resourcesProvider.get(options.installer_version).view_definition
         view_definition.add_input("dashboardUrl", self.main_template.dashboard_url)
-        view_definition.add_input("offerName", self.manifest.offer.name)
-        view_definition.add_input("offerDescription", self.manifest.offer.description)
+        view_definition.add_input("offerName", info.manifest.offer.name)
+        view_definition.add_input("offerDescription", info.manifest.offer.description)
 
         self.view_definition = view_definition
 
     def _finalize_main_template(
-        self, template_parameters, installer_package: CreateInstallerPackageResult, options: CreateApplicationPackageOptions
+        self, info: ApplicationPackageInfo, installer_package: CreateInstallerPackageResult, options: CreateApplicationPackageOptions
     ):
-        """
-        Updates the (installer's) main template with the parameters from the app's main template.
-        This results in a flow of: createUiDefinition.json/parameters/outputs --> mainTemplate.json/parameters
+        """the app package's main template"""
+        installer_resources = self._resourcesProvider.get(options.installer_version)
 
-        Explanation:
-            This allows the parameters to be passed to the mainTemplate.json/variables/userData
-            so MODM can bootstrap the application with it's parameters when it performs the deployment
-        """
-        installer_resources = options.installer_resources
+        finalizer = MainTemplateFinalizer(installer_resources.main_template)
+        self.main_template = finalizer.finalize(
+            template_parameters=info.template_parameters,
+            installer_resources=installer_resources,
+            installer_package=installer_package,
+            use_vmi_reference=options.use_vmi_reference,
+            vmi_reference_id=options.vmi_reference_id,
+        )
 
-        main_template = installer_resources.main_template
-        main_template.insert_parameters(template_parameters)
-        main_template.user_data.set_installer_package_hash(installer_package.hash)
-
-        # depending on the delivery type, the template will either use the VM offer or the VMI reference ID
-        if options.vmi_reference:
-            main_template.vmi_reference_id = installer_resources.vmi_reference_id
-        else:
-            main_template.vm_offer = installer_resources.vm_offer
-
-        self.main_template = main_template
-
-    def _zip(self, installer_package, options: CreateApplicationPackageOptions, out_dir=None) -> Path:
-        installer_resources = options.installer_resources
+    def _zip(self, installer_package, out_dir=None) -> Path:
+        installer_resources = self._resourcesProvider.get(installer_package.version)
 
         out_dir = out_dir if out_dir is not None else tempfile.mkdtemp()
         file = Path(out_dir).joinpath(self.file_name)
