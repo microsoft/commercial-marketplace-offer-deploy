@@ -98,7 +98,7 @@ class InstallerVersion:
         return major, minor, build, suffix
 
 
-class VersionProvider:
+class InstallerVersionProvider:
     _instance = None
     _versions = {}
 

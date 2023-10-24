@@ -6,8 +6,8 @@ from packaging.azure import CreateUiDefinition
 from importlib.resources import files, as_file
 from msrest.serialization import Model
 from packaging.installer import MainTemplateFinalizer
-from packaging.installer.resources import InstallerResourcesProvider
-from packaging.installer.version import InstallerVersion
+from packaging.installer.resources import InstallerResources, InstallerResourcesProvider
+from packaging.installer.version import InstallerVersion, InstallerVersionProvider
 
 
 MAIN_TEMPLATE_FILE_NAME = "mainTemplate.json"
@@ -46,18 +46,30 @@ class CreateApplicationPackageOptions:
         vmi_reference_id (str, optional): The ID of the VMI reference to use to override the published reference.
     """
 
-    def __init__(self, installer_version: InstallerVersion | str, vmi_reference: bool = False, vmi_reference_id: str = None) -> None:
+    def __init__(self, installer_version: InstallerVersion | str, vmi_reference: bool = False, vmi_reference_id: str = None, resources_file: str | Path = None) -> None:
         self._use_vmi_reference = vmi_reference
-        self._vmi_reference_id = None
-        
-        if isinstance(installer_version, str):
-            self.installer_version = InstallerVersion(installer_version)
+        self._vmi_reference_id = vmi_reference_id
+
+        if isinstance(resources_file, str):
+            self._resources_file = Path(resources_file)
         else:
-            self.installer_version = installer_version
+            self._resources_file = resources_file
+
+        if installer_version is not None and resources_file is None:
+            if isinstance(installer_version, str):
+                if installer_version == "latest":
+                    self.installer_version = InstallerVersionProvider().get_latest()
+                else:
+                    self.installer_version = InstallerVersion(installer_version)
+            else:
+                self.installer_version = installer_version
 
         if vmi_reference_id is not None:
-            self._vmi_reference_id = vmi_reference_id
             self._use_vmi_reference = True
+
+    @property
+    def resources_file(self):
+        return self._resources_file
 
     @property
     def vmi_reference_id(self):
@@ -163,7 +175,7 @@ class ApplicationPackage:
         return result
 
     def _finalize_view_definition(self, info: ApplicationPackageInfo, options: CreateApplicationPackageOptions):
-        view_definition = self._resourcesProvider.get(options.installer_version).view_definition
+        view_definition = self._get_resources(options).view_definition
         view_definition.add_input("dashboardUrl", self.main_template.dashboard_url)
         view_definition.add_input("offerName", info.manifest.offer.name)
         view_definition.add_input("offerDescription", info.manifest.offer.description)
@@ -174,7 +186,7 @@ class ApplicationPackage:
         self, info: ApplicationPackageInfo, installer_package: CreateInstallerPackageResult, options: CreateApplicationPackageOptions
     ):
         """the app package's main template"""
-        installer_resources = self._resourcesProvider.get(options.installer_version)
+        installer_resources = self._get_resources(options)
 
         finalizer = MainTemplateFinalizer(installer_resources.main_template)
         self.main_template = finalizer.finalize(
@@ -186,7 +198,7 @@ class ApplicationPackage:
         )
 
     def _zip(self, info, installer_package, options, out_dir=None) -> Path:
-        installer_resources = self._resourcesProvider.get(options.installer_version)
+        installer_resources = self._get_resources(options)
 
         out_dir = out_dir if out_dir is not None else tempfile.mkdtemp()
         file = Path(out_dir).joinpath(self.file_name)
@@ -201,6 +213,10 @@ class ApplicationPackage:
 
         return file
 
+    def _get_resources(self, options: CreateApplicationPackageOptions):
+        if options.resources_file is not None:
+            return InstallerResources.from_file(options.resources_file)
+        return self._resourcesProvider.get(options.installer_version)
 
 def new_application_package() -> ApplicationPackage:
     return ApplicationPackage(InstallerResourcesProvider())
