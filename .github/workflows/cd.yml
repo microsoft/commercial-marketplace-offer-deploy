@@ -83,11 +83,10 @@ jobs:
       run: |
         source ./build/vmi/scripts/nextversion.sh
         echo "after sourcing nextversion.sh"
-        # image_version=$(get_next_image_version \
-        #   --image-name ${{ vars.base_image_name }} \
-        #   --gallery-name ${{ vars.image_gallery_name }} \
-        #   --resource-group ${{ vars.resource_group }})
-        image_version=0.1.100
+        image_version=$(get_next_image_version \
+          --image-name ${{ vars.base_image_name }} \
+          --gallery-name ${{ vars.image_gallery_name }} \
+          --resource-group ${{ vars.resource_group }})
 
         ./scripts/build-vmi.sh \
           --image-name ${{ vars.base_image_name }} \
