@@ -51,8 +51,6 @@ function createApplicationPackage() {
     # Assign the Reader role to the image for the Managed Application Service Principal
     echo "assigning reader role to the VMI"
     az role assignment create --assignee c3551f1c-671e-4495-b9aa-8d4adcd62976 --role acdd72a7-3385-48ef-bd42-f606fba81ae7 --scope $IMAGE_ID -o none
-
-    echo "done."
 }
 
 function createServiceDefinition() {
@@ -74,7 +72,8 @@ function createServiceDefinition() {
         --account-name "$STORAGE_ACCOUNT_NAME" \
         --name "$STORAGE_CONTAINER_NAME" \
         --auth-mode login \
-        --public-access blob
+        --public-access blob \
+        --overwrite 
 
     az storage blob upload \
         --account-name "$STORAGE_ACCOUNT_NAME" \
@@ -83,7 +82,9 @@ function createServiceDefinition() {
         --file $PACKAGE_FILE
 
 
-    blob=$(az storage blob url --account-name "$STORAGE_ACC_NAME" --container-name "$STORAGE_CONTAINER_NAME" --name app.zip --output tsv)
+    blob=$(az storage blob url --account-name $STORAGE_ACCOUNT_NAME \
+        --container-name $STORAGE_CONTAINER_NAME \
+        --name app.zip --output tsv)
     
     roleid=$(az role definition list --name Owner --query [].name --output tsv)
     groupid="d391271a-216a-49e1-a36e-c24b2c619f14"
@@ -178,4 +179,6 @@ echo "  STORAGE_CONTAINER_NAME          = $STORAGE_CONTAINER_NAME"
 # main
 
 createApplicationPackage
-# createServiceDefinition
+createServiceDefinition
+
+echo "done."
