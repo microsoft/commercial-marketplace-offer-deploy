@@ -11,7 +11,9 @@ class TestMainTemplateFinalizer(unittest.TestCase):
     def setUp(self):
         self.data_path = Path(os.path.join(os.path.dirname(__file__), "data"))
         self.main_template = MainTemplate.from_file(os.path.join(self.data_path, "mainTemplate.json"))
-        self.installer_resources = InstallerResources(self.data_path, {"vmi": "test_id", "offer": { "plan": {}, "imageReference": {}}}, "latest")
+
+        release_reference = {"vmi": "test_id", "offer": { "plan": {}, "imageReference": {}}}
+        self.installer_resources = InstallerResources(self.data_path, "latest", release_reference)
 
         self.finalizer = MainTemplateFinalizer(self.main_template)
 
