@@ -44,6 +44,7 @@ namespace Modm.ServiceHost
                 userDataProcessed = await TryToProcessUserData(cancellationToken);
             }
         }
+
         private async Task<bool> TryToProcessUserData(CancellationToken cancellation)
         {
             //if (attempts > MaxAttempts)
@@ -72,6 +73,8 @@ namespace Modm.ServiceHost
 
         private async Task<string> FetchBase64UserData(CancellationToken cancellation)
         {
+            //TODO: Determine if this is necessary or if we can count on the
+            // metadata service being available
             while (true)
             {
                 var instanceData = await this.metadataService.GetAsync();
@@ -97,10 +100,11 @@ namespace Modm.ServiceHost
                 }
 
                 logger.LogInformation("UserData was valid");
+                logger.LogInformation($"StateFilePath - {this.options?.StateFilePath}");
 
                 if (File.Exists(this.options?.StateFilePath))
                 {
-                    return false;
+                    return true;
                 }
                 else
                 {
