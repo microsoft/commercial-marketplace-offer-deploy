@@ -7,7 +7,7 @@ import tarfile
 import tempfile
 import click
 from packaging import ApplicationPackage, _zip_utils
-from packaging.application_package import CreateApplicationPackageOptions
+from packaging.application_package import ApplicationPackageInfo, CreateApplicationPackageOptions, new_application_package
 from packaging.installer.version import InstallerVersion
 
 # pylint: disable=length-too-long
@@ -33,8 +33,10 @@ def build_application_package(name, description, version, vmi_reference, vmi_ref
     resolved_template_file = cwd.joinpath(template_file).resolve()
     resolved_create_ui_definition = cwd.joinpath(create_ui_definition).resolve()
 
-    package = ApplicationPackage(resolved_template_file, resolved_create_ui_definition, name, description)
-    result = package.create(CreateApplicationPackageOptions(version, vmi_reference, vmi_reference_id), out_dir)
+    info = ApplicationPackageInfo(resolved_template_file, resolved_create_ui_definition, name, description)
+    options = CreateApplicationPackageOptions(version, vmi_reference, vmi_reference_id)
+    package = new_application_package()
+    result = package.create(info, options, out_dir)
 
     click.echo(json.dumps(result.serialize(), indent=2))
 

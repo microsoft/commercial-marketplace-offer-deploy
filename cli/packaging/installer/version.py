@@ -25,8 +25,13 @@ class InstallerVersion:
         self._patch = 0
         self._suffix = ""
 
-        if len(args) == 1:
+        if len(args) == 1 and isinstance(args[0], str):
             self.major, self.minor, self.patch, self.suffix = self.parse(args[0])
+        elif len(args) == 1 and isinstance(args[0], InstallerVersion):
+            self.major = args[0].major
+            self.minor = args[0].minor
+            self.patch = args[0].patch
+            self.suffix = args[0].suffix
         elif len(args) == 3:
             self.major = args[0]
             self.minor = args[1]
