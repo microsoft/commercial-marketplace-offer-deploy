@@ -100,9 +100,17 @@ namespace Modm.ServiceHost
                 }
 
                 logger.LogInformation("UserData was valid");
-                logger.LogInformation($"StateFilePath - {this.options?.StateFilePath}");
 
-                if (File.Exists(this.options?.StateFilePath))
+                if (this.options == null || String.IsNullOrEmpty(this.options.StateFilePath))
+                {
+                    logger.LogError("No StateFilePath present");
+                    return false;
+                }
+
+                string stateFilePath = this.options.StateFilePath;
+                logger.LogInformation($"stateFilePath - {stateFilePath}");
+
+                if (File.Exists(stateFilePath))
                 {
                     return true;
                 }
@@ -115,11 +123,18 @@ namespace Modm.ServiceHost
                         Parameters = userData.Parameters ?? new Dictionary<string, object>()
                     };
 
-                    // Serialize the request to JSON and write it to the state file
-                    var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true });
-                    await File.WriteAllTextAsync(this.options?.StateFilePath, json);
+                    var engineChecker = new EngineChecker("http://localhost:5000", this.httpClient);
+                    var isHealthy = await engineChecker.IsEngineHealthy();
+                    if (!isHealthy)
+                    {
+                        return false;
+                    }
 
                     await SubmitDeployment(request, cancellation);
+
+                    // Serialize the request to JSON and write it to the state file
+                    var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true });
+                    await File.WriteAllTextAsync(stateFilePath, json);
                     return true;
                 }
             }
