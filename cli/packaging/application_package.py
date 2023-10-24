@@ -45,14 +45,16 @@ class CreateApplicationPackageOptions:
         vmi_reference (bool, optional): Whether to use a VMI reference of the published/released reference. Defaults to False.
         vmi_reference_id (str, optional): The ID of the VMI reference to use to override the published reference.
     """
+
     def __init__(self, installer_version: InstallerVersion | str, vmi_reference: bool = False, vmi_reference_id: str = None) -> None:
         self._use_vmi_reference = vmi_reference
-
+        self._vmi_reference_id = None
+        
         if isinstance(installer_version, str):
             self.installer_version = InstallerVersion(installer_version)
         else:
             self.installer_version = installer_version
-        
+
         if vmi_reference_id is not None:
             self._vmi_reference_id = vmi_reference_id
             self._use_vmi_reference = True
@@ -61,7 +63,7 @@ class CreateApplicationPackageOptions:
     def vmi_reference_id(self):
         """This is the ID of the VMI reference to use to override the published reference."""
         return self._vmi_reference_id
-    
+
     @property
     def use_vmi_reference(self):
         return self._use_vmi_reference
@@ -87,11 +89,11 @@ class ApplicationPackageInfo(Model):
     @property
     def name(self):
         return self.manifest.offer.name
-    
+
     @property
     def description(self):
         return self.manifest.offer.description
-    
+
     @property
     def template_parameters(self):
         return self.manifest.get_parameters()
@@ -103,7 +105,8 @@ class ApplicationPackageInfo(Model):
 
         return validation_results
 
-class ApplicationPackage:    
+
+class ApplicationPackage:
     """
     Represents the app package, e.g. the app.zip
     The installer package (installer.zip) will reside directly in the app.zip next to
@@ -121,6 +124,7 @@ class ApplicationPackage:
         - modules
         - <modules>
     """
+
     file_name = "app.zip"
 
     def __init__(self, resourcesProvider: InstallerResourcesProvider) -> None:
@@ -149,9 +153,7 @@ class ApplicationPackage:
         self._finalize_main_template(info, installer_package, options)
         self._finalize_view_definition(info, options)
 
-        result = CreateApplicationPackageResult(
-            installer_package=installer_package, function_app_name=self.main_template.function_app_name
-        )
+        result = CreateApplicationPackageResult(installer_package=installer_package, function_app_name=self.main_template.function_app_name)
         result.file = self._zip(info, installer_package, options, out_dir)
 
         if result.file is None or not result.file.exists():
