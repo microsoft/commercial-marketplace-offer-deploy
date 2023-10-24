@@ -15,8 +15,8 @@ on:
   workflow_dispatch:
 
 env:
-  working_directory: src/
-
+  src_dir: src/
+  cli_dir: cli/
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,7 +26,14 @@ jobs:
         dotnet-version: [ '7.0.x' ]
     steps:
       - uses: actions/checkout@v4
-      - name: Setup dotnet ${{ matrix.dotnet-version }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+            python-version: '3.10' 
+      - run: pip install -r cli/requirements.txt
+
+      - name: Setup .NET ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
@@ -38,18 +45,6 @@ jobs:
             tenant-id: ${{ secrets.AZURE_TENANT_ID }}
             subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      # print current dotnet version
-      - name: Display dotnet version
-        run: dotnet --version
-
-      - name: Install Azure Functions Core Tools
-        run: |
-          curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
-          sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
-          sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-$(lsb_release -cs)-prod $(lsb_release -cs) main" > /etc/apt/sources.list.d/dotnetdev.list'
-          sudo apt-get update
-          sudo apt-get install azure-functions-core-tools-4 --yes
-
       - name: Cache packages
         uses: actions/cache@v3
         with:
@@ -59,19 +54,23 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget
 
-      - name: Build
+      - name: Build python
+        run: scripts/cli-build.sh
+
+        working-directory: ./
+      - name: Build dotnet
         run: dotnet build
-        working-directory: ${{ env.working_directory }}
+        working-directory: ${{ env.src_dir }}
 
-      - name: Test with the dotnet CLI
+      - name: Test dotnet
         run: dotnet test --logger trx --results-directory "TestResults-${{ matrix.dotnet-version }}"
-        working-directory: ${{ env.working_directory }}
+        working-directory: ${{ env.src_dir }}
 
-      - name: Upload dotnet test results
+      - name: Upload test results
         uses: actions/upload-artifact@v3
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
         with:
           name: dotnet-results-${{ matrix.dotnet-version }}
-          path: ${{ env.working_directory }}/TestResults-${{ matrix.dotnet-version }}
+          path: ${{ env.src_dir }}/TestResults-${{ matrix.dotnet-version }}
         

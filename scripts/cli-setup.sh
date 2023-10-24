@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Installing MODM CLI (Development)..."
+echo "Setting up Development CLI..."
 echo ""
 cli_path=$PWD/cli
 
