@@ -4,6 +4,7 @@ using Modm.ServiceHost.Notifications;
 using Modm.Azure.Model;
 using Modm.Azure;
 using System.Text.Json;
+using Modm.Extensions;
 
 namespace Modm.ServiceHost
 {
@@ -24,11 +25,14 @@ namespace Modm.ServiceHost
         bool controllerStarted;
         int attempts = 0;
 
+        IConfiguration configuration;
+
         private readonly HttpClient httpClient;
 
-        public PackageWatcherService(IMetadataService metadataService, HttpClient httpClient, ILogger<PackageWatcherService> logger)
+        public PackageWatcherService(IMetadataService metadataService, IConfiguration configuration, HttpClient httpClient, ILogger<PackageWatcherService> logger)
 		{
             this.metadataService = metadataService;
+            this.configuration = configuration;
             this.httpClient = httpClient;
             this.logger = logger;
             this.userData = null;
@@ -52,7 +56,6 @@ namespace Modm.ServiceHost
             {
                 throw new InvalidOperationException("Cannot start installer package watcher. Options are null");
             }
-
             
             if (this.userData == null)
             {
@@ -101,14 +104,9 @@ namespace Modm.ServiceHost
 
                 logger.LogInformation("UserData was valid");
 
-                if (this.options == null || String.IsNullOrEmpty(this.options.StateFilePath))
-                {
-                    logger.LogError("No StateFilePath present");
-                    return false;
-                }
-
-                logger.LogInformation($"stateFilePath - {this.options.StateFilePath}");
-                if (File.Exists(this.options.StateFilePath))
+                string stateFilePath = Path.Combine(this.configuration.GetHomeDirectory(), "service/state.txt");
+                logger.LogInformation($"stateFilePath - {stateFilePath}");
+                if (File.Exists(stateFilePath))
                 {
                     return true;
                 }
@@ -131,7 +129,7 @@ namespace Modm.ServiceHost
 
                 // Serialize the request to JSON and write it to the state file
                 var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true });
-                await File.WriteAllTextAsync(this.options.StateFilePath, json);
+                await File.WriteAllTextAsync(stateFilePath, json);
                 return true;
             }
             catch (Exception ex)
@@ -186,13 +184,17 @@ namespace Modm.ServiceHost
         {
             private readonly PackageWatcherService service;
 
-            public ControllerStartedHandler(PackageWatcherService service)
+            private readonly ILogger<ControllerStartedHandler> logger;
+
+            public ControllerStartedHandler(PackageWatcherService service, ILogger<ControllerStartedHandler> logger)
             {
                 this.service = service;
+                this.logger = logger;
             }
 
             public Task Handle(ControllerStarted notification, CancellationToken cancellationToken)
             {
+                this.logger.LogInformation($"Controller started notificatio with notification.StateFilePath - {notification.StateFilePath}");
                 service.options = new PackageWatcherOptions
                 {
                     PackagePath = notification.PackagePath,
@@ -200,7 +202,6 @@ namespace Modm.ServiceHost
                     StateFilePath = notification.StateFilePath
                 };
                 service.controllerStarted = true;
-
                 return Task.CompletedTask;
             }
 

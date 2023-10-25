@@ -48,7 +48,12 @@ namespace Modm.ServiceHost
 
         #endregion
 
-        public Controller(ControllerOptions options, IManagedIdentityService managedServiceIdentity, IHostEnvironment environment, IConfiguration configuration, IMediator mediator, ILogger<Controller> logger)
+        public Controller(ControllerOptions options, 
+            IManagedIdentityService managedServiceIdentity, 
+            IHostEnvironment environment, 
+            IConfiguration configuration, 
+            IMediator mediator, 
+            ILogger<Controller> logger)
         {
             this.options = options;
             this.configuration = configuration;
