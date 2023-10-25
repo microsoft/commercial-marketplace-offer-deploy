@@ -18,6 +18,12 @@ variable "sql_admin_password" {
   sensitive   = true
 }
 
+variable "sql_admin_username" {
+  description = "The username for the SQL administrator login"
+  type        = string
+}
+
+
 locals {
   timestamp_suffix  = formatdate("YYYYMMDDHHmmss", timestamp())
   storage_name      = "stg${substr(local.timestamp_suffix, 8, 6)}" # Will look like stg123456 (Azure Storage Account names must be between 3 and 24 characters in length, use lowercase letters and numbers only)
