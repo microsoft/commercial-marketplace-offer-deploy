@@ -125,8 +125,6 @@ namespace Modm.ServiceHost
             ComposeService.Start();
         }
 
-        
-
         private async Task BuildComposeServiceAsync()
         {
             var builder = new Builder()
