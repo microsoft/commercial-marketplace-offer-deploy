@@ -70,12 +70,14 @@ function createServiceDefinition() {
 
     echo "Creating storage account container $STORAGE_CONTAINER_NAME."
     exists=$(az storage container exists --account-name $STORAGE_ACCOUNT_NAME --name $STORAGE_CONTAINER_NAME --auth-mode login --o tsv --query exists)
-    
-    az storage container create \
-        --account-name "$STORAGE_ACCOUNT_NAME" \
-        --name "$STORAGE_CONTAINER_NAME" \
-        --auth-mode login \
-        --public-access blob \
+
+    if [ "$exists" = "false" ]; then
+        az storage container create \
+            --account-name "$STORAGE_ACCOUNT_NAME" \
+            --name "$STORAGE_CONTAINER_NAME" \
+            --auth-mode login \
+            --public-access blob
+    fi
 
     az storage blob upload \
         --account-name "$STORAGE_ACCOUNT_NAME" \
