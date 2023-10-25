@@ -18,9 +18,7 @@ namespace Modm.ServiceHost
 
         private readonly IMetadataService metadataService;
         private readonly ILogger<PackageWatcherService> logger;
-
         private UserData? userData;
-
         PackageWatcherOptions? options;
 
         bool controllerStarted;
