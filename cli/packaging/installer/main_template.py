@@ -74,9 +74,6 @@ class MainTemplate(ArmTemplate):
                 resource["properties"]["storageProfile"]["imageReference"] = {"id": "[variables('vmiReferenceId')]"}
                 break
 
-        if "vmiReferenceId" in self.document["variables"]:
-            del self.document["variables"]["vmiReferenceId"]
-
     @property
     def vm_offer(self):
         return self._vm_offer
@@ -91,6 +88,9 @@ class MainTemplate(ArmTemplate):
                 resource["plan"] = value["plan"]
                 resource["properties"]["storageProfile"]["imageReference"] = value["imageReference"]
                 break
+
+        if self.vmi_reference_id_variable in self.document["variables"]:
+            del self.document["variables"][self.vmi_reference_id_variable]
 
     @property
     def function_app_name(self):
