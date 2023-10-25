@@ -15,5 +15,6 @@
         "--line-length",
         "150"
     ],
-    "editor.indentSize": "tabSize"
+    "editor.indentSize": "tabSize",
+    "azureFunctions.projectSubpath": "src/Functions"
 }
