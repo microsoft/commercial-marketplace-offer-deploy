@@ -6,26 +6,33 @@ using System.Threading.Tasks;
 using SharpCompress.Common;
 using Ductus.FluentDocker.Commands;
 using Modm.Azure;
+using Modm.Configuration;
+using Modm.Extensions;
 
 namespace Modm.ServiceHost
 {
 	public class AutoDeleteService : BackgroundService
     {
-        private readonly string stateFilePath;
 
         private readonly IMetadataService metadataService;
 
         private readonly HttpClient httpClient;
+
+        private readonly IConfiguration configuration;
 
         // The date and time when the action should be triggered.
         public DateTime AutoDeleteTime { get; set; }
 
         private readonly ILogger<AutoDeleteService> logger;
 
-        public AutoDeleteService(string stateFilePath, IMetadataService metadataService, HttpClient httpClient, ILogger<AutoDeleteService> logger)
+        public AutoDeleteService(
+            IMetadataService metadataService,
+            IConfiguration configuration,
+            HttpClient httpClient,
+            ILogger<AutoDeleteService> logger)
 		{
-            this.stateFilePath = stateFilePath;
             this.metadataService = metadataService;
+            this.configuration = configuration;
             this.httpClient = httpClient;
             this.logger = logger;
 
@@ -34,17 +41,16 @@ namespace Modm.ServiceHost
 
         private void InitializeAutoDeleteTime()
         {
+            string stateFilePath = Path.Combine(this.configuration.GetHomeDirectory(), "autodelete.txt");
+
             if (!File.Exists(stateFilePath))
             {
-                AutoDeleteTime = DateTime.Now.AddHours(24);
+                File.Create(stateFilePath);
             }
-            else
-            {
-                // Read the date from the file.
-                var fileDate = DateTime.Parse(File.ReadAllText(stateFilePath).Trim());
-                // Set the ActionTime to be 24 hours from the read date.
-                AutoDeleteTime = fileDate.AddHours(24);
-            }
+
+            var fileCreationDate = File.GetCreationTime(stateFilePath);
+            // Set the ActionTime to be 24 hours from the read date.
+            AutoDeleteTime = fileCreationDate.AddHours(24);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
