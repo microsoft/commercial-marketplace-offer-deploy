@@ -6,6 +6,10 @@ class TerraformInputVariable(object):
         attrs = list(dict.values())[0]
 
         self.name = list(dict.keys())[0]
+
+        if 'type' not in attrs:
+            raise ValueError("Missing type for variable: {} in the Terraform template.".format(self.name))
+        
         self.type = self._extract_type(attrs['type'])
         self.sensitive = self._get_sensitive(attrs)
         
