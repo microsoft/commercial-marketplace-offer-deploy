@@ -45,10 +45,4 @@ services:
       - AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
       - AZURE_TENANT_ID=${AZURE_TENANT_ID}
       - MODM_HOME=/var/jenkins_home/modm
-    healthcheck:
-      test: curl --fail http://localhost:8080/login || exit 1
-      interval: 5s
-      retries: 3
-      start_period: 90s
-      timeout: 15s
     restart: always

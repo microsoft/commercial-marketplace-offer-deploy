@@ -35,6 +35,12 @@ namespace Modm.ServiceHost
 			return this;
 		}
 
+		public ControllerBuilder UseStateFile(string stateFile)
+		{
+			options.StateFilePath = stateFile;
+			return this;
+		}
+
         public ControllerBuilder UseMachineName(string machineName)
         {
             options.MachineName = machineName;

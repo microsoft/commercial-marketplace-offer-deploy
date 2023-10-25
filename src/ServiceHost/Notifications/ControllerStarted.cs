@@ -10,6 +10,7 @@ namespace Modm.ServiceHost.Notifications
 	{
         public required string PackagePath { get; set; }
         public required string DeploymentsUrl { get; set; }
+		public required string? StateFilePath { get; set; }
 	}
 }
 

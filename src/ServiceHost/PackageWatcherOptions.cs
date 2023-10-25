@@ -5,6 +5,8 @@ namespace Modm.ServiceHost
 	{
 		public required string PackagePath { get; set; }
 		public required string DeploymentsUrl { get; set; }
+		public required string? StateFilePath { get; set; }
 	}
+	
 }
 
