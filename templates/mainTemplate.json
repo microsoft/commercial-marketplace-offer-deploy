@@ -89,7 +89,7 @@
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', variables('functionAppName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id)))]"
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('functionAppStorageAccountName'))]"
             ],
             "tags": "[variables('commonTags')]",
             "kind": "functionapp,linux",
