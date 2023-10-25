@@ -83,7 +83,8 @@ function createServiceDefinition() {
         --account-name "$STORAGE_ACCOUNT_NAME" \
         --container-name "$STORAGE_CONTAINER_NAME" \
         --name "app.zip" \
-        --file $PACKAGE_FILE
+        --file $PACKAGE_FILE \
+        --overwrite
 
 
     blob=$(az storage blob url --account-name $STORAGE_ACCOUNT_NAME \
