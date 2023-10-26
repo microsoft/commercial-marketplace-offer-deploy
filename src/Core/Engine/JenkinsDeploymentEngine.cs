@@ -4,6 +4,7 @@ using Modm.Azure;
 using Modm.Deployments;
 using Modm.Jenkins.Client;
 using Modm.Engine.Pipelines;
+using Microsoft.Extensions.Logging;
 
 namespace Modm.Engine
 {
@@ -15,15 +16,18 @@ namespace Modm.Engine
         private readonly IPipeline<StartDeploymentRequest, StartDeploymentResult> pipeline;
         private readonly IMetadataService metadataService;
 
+        private readonly ILogger<JenkinsDeploymentEngine> logger;
+
         public JenkinsDeploymentEngine(DeploymentFile file, JenkinsClientFactory clientFactory,
             DeploymentResourcesClient deploymentResourcesClient,
-            IPipeline<StartDeploymentRequest, StartDeploymentResult> pipeline, IMetadataService metadataService)
+            IPipeline<StartDeploymentRequest, StartDeploymentResult> pipeline, IMetadataService metadataService, ILogger<JenkinsDeploymentEngine> logger)
         {
             this.file = file;
             this.clientFactory = clientFactory;
             this.deploymentResourcesClient = deploymentResourcesClient;
             this.pipeline = pipeline;
             this.metadataService = metadataService;
+            this.logger = logger;
         }
 
         public async Task<EngineInfo> GetInfo()
@@ -42,8 +46,9 @@ namespace Modm.Engine
                     IsHealthy = !node.Offline
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                this.logger.LogError(ex, null);
                 return new EngineInfo
                 {
                     EngineType = EngineType.Jenkins,
