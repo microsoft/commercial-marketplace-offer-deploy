@@ -101,6 +101,16 @@ namespace Modm.ServiceHost
             return null;
         }
 
+        private string GetStateFilePath()
+        {
+            if (this.options == null || String.IsNullOrEmpty(this.options.StateFilePath))
+            {
+                return Path.Combine(this.config.GetHomeDirectory(), "service/state.txt");
+            }
+
+            return this.options.StateFilePath;
+        }
+
         private async Task<bool> TryStartDeployment(CancellationToken cancellation)
         {
             try
@@ -113,19 +123,9 @@ namespace Modm.ServiceHost
 
                 logger.LogInformation("UserData was valid");
 
-                string stateFilePath = string.Empty;
-
-                if (this.options == null || String.IsNullOrEmpty(this.options.StateFilePath))
-                {
-                    logger.LogError("No StateFilePath present");
-                    stateFilePath = Path.Combine(this.config.GetHomeDirectory(), "service/state.txt");
-                }
-                else
-                {
-                    stateFilePath = this.options.StateFilePath;
-                }
-
+                string stateFilePath = GetStateFilePath();
                 logger.LogInformation($"stateFilePath - {stateFilePath}");
+                
                 if (File.Exists(stateFilePath))
                 {
                     return true;
