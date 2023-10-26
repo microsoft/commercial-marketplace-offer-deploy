@@ -148,13 +148,7 @@ namespace Modm.ServiceHost
                 builder.WithEnvironment(envFile.ToArray());
             }
 
-            // TODO: dynamically grab the correct port set on the engine / jenkins for the WaitForHttp
             var service = builder.RemoveOrphans()
-                        .WaitForHttp("jenkins", "http://localhost:8080/login", timeout: 60000, (response, attempt) =>
-                        {
-                            logger.LogInformation("Engine check [{attempt}]. HTTP Status [{statusCode}]", attempt, response.Code);
-                            return response.Code == System.Net.HttpStatusCode.OK ? 0 : 500;
-                        })
                         .Build();
 
             service.StateChange += (object sender, StateChangeEventArgs e) =>
