@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Timers;
+using Modm.Engine;
 
 public class EngineChecker
 {
@@ -29,29 +30,21 @@ public class EngineChecker
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
             this.logger.LogInformation($"Engine status: {jsonResponse}");
-            var statusData = JsonSerializer.Deserialize<StatusData>(jsonResponse);
-            if (statusData == null)
+            var engineInfo = JsonSerializer.Deserialize<EngineInfo>(jsonResponse);
+            if (engineInfo == null)
             {
                 this.logger.LogError($"Engine is not healthy. Status data is null.");
                 return false;
             }
-            this.logger.LogInformation($"Engine status after deserialization: {statusData.IsHealthy}");
-            if (statusData == null)
-            {
-                return false;
-            }
-
-            return statusData.IsHealthy;
+            this.logger.LogInformation($"Engine status after deserialization: {engineInfo.IsHealthy}");
+            return engineInfo.IsHealthy;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            this.logger.LogError(ex, null);
             return false;
         }
     }
 
 }
 
-public class StatusData
-{
-    public bool IsHealthy { get; set; }
-}
