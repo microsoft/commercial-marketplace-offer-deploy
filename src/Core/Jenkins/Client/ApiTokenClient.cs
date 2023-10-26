@@ -1,10 +1,10 @@
 ﻿using System.Net.Http.Headers;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
-using Modm.Engine.Jenkins.Model;
+using Modm.Jenkins.Model;
 using Modm.Extensions;
 
-namespace Modm.Engine.Jenkins.Client
+namespace Modm.Jenkins.Client
 {
     /// <summary>
     /// Will perform the job of getting a Jenkins API Token

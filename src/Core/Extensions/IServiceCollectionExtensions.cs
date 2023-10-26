@@ -6,10 +6,9 @@ using Modm.Packaging;
 using Modm.Azure;
 using Modm.Deployments;
 using Modm.Engine;
-using Modm.Engine.Jenkins.Client;
+using Modm.Jenkins.Client;
 using Modm.Engine.Pipelines;
-using Modm.Http;
-using Polly;
+using Modm.Jenkins;
 
 namespace Modm.Extensions
 {
@@ -58,14 +57,6 @@ namespace Modm.Extensions
             services.AddSingleton<JenkinsClientFactory>();
             services.AddSingleton<DeploymentFile>();
             services.AddSingleton<IDeploymentRepository, DefaultDeploymentRepository>();
-
-            //services.AddSingleton<IJenkinsClient>(provider =>
-            //{
-            //    var factory = provider.GetService<JenkinsClientFactory>();
-            //    return factory == null ? throw new NullReferenceException("JenkinsClientFactory not configured") : factory.Create().GetAwaiter().GetResult();
-            //});
-
-            
 
             services.AddSingleton<IDeploymentEngine, JenkinsDeploymentEngine>();
             services.AddSingleton<DeploymentResourcesClient>();

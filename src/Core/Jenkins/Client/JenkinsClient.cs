@@ -5,11 +5,14 @@ using JenkinsNET.Exceptions;
 using JenkinsNET.Models;
 using Microsoft.Extensions.Logging;
 using Modm.Deployments;
-using Modm.Engine.Jenkins.Model;
+using Modm.Jenkins.Model;
 using Modm.Extensions;
 
-namespace Modm.Engine.Jenkins.Client
+namespace Modm.Jenkins.Client
 {
+    /// <summary>
+    /// Our implementation against jenkins
+    /// </summary>
     class JenkinsClient : IJenkinsClient
 	{
         const string JenkinsVersionHeaderName = "X-Jenkins";
@@ -225,6 +228,10 @@ namespace Modm.Engine.Jenkins.Client
             }
 
             return false;
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
+using Modm.Azure.Model;
 using Polly;
 using Polly.Retry;
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using Modm.Azure.Model;
 
 namespace Modm.Azure
 {

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Modm.Packaging;
 using Modm.Configuration;
 using Modm.Deployments;
-using Modm.Engine.Jenkins.Client;
+using Modm.Jenkins.Client;
 using NSubstitute;
 
 namespace Modm.Tests.Utils

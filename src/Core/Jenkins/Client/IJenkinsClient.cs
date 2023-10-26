@@ -1,14 +1,12 @@
-﻿using System;
-using JenkinsNET;
-using Modm.Engine.Jenkins.Model;
+﻿using Modm.Jenkins.Model;
 
-namespace Modm.Engine.Jenkins.Client
+namespace Modm.Jenkins.Client
 {
-	/// <summary>
-	/// Decorating client of the <see cref="JenkinsNET.IJenkinsClient"/> so we can include additional functionality
-	/// to interact with Jenkins
-	/// </summary>
-	public interface IJenkinsClient
+    /// <summary>
+    /// Decorating client of the <see cref="JenkinsNET.IJenkinsClient"/> so we can include additional functionality
+    /// to interact with Jenkins
+    /// </summary>
+    public interface IJenkinsClient : IDisposable
     {
         /// <summary>
         /// Gets information about Hudson including the version

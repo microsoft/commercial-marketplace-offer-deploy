@@ -40,8 +40,6 @@
   <ItemGroup>
     <None Remove="Configuration\" />
     <None Remove="Azure\Model\" />
-    <None Remove="Engine\Jenkins\Model\" />
-    <None Remove="Engine\Jenkins\Client\" />
     <None Remove="Engine\Notifications\" />
     <None Remove="Engine\Behaviors\" />
     <None Remove="Engine\Pipelines\" />
@@ -50,12 +48,11 @@
     <None Remove="Diagnostics\" />
     <None Remove="IO\" />
     <None Remove="Compression\" />
+    <None Remove="Jenkins\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Configuration\" />
     <Folder Include="Azure\Model\" />
-    <Folder Include="Engine\Jenkins\Model\" />
-    <Folder Include="Engine\Jenkins\Client\" />
     <Folder Include="Engine\Notifications\" />
     <Folder Include="Engine\Behaviors\" />
     <Folder Include="Engine\Pipelines\" />
@@ -64,5 +61,6 @@
     <Folder Include="Diagnostics\" />
     <Folder Include="IO\" />
     <Folder Include="Compression\" />
+    <Folder Include="Jenkins\" />
   </ItemGroup>
 </Project>

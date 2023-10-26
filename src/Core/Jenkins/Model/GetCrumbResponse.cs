@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 
-namespace Modm.Engine.Jenkins.Model
+namespace Modm.Jenkins.Model
 {
     /// <summary>
     /// Created from JSON result from http://localhost:8080/crumbIssuer/api/json

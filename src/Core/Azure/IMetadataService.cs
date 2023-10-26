@@ -1,4 +1,6 @@
-﻿namespace Modm.Azure
+﻿using Modm.Azure.Model;
+
+namespace Modm.Azure
 {
     public interface IMetadataService
     {

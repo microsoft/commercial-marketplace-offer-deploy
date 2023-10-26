@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 using System.ServiceProcess;
 using Microsoft.Extensions.Configuration;
 using Modm.WebHost;
-using Modm.Engine.Jenkins.Client;
+using Modm.Jenkins.Client;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Modm.Tests.UnitTests

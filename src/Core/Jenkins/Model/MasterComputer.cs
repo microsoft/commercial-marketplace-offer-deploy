@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 
-namespace Modm.Engine.Jenkins.Model
+namespace Modm.Jenkins.Model
 {
     /// <summary>
     /// Generated from JSON using http://localhost:8080/computer/(built-in)/api/json

@@ -5,7 +5,7 @@ using MediatR.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Modm.Deployments;
-using Modm.Engine.Jenkins.Client;
+using Modm.Jenkins.Client;
 using Modm.Engine.Notifications;
 
 namespace Modm.Engine.Pipelines
@@ -85,7 +85,6 @@ namespace Modm.Engine.Pipelines
     // #2
     public class SubmitDeployment : IPipelineBehavior<StartDeploymentRequest, StartDeploymentResult>
     {
-        private IJenkinsClient client;
         private readonly JenkinsClientFactory clientFactory;
         private readonly IMediator mediator;
         private readonly ILogger<SubmitDeployment> logger;
@@ -93,30 +92,14 @@ namespace Modm.Engine.Pipelines
         public SubmitDeployment(JenkinsClientFactory clientFactory, IMediator mediator, ILogger<SubmitDeployment> logger)
         {
             this.clientFactory = clientFactory;
-            this.client = clientFactory.Create().GetAwaiter().GetResult();
             this.mediator = mediator;
             this.logger = logger;
-        }
-
-        public IJenkinsClient JenkinsClient
-        {
-            get
-            {
-                if (this.client == null)
-                {
-                    this.client = this.clientFactory.Create().GetAwaiter().GetResult();
-                }
-                return this.client;
-            }
         }
 
         public async Task<StartDeploymentResult> Handle(StartDeploymentRequest request, RequestHandlerDelegate<StartDeploymentResult> next, CancellationToken cancellationToken)
         {
             var result = await next();
-            if (result.Errors == null)
-            {
-                result.Errors = new List<string>();
-            }
+            result.Errors ??= new List<string>();
 
             var deployment = result.Deployment;
             
@@ -167,7 +150,8 @@ namespace Modm.Engine.Pipelines
 
         private async Task<bool> TryToSubmit(Deployment deployment)
         {
-            var (id, status) = await JenkinsClient.Build(deployment.Definition.DeploymentType);
+            using var client = await clientFactory.Create();
+            var (id, status) = await client.Build(deployment.Definition.DeploymentType);
             deployment.Status = status;
 
             if (id.HasValue)
