@@ -10,8 +10,7 @@ namespace Modm.Jenkins.Client
         private readonly HttpClient httpClient;
         private readonly ApiTokenClient apiTokenClient;
         private readonly IServiceProvider serviceProvider;
-
-        private readonly Lazy<Task<string>> apiToken;
+        private string apiToken;
 
         /// <summary>
         /// Constructor without params only to support testing
@@ -26,7 +25,6 @@ namespace Modm.Jenkins.Client
             this.httpClient = client;
             this.apiTokenClient = apiTokenClient;
             this.serviceProvider = serviceProvider;
-            this.apiToken = new(apiTokenClient.Get, LazyThreadSafetyMode.PublicationOnly);
         }
 
         public virtual async Task<IJenkinsClient> Create()
@@ -52,8 +50,12 @@ namespace Modm.Jenkins.Client
         /// <returns></returns>
         public async ValueTask<string> GetApiToken()
         {
-            var value = await apiToken.Value.ConfigureAwait(false);
-            return value;
+            if (string.IsNullOrEmpty(apiToken))
+            {
+                var value = await apiTokenClient.Get();
+                apiToken = value;
+            }
+            return apiToken;
         }
     }
 }

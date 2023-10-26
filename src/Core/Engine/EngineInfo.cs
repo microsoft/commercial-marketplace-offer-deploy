@@ -12,6 +12,9 @@ namespace Modm.Engine
 		[JsonPropertyName("isHealthy")]
         public required bool IsHealthy { get; set; }
 
+        [JsonPropertyName("message")]
+        public required string Message { get; set; }
+
         [JsonPropertyName("engineType")]
 		public required EngineType EngineType { get; set; }
 
@@ -20,7 +23,7 @@ namespace Modm.Engine
 
 		public static EngineInfo Default()
         {
-			return new EngineInfo { EngineType = EngineType.Jenkins, IsHealthy = false, Version = "Unknown" };
+			return new EngineInfo { EngineType = EngineType.Jenkins, IsHealthy = false, Version = "Unknown", Message = string.Empty };
         }
 	}
 }

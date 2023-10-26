@@ -4,6 +4,7 @@ using Modm.Azure;
 using Modm.Deployments;
 using Modm.Jenkins.Client;
 using Modm.Engine.Pipelines;
+using Microsoft.Extensions.Logging;
 
 namespace Modm.Engine
 {
@@ -15,19 +16,24 @@ namespace Modm.Engine
         private readonly IPipeline<StartDeploymentRequest, StartDeploymentResult> pipeline;
         private readonly IMetadataService metadataService;
 
+        private readonly ILogger<JenkinsDeploymentEngine> logger;
+
         public JenkinsDeploymentEngine(DeploymentFile file, JenkinsClientFactory clientFactory,
             DeploymentResourcesClient deploymentResourcesClient,
-            IPipeline<StartDeploymentRequest, StartDeploymentResult> pipeline, IMetadataService metadataService)
+            IPipeline<StartDeploymentRequest, StartDeploymentResult> pipeline, IMetadataService metadataService, ILogger<JenkinsDeploymentEngine> logger)
         {
             this.file = file;
             this.clientFactory = clientFactory;
             this.deploymentResourcesClient = deploymentResourcesClient;
             this.pipeline = pipeline;
             this.metadataService = metadataService;
+            this.logger = logger;
         }
 
         public async Task<EngineInfo> GetInfo()
         {
+            var result = EngineInfo.Default();
+
             try
             {
                 using var client = await clientFactory.Create();
@@ -35,22 +41,17 @@ namespace Modm.Engine
                 var info = await client.GetInfo();
                 var node = await client.GetBuiltInNode();
 
-                return new EngineInfo
-                {
-                    EngineType = EngineType.Jenkins,
-                    Version = info.Version,
-                    IsHealthy = !node.Offline
-                };
+                result.IsHealthy = !node.Offline;
+                result.Message = $"Offline reason: {node.OfflineCauseReason}, Temporarily offline: {node.TemporarilyOffline}";
+
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return new EngineInfo
-                {
-                    EngineType = EngineType.Jenkins,
-                    Version = "NA",
-                    IsHealthy = false
-                };
+                this.logger.LogError(ex, "error occurred fetching engine info.");
+                result.Message = ex.Message;
             }
+
+            return result;
         }
 
         public async Task<string> GetLogs()
