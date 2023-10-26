@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Modm.Deployments;
+using Modm.Extensions;
 using Modm.ServiceHost.Notifications;
 using Modm.Azure.Model;
 using Modm.Azure;
@@ -26,17 +27,20 @@ namespace Modm.ServiceHost
         int attempts = 0;
 
         private readonly HttpClient httpClient;
+        private IConfiguration config;
 
         public PackageWatcherService(
             IMetadataService metadataService,
             HttpClient httpClient,
             EngineChecker engineChecker,
+            IConfiguration config,
             ILogger<PackageWatcherService> logger)
 		{
             this.metadataService = metadataService;
             this.httpClient = httpClient;
             this.engineChecker = engineChecker;
             this.logger = logger;
+            this.config = config;
             this.userData = null;
         }
 
@@ -109,14 +113,20 @@ namespace Modm.ServiceHost
 
                 logger.LogInformation("UserData was valid");
 
+                string stateFilePath = string.Empty;
+
                 if (this.options == null || String.IsNullOrEmpty(this.options.StateFilePath))
                 {
                     logger.LogError("No StateFilePath present");
-                    return false;
+                    stateFilePath = Path.Combine(this.config.GetHomeDirectory(), "service/state.txt");
+                }
+                else
+                {
+                    stateFilePath = this.options.StateFilePath;
                 }
 
-                logger.LogInformation($"stateFilePath - {this.options.StateFilePath}");
-                if (File.Exists(this.options.StateFilePath))
+                logger.LogInformation($"stateFilePath - {stateFilePath}");
+                if (File.Exists(stateFilePath))
                 {
                     return true;
                 }
@@ -139,7 +149,7 @@ namespace Modm.ServiceHost
 
                 // Serialize the request to JSON and write it to the state file
                 var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true });
-                await File.WriteAllTextAsync(this.options.StateFilePath, json);
+                await File.WriteAllTextAsync(stateFilePath, json);
                 return true;
             }
             catch (Exception ex)
