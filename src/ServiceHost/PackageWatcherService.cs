@@ -146,26 +146,25 @@ namespace Modm.ServiceHost
                 }
 
                 await SubmitDeployment(request, cancellation);
-
-                // Serialize the request to JSON and write it to the state file
-                var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true });
-                await File.WriteAllTextAsync(stateFilePath, json);
                 return true;
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error deserializing UserData or starting deployment.");
+                logger.LogError(ex, ex.Message);
                 return false;
             }
         }
 
         private async Task SubmitDeployment(StartDeploymentRequest request, CancellationToken cancellation)
         {
-            while (true)
+            while (!cancellation.IsCancellationRequested)
             {
                 try
                 {
                     var response = await StartDeployment(request);
+                    var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true });
+                    var stateFilePath = GetStateFilePath();
+                    await File.WriteAllTextAsync(stateFilePath, json);
                     logger.LogInformation("Received deployment result, Id: {id}", response?.Deployment.Id);
                     return;
                 }
