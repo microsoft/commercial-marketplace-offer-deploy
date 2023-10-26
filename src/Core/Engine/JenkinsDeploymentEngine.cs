@@ -32,6 +32,8 @@ namespace Modm.Engine
 
         public async Task<EngineInfo> GetInfo()
         {
+            var result = EngineInfo.Default();
+
             try
             {
                 using var client = await clientFactory.Create();
@@ -39,23 +41,17 @@ namespace Modm.Engine
                 var info = await client.GetInfo();
                 var node = await client.GetBuiltInNode();
 
-                return new EngineInfo
-                {
-                    EngineType = EngineType.Jenkins,
-                    Version = info.Version,
-                    IsHealthy = !node.Offline
-                };
+                result.IsHealthy = !node.Offline;
+                result.Message = $"Offline reason: {node.OfflineCauseReason}, Temporarily offline: {node.TemporarilyOffline}";
+
             }
             catch (Exception ex)
             {
-                this.logger.LogError(ex, null);
-                return new EngineInfo
-                {
-                    EngineType = EngineType.Jenkins,
-                    Version = "NA",
-                    IsHealthy = false
-                };
+                this.logger.LogError(ex, "error occurred fetching engine info.");
+                result.Message = ex.Message;
             }
+
+            return result;
         }
 
         public async Task<string> GetLogs()
