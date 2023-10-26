@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Modm.Deployments;
+using Modm.Extensions;
 using Modm.ServiceHost.Notifications;
 using Modm.Azure.Model;
 using Modm.Azure;
@@ -12,25 +13,35 @@ namespace Modm.ServiceHost
     /// </summary>
     public class PackageWatcherService : BackgroundService
     {
-        const int DefaultWaitDelaySeconds = 10;
+        const int DefaultWaitDelaySeconds = 30;
         const int MaxAttempts = 10;
         private const int MillisecondsInASecond = 1000;
 
         private readonly IMetadataService metadataService;
         private readonly ILogger<PackageWatcherService> logger;
-
+        private UserData? userData;
         PackageWatcherOptions? options;
+        private EngineChecker engineChecker;
 
         bool controllerStarted;
         int attempts = 0;
 
         private readonly HttpClient httpClient;
+        private IConfiguration config;
 
-        public PackageWatcherService(IMetadataService metadataService, HttpClient httpClient, ILogger<PackageWatcherService> logger)
+        public PackageWatcherService(
+            IMetadataService metadataService,
+            HttpClient httpClient,
+            EngineChecker engineChecker,
+            IConfiguration config,
+            ILogger<PackageWatcherService> logger)
 		{
             this.metadataService = metadataService;
             this.httpClient = httpClient;
+            this.engineChecker = engineChecker;
             this.logger = logger;
+            this.config = config;
+            this.userData = null;
         }
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -43,39 +54,40 @@ namespace Modm.ServiceHost
             {
                 userDataProcessed = await TryToProcessUserData(cancellationToken);
             }
+
+            this.logger.LogInformation("The userData was processed");
         }
 
         private async Task<bool> TryToProcessUserData(CancellationToken cancellation)
         {
-            //if (attempts > MaxAttempts)
-            //{
-            //    logger.LogWarning("Max attempts reached while processing user data.");
-            //    return true;
-            //}
-
             if (options == null)
             {
                 throw new InvalidOperationException("Cannot start installer package watcher. Options are null");
             }
 
-            var base64UserData = await FetchBase64UserData(cancellation);
-
-            if (string.IsNullOrEmpty(base64UserData))
+            
+            if (this.userData == null)
             {
-                logger.LogWarning("Unable to start deployment. Attempt {attempt}", attempts);
-                attempts++;
-                await Task.Delay(DefaultWaitDelaySeconds * MillisecondsInASecond, cancellation);
-                return false;
+                var base64UserData = await FetchBase64UserData(cancellation);
+                if (!String.IsNullOrEmpty(base64UserData))
+                {
+                    this.userData = UserData.Deserialize(base64UserData) ?? throw new InvalidDataException("The userData on the virtual machine instance is null");
+                }
+                else
+                {
+                    logger.LogWarning("Unable to start deployment. Attempt {attempt}", attempts);
+                    attempts++;
+                    await Task.Delay(DefaultWaitDelaySeconds * MillisecondsInASecond, cancellation);
+                    return false;
+                }
             }
 
-            return await TryStartDeployment(base64UserData, cancellation);
+            return await TryStartDeployment(cancellation);
         }
 
-        private async Task<string> FetchBase64UserData(CancellationToken cancellation)
+        private async Task<string?> FetchBase64UserData(CancellationToken cancellation)
         {
-            //TODO: Determine if this is necessary or if we can count on the
-            // metadata service being available
-            while (true)
+            while (!cancellation.IsCancellationRequested)
             {
                 var instanceData = await this.metadataService.GetAsync();
                 if (!string.IsNullOrEmpty(instanceData.Compute.UserData))
@@ -85,15 +97,25 @@ namespace Modm.ServiceHost
 
                 await Task.Delay(DefaultWaitDelaySeconds * MillisecondsInASecond, cancellation);
             }
+
+            return null;
         }
 
-        private async Task<bool> TryStartDeployment(string base64UserData, CancellationToken cancellation)
+        private string GetStateFilePath()
+        {
+            if (this.options == null || String.IsNullOrEmpty(this.options.StateFilePath))
+            {
+                return Path.Combine(this.config.GetHomeDirectory(), "service/state.txt");
+            }
+
+            return this.options.StateFilePath;
+        }
+
+        private async Task<bool> TryStartDeployment(CancellationToken cancellation)
         {
             try
             {
-                var userData = UserData.Deserialize(base64UserData) ?? throw new InvalidDataException("The userData on the virtual machine instance is null");
-
-                if (!userData.IsValid())
+                if (this.userData == null || !this.userData.IsValid())
                 {
                     logger.LogError("Invalid UserData.");
                     return false;
@@ -101,42 +123,34 @@ namespace Modm.ServiceHost
 
                 logger.LogInformation("UserData was valid");
 
-                if (this.options == null || String.IsNullOrEmpty(this.options.StateFilePath))
-                {
-                    logger.LogError("No StateFilePath present");
-                    return false;
-                }
-
-                string stateFilePath = this.options.StateFilePath;
+                string stateFilePath = GetStateFilePath();
                 logger.LogInformation($"stateFilePath - {stateFilePath}");
-
+                
                 if (File.Exists(stateFilePath))
                 {
                     return true;
                 }
-                else
+
+                var request = new StartDeploymentRequest
                 {
-                    var request = new StartDeploymentRequest
-                    {
-                        PackageUri = userData.InstallerPackage.Uri,
-                        PackageHash = userData.InstallerPackage.Hash,
-                        Parameters = userData.Parameters ?? new Dictionary<string, object>()
-                    };
+                    PackageUri = userData.InstallerPackage.Uri,
+                    PackageHash = userData.InstallerPackage.Hash,
+                    Parameters = userData.Parameters ?? new Dictionary<string, object>()
+                };
 
-                    var engineChecker = new EngineChecker("http://localhost:5000", this.httpClient);
-                    var isHealthy = await engineChecker.IsEngineHealthy();
-                    if (!isHealthy)
-                    {
-                        return false;
-                    }
-
-                    await SubmitDeployment(request, cancellation);
-
-                    // Serialize the request to JSON and write it to the state file
-                    var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true });
-                    await File.WriteAllTextAsync(stateFilePath, json);
-                    return true;
+                
+                var isHealthy = await this.engineChecker.IsEngineHealthy();
+                if (!isHealthy)
+                {
+                    return false;
                 }
+
+                await SubmitDeployment(request, cancellation);
+
+                // Serialize the request to JSON and write it to the state file
+                var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true });
+                await File.WriteAllTextAsync(stateFilePath, json);
+                return true;
             }
             catch (Exception ex)
             {

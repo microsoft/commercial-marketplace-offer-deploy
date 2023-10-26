@@ -11,14 +11,16 @@
             "mode": "debug",
             "envFile": "${workspaceRoot}/bin/.env",
             "program": "${workspaceRoot}/cmd/apiserver/main.go",
-            "dlvLoadConfig":{
+            "dlvLoadConfig": {
                 "followPointers": true,
                 "maxVariableRecurse": 1,
-                "maxStringLen": 512, 
+                "maxStringLen": 512,
                 "maxArrayValues": 64,
                 "maxStructFields": -1
-              },
-            "dlvFlags": ["--check-go-version=false"]
+            },
+            "dlvFlags": [
+                "--check-go-version=false"
+            ]
         },
         {
             "name": "Operator",
@@ -26,14 +28,16 @@
             "request": "launch",
             "mode": "debug",
             "program": "${workspaceRoot}/cmd/operator/main.go",
-            "dlvLoadConfig":{
+            "dlvLoadConfig": {
                 "followPointers": true,
                 "maxVariableRecurse": 1,
-                "maxStringLen": 512, 
+                "maxStringLen": 512,
                 "maxArrayValues": 64,
                 "maxStructFields": -1
-              },
-            "dlvFlags": ["--check-go-version=false"]
+            },
+            "dlvFlags": [
+                "--check-go-version=false"
+            ]
         },
         {
             "name": "TestHarness",
@@ -41,14 +45,16 @@
             "request": "launch",
             "mode": "debug",
             "program": "${workspaceRoot}/tools/testharness/main.go",
-            "dlvLoadConfig":{
+            "dlvLoadConfig": {
                 "followPointers": true,
                 "maxVariableRecurse": 1,
-                "maxStringLen": 512, 
+                "maxStringLen": 512,
                 "maxArrayValues": 64,
                 "maxStructFields": -1
-              },
-            "dlvFlags": ["--check-go-version=false"]
+            },
+            "dlvFlags": [
+                "--check-go-version=false"
+            ]
         },
         {
             "name": "Attach to Process",
@@ -56,6 +62,12 @@
             "request": "attach",
             "mode": "local",
             "processId": 0
+        },
+        {
+            "name": "Attach to .NET Functions",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:azureFunctions.pickProcess}"
         }
     ]
 }

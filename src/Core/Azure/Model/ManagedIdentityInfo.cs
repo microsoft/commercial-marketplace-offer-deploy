@@ -1,7 +1,7 @@
 ﻿using System;
 using Azure.Core;
 
-namespace Modm.Azure
+namespace Modm.Azure.Model
 {
 	public class ManagedIdentityInfo
 	{

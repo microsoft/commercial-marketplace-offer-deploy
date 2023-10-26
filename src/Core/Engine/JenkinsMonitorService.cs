@@ -1,8 +1,7 @@
-﻿using JenkinsNET.Models;
-using MediatR;
+﻿using MediatR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Modm.Engine.Jenkins.Client;
+using Modm.Jenkins.Client;
 using Modm.Engine.Notifications;
 
 namespace Modm.Engine
@@ -12,7 +11,6 @@ namespace Modm.Engine
     /// </summary>
 	public class JenkinsMonitorService : BackgroundService
 	{
-        private IJenkinsClient client;
         private JenkinsClientFactory clientFactory;
         private readonly ILogger<JenkinsMonitorService> logger;
 
@@ -23,20 +21,7 @@ namespace Modm.Engine
         public JenkinsMonitorService(JenkinsClientFactory clientFactory, ILogger<JenkinsMonitorService> logger)
         {
             this.clientFactory = clientFactory;
-            this.client = clientFactory.Create().GetAwaiter().GetResult();
             this.logger = logger;
-        }
-
-        public IJenkinsClient JenkinsClient
-        {
-            get
-            {
-                if (this.client == null)
-                {
-                    this.client = clientFactory.Create().GetAwaiter().GetResult();
-                }
-                return this.client;
-            }
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -64,14 +49,15 @@ namespace Modm.Engine
 
         async Task MonitorDeployment(CancellationToken cancellationToken)
         {
-            var isBuilding = await JenkinsClient.IsBuilding(name, id, cancellationToken);
+            using var client = await clientFactory.Create();
+            var isBuilding = await client.IsBuilding(name, id, cancellationToken);
 
             // wait for the deployment to complete
             while (isBuilding)
             {
                 try
                 {
-                    isBuilding = await JenkinsClient.IsBuilding(name, id, cancellationToken);
+                    isBuilding = await client.IsBuilding(name, id, cancellationToken);
                 }
                 catch (Exception ex)
                 {

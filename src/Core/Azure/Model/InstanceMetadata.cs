@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Modm.Azure
+namespace Modm.Azure.Model
 {
     public class InstanceMetadata
     {

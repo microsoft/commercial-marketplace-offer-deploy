@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 
-namespace Modm.Engine.Jenkins
+namespace Modm.Jenkins
 {
     internal record ApiTokenData
     {

@@ -35,6 +35,7 @@ namespace Modm.ServiceHost
                 .UseFqdn(await metadataService.GetFqdnAsync())
                 .UseMachineName(metadata.Compute.Name)
                 .UseComposeFile(GetComposeFilePath())
+                .UseStateFile(GetStateFilePath())
                 .UsingServiceProvider(serviceProvider)
                 .Build();
 
@@ -64,6 +65,11 @@ namespace Modm.ServiceHost
         string GetComposeFilePath()
         {
             return Path.Combine(config.GetHomeDirectory(), "service/docker-compose.yml");
+        }
+
+        string GetStateFilePath()
+        {
+            return Path.Combine(config.GetHomeDirectory(), "service/state.txt");
         }
 
         class ManagedIdentityAcquiredHandler : INotificationHandler<ManagedIdentityAcquired>

@@ -7,8 +7,10 @@ variable "resource_group_name" {
   type        = string
 }
 
+
 variable "location" {
   description = "Azure region for the resources"
+  type = "string"
   default     = "West US"
 }
 
@@ -17,6 +19,12 @@ variable "sql_admin_password" {
   type        = string
   sensitive   = true
 }
+
+variable "sql_admin_username" {
+  description = "The username for the SQL administrator login"
+  type        = string
+}
+
 
 locals {
   timestamp_suffix  = formatdate("YYYYMMDDHHmmss", timestamp())

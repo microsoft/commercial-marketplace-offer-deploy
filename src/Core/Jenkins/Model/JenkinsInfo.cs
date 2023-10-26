@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Modm.Engine.Jenkins.Model
+namespace Modm.Jenkins.Model
 {
 	public class JenkinsInfo
 	{

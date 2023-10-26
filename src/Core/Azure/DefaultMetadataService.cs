@@ -1,5 +1,8 @@
 ﻿using System.Net;
 using System.Text.Json;
+using Modm.Azure.Model;
+using Polly;
+using Polly.Retry;
 
 namespace Modm.Azure
 {
@@ -18,10 +21,14 @@ namespace Modm.Azure
         const string InstanceEndpoint = DefaultServiceEndpoint + "/metadata/instance";
 
         private readonly HttpClient client;
+        private readonly AsyncRetryPolicy asyncRetryPolicy;
 
         public DefaultMetadataService(HttpClient client)
         {
             this.client = client;
+            this.asyncRetryPolicy = Policy
+               .Handle<HttpRequestException>()
+               .WaitAndRetryForeverAsync(retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
         }
 
         public async Task<InstanceMetadata> GetAsync()
@@ -45,21 +52,23 @@ namespace Modm.Azure
 
         private async Task<T> GetAsync<T>(string uri, string apiVersion, string otherParams = default)
         {
-            var requestUri = uri + "?api-version=" + apiVersion;
-            if (!string.IsNullOrEmpty(otherParams))
-            {
-                requestUri += "&" + otherParams;
-            }
+            var result = await asyncRetryPolicy.ExecuteAsync(async () => {
+                var requestUri = uri + "?api-version=" + apiVersion;
+                if (!string.IsNullOrEmpty(otherParams))
+                {
+                    requestUri += "&" + otherParams;
+                }
 
-            // IMDS requires bypassing proxies.
-            HttpClient.DefaultProxy = new WebProxy();
-            var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
-            request.Headers.Add("Metadata", "True");
+                // IMDS requires bypassing proxies.
+                HttpClient.DefaultProxy = new WebProxy();
+                var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+                request.Headers.Add("Metadata", "True");
 
-            var response = await client.SendAsync(request);
-            response.EnsureSuccessStatusCode();
-            var result = await JsonSerializer.DeserializeAsync<T>(response.Content.ReadAsStream());
+                var response = await client.SendAsync(request);
+                response.EnsureSuccessStatusCode();
 
+                return await JsonSerializer.DeserializeAsync<T>(response.Content.ReadAsStream());
+            });
 
             return result;
         }

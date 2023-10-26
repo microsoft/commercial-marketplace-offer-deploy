@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Modm.Engine
+namespace Modm.Jenkins
 {
 	public class JenkinsOptions
 	{

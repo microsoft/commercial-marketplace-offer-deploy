@@ -37,6 +37,7 @@ namespace Modm.ServiceHost
 
 		public ControllerBuilder UseStateFile(string stateFile)
 		{
+            this.logger.LogInformation($"Using state file: {stateFile}");
 			options.StateFilePath = stateFile;
 			return this;
 		}

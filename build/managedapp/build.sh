@@ -55,8 +55,9 @@ function createApplicationPackage() {
 
 function createServiceDefinition() {
     echo "Ensuring storage account [$STORAGE_ACCOUNT_NAME]."
+    not_exists=$(az storage account check-name -n $STORAGE_ACCOUNT_NAME -o tsv --query "nameAvailable")
 
-    if [ "$exists" = "true" ]; then
+    if [ "$not_exists" = "true" ]; then
         echo "Creating storage account in [$RESOURCE_GROUP]."
         az storage account create \
             --name "$STORAGE_ACCOUNT_NAME"  \
@@ -68,18 +69,22 @@ function createServiceDefinition() {
     fi
 
     echo "Creating storage account container $STORAGE_CONTAINER_NAME."
-    az storage container create \
-        --account-name "$STORAGE_ACCOUNT_NAME" \
-        --name "$STORAGE_CONTAINER_NAME" \
-        --auth-mode login \
-        --public-access blob \
-        --overwrite 
+    exists=$(az storage container exists --account-name $STORAGE_ACCOUNT_NAME --name $STORAGE_CONTAINER_NAME --auth-mode login --output tsv --query exists)
+
+    if [ "$exists" = "false" ]; then
+        az storage container create \
+            --account-name "$STORAGE_ACCOUNT_NAME" \
+            --name "$STORAGE_CONTAINER_NAME" \
+            --auth-mode login \
+            --public-access blob
+    fi
 
     az storage blob upload \
         --account-name "$STORAGE_ACCOUNT_NAME" \
         --container-name "$STORAGE_CONTAINER_NAME" \
         --name "app.zip" \
-        --file $PACKAGE_FILE
+        --file $PACKAGE_FILE \
+        --overwrite
 
 
     blob=$(az storage blob url --account-name $STORAGE_ACCOUNT_NAME \

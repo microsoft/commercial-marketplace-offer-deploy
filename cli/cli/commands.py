@@ -76,8 +76,8 @@ def create_resources_tarball(version, templates_dir, csproj_file, current_workin
 
     with tarfile.open(out_file, "w:gz") as tar:
         tar.add(main_template_file, arcname=main_template_file.name)
-        tar.add(main_template_file, arcname=view_definition_file.name)
-        tar.add(main_template_file, arcname=function_app_file.name)
+        tar.add(view_definition_file, arcname=view_definition_file.name)
+        tar.add(function_app_file, arcname=function_app_file.name)
     
     click.echo(f"resources '{out_file.name}' created.")
 

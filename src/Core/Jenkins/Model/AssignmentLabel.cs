@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 
-namespace Modm.Engine.Jenkins.Model
+namespace Modm.Jenkins.Model
 {
     public class AssignedLabel
     {
