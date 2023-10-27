@@ -30,6 +30,7 @@ namespace Modm.Jenkins.Client
         public virtual async Task<IJenkinsClient> Create()
         {
             var apiToken = await GetApiToken();
+            //var apiToken = await apiTokenClient.Get();
             var jenkinsNetClient = new JenkinsNET.JenkinsClient(options.BaseUrl)
             {
                 UserName = options.UserName,

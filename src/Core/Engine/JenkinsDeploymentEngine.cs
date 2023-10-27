@@ -15,12 +15,15 @@ namespace Modm.Engine
         private readonly DeploymentResourcesClient deploymentResourcesClient;
         private readonly IPipeline<StartDeploymentRequest, StartDeploymentResult> pipeline;
         private readonly IMetadataService metadataService;
-
         private readonly ILogger<JenkinsDeploymentEngine> logger;
 
-        public JenkinsDeploymentEngine(DeploymentFile file, JenkinsClientFactory clientFactory,
+        public JenkinsDeploymentEngine(DeploymentFile file,
+            JenkinsClientFactory clientFactory,
             DeploymentResourcesClient deploymentResourcesClient,
-            IPipeline<StartDeploymentRequest, StartDeploymentResult> pipeline, IMetadataService metadataService, ILogger<JenkinsDeploymentEngine> logger)
+            IPipeline<StartDeploymentRequest,
+            StartDeploymentResult> pipeline,
+            IMetadataService metadataService,
+            ILogger<JenkinsDeploymentEngine> logger)
         {
             this.file = file;
             this.clientFactory = clientFactory;

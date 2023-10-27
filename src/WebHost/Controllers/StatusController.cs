@@ -10,16 +10,19 @@ namespace WebHost.Controllers
     public class StatusController : ControllerBase
     {
         private readonly IDeploymentEngine engine;
+        private readonly JenkinsReadinessService readinessService;
 
-        public StatusController(IDeploymentEngine engine)
+        public StatusController(IDeploymentEngine engine, JenkinsReadinessService readinessService)
         {
             this.engine = engine;
+            this.readinessService = readinessService;
         }
 
         [HttpGet]
-        public async Task<EngineInfo> GetAsync()
+        public EngineInfo Get()
         {
-            return await this.engine.GetInfo();
+            //return await this.engine.GetInfo();
+            return this.readinessService.GetEngineInfo();
         }
     }
 }
