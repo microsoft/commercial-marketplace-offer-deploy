@@ -16,6 +16,7 @@ namespace Modm.Engine
         private readonly IPipeline<StartDeploymentRequest, StartDeploymentResult> pipeline;
         private readonly IMetadataService metadataService;
         private readonly ILogger<JenkinsDeploymentEngine> logger;
+        private readonly JenkinsReadinessService readinessService;
 
         public JenkinsDeploymentEngine(DeploymentFile file,
             JenkinsClientFactory clientFactory,
@@ -23,6 +24,7 @@ namespace Modm.Engine
             IPipeline<StartDeploymentRequest,
             StartDeploymentResult> pipeline,
             IMetadataService metadataService,
+            JenkinsReadinessService readinessService,
             ILogger<JenkinsDeploymentEngine> logger)
         {
             this.file = file;
@@ -30,31 +32,14 @@ namespace Modm.Engine
             this.deploymentResourcesClient = deploymentResourcesClient;
             this.pipeline = pipeline;
             this.metadataService = metadataService;
+            this.readinessService = readinessService;
             this.logger = logger;
         }
 
         public async Task<EngineInfo> GetInfo()
         {
             var result = EngineInfo.Default();
-
-            try
-            {
-                using var client = await clientFactory.Create();
-
-                var info = await client.GetInfo();
-                var node = await client.GetBuiltInNode();
-
-                result.IsHealthy = !node.Offline;
-                result.Message = $"Offline reason: {node.OfflineCauseReason}, Temporarily offline: {node.TemporarilyOffline}";
-
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError(ex, "error occurred fetching engine info.");
-                result.Message = ex.Message;
-            }
-
-            return result;
+            return this.readinessService.GetEngineInfo();
         }
 
         public async Task<string> GetLogs()

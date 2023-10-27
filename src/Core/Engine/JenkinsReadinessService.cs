@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Modm.Jenkins;
 using Modm.Jenkins.Client;
 using Polly;
+using Polly.Utilities;
 using Polly.Retry;
 
 namespace Modm.Engine
@@ -16,6 +17,7 @@ namespace Modm.Engine
     {
         private const int DefaultWaitDelaySeconds = 30;
         private const int MillisecondsInASecond = 1000;
+        private const int MaxRetries = 6;
 
         private readonly IDeploymentEngine engine;
         private readonly HttpClient httpClient;
@@ -24,25 +26,24 @@ namespace Modm.Engine
         private readonly AsyncRetryPolicy asyncRetryPolicy;
 
         private readonly JenkinsOptions jenkinsOptions;
-        private bool isHealthy;
         private EngineInfo engineInfo;
+        private readonly JenkinsClientFactory clientFactory;
 
         public JenkinsReadinessService(
-            IDeploymentEngine engine,
             HttpClient httpClient,
+            JenkinsClientFactory clientFactory,
             IOptions<JenkinsOptions> options,
             ILogger<JenkinsReadinessService> logger)
 		{
-            this.engine = engine;
             this.httpClient = httpClient;
+            this.clientFactory = clientFactory;
             this.jenkinsOptions = options.Value;
             this.logger = logger;
-            this.isHealthy = false;
             this.engineInfo = EngineInfo.Default();
-
             this.asyncRetryPolicy = Policy
                .Handle<Exception>()
-               .WaitAndRetryForeverAsync(retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+               .WaitAndRetryAsync(MaxRetries, retryAttempt =>
+                    TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -52,15 +53,11 @@ namespace Modm.Engine
                 if (await IsJenkinsLoginAvailableAsync())
                 {
                     var engineInfo = await GetEngineInfoAsync();
-                    if (engineInfo != null && engineInfo.IsHealthy != this.isHealthy)
-                    {
-                        this.isHealthy = engineInfo.IsHealthy;
-                        PublishEngineInfo(engineInfo);
-                    }
+                    UpdateEngineInfo(engineInfo);
                 }
                 else
                 {
-                    PublishEngineInfo(EngineInfo.Default());
+                    UpdateEngineInfo(EngineInfo.Default());
                 }
 
                 await Task.Delay(DefaultWaitDelaySeconds * MillisecondsInASecond, stoppingToken);
@@ -83,14 +80,33 @@ namespace Modm.Engine
             return result;
         }
 
-        private void PublishEngineInfo(EngineInfo engineInfo)
+        private void UpdateEngineInfo(EngineInfo engineInfo)
         {
             this.engineInfo = engineInfo;
         }
 
         private async Task<EngineInfo> GetEngineInfoAsync()
         {
-            return await this.engine.GetInfo();
+            var result = EngineInfo.Default();
+
+            try
+            {
+                using var client = await this.clientFactory.Create();
+
+                var info = await client.GetInfo();
+                var node = await client.GetBuiltInNode();
+
+                result.IsHealthy = !node.Offline;
+                result.Message = $"Offline reason: {node.OfflineCauseReason}, Temporarily offline: {node.TemporarilyOffline}";
+
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "error occurred fetching engine info.");
+                result.Message = ex.Message;
+            }
+
+            return result;
         }
 
         public EngineInfo GetEngineInfo()
