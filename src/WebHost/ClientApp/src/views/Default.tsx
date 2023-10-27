@@ -138,9 +138,6 @@ export const Default = () => {
         }
       };
 
-    // Initial fetch
-    //doGetDeployedResources(); 
-    
     // Start the interval
     const intervalId = setInterval(() => {
         checkEngineHealth();
@@ -170,7 +167,28 @@ export const Default = () => {
       text: 'Redeploy',
       iconProps: { iconName: 'Upload' },
       onClick: () => console.log('Redeploy clicked'),
-    }
+    },
+    {
+        key: 'delete',
+        text: 'Delete',
+        iconProps: { iconName: 'Delete' }, // Using 'Delete' as the iconName
+        onClick: async () => {
+          // Here, you can make your API call or any other logic for the delete action
+          try {
+            const deleteResponse = await fetch(`${AppConstants.baseUrl}/api/resources/${deploymentResourceGroup}/deletemodmresources`, {
+              method: 'POST',
+            });
+            if (!deleteResponse.ok) {
+              throw new Error(`HTTP error! status: ${deleteResponse.status}`);
+            }
+            const deleteResult = await deleteResponse.json();
+            console.log(deleteResult);
+            // You can also update your component's state or trigger other side effects here if necessary
+          } catch (error) {
+            console.error("Error deleting:", error);
+          }
+        },
+      }
   ];
 
   const earliestTimestamp = deployedResources.length > 0
@@ -189,7 +207,7 @@ export const Default = () => {
       <div style={{ display: 'flex', alignItems: 'center' }}>
     
             {(() => {
-              if (loading) return <h4>Loading...</h4>; 
+              if (loading) return <h4>Installer is Loading...</h4>; 
 
               const failedCount = deployedResources.filter(r => r.state === "Failed").length;
               const successCount = deployedResources.filter(r => r.state === "Succeeded").length;
