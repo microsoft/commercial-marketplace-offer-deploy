@@ -14,7 +14,6 @@ namespace Modm.Engine
     /// </summary>
 	public class JenkinsReadinessService : BackgroundService
     {
-        private readonly string baseJenkinsUrl = "http://localhost:8080";
         private const int DefaultWaitDelaySeconds = 30;
         private const int MillisecondsInASecond = 1000;
 
