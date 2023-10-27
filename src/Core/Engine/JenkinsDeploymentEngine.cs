@@ -39,6 +39,7 @@ namespace Modm.Engine
         public async Task<EngineInfo> GetInfo()
         {
             var result = EngineInfo.Default();
+            this.logger.LogInformation("Inside JenkinsDeploymentEngine:GetInfo()");
             return this.readinessService.GetEngineInfo();
         }
 
