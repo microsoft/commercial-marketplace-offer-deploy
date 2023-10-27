@@ -36,7 +36,7 @@ namespace Modm.ServiceHost
                 var engineInfo = JsonSerializer.Deserialize<EngineInfo>(jsonResponse);
                 if (engineInfo == null)
                 {
-                    this.logger.LogError($"Engine is not healthy. Status data is null.");
+                    this.logger.LogError($"Engine is not healthy. engineInfo is null.");
                     return false;
                 }
                 this.logger.LogInformation($"Engine status after deserialization: {engineInfo.IsHealthy}");

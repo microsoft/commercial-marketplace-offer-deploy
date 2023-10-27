@@ -50,9 +50,12 @@ namespace Modm.Engine
         {
             while (!stoppingToken.IsCancellationRequested)
             {
+                this.logger.LogInformation("Inside JenkinsReadinessService");
                 if (await IsJenkinsLoginAvailableAsync())
                 {
+                    this.logger.LogInformation("passed await IsJenkinsLoginAvailableAsync()");
                     var engineInfo = await GetEngineInfoAsync();
+                    this.logger.LogInformation($"engineInfo: {engineInfo}");
                     UpdateEngineInfo(engineInfo);
                 }
                 else
@@ -67,6 +70,7 @@ namespace Modm.Engine
         private async Task<bool> IsJenkinsLoginAvailableAsync()
         {
             var jenkinsBaseUrl = this.jenkinsOptions.BaseUrl;
+            this.logger.LogInformation($"Inside IsJenkinsLoginAvailableAsync(). jenkinsBaseUrl - {jenkinsBaseUrl}");
             var result = await this.asyncRetryPolicy.ExecuteAsync(async () =>
             {
                 var response = await httpClient.GetAsync($"{jenkinsBaseUrl}/login");
@@ -82,20 +86,25 @@ namespace Modm.Engine
 
         private void UpdateEngineInfo(EngineInfo engineInfo)
         {
+            this.logger.LogInformation($"Updating EngineInfo with : {engineInfo}");
             this.engineInfo = engineInfo;
         }
 
         private async Task<EngineInfo> GetEngineInfoAsync()
         {
+            this.logger.LogInformation("Inside GetEngineInfoAsync()");
             var result = EngineInfo.Default();
 
             try
             {
                 using var client = await this.clientFactory.Create();
+                this.logger.LogInformation("Created clientFactory in GetEngineInfoAsync()");
 
                 var info = await client.GetInfo();
+                this.logger.LogInformation($"GetEngineInfoAsync:info - {info}");
                 var node = await client.GetBuiltInNode();
-
+                this.logger.LogInformation($"GetEngineInfoAsync:node - {node}");
+          
                 result.IsHealthy = !node.Offline;
                 result.Message = $"Offline reason: {node.OfflineCauseReason}, Temporarily offline: {node.TemporarilyOffline}";
 
@@ -106,11 +115,13 @@ namespace Modm.Engine
                 result.Message = ex.Message;
             }
 
+            this.logger.LogInformation($"Returning from GetEngineInfoAsync() with a value of {result}");
             return result;
         }
 
         public EngineInfo GetEngineInfo()
         {
+            this.logger.LogInformation($"Returning from GetEngineInfo() - {this.engineInfo}");
             return this.engineInfo;
         }
     }
