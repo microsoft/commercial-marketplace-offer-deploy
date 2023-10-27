@@ -65,6 +65,7 @@ namespace Modm.Extensions
             services.Configure<JenkinsOptions>(configuration.GetSection(JenkinsOptions.ConfigSectionKey));
 
             services.AddSingletonHostedService<JenkinsMonitorService>();
+            services.AddSingletonHostedService<JenkinsReadinessService>();
 
             services.AddMediatR(c =>
             {

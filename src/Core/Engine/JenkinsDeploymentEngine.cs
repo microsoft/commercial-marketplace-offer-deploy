@@ -15,43 +15,31 @@ namespace Modm.Engine
         private readonly DeploymentResourcesClient deploymentResourcesClient;
         private readonly IPipeline<StartDeploymentRequest, StartDeploymentResult> pipeline;
         private readonly IMetadataService metadataService;
-
         private readonly ILogger<JenkinsDeploymentEngine> logger;
+        private readonly JenkinsReadinessService readinessService;
 
-        public JenkinsDeploymentEngine(DeploymentFile file, JenkinsClientFactory clientFactory,
+        public JenkinsDeploymentEngine(DeploymentFile file,
+            JenkinsClientFactory clientFactory,
             DeploymentResourcesClient deploymentResourcesClient,
-            IPipeline<StartDeploymentRequest, StartDeploymentResult> pipeline, IMetadataService metadataService, ILogger<JenkinsDeploymentEngine> logger)
+            IPipeline<StartDeploymentRequest,
+            StartDeploymentResult> pipeline,
+            IMetadataService metadataService,
+            JenkinsReadinessService readinessService,
+            ILogger<JenkinsDeploymentEngine> logger)
         {
             this.file = file;
             this.clientFactory = clientFactory;
             this.deploymentResourcesClient = deploymentResourcesClient;
             this.pipeline = pipeline;
             this.metadataService = metadataService;
+            this.readinessService = readinessService;
             this.logger = logger;
         }
 
         public async Task<EngineInfo> GetInfo()
         {
             var result = EngineInfo.Default();
-
-            try
-            {
-                using var client = await clientFactory.Create();
-
-                var info = await client.GetInfo();
-                var node = await client.GetBuiltInNode();
-
-                result.IsHealthy = !node.Offline;
-                result.Message = $"Offline reason: {node.OfflineCauseReason}, Temporarily offline: {node.TemporarilyOffline}";
-
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError(ex, "error occurred fetching engine info.");
-                result.Message = ex.Message;
-            }
-
-            return result;
+            return this.readinessService.GetEngineInfo();
         }
 
         public async Task<string> GetLogs()

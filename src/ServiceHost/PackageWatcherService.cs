@@ -5,6 +5,7 @@ using Modm.ServiceHost.Notifications;
 using Modm.Azure.Model;
 using Modm.Azure;
 using System.Text.Json;
+using Modm.Engine;
 
 namespace Modm.ServiceHost
 {
@@ -65,7 +66,6 @@ namespace Modm.ServiceHost
                 throw new InvalidOperationException("Cannot start installer package watcher. Options are null");
             }
 
-            
             if (this.userData == null)
             {
                 var base64UserData = await FetchBase64UserData(cancellation);

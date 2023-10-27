@@ -17,7 +17,7 @@ namespace WebHost.Controllers
         }
 
         [HttpGet]
-        public async Task<EngineInfo> GetAsync()
+        public async Task<EngineInfo> Get()
         {
             return await this.engine.GetInfo();
         }
