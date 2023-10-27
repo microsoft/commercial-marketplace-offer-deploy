@@ -2,7 +2,7 @@
 
 echo "Hello crom deploy.sh"
 
-cd $MODM_HOME/content
+cd $MODM_HOME/installer
 
 if [ -z "$AZURE_CLIENT_SECRET" ]; then
   az login --identity
