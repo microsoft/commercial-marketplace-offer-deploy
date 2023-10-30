@@ -10,8 +10,12 @@ class ArmTemplateParameter:
         self.default_value = None
 
     def value(self):
+        if isinstance(self.type, Enum):
+            type_value = self.type.value
+        else:
+            type_value = self.type
         result = {
-            "type": self.type.value
+            "type": type_value
         }
         if self.default_value is not None:
             result["defaultValue"] = self.default_value

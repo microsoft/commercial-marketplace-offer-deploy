@@ -1,6 +1,8 @@
 import json
 import os
 
+from packaging.installer.reserved_template_parameter import ReservedTemplateParameter
+
 from .arm_template_parameter import ArmTemplateParameter
 
 
@@ -8,7 +10,8 @@ class CreateUiDefinition:
     def __init__(self, document):
         self.document = document
 
-    def validate(self, template_parameters: list[ArmTemplateParameter], reserved_template_parameters: list[str]):
+    def validate(self, template_parameters: list[ArmTemplateParameter]):
+        reserved_template_parameters = ReservedTemplateParameter.values()
         validation_results = []
         outputs = self.document["parameters"]["outputs"]
 
