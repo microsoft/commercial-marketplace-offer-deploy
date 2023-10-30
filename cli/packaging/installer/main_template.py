@@ -3,6 +3,7 @@ import os
 from packaging.azure import ArmTemplate
 from packaging.azure.arm_template_parameter import ArmTemplateParameter
 from packaging.azure.function_app import create_function_app_name
+from packaging.installer.reserved_template_parameter import ReservedTemplateParameter
 
 
 class UserData:
@@ -56,8 +57,8 @@ class MainTemplate(ArmTemplate):
         self._user_data = UserData(self.document["variables"]["userData"])
         self._user_data.dashboard_url = self.dashboard_url
 
-    def insert_parameters(self, parameters: list[ArmTemplateParameter]):
-        super().insert_parameters(parameters)
+    def set_parameters(self, parameters: list[ArmTemplateParameter]):
+        super().set_parameters(parameters)
         self._user_data.insert_parameters(parameters)
 
     @property
@@ -104,6 +105,13 @@ class MainTemplate(ArmTemplate):
     @property
     def user_data(self) -> UserData:
         return self._user_data
+
+    def set_provided_parameters(self):
+        """Sets the installer provided parameters for the main template"""
+        parameter = ArmTemplateParameter(ReservedTemplateParameter.resource_group_name.value, "string")
+        parameter.default_value = "[resourceGroup().name]"
+
+        self.set_parameter(parameter)
 
     @staticmethod
     def from_file(file_path):

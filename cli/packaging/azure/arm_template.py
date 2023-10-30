@@ -23,13 +23,13 @@ class ArmTemplate:
         self._set_value(self.document, key, value)
         return value
 
-    def insert_parameters(self, parameters: list[ArmTemplateParameter]):
+    def set_parameters(self, parameters: list[ArmTemplateParameter]):
         for parameter in parameters:
-            self.insert_parameter(parameter)
+            self.set_parameter(parameter)
 
-    def insert_parameter(self, parameter: ArmTemplateParameter):
+    def set_parameter(self, parameter: ArmTemplateParameter):
         parameters = self.document["parameters"]
-        parameters[parameter.name] = {"type": parameter.type.value}
+        parameters[parameter.name] = parameter.value()
 
     def to_json(self):
         return json.dumps(self.document, indent=4)

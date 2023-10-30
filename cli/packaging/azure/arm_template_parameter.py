@@ -7,6 +7,15 @@ class ArmTemplateParameter:
     def __init__(self, name, type):
         self.name = name
         self.type = type
+        self.default_value = None
+
+    def value(self):
+        result = {
+            "type": self.type.value
+        }
+        if self.default_value is not None:
+            result["defaultValue"] = self.default_value
+        return result
 
 
 class ArmTemplateParameterType(Enum):

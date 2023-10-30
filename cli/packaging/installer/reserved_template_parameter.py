@@ -1,7 +1,7 @@
 
 from enum import Enum
 
-class ReservedTemplateParameters(str, Enum):
+class ReservedTemplateParameter(str, Enum):
     """
     The reserved template parameters for the installer. These are the parameters that are provided by the installer.
     They should NOT be provided by the user in the createUiDefinition.json file.
@@ -23,4 +23,4 @@ def is_reserved(value: str) -> bool:
     Returns:
         bool: True if the value is a reserved template parameter, False otherwise.
     """
-    return value in ReservedTemplateParameters.values()
+    return value in ReservedTemplateParameter.values()
