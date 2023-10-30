@@ -39,8 +39,8 @@ class UserData:
 class MainTemplate(ArmTemplate):
     """
     This is the main template of the app.zip that will be used to deploy MODM;
-    not to be confused with the "main template" for the application itself which will
-    reside in the installer package placed into the app.zip
+    not to be confused with the "main template" for the application which will
+    reside in the installer package (installer.zip) included in the app.zip
     """
 
     function_app_name_prefix = "modmfunc"

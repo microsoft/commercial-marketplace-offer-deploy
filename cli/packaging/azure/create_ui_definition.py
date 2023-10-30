@@ -8,7 +8,7 @@ class CreateUiDefinition:
     def __init__(self, document):
         self.document = document
 
-    def validate(self, template_parameters: list[ArmTemplateParameter]):
+    def validate(self, template_parameters: list[ArmTemplateParameter], reserved_template_parameters: list[str]):
         validation_results = []
         outputs = self.document["parameters"]["outputs"]
 
@@ -28,6 +28,17 @@ class CreateUiDefinition:
                     "properties": list(diff) 
                     })
             )
+
+        for reserved_param in reserved_template_parameters:
+            if reserved_param in outputs:
+                validation_results.append(
+                    ValueError(
+                        {
+                            "message": f"The outputs defined in createUiDefinition.json contain a reserved parameter: {reserved_param}",
+                            "properties": [reserved_param]
+                        }
+                    )
+                )
 
         return validation_results
 
