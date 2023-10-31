@@ -106,7 +106,7 @@ class MainTemplate(ArmTemplate):
     def user_data(self) -> UserData:
         return self._user_data
 
-    def set_provided_parameters(self):
+    def set_reserved_parameters(self):
         """Sets the installer provided parameters for the main template"""
         parameter = ArmTemplateParameter(ReservedTemplateParameter.resource_group_name.value, "string")
         parameter.default_value = "[resourceGroup().name]"

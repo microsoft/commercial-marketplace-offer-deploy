@@ -26,7 +26,7 @@ class MainTemplateFinalizer:
         main_template.set_parameters(kwargs.get("template_parameters", []))
         main_template.user_data.set_installer_package_hash(kwargs.get("installer_package").hash)
 
-        main_template.set_provided_parameters()
+        main_template.set_reserved_parameters()
 
         use_vmi_reference = kwargs.get("use_vmi_reference", False)
         vmi_reference_id = kwargs.get("vmi_reference_id", None)

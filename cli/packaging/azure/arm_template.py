@@ -28,8 +28,7 @@ class ArmTemplate:
             self.set_parameter(parameter)
 
     def set_parameter(self, parameter: ArmTemplateParameter):
-        parameters = self.document["parameters"]
-        parameters[parameter.name] = parameter.value()
+        self.document["parameters"][parameter.name] = parameter.value()
 
     def to_json(self):
         return json.dumps(self.document, indent=4)

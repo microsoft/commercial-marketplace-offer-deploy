@@ -9,7 +9,7 @@ class ReservedTemplateParameter(str, Enum):
     resource_group_name = "resourceGroupName"
     
     @classmethod
-    def values(cls):
+    def all(cls):
         return [member.value for member in cls]
 
 
@@ -23,4 +23,4 @@ def is_reserved(value: str) -> bool:
     Returns:
         bool: True if the value is a reserved template parameter, False otherwise.
     """
-    return value in ReservedTemplateParameter.values()
+    return value in ReservedTemplateParameter.all()
