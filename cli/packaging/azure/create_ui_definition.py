@@ -18,6 +18,18 @@ class CreateUiDefinition:
         if outputs is None:
             validation_results.append(ValueError("The createUiDefinition.json must contain an outputs section"))
             return validation_results
+        
+        for reserved_param in reserved_template_parameters:
+            if reserved_param in outputs:
+                del outputs[reserved_param]
+                validation_results.append(
+                    ValueError(
+                        {
+                            "message": f"The outputs defined in createUiDefinition.json contain a reserved parameter: {reserved_param}",
+                            "properties": [reserved_param]
+                        }
+                    )
+                )
 
         outputs_keys = set(outputs.keys())
         template_parameters_keys = set(list(map(lambda p: p.name, template_parameters)))
@@ -31,17 +43,6 @@ class CreateUiDefinition:
                     "properties": list(diff) 
                     })
             )
-
-        for reserved_param in reserved_template_parameters:
-            if reserved_param in outputs:
-                validation_results.append(
-                    ValueError(
-                        {
-                            "message": f"The outputs defined in createUiDefinition.json contain a reserved parameter: {reserved_param}",
-                            "properties": [reserved_param]
-                        }
-                    )
-                )
 
         return validation_results
 
