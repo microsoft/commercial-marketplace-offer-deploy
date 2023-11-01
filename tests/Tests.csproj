@@ -32,6 +32,7 @@
     <ProjectReference Include="..\src\Core\Core.csproj" />
     <ProjectReference Include="..\src\ServiceHost\ServiceHost.csproj" />
     <ProjectReference Include="..\src\WebHost\WebHost.csproj" />
+    <ProjectReference Include="..\src\ClientApp\ClientApp.csproj" />
   </ItemGroup>
 
   <ItemGroup>
