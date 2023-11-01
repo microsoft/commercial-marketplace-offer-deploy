@@ -1,5 +1,16 @@
 
+using System.Net;
+using Modm.ClientApp.Controllers;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// configures the http client for the proxy controller to have requests proxied
+builder.Services.AddHttpClient<ProxyController>().ConfigureHttpClient((provider, client) =>
+{
+    var backendUrl = provider.GetRequiredService<IConfiguration>()
+                                .GetValue<string>(ProxyController.BackendUrlSettingName);
+    client.BaseAddress = new Uri(backendUrl ?? string.Empty);
+});
 
 builder.Services.AddControllersWithViews();
 
