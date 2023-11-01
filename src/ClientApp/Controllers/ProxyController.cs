@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Mvc;
+using Modm.Engine;
 
 namespace Modm.ClientApp.Controllers
 {
@@ -23,6 +24,13 @@ namespace Modm.ClientApp.Controllers
         {
             // TODO: implement proxy to backend with Http Cient
             return Task.FromResult(Results.Ok(null));
+        }
+
+        [HttpGet("status")]
+        public Task<IResult> GetStatus()
+        {
+            // TODO: implement proxy to backend with Http Cient
+            return Task.FromResult(Results.Ok(EngineInfo.Default()));
         }
     }
 }
