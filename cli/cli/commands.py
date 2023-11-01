@@ -8,6 +8,7 @@ import tempfile
 import click
 from packaging import ApplicationPackage, _zip_utils
 from packaging.application_package import ApplicationPackageInfo, CreateApplicationPackageOptions, new_application_package
+from packaging.client_app_package import ClientAppPackage
 from packaging.installer.version import InstallerVersion
 
 
@@ -121,7 +122,7 @@ def _create_client_app_package(csproj_file, current_working_dir, out_dir = None)
     
     click.echo("Creating client app package.")
 
-    out_file = out_dir / 'clientapp.zip'
+    out_file = out_dir / ClientAppPackage.file_name
     _zip_utils.zip_dir(temp_dir, out_file)
 
     shutil.rmtree(temp_dir)
