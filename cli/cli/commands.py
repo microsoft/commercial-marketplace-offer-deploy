@@ -44,7 +44,7 @@ def build_application_package(name, description, version, vmi_reference, vmi_ref
 
 @click.help_option('-h', '--help')
 @click.command('create-function-app-package')
-@click.option("-f", "--csproj-file", help="Path to the .csproj file of the Function App", required=True)
+@click.option("-f", "--csproj-file", help="Path to the .csproj file of the client app", required=True)
 @click.option("-o", "--out-dir", help="The location where the zip will be placed")
 @click.argument('current_working_dir', type=click.Path(exists=True))
 def create_client_app_package(csproj_file, current_working_dir, out_dir = None):
@@ -55,7 +55,7 @@ def create_client_app_package(csproj_file, current_working_dir, out_dir = None):
 @click.command('create-resources-tarball')
 @click.option("-v", "--version", default=None, type=str, help="The version of the installer (modm) to package the application with.")
 @click.option("-t", "--templates-dir", help="The location where the templates file is located (mainTemplate.json and viewDefinition.json)", required=True)
-@click.option("-f", "--csproj-file", help="Path to the .csproj file of the Function App", required=True)
+@click.option("-f", "--csproj-file", help="Path to the .csproj file of the client app", required=True)
 @click.option("-o", "--out-dir", help="The location where the tarball will be created", required=True)
 @click.argument('current_working_dir', type=click.Path(exists=True))
 def create_resources_tarball(version, templates_dir, csproj_file, current_working_dir, out_dir = None):
@@ -106,7 +106,7 @@ def _create_client_app_package(csproj_file, current_working_dir, out_dir = None)
                            universal_newlines=True)
 
 
-    click.echo("Creating function app package...")
+    click.echo("Creating client app package...")
 
     while True:
         output = process.stdout.readline()
@@ -119,7 +119,7 @@ def _create_client_app_package(csproj_file, current_working_dir, out_dir = None)
                 click.echo("  " + output.strip())
             break
     
-    click.echo("Creating function app package.")
+    click.echo("Creating client app package.")
 
     out_file = out_dir / 'clientapp.zip'
     _zip_utils.zip_dir(temp_dir, out_file)

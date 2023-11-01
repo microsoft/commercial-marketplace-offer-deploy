@@ -32,7 +32,7 @@ namespace Modm.Azure.Model
         };
 
         /// <summary>
-        /// The URL that points the function app which will redirect to MODM's dashboard
+        /// The URL that points the client app which will redirect to MODM's dashboard
         /// </summary>
         public required string DashboardUrl { get; set; }
 
