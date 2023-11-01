@@ -1,7 +1,17 @@
-using Modm.WebHost;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddWebHost(builder.Configuration, builder.Environment);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin", builder =>
+    {
+        builder.WithOrigins(
+            "https://localhost:44482",
+            "https://localhost:7258",
+            "https://localhost:5000",
+            "http://localhost:5000");
+    });
+});
 
 var app = builder.Build();
 
@@ -14,6 +24,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseCors("AllowSpecificOrigin");
 
 app.MapControllerRoute(
     name: "default",
