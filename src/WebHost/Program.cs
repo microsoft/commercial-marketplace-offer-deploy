@@ -5,13 +5,9 @@ builder.Services.AddWebHost(builder.Configuration, builder.Environment);
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin", builder =>
+    options.AddPolicy("AllowLocal", builder =>
     {
-        builder.WithOrigins(
-            "https://localhost:44482",
-            "https://localhost:7258",
-            "https://localhost:5000",
-            "http://localhost:5000");
+        builder.WithOrigins("https://localhost:44482");
     });
 });
 
@@ -24,14 +20,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseCors("AllowLocal");
 app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseCors("AllowSpecificOrigin");
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller}/{action=Index}/{id?}");
-
-app.MapFallbackToFile("index.html");
 
 app.Run();

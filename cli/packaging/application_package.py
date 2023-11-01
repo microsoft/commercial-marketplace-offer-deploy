@@ -25,11 +25,11 @@ class CreateApplicationPackageResult(Model):
         self.file = None
         self.validation_results = kwargs.get("validation_results", [])
         self._installer_package = kwargs.get("installer_package", None)
-        self._function_app_name = kwargs.get("function_app_name", None)
+        self._client_app_name = kwargs.get("client_app_name", None)
 
     @property
-    def function_app_name(self):
-        return self._function_app_name
+    def client_app_name(self):
+        return self._client_app_name
 
     @property
     def installer_package(self):
@@ -129,7 +129,7 @@ class ApplicationPackage:
     - mainTemplate.json
     - createUiDefinition.json
     - viewDefinition.json
-    - function.zip
+    - clientapp.zip
     - installer.zip
         - manifest.json
         - main.ts (the installer's main template)
@@ -165,7 +165,7 @@ class ApplicationPackage:
         self._finalize_main_template(info, installer_package, options)
         self._finalize_view_definition(info, options)
 
-        result = CreateApplicationPackageResult(installer_package=installer_package, function_app_name=self.main_template.function_app_name)
+        result = CreateApplicationPackageResult(installer_package=installer_package, client_app_name=self.main_template.client_app_name)
         result.file = self._zip(info, installer_package, options, out_dir)
 
         if result.file is None or not result.file.exists():
@@ -204,7 +204,7 @@ class ApplicationPackage:
         file = Path(out_dir).joinpath(self.file_name)
 
         with ZipFile(file, "w") as zip_file:
-            zip_file.write(installer_resources.function_app_package, installer_resources.function_app_package.name)
+            zip_file.write(installer_resources.client_app_package, installer_resources.client_app_package.name)
             zip_file.write(installer_package.path, installer_package.name)
             zip_file.writestr(MAIN_TEMPLATE_FILE_NAME, self.main_template.to_json())
             zip_file.writestr(VIEW_DEFINITION_FILE_NAME, self.view_definition.to_json())
