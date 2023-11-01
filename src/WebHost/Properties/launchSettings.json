@@ -14,7 +14,6 @@
       "applicationUrl": "https://localhost:7258;http://localhost:5154",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy",
         "MODM_HOME": "/Users/bobjacobs/work/src/github.com/microsoft/commercial-marketplace-offer-deploy/home",
         "AZURE_SUBSCRIPTION_ID": " "
       }
@@ -23,8 +22,7 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }

@@ -5,13 +5,9 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin", builder =>
+    options.AddPolicy("AllowLocal", builder =>
     {
-        builder.WithOrigins(
-            "https://localhost:44482",
-            "https://localhost:7153",
-            "https://localhost:5000",
-            "http://localhost:5000");
+        builder.WithOrigins("https://localhost:44482");
     });
 });
 
@@ -27,7 +23,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseCors("AllowSpecificOrigin");
+app.UseCors("AllowLocal");
 
 app.MapControllerRoute(
     name: "default",

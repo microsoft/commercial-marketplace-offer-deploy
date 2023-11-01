@@ -3,6 +3,14 @@ using Modm.WebHost;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddWebHost(builder.Configuration, builder.Environment);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocal", builder =>
+    {
+        builder.WithOrigins("https://localhost:44482");
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -12,6 +20,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseCors("AllowLocal");
 app.UseHttpsRedirection();
 
 app.MapControllerRoute(
