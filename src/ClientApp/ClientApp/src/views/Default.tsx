@@ -15,6 +15,7 @@ import { Separator } from '@fluentui/react';
 export const Default = () => {
 
   const [filter, setFilter] = React.useState<'All' | 'Succeeded' | 'Failed'>('All');
+  const [backendUrl, setBackendUrl] = React.useState<string | null>(null);
   const [offerName, setOfferName] = React.useState<string | null>(null);
   const [deploymentId, setDeploymentId] = React.useState<string | null>(null);
   const [subscriptionId, setSubscriptionId] = React.useState<string | null>(null);
@@ -63,6 +64,24 @@ export const Default = () => {
       onRender: (item: DeploymentResource) => toLocalDateTime(item.timestamp)
     },
   ];
+
+  const doGetBackendUrl = async () => {
+    const response = await fetch(`${AppConstants.baseUrl}/api/settings?key=backendUrl`, {
+        headers: {
+          Accept: 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log(JSON.stringify(result));
+
+      if (result.backendUrl ) {
+        setBackendUrl(result.backendUrl);
+      }
+  }
 
   const doGetDeployedResources = async () => {
     try {
