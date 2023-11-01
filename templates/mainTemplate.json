@@ -26,7 +26,7 @@
         "vmResourceId": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]",
         "dnsLabel": "[concat('modm', uniqueString(variables('vmResourceId')))]",
         "publicFqdn": "[concat(variables('dnsLabel'), '.', variables('location'), '.cloudapp.azure.com')]",
-        "publicUrl": "[concat('https://', variables('publicFqdn'), '/')]",
+        "backendUrl": "[concat('https://', variables('publicFqdn'), '/')]",
         "Owner": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
         "networkInterfaceName": "[concat(variables('virtualMachineName'), substring(uniqueString(resourceGroup().name), 0, 4))]",
         "publicIpAddressType": "Static",
@@ -69,10 +69,7 @@
             "name": "[variables('clientAppName')]",
             "location": "[resourceGroup().location]",
             "sku": {
-                "name": "Y1",
-                "tier": "Dynamic",
-                "size": "Y1",
-                "family": "Y"
+                "name": "F1"
             },
             "properties": {
                 "reserved": true
@@ -92,43 +89,19 @@
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('clientAppStorageAccountName'))]"
             ],
             "tags": "[variables('commonTags')]",
-            "kind": "functionapp,linux",
+            "kind": "linux",
             "properties": {
                 "reserved": true,
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('clientAppName'))]",
                 "siteConfig": {
                     "appSettings": [
                         {
-                            "name": "FUNCTIONS_WORKER_RUNTIME",
-                            "value": "dotnet-isolated"
-                        },
-                        {
-                            "name": "FUNCTIONS_EXTENSION_VERSION",
-                            "value": "~4"
-                        },
-                        {
-                            "name": "DOTNET_FUNCTION_APP_LANG_VERSION",
-                            "value": "7.0"
-                        },
-                        {
                             "name": "WEBSITE_RUN_FROM_PACKAGE",
                             "value": "[variables('clientAppPackageUrl')]"
                         },
                         {
-                            "name": "AzureWebJobsStorage",
-                            "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('clientAppStorageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('clientAppStorageAccountName')), '2022-05-01').keys[0].value)]"
-                        },
-                        {
-                            "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
-                            "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('clientAppStorageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('clientAppStorageAccountName')), '2022-05-01').keys[0].value)]"
-                        },
-                        {
-                            "name": "WEBSITE_CONTENTSHARE",
-                            "value": "[toLower(variables('clientAppName'))]"
-                        },
-                        {
-                            "name": "RedirectUrl",
-                            "value": "[variables('publicUrl')]"
+                            "name": "BackendUrl",
+                            "value": "[variables('backendUrl')]"
                         }
                     ],
                     "linuxFxVersion": "DOTNET-ISOLATED|7.0",
@@ -136,8 +109,7 @@
                     "cors": {
                         "allowedOrigins": [
                             "https://portal.azure.com"
-                        ],
-                        "supportCredentials": false
+                        ]
                     }
                 },
                 "publicNetworkAccess": "Enabled",
