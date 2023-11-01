@@ -105,12 +105,7 @@
                         }
                     ],
                     "linuxFxVersion": "DOTNET-ISOLATED|7.0",
-                    "netFrameworkVersion": "7.0",
-                    "cors": {
-                        "allowedOrigins": [
-                            "https://portal.azure.com"
-                        ]
-                    }
+                    "netFrameworkVersion": "7.0"
                 },
                 "publicNetworkAccess": "Enabled",
                 "httpsOnly": true
