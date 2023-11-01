@@ -1,2 +1,2 @@
 from .application_package import *
-from .function_app_package import *
+from .client_app_package import *

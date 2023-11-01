@@ -36,7 +36,7 @@ class InstallerResources:
         self.location = location
         self.main_template = main_template.from_file(location.joinpath("mainTemplate.json"))
         self.view_definition = view_definition.from_file(location.joinpath("viewDefinition.json"))
-        self.function_app_package = location.joinpath("function.zip")
+        self.client_app_package = location.joinpath("clientapp.zip")
 
     @staticmethod
     def from_file(resources_file: Path):

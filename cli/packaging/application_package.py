@@ -129,7 +129,7 @@ class ApplicationPackage:
     - mainTemplate.json
     - createUiDefinition.json
     - viewDefinition.json
-    - function.zip
+    - clientapp.zip
     - installer.zip
         - manifest.json
         - main.ts (the installer's main template)
@@ -204,7 +204,7 @@ class ApplicationPackage:
         file = Path(out_dir).joinpath(self.file_name)
 
         with ZipFile(file, "w") as zip_file:
-            zip_file.write(installer_resources.function_app_package, installer_resources.function_app_package.name)
+            zip_file.write(installer_resources.client_app_package, installer_resources.client_app_package.name)
             zip_file.write(installer_package.path, installer_package.name)
             zip_file.writestr(MAIN_TEMPLATE_FILE_NAME, self.main_template.to_json())
             zip_file.writestr(VIEW_DEFINITION_FILE_NAME, self.view_definition.to_json())

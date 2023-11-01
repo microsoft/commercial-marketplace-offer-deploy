@@ -47,9 +47,9 @@ def build_application_package(name, description, version, vmi_reference, vmi_ref
 @click.option("-f", "--csproj-file", help="Path to the .csproj file of the Function App", required=True)
 @click.option("-o", "--out-dir", help="The location where the zip will be placed")
 @click.argument('current_working_dir', type=click.Path(exists=True))
-def create_function_app_package(csproj_file, current_working_dir, out_dir = None):
-    """creates a function.zip"""
-    _create_function_app_package(csproj_file, current_working_dir, out_dir)
+def create_client_app_package(csproj_file, current_working_dir, out_dir = None):
+    """creates a clientapp.zip"""
+    _create_client_app_package(csproj_file, current_working_dir, out_dir)
 
 @click.help_option('-h', '--help')
 @click.command('create-resources-tarball')
@@ -64,7 +64,7 @@ def create_resources_tarball(version, templates_dir, csproj_file, current_workin
 
     main_template_file = _resolve_path(cwd, templates_dir) / 'mainTemplate.json'
     view_definition_file = _resolve_path(cwd, templates_dir) / 'viewDefinition.json'
-    function_app_file = _create_function_app_package(csproj_file, current_working_dir, out_dir)
+    client_app_file = _create_client_app_package(csproj_file, current_working_dir, out_dir)
     
     if version is not None:
         installer_version = InstallerVersion(version)
@@ -77,7 +77,7 @@ def create_resources_tarball(version, templates_dir, csproj_file, current_workin
     with tarfile.open(out_file, "w:gz") as tar:
         tar.add(main_template_file, arcname=main_template_file.name)
         tar.add(view_definition_file, arcname=view_definition_file.name)
-        tar.add(function_app_file, arcname=function_app_file.name)
+        tar.add(client_app_file, arcname=client_app_file.name)
     
     click.echo(f"resources '{out_file.name}' created.")
 
@@ -93,8 +93,8 @@ def create_resources_tarball(version, templates_dir, csproj_file, current_workin
 
     click.echo(json.dumps(result, indent=2))
 
-def _create_function_app_package(csproj_file, current_working_dir, out_dir = None):
-    """creates a function.zip"""
+def _create_client_app_package(csproj_file, current_working_dir, out_dir = None):
+    """creates a clientapp.zip"""
     cwd = Path(current_working_dir)
     out_dir = _resolve_path(cwd, out_dir)
     csproj_file = _resolve_path(cwd, csproj_file)
@@ -121,7 +121,7 @@ def _create_function_app_package(csproj_file, current_working_dir, out_dir = Non
     
     click.echo("Creating function app package.")
 
-    out_file = out_dir / 'function.zip'
+    out_file = out_dir / 'clientapp.zip'
     _zip_utils.zip_dir(temp_dir, out_file)
 
     shutil.rmtree(temp_dir)

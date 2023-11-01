@@ -14,7 +14,7 @@
         "location": "[resourceGroup().location]",
         "clientAppName": "{{clientAppName}}",
         "functionAppStorageAccountName": "[format('{0}modmfunc', uniqueString(resourceGroup().id))]",
-        "functionAppPackageUrl": "[concat(variables('artifactsContainerLocation'), '/', 'function.zip')]",
+        "functionAppPackageUrl": "[concat(variables('artifactsContainerLocation'), '/', 'clientapp.zip')]",
         "vmiReferenceId": "{{vmiReferenceId}}",
         "virtualMachineSize": "Standard_D2s_v3",
         "virtualMachineName": "modm",

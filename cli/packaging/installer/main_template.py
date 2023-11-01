@@ -2,7 +2,7 @@ import json
 import os
 from packaging.azure import ArmTemplate
 from packaging.azure.arm_template_parameter import ArmTemplateParameter
-from packaging.azure.function_app import create_client_app_name
+from packaging.azure.client_app import create_client_app_name
 
 
 class UserData:
