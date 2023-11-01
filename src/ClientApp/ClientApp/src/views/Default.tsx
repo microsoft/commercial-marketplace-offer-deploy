@@ -15,7 +15,7 @@ import { Separator } from '@fluentui/react';
 export const Default = () => {
 
   const [filter, setFilter] = React.useState<'All' | 'Succeeded' | 'Failed'>('All');
-  const [backendUrl, setBackendUrl] = React.useState<string | null>(null);
+//   const [backendUrl, setBackendUrl] = React.useState<string | null>(null);
   const [offerName, setOfferName] = React.useState<string | null>(null);
   const [deploymentId, setDeploymentId] = React.useState<string | null>(null);
   const [subscriptionId, setSubscriptionId] = React.useState<string | null>(null);
@@ -65,27 +65,32 @@ export const Default = () => {
     },
   ];
 
-  const doGetBackendUrl = async () => {
-    const response = await fetch(`${AppConstants.baseUrl}/api/settings?key=backendUrl`, {
-        headers: {
-          Accept: 'application/json',
-        },
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+//   const doGetBackendUrl = async () => {
+//     console.log('inside doGetBackendUrl');
 
-      const result = await response.json();
-      console.log(JSON.stringify(result));
+//     const response = await fetch(`${AppConstants.baseUrl}/api/settings?key=backendUrl`, {
+//         headers: {
+//           Accept: 'application/json',
+//         },
+//       });
+//       console.log(`Pulled results from /api/settings?key=backendUrl`)
+//       if (!response.ok) {
+//         throw new Error(`HTTP error! status: ${response.status}`);
+//       }
 
-      if (result.backendUrl ) {
-        setBackendUrl(result.backendUrl);
-      }
-  }
+//       const result = await response.json();
+//       console.log('got the result from response.json();');
+//       console.log(JSON.stringify(result));
+
+//       if (result) {
+//         console.log(`setBackendUrl: ${result}`);
+//         setBackendUrl(result);
+//       }
+//   }
 
   const doGetDeployedResources = async () => {
     try {
-     // const backendUrl = AppConstants.baseUrl;
+      const backendUrl = AppConstants.baseUrl;
       const response = await fetch(`${backendUrl}/api/Deployments`, {
         headers: {
           Accept: 'application/json',
@@ -135,7 +140,8 @@ export const Default = () => {
     
     const checkEngineHealth = async () => {
         try {
-
+          const backendUrl = AppConstants.baseUrl;
+          console.log(`inside checkEngineHealth with a backendUrl of ${backendUrl}}`);
           const response = await fetch(`${backendUrl}/api/status`, {
             headers: {
               Accept: 'application/json',
@@ -159,7 +165,7 @@ export const Default = () => {
         }
       };
     
-      doGetBackendUrl();
+     // doGetBackendUrl();
     
     // Start the interval
     const intervalId = setInterval(() => {
@@ -198,6 +204,7 @@ export const Default = () => {
         onClick: async () => {
           // Here, you can make your API call or any other logic for the delete action
           try {
+            const backendUrl = AppConstants.baseUrl;
             const deleteResponse = await fetch(`${backendUrl}/api/resources/${deploymentResourceGroup}/deletemodmresources`, {
               method: 'POST',
             });
