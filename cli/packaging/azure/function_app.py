@@ -1,6 +1,6 @@
 import uuid
 
-def create_function_app_name(prefix: str):
+def create_client_app_name(prefix: str):
     """
     Creates a function app name based on the prefix.
     """

@@ -12,7 +12,7 @@
     },
     "variables": {
         "location": "[resourceGroup().location]",
-        "functionAppName": "{{functionAppName}}",
+        "clientAppName": "{{clientAppName}}",
         "functionAppStorageAccountName": "[format('{0}modmfunc', uniqueString(resourceGroup().id))]",
         "functionAppPackageUrl": "[concat(variables('artifactsContainerLocation'), '/', 'function.zip')]",
         "vmiReferenceId": "{{vmiReferenceId}}",
@@ -66,7 +66,7 @@
         {
             "type": "Microsoft.Web/serverfarms",
             "apiVersion": "2022-03-01",
-            "name": "[variables('functionAppName')]",
+            "name": "[variables('clientAppName')]",
             "location": "[resourceGroup().location]",
             "sku": {
                 "name": "Y1",
@@ -82,20 +82,20 @@
         {
             "type": "Microsoft.Web/sites",
             "apiVersion": "2022-03-01",
-            "name": "[variables('functionAppName')]",
+            "name": "[variables('clientAppName')]",
             "location": "[resourceGroup().location]",
             "identity": {
                 "type": "SystemAssigned"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', variables('functionAppName'))]",
+                "[resourceId('Microsoft.Web/serverfarms', variables('clientAppName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('functionAppStorageAccountName'))]"
             ],
             "tags": "[variables('commonTags')]",
             "kind": "functionapp,linux",
             "properties": {
                 "reserved": true,
-                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('functionAppName'))]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('clientAppName'))]",
                 "siteConfig": {
                     "appSettings": [
                         {
@@ -124,7 +124,7 @@
                         },
                         {
                             "name": "WEBSITE_CONTENTSHARE",
-                            "value": "[toLower(variables('functionAppName'))]"
+                            "value": "[toLower(variables('clientAppName'))]"
                         },
                         {
                             "name": "RedirectUrl",

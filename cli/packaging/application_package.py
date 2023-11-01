@@ -25,11 +25,11 @@ class CreateApplicationPackageResult(Model):
         self.file = None
         self.validation_results = kwargs.get("validation_results", [])
         self._installer_package = kwargs.get("installer_package", None)
-        self._function_app_name = kwargs.get("function_app_name", None)
+        self._client_app_name = kwargs.get("client_app_name", None)
 
     @property
-    def function_app_name(self):
-        return self._function_app_name
+    def client_app_name(self):
+        return self._client_app_name
 
     @property
     def installer_package(self):
@@ -165,7 +165,7 @@ class ApplicationPackage:
         self._finalize_main_template(info, installer_package, options)
         self._finalize_view_definition(info, options)
 
-        result = CreateApplicationPackageResult(installer_package=installer_package, function_app_name=self.main_template.function_app_name)
+        result = CreateApplicationPackageResult(installer_package=installer_package, client_app_name=self.main_template.client_app_name)
         result.file = self._zip(info, installer_package, options, out_dir)
 
         if result.file is None or not result.file.exists():

@@ -13,12 +13,12 @@ namespace Modm.Azure
             this.workingDirectory = workingDirectory ?? throw new ArgumentNullException(nameof(workingDirectory));
         }
 
-        public async Task PublishAsync(string functionAppName)
+        public async Task PublishAsync(string clientAppName)
         {
             var startInfo = new ProcessStartInfo
             {
                 FileName = "func",
-                Arguments = $"azure functionapp publish {functionAppName}",
+                Arguments = $"azure functionapp publish {clientAppName}",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
