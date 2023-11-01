@@ -27,7 +27,7 @@ namespace Modm.WebHost
                 hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
             });
 
-            services.AddControllersWithViews();
+            services.AddControllers();
             services.AddAzureClients(clientBuilder =>
             {
                 clientBuilder.AddArmClient(configuration.GetSection("Azure"));
