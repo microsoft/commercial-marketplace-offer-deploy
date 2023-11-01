@@ -2,7 +2,7 @@ provider "azurerm" {
   features {}
 }
 
-variable "resource_group_name" {
+variable "resourceGroupName" {
   description = "The name of the resource group in which all resources will be deployed"
   type        = string
 }
@@ -46,20 +46,20 @@ locals {
 module "networking" {
   source             = "./modules/networking"
   location           = var.location
-  resource_group_name = var.resource_group_name
+  resource_group_name = var.resourceGroupName
 }
 
 module "storage" {
   source             = "./modules/storage"
   location           = var.location
-  resource_group_name = var.resource_group_name
+  resource_group_name = var.resourceGroupName
   storage_suffix     = local.storage_name_suffix
 }
 
 resource "azurerm_network_interface" "example_nic" {
   name                = local.nic_name
   location            = var.location
-  resource_group_name = var.resource_group_name
+  resource_group_name = var.resourceGroupName
 
   ip_configuration {
     name                          = "internal"
@@ -71,7 +71,7 @@ resource "azurerm_network_interface" "example_nic" {
 resource "azurerm_virtual_machine" "example_vm" {
   name                  = local.vm_name
   location              = var.location
-  resource_group_name   = var.resource_group_name
+  resource_group_name   = var.resourceGroupName
   network_interface_ids = [azurerm_network_interface.example_nic.id]
   vm_size               = "Standard_F2"
 
@@ -106,7 +106,7 @@ resource "azurerm_virtual_machine" "example_vm" {
 
 resource "azurerm_storage_account" "example_sa" {
   name                     = local.storage_name
-  resource_group_name      = var.resource_group_name
+  resource_group_name      = var.resourceGroupName
   location                 = var.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
@@ -119,14 +119,14 @@ resource "azurerm_storage_account" "example_sa" {
 resource "azurerm_public_ip" "example_pip" {
   name                = local.pip_name
   location            = var.location
-  resource_group_name = var.resource_group_name
+  resource_group_name = var.resourceGroupName
   allocation_method   = "Dynamic"
 }
 
 resource "azurerm_network_security_group" "example_nsg" {
   name                = local.nsg_name
   location            = var.location
-  resource_group_name = var.resource_group_name
+  resource_group_name = var.resourceGroupName
 }
 
 resource "azurerm_network_security_rule" "example_nsr" {
@@ -139,14 +139,14 @@ resource "azurerm_network_security_rule" "example_nsr" {
   destination_port_range      = "22"
   source_address_prefix       = "*"
   destination_address_prefix  = "*"
-  resource_group_name         = var.resource_group_name
+  resource_group_name         = var.resourceGroupName
   network_security_group_name = azurerm_network_security_group.example_nsg.name
 }
 
 resource "azurerm_service_plan" "example_asp" {
   name                = local.app_service_plan_name
   location            = var.location
-  resource_group_name = var.resource_group_name
+  resource_group_name = var.resourceGroupName
   os_type = "Linux"
   sku_name = "S1"
 }
@@ -154,7 +154,7 @@ resource "azurerm_service_plan" "example_asp" {
 resource "azurerm_app_service" "example_app_service" {
   name                = local.app_service_name
   location            = var.location
-  resource_group_name = var.resource_group_name
+  resource_group_name = var.resourceGroupName
   app_service_plan_id = azurerm_service_plan.example_asp.id
 
   site_config {
@@ -168,7 +168,7 @@ resource "azurerm_app_service" "example_app_service" {
 
 resource "azurerm_mssql_server" "example_sql_server" {
   name                         = local.sql_server_name
-  resource_group_name          = var.resource_group_name
+  resource_group_name          = var.resourceGroupName
   location                     = var.location
   version                      = "12.0"
   administrator_login          = "adminuser"
@@ -181,7 +181,7 @@ resource "azurerm_mssql_server" "example_sql_server" {
 
 resource "azurerm_sql_database" "example_sql_db" {
   name                = local.sql_db_name
-  resource_group_name = var.resource_group_name
+  resource_group_name = var.resourceGroupName
   location            = var.location
   server_name         = azurerm_mssql_server.example_sql_server.name
 
@@ -193,7 +193,7 @@ resource "azurerm_sql_database" "example_sql_db" {
 resource "azurerm_cosmosdb_account" "example_cosmosdb" {
   name                = local.cosmosdb_name
   location            = var.location
-  resource_group_name = var.resource_group_name
+  resource_group_name = var.resourceGroupName
   offer_type          = "Standard"
   kind                = "GlobalDocumentDB"
 

@@ -34,3 +34,12 @@ class TestTerraformFile(unittest.TestCase):
 
         self.assertEqual(variables[7].name, 'map_variable')
         self.assertEqual(variables[7].type, 'map')
+
+
+    def test_reserved_input_parameter(self):
+        file_path = os.path.join(os.path.dirname(__file__), 'data/reserved_parameters/main.tf')
+        file = TerraformFile(file_path)
+
+        # resource group name should exists in the result
+        variables = file.parse_variables()
+        self.assertEqual(len(variables), 2)

@@ -4,9 +4,24 @@ from packaging.terraform.variable_types import TerraformInputVariableType
 
 
 class ArmTemplateParameter:
-    def __init__(self, name, type):
+    def __init__(self, name: str, type):
         self.name = name
         self.type = type
+        self.default_value = None
+
+    def value(self):
+        """Returns the ARM template parameter value as a dict"""
+        if isinstance(self.type, Enum):
+            type_value = self.type.value
+        else:
+            type_value = self.type
+        value = {
+            "type": type_value
+        }
+        if self.default_value is not None:
+            value["defaultValue"] = self.default_value
+
+        return value
 
 
 class ArmTemplateParameterType(Enum):

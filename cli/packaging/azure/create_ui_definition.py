@@ -1,6 +1,8 @@
 import json
 import os
 
+from packaging.installer.reserved_template_parameter import ReservedTemplateParameter
+
 from .arm_template_parameter import ArmTemplateParameter
 
 
@@ -9,12 +11,25 @@ class CreateUiDefinition:
         self.document = document
 
     def validate(self, template_parameters: list[ArmTemplateParameter]):
+        reserved_template_parameters = ReservedTemplateParameter.all()
         validation_results = []
         outputs = self.document["parameters"]["outputs"]
 
         if outputs is None:
             validation_results.append(ValueError("The createUiDefinition.json must contain an outputs section"))
             return validation_results
+        
+        for reserved_param in reserved_template_parameters:
+            if reserved_param in outputs:
+                del outputs[reserved_param]
+                validation_results.append(
+                    ValueError(
+                        {
+                            "message": f"The outputs defined in createUiDefinition.json contain a reserved parameter: {reserved_param}",
+                            "properties": [reserved_param]
+                        }
+                    )
+                )
 
         outputs_keys = set(outputs.keys())
         template_parameters_keys = set(list(map(lambda p: p.name, template_parameters)))

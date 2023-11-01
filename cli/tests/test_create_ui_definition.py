@@ -41,3 +41,14 @@ class TestCreateUiDefinition(unittest.TestCase):
 
         result = self.create_ui_definition.validate(template_input_parameters)
         self.assertEqual((len(result)), 0)
+    
+    def test_validate_reserved_parameters(self):
+        # Test case where outputs and template_input_parameters have the same keys
+        self.create_ui_definition.document = {"parameters": {"outputs": {"resourceGroupName": "value1", "param1": "value2"}}}
+        template_input_parameters = [
+            ArmTemplateParameter(name="param1", type="string"),
+        ]
+
+        result = self.create_ui_definition.validate(template_input_parameters)
+        self.assertEqual((len(result)), 1)
+    

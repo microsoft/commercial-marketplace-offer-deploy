@@ -6,6 +6,7 @@ variable "location" {
   type = string
 }
 
+// this is the reserved parameter that installer provided
 variable "resourceGroupName" {
   type = string
 }
