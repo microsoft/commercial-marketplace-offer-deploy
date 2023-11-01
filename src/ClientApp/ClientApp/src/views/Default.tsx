@@ -85,7 +85,7 @@ export const Default = () => {
 
   const doGetDeployedResources = async () => {
     try {
-      const backendUrl = AppConstants.baseUrl;
+     // const backendUrl = AppConstants.baseUrl;
       const response = await fetch(`${backendUrl}/api/Deployments`, {
         headers: {
           Accept: 'application/json',
@@ -134,7 +134,8 @@ export const Default = () => {
   React.useEffect(() => {
     const checkEngineHealth = async () => {
         try {
-          const response = await fetch(`${AppConstants.baseUrl}/api/status`, {
+
+          const response = await fetch(`${backendUrl}/api/status`, {
             headers: {
               Accept: 'application/json',
             },
@@ -194,7 +195,7 @@ export const Default = () => {
         onClick: async () => {
           // Here, you can make your API call or any other logic for the delete action
           try {
-            const deleteResponse = await fetch(`${AppConstants.baseUrl}/api/resources/${deploymentResourceGroup}/deletemodmresources`, {
+            const deleteResponse = await fetch(`${backendUrl}/api/resources/${deploymentResourceGroup}/deletemodmresources`, {
               method: 'POST',
             });
             if (!deleteResponse.ok) {
