@@ -132,6 +132,7 @@ export const Default = () => {
   }
 
   React.useEffect(() => {
+    
     const checkEngineHealth = async () => {
         try {
 
@@ -157,7 +158,9 @@ export const Default = () => {
           console.error(error);
         }
       };
-
+    
+      doGetBackendUrl();
+    
     // Start the interval
     const intervalId = setInterval(() => {
         checkEngineHealth();
