@@ -94,7 +94,7 @@ class MainTemplate(ArmTemplate):
 
     @property
     def client_app_name(self):
-        """The function app name used to create a FunctionApp which will drive the dashboard"""
+        """The function app name used to create a ClientApp which will drive the dashboard"""
         return self.document["variables"][self.client_app_name_variable]
 
     @client_app_name.setter
