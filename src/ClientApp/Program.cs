@@ -9,7 +9,7 @@ builder.Services.AddCors(options =>
     {
         builder.WithOrigins(
             "https://localhost:44482",
-            "https://localhost:7258",
+            "https://localhost:7153",
             "https://localhost:5000",
             "http://localhost:5000");
     });
