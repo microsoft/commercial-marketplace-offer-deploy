@@ -6,7 +6,7 @@ log = logging.getLogger(__name__)
 
 class TestFunctionApp(unittest.TestCase):
     def test_create_client_app_name(self):
-        prefix = "modmfunc"
+        prefix = "modm"
         client_app_name = create_client_app_name(prefix)
         log.info(client_app_name)
         self.assertTrue(client_app_name.startswith(prefix))

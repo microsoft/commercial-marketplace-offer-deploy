@@ -43,7 +43,7 @@ class MainTemplate(ArmTemplate):
     reside in the installer package placed into the app.zip
     """
 
-    client_app_name_prefix = "modmfunc"
+    client_app_name_prefix = "modm"
     client_app_name_variable = "clientAppName"
     vmi_reference_id_variable = "vmiReferenceId"
     vm_storage_profile_image_reference = "imageReference"

@@ -13,7 +13,7 @@
     "variables": {
         "location": "[resourceGroup().location]",
         "clientAppName": "{{clientAppName}}",
-        "clientAppStorageAccountName": "[format('{0}modmfunc', uniqueString(resourceGroup().id))]",
+        "clientAppStorageAccountName": "[format('{0}modm', uniqueString(resourceGroup().id))]",
         "clientAppPackageUrl": "[concat(variables('artifactsContainerLocation'), '/', 'clientapp.zip')]",
         "vmiReferenceId": "{{vmiReferenceId}}",
         "virtualMachineSize": "Standard_D2s_v3",
