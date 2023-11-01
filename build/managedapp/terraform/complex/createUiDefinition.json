@@ -34,7 +34,7 @@
         ],
         "outputs": {
             "location": "[location()]",
-            "resource_group_name": "[resourceGroup().name]",
+            "resourceGroupName": "[resourceGroup().name]",
             "sql_admin_username": "adminuser",
             "sql_admin_password": "[steps('setup').sqlAdminPassword]"
         }
