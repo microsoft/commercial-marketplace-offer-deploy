@@ -2,7 +2,7 @@ import json
 import os
 from packaging.azure import ArmTemplate
 from packaging.azure.arm_template_parameter import ArmTemplateParameter
-from packaging.azure.function_app import create_function_app_name
+from packaging.azure.client_app import create_client_app_name
 
 
 class UserData:
@@ -43,16 +43,16 @@ class MainTemplate(ArmTemplate):
     reside in the installer package placed into the app.zip
     """
 
-    function_app_name_prefix = "modmfunc"
-    function_app_name_variable = "functionAppName"
+    client_app_name_prefix = "modm"
+    client_app_name_variable = "clientAppName"
     vmi_reference_id_variable = "vmiReferenceId"
     vm_storage_profile_image_reference = "imageReference"
 
     def __init__(self, document) -> None:
         super().__init__(document)
         self._vm_offer = None
-        self.function_app_name = create_function_app_name(self.function_app_name_prefix)
-        self.dashboard_url = f"https://{self.function_app_name}.azurewebsites.net/dashboard"
+        self.client_app_name = create_client_app_name(self.client_app_name_prefix)
+        self.dashboard_url = f"https://{self.client_app_name}.azurewebsites.net/dashboard"
         self._user_data = UserData(self.document["variables"]["userData"])
         self._user_data.dashboard_url = self.dashboard_url
 
@@ -93,13 +93,13 @@ class MainTemplate(ArmTemplate):
             del self.document["variables"][self.vmi_reference_id_variable]
 
     @property
-    def function_app_name(self):
-        """The function app name used to create a FunctionApp which will drive the dashboard"""
-        return self.document["variables"][self.function_app_name_variable]
+    def client_app_name(self):
+        """The client app name used to create a ClientApp which will drive the dashboard"""
+        return self.document["variables"][self.client_app_name_variable]
 
-    @function_app_name.setter
-    def function_app_name(self, value):
-        self.document["variables"][self.function_app_name_variable] = value
+    @client_app_name.setter
+    def client_app_name(self, value):
+        self.document["variables"][self.client_app_name_variable] = value
 
     @property
     def user_data(self) -> UserData:

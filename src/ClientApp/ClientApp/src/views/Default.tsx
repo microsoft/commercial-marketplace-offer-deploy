@@ -15,6 +15,7 @@ import { Separator } from '@fluentui/react';
 export const Default = () => {
 
   const [filter, setFilter] = React.useState<'All' | 'Succeeded' | 'Failed'>('All');
+//   const [backendUrl, setBackendUrl] = React.useState<string | null>(null);
   const [offerName, setOfferName] = React.useState<string | null>(null);
   const [deploymentId, setDeploymentId] = React.useState<string | null>(null);
   const [subscriptionId, setSubscriptionId] = React.useState<string | null>(null);
@@ -63,6 +64,29 @@ export const Default = () => {
       onRender: (item: DeploymentResource) => toLocalDateTime(item.timestamp)
     },
   ];
+
+//   const doGetBackendUrl = async () => {
+//     console.log('inside doGetBackendUrl');
+
+//     const response = await fetch(`${AppConstants.baseUrl}/api/settings?key=backendUrl`, {
+//         headers: {
+//           Accept: 'application/json',
+//         },
+//       });
+//       console.log(`Pulled results from /api/settings?key=backendUrl`)
+//       if (!response.ok) {
+//         throw new Error(`HTTP error! status: ${response.status}`);
+//       }
+
+//       const result = await response.json();
+//       console.log('got the result from response.json();');
+//       console.log(JSON.stringify(result));
+
+//       if (result) {
+//         console.log(`setBackendUrl: ${result}`);
+//         setBackendUrl(result);
+//       }
+//   }
 
   const doGetDeployedResources = async () => {
     try {
@@ -113,9 +137,12 @@ export const Default = () => {
   }
 
   React.useEffect(() => {
+    
     const checkEngineHealth = async () => {
         try {
-          const response = await fetch(`${AppConstants.baseUrl}/api/status`, {
+          const backendUrl = AppConstants.baseUrl;
+          console.log(`inside checkEngineHealth with a backendUrl of ${backendUrl}}`);
+          const response = await fetch(`${backendUrl}/api/status`, {
             headers: {
               Accept: 'application/json',
             },
@@ -137,7 +164,9 @@ export const Default = () => {
           console.error(error);
         }
       };
-
+    
+     // doGetBackendUrl();
+    
     // Start the interval
     const intervalId = setInterval(() => {
         checkEngineHealth();
@@ -175,7 +204,8 @@ export const Default = () => {
         onClick: async () => {
           // Here, you can make your API call or any other logic for the delete action
           try {
-            const deleteResponse = await fetch(`${AppConstants.baseUrl}/api/resources/${deploymentResourceGroup}/deletemodmresources`, {
+            const backendUrl = AppConstants.baseUrl;
+            const deleteResponse = await fetch(`${backendUrl}/api/resources/${deploymentResourceGroup}/deletemodmresources`, {
               method: 'POST',
             });
             if (!deleteResponse.ok) {

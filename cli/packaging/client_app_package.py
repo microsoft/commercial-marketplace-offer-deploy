@@ -5,8 +5,8 @@ from urllib.parse import urlparse
 import urllib.request
 
 
-class FunctionAppPackage:
-    file_name = "function.zip"
+class ClientAppPackage:
+    file_name = "clientapp.zip"
 
     def __init__(self, file):
         self.file = file
@@ -25,11 +25,11 @@ class FunctionAppPackage:
         file = Path(dest_dir, parsed_url.basename).resolve()
         _, out_path = urllib.request.urlretrieve(url, file)
 
-        return FunctionAppPackage(Path(out_path))
+        return ClientAppPackage(Path(out_path))
 
     @staticmethod
     def from_resource():
         resource_files = files("resources")
-        with as_file(resource_files.joinpath(FunctionAppPackage.file_name)) as resource_file:
-            package = FunctionAppPackage(resource_file)
+        with as_file(resource_files.joinpath(ClientAppPackage.file_name)) as resource_file:
+            package = ClientAppPackage(resource_file)
             return package

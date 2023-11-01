@@ -12,9 +12,9 @@
     },
     "variables": {
         "location": "[resourceGroup().location]",
-        "functionAppName": "{{functionAppName}}",
-        "functionAppStorageAccountName": "[format('{0}modmfunc', uniqueString(resourceGroup().id))]",
-        "functionAppPackageUrl": "[concat(variables('artifactsContainerLocation'), '/', 'function.zip')]",
+        "clientAppName": "{{clientAppName}}",
+        "clientAppStorageAccountName": "[format('{0}modm', uniqueString(resourceGroup().id))]",
+        "clientAppPackageUrl": "[concat(variables('artifactsContainerLocation'), '/', 'clientapp.zip')]",
         "vmiReferenceId": "{{vmiReferenceId}}",
         "virtualMachineSize": "Standard_D2s_v3",
         "virtualMachineName": "modm",
@@ -47,7 +47,7 @@
         {
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2022-05-01",
-            "name": "[variables('functionAppStorageAccountName')]",
+            "name": "[variables('clientAppStorageAccountName')]",
             "comments": "Storage account for the azure function which will serve up the dashboard",
             "location": "[resourceGroup().location]",
             "sku": {
@@ -64,7 +64,7 @@
         {
             "type": "Microsoft.Web/serverfarms",
             "apiVersion": "2022-03-01",
-            "name": "[variables('functionAppName')]",
+            "name": "[variables('clientAppName')]",
             "location": "[resourceGroup().location]",
             "sku": {
                 "name": "Y1",
@@ -80,20 +80,20 @@
         {
             "type": "Microsoft.Web/sites",
             "apiVersion": "2022-03-01",
-            "name": "[variables('functionAppName')]",
+            "name": "[variables('clientAppName')]",
             "location": "[resourceGroup().location]",
             "identity": {
                 "type": "SystemAssigned"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', variables('functionAppName'))]",
+                "[resourceId('Microsoft.Web/serverfarms', variables('clientAppName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id)))]"
             ],
             "tags": "[variables('commonTags')]",
             "kind": "functionapp,linux",
             "properties": {
                 "reserved": true,
-                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('functionAppName'))]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('clientAppName'))]",
                 "siteConfig": {
                     "appSettings": [
                         {
@@ -110,19 +110,19 @@
                         },
                         {
                             "name": "WEBSITE_RUN_FROM_PACKAGE",
-                            "value": "[variables('functionAppPackageUrl')]"
+                            "value": "[variables('clientAppPackageUrl')]"
                         },
                         {
                             "name": "AzureWebJobsStorage",
-                            "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('functionAppStorageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('functionAppStorageAccountName')), '2022-05-01').keys[0].value)]"
+                            "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('clientAppStorageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('clientAppStorageAccountName')), '2022-05-01').keys[0].value)]"
                         },
                         {
                             "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
-                            "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('functionAppStorageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('functionAppStorageAccountName')), '2022-05-01').keys[0].value)]"
+                            "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('clientAppStorageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('clientAppStorageAccountName')), '2022-05-01').keys[0].value)]"
                         },
                         {
                             "name": "WEBSITE_CONTENTSHARE",
-                            "value": "[toLower(variables('functionAppName'))]"
+                            "value": "[toLower(variables('clientAppName'))]"
                         },
                         {
                             "name": "RedirectUrl",
