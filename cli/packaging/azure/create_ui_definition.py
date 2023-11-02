@@ -22,7 +22,7 @@ class CreateUiDefinition:
             return validation_results
         
         for reserved_param in reserved_template_parameters:
-            print('Inside reserved_template_parameters loop')
+            print(f'Inside reserved_template_parameters loop - {reserved_param}')
             if reserved_param in outputs:
                 print(f'found reserved_param - {reserved_param}')
                 del outputs[reserved_param]
@@ -37,8 +37,11 @@ class CreateUiDefinition:
                 )
 
         outputs_keys = set(outputs.keys())
+        print(f'outputs_keys - {outputs_keys}')
         template_parameters_keys = set(list(map(lambda p: p.name, template_parameters)))
+        print(f'template_parameters_keys - {template_parameters_keys}')
         diff = template_parameters_keys.symmetric_difference(outputs_keys)
+        print(f'diff - {diff}')
 
         if len(diff) > 0:
             validation_results.append(
