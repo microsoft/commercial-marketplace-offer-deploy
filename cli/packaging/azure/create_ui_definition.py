@@ -12,6 +12,7 @@ class CreateUiDefinition:
 
     def validate(self, template_parameters: list[ArmTemplateParameter]):
         reserved_template_parameters = ReservedTemplateParameter.all()
+        print(f'Inside CreateUiDefinition:validate - {reserved_template_parameters}')
         validation_results = []
         outputs = self.document["parameters"]["outputs"]
 
