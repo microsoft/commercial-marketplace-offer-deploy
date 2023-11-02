@@ -45,7 +45,7 @@ class CreateUiDefinition:
         print(f'diff - {diff}')
         for reserved_param in reserved_template_parameters:
             if reserved_param in diff:
-                del diff[reserved_param ]
+                diff.remove(reserved_param)
         print(f'diff2 - {diff}')
         if len(diff) > 0:
             validation_results.append(
