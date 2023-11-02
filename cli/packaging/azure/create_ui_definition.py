@@ -15,14 +15,18 @@ class CreateUiDefinition:
         print(f'Inside CreateUiDefinition:validate - {reserved_template_parameters}')
         validation_results = []
         outputs = self.document["parameters"]["outputs"]
+        print(f'outputs - {outputs}')
 
         if outputs is None:
             validation_results.append(ValueError("The createUiDefinition.json must contain an outputs section"))
             return validation_results
         
         for reserved_param in reserved_template_parameters:
+            print('Inside reserved_template_parameters loop')
             if reserved_param in outputs:
+                print(f'found reserved_param - {reserved_param}')
                 del outputs[reserved_param]
+                print(f'After delete - {outputs}')
                 validation_results.append(
                     ValueError(
                         {
