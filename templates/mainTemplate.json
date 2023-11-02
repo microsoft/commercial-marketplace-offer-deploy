@@ -69,7 +69,7 @@
             "name": "[variables('clientAppName')]",
             "location": "[resourceGroup().location]",
             "sku": {
-                "name": "F1"
+                "name": "S1"
             },
             "properties": {
                 "reserved": true
