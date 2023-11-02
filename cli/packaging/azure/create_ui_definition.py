@@ -41,8 +41,12 @@ class CreateUiDefinition:
         template_parameters_keys = set(list(map(lambda p: p.name, template_parameters)))
         print(f'template_parameters_keys - {template_parameters_keys}')
         diff = template_parameters_keys.symmetric_difference(outputs_keys)
+        
         print(f'diff - {diff}')
-
+        for reserved_param in reserved_template_parameters:
+            if reserved_param in diff:
+                del diff[reserved_param ]
+        print(f'diff2 - {diff}')
         if len(diff) > 0:
             validation_results.append(
                 ValueError(
