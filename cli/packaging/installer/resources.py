@@ -36,6 +36,7 @@ class InstallerResources:
         self.location = location
         self.main_template = main_template.from_file(location.joinpath("mainTemplate.json"))
         self.view_definition = view_definition.from_file(location.joinpath("viewDefinition.json"))
+        self.create_ui_definition_step = view_definition.from_file(location.joinpath("viewDefinition.json"))
         self.client_app_package = location.joinpath("clientapp.zip")
 
     @staticmethod
