@@ -4,7 +4,7 @@ from pathlib import Path
 
 import requests
 from packaging.config import Config
-from packaging.installer import main_template, view_definition
+from packaging.installer import main_template, view_definition, create_ui_definition_step
 from packaging.installer.version import InstallerVersion, InstallerVersionProvider
 from . import _httputil as httputil
 from msrest.serialization import Model
@@ -36,7 +36,7 @@ class InstallerResources:
         self.location = location
         self.main_template = main_template.from_file(location.joinpath("mainTemplate.json"))
         self.view_definition = view_definition.from_file(location.joinpath("viewDefinition.json"))
-        self.create_ui_definition_step = view_definition.from_file(location.joinpath("viewDefinition.json"))
+        self.create_ui_definition_step = create_ui_definition_step.from_file(location.joinpath("createUiDefinition.json"))
         self.client_app_package = location.joinpath("clientapp.zip")
 
     @staticmethod
