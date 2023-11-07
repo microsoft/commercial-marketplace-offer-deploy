@@ -118,18 +118,6 @@
                         {
                             "name": "WEBSITE_RUN_FROM_PACKAGE",
                             "value": "[variables('clientAppPackageUrl')]"
-                        },
-                        {
-                            "name": "BackendUrl",
-                            "value": "[variables('backendUrl')]"
-                        },
-                        {
-                            "name": "AdminCredentials",
-                            "value": "[base64(concat(parameters('_installerUsername'), '|', parameters('_installerPassword')))]"
-                        },
-                        {
-                            "name": "SigningKey",
-                            "value": "[uniqueString(resourceGroup().id, newGuid())]"
                         }
                     ],
                     "linuxFxVersion": "DOTNET-ISOLATED|7.0",
