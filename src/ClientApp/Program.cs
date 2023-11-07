@@ -59,7 +59,10 @@ app.UseAuthorization();
 
 
 app.UseHttpsRedirection();
+app.UseCors("AllowLocal");
 app.UseStaticFiles();
+app.UseRouting();
+
 
 app.MapControllerRoute(
     name: "default",
