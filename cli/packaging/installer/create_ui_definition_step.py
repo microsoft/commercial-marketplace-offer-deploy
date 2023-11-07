@@ -28,8 +28,8 @@ class CreateUiDefinitionInstallerStep:
         outputs = document["parameters"]["outputs"]
 
         # Add the output value for the installer step
-        outputs["installer_installer"] = "[steps('installer').username]"
-        outputs["installer_password"] = "[steps('installer').password]"
+        outputs["_installerUsername"] = "[steps('installer').username]"
+        outputs["_installerPassword"] = "[steps('installer').password]"
 
 
 def from_file(file_path) -> CreateUiDefinitionInstallerStep:

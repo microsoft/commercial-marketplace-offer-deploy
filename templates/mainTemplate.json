@@ -8,6 +8,18 @@
                 "description": "The base URI where artifacts required by this template are located including a trailing '/'"
             },
             "defaultValue": "[deployment().properties.templateLink.uri]"
+        },
+        "_installerUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "The base URI where artifacts required by this template are located including a trailing '/'"
+            }
+        },
+        "_installerPassword": {
+            "type": "string",
+            "metadata": {
+                "description": "The base URI where artifacts required by this template are located including a trailing '/'"
+            }
         }
     },
     "variables": {
@@ -102,6 +114,14 @@
                         {
                             "name": "BackendUrl",
                             "value": "[variables('backendUrl')]"
+                        },
+                        {
+                            "name": "AdminCredentials",
+                            "value": "[base64(concat(parameters('_installerUsername'), '|', parameters('_installerPassword')))]"
+                        },
+                        {
+                            "name": "SigningKey",
+                            "value": "[uniqueString(resourceGroup().id, newGuid())]"
                         }
                     ],
                     "linuxFxVersion": "DOTNET-ISOLATED|7.0",

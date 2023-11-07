@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Mvc;
 using Modm.Engine;
@@ -7,6 +8,7 @@ namespace Modm.ClientApp.Controllers
 {
     [Route("api")]
     [ApiController]
+    [Authorize]
     public class ProxyController : ControllerBase
     {
         public const string BackendUrlSettingName = "BackendUrl";
