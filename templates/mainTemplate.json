@@ -152,6 +152,7 @@
                         "SigningKey": "[concat('@Microsoft.AppConfiguration(Endpoint=', reference(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))).endpoint,'; Key=SigningKey)')]",
                         "BackendUrl": "[concat('@Microsoft.AppConfiguration(Endpoint=', reference(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))).endpoint,'; Key=BackendUrl)')]",
                         "DashboardUrl":"[concat('@Microsoft.AppConfiguration(Endpoint=', reference(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))).endpoint,'; Key=SigningKey)')]"
+                    }
                 }
             ]
         },
