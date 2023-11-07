@@ -29,6 +29,17 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocal", builder =>
+    {
+        builder
+            .WithOrigins("https://localhost:44482", "https://localhost:7153", "http://localhost:5207", "http://localhost:44482")
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+        
+    });
+});
 builder.Configuration.AddEnvironmentVariables();
 
 var app = builder.Build();
