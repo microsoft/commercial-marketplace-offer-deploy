@@ -15,6 +15,7 @@
     <PackageReference Include="FluentValidation" Version="11.7.1" />
     <PackageReference Include="jenkinsnet" Version="1.0.4" />
     <PackageReference Include="MediatR" Version="12.1.1" />
+    <PackageReference Include="Microsoft.Azure.AppConfiguration.AspNetCore" Version="6.1.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
     <PackageReference Include="Azure.Deployments.Expression" Version="1.0.1040" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.0.0" />

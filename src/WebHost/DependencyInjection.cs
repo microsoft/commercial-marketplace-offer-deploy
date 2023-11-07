@@ -1,6 +1,7 @@
 ﻿using WebHost.Controllers;
 using FluentValidation;
 using Microsoft.Extensions.Azure;
+using Microsoft.Extensions.Configuration;
 using Azure.Identity;
 using Modm.Extensions;
 using Modm.Deployments;
@@ -43,7 +44,7 @@ namespace Modm.WebHost
 
             services.AddValidatorsFromAssemblyContaining<StartDeploymentRequestValidator>();
 
-
+ 
             return services;
 		}
 	}

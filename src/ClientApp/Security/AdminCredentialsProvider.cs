@@ -11,11 +11,11 @@ namespace ClientApp.Security
         /// <remarks>
         /// Example ARM template setup:
         ///     {
-        ///       "name": "AdminCredentials",
+        ///       "name": "Credentials",
         ///       "value": "[base64(concat(parameters('_installerUsername'), '|', parameters('_installerPassword')))]"
         ///     }
         /// </remarks>
-        public const string AppSettingsKeyName = "AdminCredentials";
+        public const string AppSettingsKeyName = "Credentials";
 
         private readonly IConfiguration configuration;
 
