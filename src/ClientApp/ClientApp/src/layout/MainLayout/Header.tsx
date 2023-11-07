@@ -3,16 +3,18 @@ import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars, faDashboard, faArchive } from '@fortawesome/free-solid-svg-icons'
 import { IRenderFunction } from '@fluentui/react';
+import { useAuth } from '../../security/AuthContext';
 
 const Header = () => {
   const [renderDetails, updateRenderDetails] = useState(true);
+  const { isAuthenticated } = useAuth();
   const onChange = (ev: unknown, checked: boolean | undefined) => {
     updateRenderDetails(!!checked);
   };
 
-  const examplePersona: IPersonaSharedProps = {
-    imageInitials: 'AL',
-    text: 'Annie Lindqvist',
+  const adminPersona: IPersonaSharedProps = {
+    imageInitials: 'MA',
+    text: 'MODM Admin',
   };
 
   const renderPrimaryTextHandler: IRenderFunction<IPersonaProps> = (props) => {
@@ -38,16 +40,19 @@ const Header = () => {
       </div>
       <div className="navbar-nav d-flex">
         <div className="nav-item text-nowrap">
-        <Persona
-          {...examplePersona}
-          text="Annie Lindqvist"
-          size={PersonaSize.size24}
-          presence={PersonaPresence.none}
-          hidePersonaDetails={!renderDetails}
-          initialsColor={PersonaInitialsColor.gray}
-          onRenderPrimaryText={renderPrimaryTextHandler}
-          color='white'
-        />
+        {isAuthenticated && (
+            <Persona
+            {...adminPersona}
+            text="MODM Admin"
+            size={PersonaSize.size24}
+            presence={PersonaPresence.none}
+            hidePersonaDetails={!renderDetails}
+            initialsColor={PersonaInitialsColor.gray}
+            onRenderPrimaryText={renderPrimaryTextHandler}
+            color='white'
+          />
+        )}
+        
         </div>
         
       </div>
