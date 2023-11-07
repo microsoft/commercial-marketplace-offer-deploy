@@ -1,21 +1,20 @@
-// LoginPage.tsx
-
 import React, { useState, FormEvent } from 'react';
-import { login } from '../security/securityutils'; 
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../security/AuthContext'; 
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const { login } = useAuth(); // Use the login method from your AuthContext
+  const navigate = useNavigate(); // Hook for navigation
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      
-      const authData = await login(username, password);
-      console.log('Login successful:', authData);
-      // TODO: Redirect to the dashboard or wherever you need
+      await login(username, password);
+      console.log('Login successful');
+      navigate('/'); 
     } catch (error) {
-      // Handle login error, show user feedback
       console.error('Login failed:', error);
     }
   };
