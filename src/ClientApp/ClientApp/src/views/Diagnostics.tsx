@@ -1,21 +1,32 @@
 import React from 'react';
 import { AppConstants } from '../constants/app-constants';
 import { useEffect } from 'react';
+import { useAuth } from '../security/AuthContext';
 
 interface DiagnosticsRespoonse {
   deploymentEngine: string;
 }
 
 export const Diagnostics = () => {
-
+  const { userToken } = useAuth();
   const [diagnostics, setDiagnostics] = React.useState<DiagnosticsRespoonse>({ deploymentEngine: "" });
+
+  const getAuthHeader = (): HeadersInit | undefined => {
+    if (userToken && userToken.token) {
+      return {
+        'Authorization': `Bearer ${userToken.token}`
+      };
+    }
+  };
 
   useEffect(() => {
     (async () => {
       const backendUrl = AppConstants.baseUrl;
+      const headers = getAuthHeader();
       const response = await fetch(`${backendUrl}/api/diagnostics`, {
         headers: {
           Accept: 'application/json',
+          ...headers,
         },
       });
 

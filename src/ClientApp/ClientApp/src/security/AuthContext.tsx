@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     console.log('AuthProvider: useEffect');
     const initializeAuth = async () => {
-        console.log('AuthProvider: initializeAuth');
+      console.log('AuthProvider: initializeAuth');
       const tokenString = localStorage.getItem('jwtToken');
       console.log(`AuthProvider: tokenString: ${tokenString}`);
       if (tokenString) {
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const token: AuthToken = JSON.parse(tokenString);
         console.log(`AuthProvider: token: ${token}`);
         if (validateToken()) {
-            console.log('AuthProvider: token is valid');
+          console.log('AuthProvider: token is valid');
           setIsAuthenticated(true);
           console.log(`setIsAuthenticated(true) called`);
           setUserToken(token);

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Modm.Engine;
 using Modm.Deployments;
+using Modm.Diagnostics;
 
 namespace Modm.ClientApp.Controllers
 {
@@ -39,6 +40,46 @@ namespace Modm.ClientApp.Controllers
                     var content = await response.Content.ReadAsStringAsync();
                     var engineInfo = JsonSerializer.Deserialize<GetDeploymentResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     return Ok(engineInfo);
+                }
+                else
+                {
+                    return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                // Log exception details (use ILogger for logging)
+                return StatusCode(503, "Unable to reach the backend service."); // Service Unavailable
+            }
+            catch (JsonException ex)
+            {
+                // Log exception details (use ILogger for logging)
+                return StatusCode(500, "Error parsing the response from the backend service."); // Internal Server Error
+            }
+            catch (Exception ex)
+            {
+                // Log exception details (use ILogger for logging)
+                return StatusCode(500, "An unexpected error occurred."); // Internal Server Error
+            }
+        }
+
+        [HttpGet("diagnostics")]
+        public async Task<IActionResult> GetDiagnostics()
+        {
+            string backendUrl = this.configuration[BackendUrlSettingName];
+            if (string.IsNullOrEmpty(backendUrl))
+            {
+                return BadRequest("Backend URL is not configured.");
+            }
+
+            try
+            {
+                var response = await client.GetAsync($"{backendUrl}/api/diagnostics");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var diagnosticsResponse = JsonSerializer.Deserialize<GetDiagnosticsResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    return Ok(diagnosticsResponse);
                 }
                 else
                 {
