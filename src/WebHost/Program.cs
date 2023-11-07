@@ -13,14 +13,17 @@ builder.Services.AddCors(options =>
     });
 });
 
-var appConfigEndpoint = builder.Configuration["Azure:AppConfigEndpoint"] ?? string.Empty;
-
-if (!string.IsNullOrEmpty(appConfigEndpoint))
+if (!builder.Environment.IsDevelopment())
 {
-    builder.Configuration.AddAzureAppConfiguration(options =>
-      options.Connect(
-          new Uri(appConfigEndpoint),
-          new DefaultAzureCredential()));
+    var appConfigEndpoint = builder.Configuration["Azure:AppConfigEndpoint"] ?? string.Empty;
+
+    if (!string.IsNullOrEmpty(appConfigEndpoint))
+    {
+        builder.Configuration.AddAzureAppConfiguration(options =>
+          options.Connect(
+              new Uri(appConfigEndpoint),
+              new ManagedIdentityCredential()));
+    }
 }
 
 var app = builder.Build();
