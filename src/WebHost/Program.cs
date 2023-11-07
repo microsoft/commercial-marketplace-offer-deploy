@@ -1,3 +1,5 @@
+using Azure.Identity;
+using System.Configuration;
 using Modm.WebHost;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +12,16 @@ builder.Services.AddCors(options =>
         builder.WithOrigins("https://localhost:44482");
     });
 });
+
+var appConfigEndpoint = builder.Configuration["Azure:AppConfigEndpoint"] ?? string.Empty;
+
+if (!string.IsNullOrEmpty(appConfigEndpoint))
+{
+    builder.Configuration.AddAzureAppConfiguration(options =>
+      options.Connect(
+          new Uri(appConfigEndpoint),
+          new DefaultAzureCredential()));
+}
 
 var app = builder.Build();
 
