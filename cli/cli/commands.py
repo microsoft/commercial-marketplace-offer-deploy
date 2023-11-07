@@ -65,6 +65,7 @@ def create_resources_tarball(version, templates_dir, csproj_file, current_workin
 
     main_template_file = _resolve_path(cwd, templates_dir) / 'mainTemplate.json'
     view_definition_file = _resolve_path(cwd, templates_dir) / 'viewDefinition.json'
+    create_ui_definition_file = _resolve_path(cwd, templates_dir) / 'createUiDefinition.json'
     client_app_file = _create_client_app_package(csproj_file, current_working_dir, out_dir)
     
     if version is not None:
@@ -78,6 +79,7 @@ def create_resources_tarball(version, templates_dir, csproj_file, current_workin
     with tarfile.open(out_file, "w:gz") as tar:
         tar.add(main_template_file, arcname=main_template_file.name)
         tar.add(view_definition_file, arcname=view_definition_file.name)
+        tar.add(create_ui_definition_file, arcname=create_ui_definition_file.name)
         tar.add(client_app_file, arcname=client_app_file.name)
     
     click.echo(f"resources '{out_file.name}' created.")

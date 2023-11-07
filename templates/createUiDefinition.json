@@ -4,12 +4,11 @@
     "version": "0.1.2-preview",
     "parameters": {
         "basics": [
-            {}
         ],
         "steps": [
             {
-                "name": "setup",
-                "label": "App Setup",
+                "name": "installer",
+                "label": "Installer settings",
                 "elements": [
                     {
                         "name": "tbAdminUser",

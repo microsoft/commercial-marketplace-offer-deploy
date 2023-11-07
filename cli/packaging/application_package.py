@@ -6,7 +6,8 @@ from packaging.azure import CreateUiDefinition
 from importlib.resources import files, as_file
 from msrest.serialization import Model
 from packaging.installer import MainTemplateFinalizer
-from packaging.installer.resources import InstallerResources, InstallerResourcesProvider
+from packaging.installer.resources import InstallerResources
+from packaging.installer.resources_provider import InstallerResourcesProvider
 from packaging.installer.version import InstallerVersion, InstallerVersionProvider
 
 
