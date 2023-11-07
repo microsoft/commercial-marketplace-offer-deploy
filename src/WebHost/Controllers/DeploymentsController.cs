@@ -1,3 +1,4 @@
+using System.IO;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Modm.Deployments;
@@ -24,6 +25,42 @@ namespace WebHost.Controllers
             {
                 Deployment = await engine.Get()
             });
+        }
+
+        [HttpGet("{deploymentId}/parameters")]
+        public async Task<IActionResult> GetParametersFileContent(string deploymentId)
+        {
+            try
+            {
+                Deployment deployment = await engine.Get();
+
+                // Determine the path to the parameters file
+                string parametersFilePath = deployment?.Definition?.ParametersFilePath;
+
+                if (!System.IO.File.Exists(parametersFilePath))
+                {
+                    throw new FileNotFoundException();
+                }
+
+                string content = await System.IO.File.ReadAllTextAsync(parametersFilePath);
+
+                return new ContentResult
+                {
+                    ContentType = "application/json",
+                    Content = content,
+                    StatusCode = 200
+                };
+            }
+            catch (FileNotFoundException)
+            {
+                return NotFound("Parameters file not found.");
+            }
+            catch (Exception ex)
+            {
+                // Log the exception details
+                // Return a generic error message to the client
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
         }
 
         /// <summary>

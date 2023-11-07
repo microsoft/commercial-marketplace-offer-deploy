@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { DetailsList, DetailsListLayoutMode, SelectionMode, IColumn, ConstrainMode } from '@fluentui/react/lib/DetailsList';
 import { FocusTrapZone } from '@fluentui/react/lib/FocusTrapZone';
 import { Checkbox } from '@fluentui/react/lib/Checkbox';
@@ -13,9 +14,9 @@ import { toLocalDateTime } from '../utils/DateUtils';
 import { Separator } from '@fluentui/react';
 
 export const Default = () => {
-
+  let location = useLocation();
+  let navigate = useNavigate();
   const [filter, setFilter] = React.useState<'All' | 'Succeeded' | 'Failed'>('All');
-//   const [backendUrl, setBackendUrl] = React.useState<string | null>(null);
   const [offerName, setOfferName] = React.useState<string | null>(null);
   const [deploymentId, setDeploymentId] = React.useState<string | null>(null);
   const [subscriptionId, setSubscriptionId] = React.useState<string | null>(null);
@@ -65,37 +66,17 @@ export const Default = () => {
     },
   ];
 
-//   const doGetBackendUrl = async () => {
-//     console.log('inside doGetBackendUrl');
-
-//     const response = await fetch(`${AppConstants.baseUrl}/api/settings?key=backendUrl`, {
-//         headers: {
-//           Accept: 'application/json',
-//         },
-//       });
-//       console.log(`Pulled results from /api/settings?key=backendUrl`)
-//       if (!response.ok) {
-//         throw new Error(`HTTP error! status: ${response.status}`);
-//       }
-
-//       const result = await response.json();
-//       console.log('got the result from response.json();');
-//       console.log(JSON.stringify(result));
-
-//       if (result) {
-//         console.log(`setBackendUrl: ${result}`);
-//         setBackendUrl(result);
-//       }
-//   }
-
   const doGetDeployedResources = async () => {
     try {
       const backendUrl = AppConstants.baseUrl;
+      console.log(`backendUrl: ${backendUrl}`);
       const response = await fetch(`${backendUrl}/api/Deployments`, {
         headers: {
           Accept: 'application/json',
         },
       });
+
+      console.log(`response: ${JSON.stringify(response)}`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -132,7 +113,7 @@ export const Default = () => {
     } catch (error) {
       console.error(error);
     } finally {
-      setLoading(false); // Set loading to false once data is fetched or an error occurred
+      setLoading(false); 
     }
   }
 
@@ -165,8 +146,6 @@ export const Default = () => {
         }
       };
     
-     // doGetBackendUrl();
-    
     // Start the interval
     const intervalId = setInterval(() => {
         checkEngineHealth();
@@ -174,7 +153,7 @@ export const Default = () => {
 
     // Clear the interval when the component unmounts
     return () => clearInterval(intervalId);
-  }, []);
+  }, [deploymentId]);
 
   const filteredDeployedResources = React.useMemo(() => {
     if (filter === 'All') {
@@ -190,19 +169,25 @@ export const Default = () => {
     [],
   );
 
+  const handleRedeploy = async () => {
+    navigate(`/redeploy?deploymentId=${deploymentId}`);
+  }
+
   const _items: ICommandBarItemProps[] = [
     {
-      key: 'redeploy',
-      text: 'Redeploy',
-      iconProps: { iconName: 'Upload' },
-      onClick: () => console.log('Redeploy clicked'),
+        key: 'redeploy',
+        text: 'Redeploy',
+        iconProps: { iconName: 'Upload' },
+        onClick: async () => {
+            await handleRedeploy();
+            return true;
+        },
     },
     {
         key: 'delete',
         text: 'Delete',
-        iconProps: { iconName: 'Delete' }, // Using 'Delete' as the iconName
+        iconProps: { iconName: 'Delete' }, 
         onClick: async () => {
-          // Here, you can make your API call or any other logic for the delete action
           try {
             const backendUrl = AppConstants.baseUrl;
             const deleteResponse = await fetch(`${backendUrl}/api/resources/${deploymentResourceGroup}/deletemodmresources`, {
@@ -213,7 +198,6 @@ export const Default = () => {
             }
             const deleteResult = await deleteResponse.json();
             console.log(deleteResult);
-            // You can also update your component's state or trigger other side effects here if necessary
           } catch (error) {
             console.error("Error deleting:", error);
           }
