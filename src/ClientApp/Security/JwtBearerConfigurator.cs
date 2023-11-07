@@ -5,16 +5,16 @@ using Microsoft.IdentityModel.Tokens;
 namespace ClientApp.Security
 {
     public class JwtBearerConfigurator
-	{
+    {
         private readonly IConfiguration configuration;
 
         public JwtBearerConfigurator(IConfiguration configuration)
-		{
+        {
             this.configuration = configuration;
         }
 
-		public void Configure(JwtBearerOptions options)
-		{
+        public void Configure(JwtBearerOptions options)
+        {
             var settings = new JwtSettings(configuration);
 
             options.RequireHttpsMetadata = false;
@@ -40,6 +40,6 @@ namespace ClientApp.Security
                 }
             };
         }
-	}
+    }
 }
 

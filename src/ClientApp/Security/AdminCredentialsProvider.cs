@@ -3,8 +3,8 @@ using System.Text;
 
 namespace ClientApp.Security
 {
-	public class AdminCredentialsProvider
-	{
+    public class AdminCredentialsProvider
+    {
         /// <summary>
         /// This value MUST be the same value set in the siteConfig from the ARM template
         /// </summary>
