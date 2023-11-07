@@ -54,15 +54,17 @@ else
     IdentityModelEventSource.ShowPII = true;
 }
 
-app.UseAuthentication();
-app.UseAuthorization();
 
 
 app.UseHttpsRedirection();
-app.UseCors("AllowLocal");
 app.UseStaticFiles();
+
 app.UseRouting();
 
+app.UseCors("AllowLocal");
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
