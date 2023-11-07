@@ -1,7 +1,7 @@
 // AuthContext.tsx
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { validateToken, AuthToken, login, refreshToken } from './securityutils'; // Ensure refreshToken is defined and exported
+import { validateToken, AuthToken, login, refreshToken } from './securityUtils'; // Ensure refreshToken is defined and exported
 
 interface AuthContextType {
   isAuthenticated: boolean;
