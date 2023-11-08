@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Modm.Azure;
 using Modm.Extensions;
@@ -23,11 +24,11 @@ namespace Modm.Configuration
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-		public static AppConfigurationEndpointProvider FromHostBuilderContext(HostBuilderContext context)
+		public static AppConfigurationEndpointProvider New(HostBuilderContext context, IConfiguration configuration)
 		{
 			var services = new ServiceCollection();
 
-            services.AddSingleton(context.Configuration);
+            services.AddSingleton(configuration);
             services.AddDefaultHttpClient();
 
             if (context.HostingEnvironment.IsDevelopment())
@@ -45,9 +46,6 @@ namespace Modm.Configuration
             });
 
             var provider = services.BuildServiceProvider();
-
-
-
             return provider.GetRequiredService<AppConfigurationEndpointProvider>();
         }
 
