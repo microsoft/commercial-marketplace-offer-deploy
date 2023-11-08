@@ -1,31 +1,33 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using System;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-namespace ClientApp.Security
+namespace Modm.Security
 {
-    public class JwtSettings
-    {
-        public const string SigningKeyAppSettingsKeyName = "SigningKey";
+	public class JwtSettings
+	{
+        public class AppSettingKey
+        {
+            public const string SigningKey = "SigningKey";
+            public const string Issuer = "Issuer";
+        }
 
-        /// <summary>
-        /// See: https://learn.microsoft.com/en-us/azure/app-service/reference-app-settings?tabs=kudu%2Cdotnet
-        /// </summary>
-        public const string WebsiteNameAppSettingsKeyName = "WEBSITE_SITE_NAME";
-
-        private static readonly string kid = "e5ccac91-4b91-4dcf-82c8-844c0fa1ddeb";
+        private static readonly string Kid = "e5ccac91-4b91-4dcf-82c8-844c0fa1ddeb";
 
         private readonly IConfiguration configuration;
 
         public JwtSettings(IConfiguration configuration)
-		{
+        {
             this.configuration = configuration;
         }
 
         public string GetIssuer()
         {
-            var name = configuration[WebsiteNameAppSettingsKeyName];
+            var issuer = configuration[AppSettingKey.Issuer];
 
-            if (string.IsNullOrEmpty(name) || name == "localhost")
+            // support local development
+            if (string.IsNullOrEmpty(issuer) || issuer == "localhost")
             {
                 var urls = configuration["ASPNETCORE_URLS"] ?? string.Empty;
 
@@ -35,22 +37,22 @@ namespace ClientApp.Security
                 }
             }
 
-            return $"https://{name}.azurewebsites.net";
+            return issuer;
         }
 
         public SecurityKey GetIssuerSigningKey()
         {
-            var value = configuration[SigningKeyAppSettingsKeyName];
+            var value = configuration[AppSettingKey.SigningKey];
 
             if (string.IsNullOrEmpty(value))
             {
-                value = kid;
+                value = Kid;
             }
 
             var paddedValue = value.PadRight(512, '\0');
             var key = Encoding.UTF8.GetBytes(paddedValue);
 
-            return new SymmetricSecurityKey(key) { KeyId = kid };
+            return new SymmetricSecurityKey(key) { KeyId = Kid };
         }
 
         public SigningCredentials GetSigningCredentials()
@@ -59,3 +61,4 @@ namespace ClientApp.Security
         }
     }
 }
+

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 
-namespace ClientApp.Security
+namespace Modm.Security
 {
     public class AdminCredentialsProvider
     {

@@ -1,5 +1,6 @@
 ﻿using System;
-namespace ClientApp.Security
+
+namespace Modm.Security
 {
     public class AuthenticationResult
     {

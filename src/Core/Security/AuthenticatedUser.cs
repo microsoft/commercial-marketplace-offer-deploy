@@ -1,8 +1,10 @@
 ﻿using System;
-namespace ClientApp.Security
+
+namespace Modm.Security
 {
 	/// <summary>
-	/// We will only have a single, admin user
+	/// We will only have a single, admin user. represents a combined
+	/// instance of both an authenticated user and a unique session, keyed of the Id
 	/// </summary>
 	public record AuthenticatedUser
 	{
