@@ -17,9 +17,6 @@ builder.Services.AddCors(options =>
 
 var appConfigEndpoint = builder.Configuration["Azure:AppConfigEndpoint"] ?? string.Empty;
 
-Console.WriteLine(appConfigEndpoint);
-Console.WriteLine(builder.Environment.IsDevelopment());
-
 if (!string.IsNullOrEmpty(appConfigEndpoint))
 {
     builder.Configuration.AddAzureAppConfiguration(options =>
