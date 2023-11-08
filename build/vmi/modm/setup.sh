@@ -49,6 +49,9 @@ sudo cp /tmp/modm.service /etc/systemd/system/modm.service
 sudo systemctl daemon-reload
 sudo systemctl start modm
 
+sudo systemctl status modm.service
+sudo journalctl -xeu modm.service
+
 # support start on boot
 sudo systemctl enable modm
 
