@@ -40,6 +40,8 @@ sudo docker build . -t jenkins -f ./build/container/Dockerfile.jenkins
 # setup daemon
 # ----------------------------------
 echo "Installing ServiceHost as systemd service."
+echo "DOTNET_ENVIRONMENT = $DOTNET_ENVIRONMENT"
+
 sudo cp $out_path/publish/modm /usr/sbin/modm
 
 sudo cp $out_path/publish/appsettings.json $service_path
