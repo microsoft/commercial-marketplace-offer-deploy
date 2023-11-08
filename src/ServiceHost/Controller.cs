@@ -106,8 +106,6 @@ namespace Modm.ServiceHost
 
         private async Task UpdateEnvFileAsync()
         {
-            var userData = await metadataService.GetUserData();
-
             using var envFile = await GetEnvFileAsync();
 
             envFile.Set("MODM_HOME", configuration.GetHomeDirectory());
@@ -116,7 +114,10 @@ namespace Modm.ServiceHost
             envFile.Set("DEFAULT_ADMIN_PASSWORD", password);
 
             // app config endpoint for web host to read from
-            envFile.Set("Azure__AppConfigEndpoint", userData.AppConfigEndpoint);
+
+            var metadata = await metadataService.GetAsync();
+            var resource = new AppConfigurationResource(metadata.ResourceGroupId);
+            envFile.Set("Azure__AppConfigEndpoint", resource.Uri.ToString());
 
             // set for caddy to work
             envFile.Set("SITE_ADDRESS", options.Fqdn);

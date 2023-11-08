@@ -1,7 +1,8 @@
-﻿namespace ClientApp.Security
+﻿namespace Modm.Security
 {
     /// <summary>
-    /// Admin credentials that are set from Installer step in the createUiDefinition.json
+    /// Admin credentials that are set from Installer step in the createUiDefinition.json,
+    /// used to login to the frontend dashboard
     /// </summary>
     public class AdminCredentials
     {

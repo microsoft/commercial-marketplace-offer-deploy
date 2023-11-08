@@ -1,10 +1,9 @@
 using Modm.ClientApp.Controllers;
 using ClientApp.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Logging;
+using Modm.Security;
+using Modm.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,14 +18,7 @@ builder.Services.AddHttpClient<ProxyController>().ConfigureHttpClient((provider,
     client.BaseAddress = new Uri(backendUrl ?? string.Empty);
 });
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(new JwtBearerConfigurator(builder.Configuration).Configure);
-
-builder.Services.AddAuthorization();
+builder.Services.AddJwtBearerAuthentication(builder.Configuration);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddCors(options =>

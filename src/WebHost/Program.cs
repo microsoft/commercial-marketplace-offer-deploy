@@ -1,6 +1,7 @@
 using Azure.Identity;
 using System.Configuration;
 using Modm.WebHost;
+using Modm.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddWebHost(builder.Configuration, builder.Environment);
@@ -14,6 +15,8 @@ builder.Services.AddCors(options =>
         builder.WithOrigins("https://localhost:44482");
     });
 });
+
+builder.Services.AddJwtBearerAuthentication(builder.Configuration);
 
 var appConfigEndpoint = builder.Configuration["Azure:AppConfigEndpoint"] ?? string.Empty;
 
@@ -35,6 +38,9 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowLocal");
+
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseHttpsRedirection();
 
 app.MapControllerRoute(
