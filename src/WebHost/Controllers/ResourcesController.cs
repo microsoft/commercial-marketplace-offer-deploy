@@ -1,3 +1,4 @@
+using Azure.Core;
 using Azure.ResourceManager;
 using Azure.ResourceManager.Resources;
 using Azure.ResourceManager.Resources.Models;
@@ -44,6 +45,11 @@ namespace WebHost.WebHost.Controllers
         {
             var resourcesToDelete = await GetResourcesToDelete(resourceGroupName);
 
+            var vmResourceIndex = resourcesToDelete.FindIndex(r => r.Id.ResourceType == new ResourceType("Microsoft.Compute/virtualMachines"));
+
+            var vmResource = resourcesToDelete[vmResourceIndex];
+            resourcesToDelete.RemoveAt(vmResourceIndex);
+
             int maxAttempts = resourcesToDelete.Count * 5; 
             int attempt = 0;
 
@@ -67,12 +73,14 @@ namespace WebHost.WebHost.Controllers
 
             if (resourcesToDelete.Count == 0)
             {
-                return Ok("Resources with tag modm=true have been deleted.");
+                _ = Task.Run(() =>
+                {
+                    _ = TryDeleteResource(vmResource);
+                });
+                return Ok("Resources with tag modm=true have been deleted. VM resource being deleted without waiting.");
             }
-            else
-            {
-                return BadRequest("Some resources could not be deleted after multiple attempts.");
-            }
+
+            return BadRequest("Some resources could not be deleted after multiple attempts.");
         }
 
         private async Task<List<GenericResource>> GetResourcesToDelete(string resourceGroupName)
