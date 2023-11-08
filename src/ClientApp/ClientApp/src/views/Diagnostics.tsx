@@ -20,19 +20,29 @@ export const Diagnostics = () => {
   };
 
   useEffect(() => {
-    (async () => {
+    const fetchData = async () => {
       const backendUrl = AppConstants.baseUrl;
       const headers = getAuthHeader();
-      const response = await fetch(`${backendUrl}/api/diagnostics`, {
-        headers: {
-          Accept: 'application/json',
-          ...headers,
-        },
-      });
-
-      const result = await response.json();
-      setDiagnostics(result);
-    })();
+      try {
+        const response = await fetch(`${backendUrl}/api/diagnostics`, {
+          headers: {
+            Accept: 'application/json',
+            ...headers,
+          },
+        });
+  
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+  
+        const result = await response.json();
+        setDiagnostics(result);
+      } catch (error) {
+        console.error('Failed to fetch diagnostics:', error);
+      }
+    };
+  
+    fetchData();
   });
 
   return (<>
