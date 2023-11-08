@@ -118,7 +118,8 @@ build {
   provisioner "shell" {
     environment_vars = [
         "MODM_HOME=${var.modm_home}",
-        "MODM_REPO_BRANCH=${var.modm_repo_branch}"
+        "MODM_REPO_BRANCH=${var.modm_repo_branch}",
+        "DOTNET_ENVIRONMENT=Packer"
       ]
     script = "build/vmi/${var.image_name}/setup.sh"
   }
