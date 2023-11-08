@@ -31,9 +31,6 @@ namespace Modm.Azure.Model
             Converters = { new DictionaryStringObjectJsonConverter() }
         };
 
-        [JsonPropertyName("appConfigEndpoint")]
-        public required string AppConfigEndpoint { get; set; }
-
         [JsonPropertyName("installerPackage")]
         public required InstallerPackageInfo InstallerPackage { get; set; }
 
@@ -60,7 +57,7 @@ namespace Modm.Azure.Model
 
         public bool IsValid()
         {
-            return this.InstallerPackage.IsValid() && !string.IsNullOrEmpty(this.AppConfigEndpoint);
+            return this.InstallerPackage.IsValid();
         }
     }
 }

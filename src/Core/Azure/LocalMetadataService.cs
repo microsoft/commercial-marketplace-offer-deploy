@@ -50,8 +50,7 @@ namespace Modm.Azure
                         {
                             Uri = Environment.GetEnvironmentVariable("INSTALLER_PACKAGE_URL") ?? "",
                             Hash = Environment.GetEnvironmentVariable("INSTALLER_PACKAGE_HASH") ?? ""
-                        },
-                        AppConfigEndpoint = Environment.GetEnvironmentVariable("Azure__AppConfigEndpoint") ?? ""
+                        }
                     }.ToBase64Json(),
                     Version = "",
                     VmScaleSetName = "",
@@ -66,10 +65,18 @@ namespace Modm.Azure
             return Task.FromResult("localhost");
         }
 
-        public async Task<UserData> GetUserData()
+        public async Task<UserDataResult> TryGetUserData()
         {
-            var metadata = await GetAsync();
-            return UserData.Deserialize(metadata.Compute.UserData);
+            try
+            {
+                var metadata = await GetAsync();
+                var userData = UserData.Deserialize(metadata.Compute.UserData);
+                return new UserDataResult(userData);
+            }
+            catch
+            {
+            }
+            return new UserDataResult(null);
         }
     }
 }

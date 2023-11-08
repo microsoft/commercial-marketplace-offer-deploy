@@ -29,7 +29,6 @@
             "appConfigReader": "516239f1-63e1-4d78-a4de-a74fb236a071"
         },
         "configStoreName": "[concat('modmconfig-', substring(uniqueString(resourceGroup().id), 0, 8))]",
-        "configStoreEndpoint": "[concat('https://', variables('configStoreName'), '.azconfig.io')]",
         "clientAppName": "{{clientAppName}}",
         "clientAppUrl": "{{dashboardUrl}}",
         "clientAppCredentials": "[base64(concat(parameters('_installerUsername'), '|', parameters('_installerPassword')))]",
@@ -55,7 +54,6 @@
         "publicIpAddressName": "[concat(variables('virtualMachineName'), '-publicip')]",
         "nsgName": "[concat(variables('virtualMachineName'), '-nsg')]",
         "userData": {
-            "appConfigEndpoint": "[variables('configStoreEndpoint')]",
             "installerPackage": {
                 "uri": "[concat(variables('artifactsContainerLocation'), '/', 'installer.zip')]",
                 "hash": "{{installerPackageHash}}"

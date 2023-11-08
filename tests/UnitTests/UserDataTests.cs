@@ -27,7 +27,6 @@ namespace Modm.Tests.UnitTests
 
             var userData = new UserData
 			{
-				AppConfigEndpoint = "appconfigendpoint",
 				InstallerPackage = new InstallerPackageInfo
 				{
 					Uri = "https://amastorageprodus.blob.core.windows.net/applicationdefinitions/A00B7_31E9F9A09FD24294A0A30101246D9700_6A633498A5E39022386B7223210EA09508E456BC6EEBFC1C1DF7D879B8A9B680/cd37db02a9334efcbabc5f037d548350/content.zip",
