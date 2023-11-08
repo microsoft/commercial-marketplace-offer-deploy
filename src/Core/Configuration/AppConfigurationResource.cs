@@ -1,6 +1,6 @@
-﻿using System;
-using Modm.Azure;
+﻿using Modm.Azure;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Azure.Core;
 
 namespace Modm.Configuration
 {
@@ -22,13 +22,14 @@ namespace Modm.Configuration
 
         public Uri Uri { get; }
 
+        public ResourceIdentifier Identifier { get; }
+
 		public AppConfigurationResource(ResourceId resourceGroupId)
 		{
             this.suffix = ArmFunctions.UniqueString(resourceGroupId.Id).Substring(0, uniqueSuffixLength);
             this.Name = string.Concat(prefix, suffix);
             this.Uri = new Uri($"https://{Name}.azconfig.io");
-
+            this.Identifier = ResourceIdentifier.Parse($"{resourceGroupId.Id}/providers/Microsoft.AppConfiguration/configurationStores/{Name}");
         }
 	}
 }
-
