@@ -4,7 +4,6 @@ using Modm.Engine;
 
 namespace WebHost.Controllers
 {
-
     [Route("api/[controller]")]
     [ApiController]
     public class DiagnosticsController : ControllerBase
@@ -25,4 +24,3 @@ namespace WebHost.Controllers
         }
     }
 }
-

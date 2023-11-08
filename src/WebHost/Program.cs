@@ -5,7 +5,6 @@ using Modm.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddWebHost(builder.Configuration, builder.Environment);
-
 builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddCors(options =>
@@ -45,6 +44,7 @@ app.UseHttpsRedirection();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller}/{action=Index}/{id?}");
+    pattern: "{controller}/{action=Index}/{id?}"
+).RequireAuthorization();
 
 app.Run();

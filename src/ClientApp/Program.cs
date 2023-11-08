@@ -46,8 +46,6 @@ else
     IdentityModelEventSource.ShowPII = true;
 }
 
-
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
