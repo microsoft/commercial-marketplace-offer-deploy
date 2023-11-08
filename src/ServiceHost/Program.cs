@@ -9,6 +9,10 @@ var host = Host.CreateDefaultBuilder(args)
     {
         builder.AddEnvironmentVariables();
 
+        Console.WriteLine("Environment Name = " + context.HostingEnvironment.EnvironmentName);
+
+        Console.WriteLine("IsPacker = " + context.HostingEnvironment.IsPacker());
+
         if (!context.HostingEnvironment.IsDevelopment() && !context.HostingEnvironment.IsPacker())
         {
             var provider = AppConfigurationEndpointProvider.New(context, builder.Build());
