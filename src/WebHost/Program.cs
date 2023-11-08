@@ -5,6 +5,8 @@ using Modm.WebHost;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddWebHost(builder.Configuration, builder.Environment);
 
+builder.Configuration.AddEnvironmentVariables();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowLocal", builder =>
@@ -13,17 +15,14 @@ builder.Services.AddCors(options =>
     });
 });
 
-if (!builder.Environment.IsDevelopment())
-{
-    var appConfigEndpoint = builder.Configuration["Azure:AppConfigEndpoint"] ?? string.Empty;
+var appConfigEndpoint = builder.Configuration["Azure:AppConfigEndpoint"] ?? string.Empty;
 
-    if (!string.IsNullOrEmpty(appConfigEndpoint))
-    {
-        builder.Configuration.AddAzureAppConfiguration(options =>
-          options.Connect(
-              new Uri(appConfigEndpoint),
-              new ManagedIdentityCredential()));
-    }
+if (!string.IsNullOrEmpty(appConfigEndpoint))
+{
+    builder.Configuration.AddAzureAppConfiguration(options =>
+      options.Connect(
+          new Uri(appConfigEndpoint),
+          new DefaultAzureCredential()));
 }
 
 var app = builder.Build();

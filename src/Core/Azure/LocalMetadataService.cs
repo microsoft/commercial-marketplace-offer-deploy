@@ -51,7 +51,8 @@ namespace Modm.Azure
                             Uri = Environment.GetEnvironmentVariable("INSTALLER_PACKAGE_URL") ?? "",
                             Hash = Environment.GetEnvironmentVariable("INSTALLER_PACKAGE_HASH") ?? ""
                         },
-                        DashboardUrl = Environment.GetEnvironmentVariable("DASHBOARD_URL") ?? "" }.ToBase64Json(),
+                        AppConfigEndpoint = Environment.GetEnvironmentVariable("Azure__AppConfigEndpoint") ?? ""
+                    }.ToBase64Json(),
                     Version = "",
                     VmScaleSetName = "",
                     VmSize = "",
@@ -63,6 +64,12 @@ namespace Modm.Azure
         public Task<string> GetFqdnAsync()
         {
             return Task.FromResult("localhost");
+        }
+
+        public async Task<UserData> GetUserData()
+        {
+            var metadata = await GetAsync();
+            return UserData.Deserialize(metadata.Compute.UserData);
         }
     }
 }
