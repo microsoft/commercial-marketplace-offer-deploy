@@ -8,31 +8,25 @@ export interface AuthToken {
   
 
   export const validateToken = (): boolean => {
-    console.log('validateToken');
     const tokenString = localStorage.getItem('jwtToken');
-    console.log('tokenString', tokenString);
+
     if (!tokenString) {
-        console.log('!tokenString');
       return false;
     }
+
     try {
       const token: AuthToken = JSON.parse(tokenString);
-      console.log('token', token);
-  
+
       // Convert the expiration date to a Date object
       const expirationDate = new Date(token.expires);
-      console.log('expirationDate', expirationDate);
       const currentTimestamp = new Date();
-      console.log('currentTimestamp', currentTimestamp);
 
       // Check if the current date/time is before the expiration date/time
       if (currentTimestamp < expirationDate) {
-        console.log('currentTimestamp < expirationDate');
         return true;
       } else {
         console.log('token expired - currentTimestamp > expirationDate');
       }
-  
       // Token is expired
       return false;
     } catch (error) {
