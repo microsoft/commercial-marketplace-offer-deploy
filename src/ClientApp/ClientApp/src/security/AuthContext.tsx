@@ -8,6 +8,7 @@ interface AuthContextType {
   userToken: AuthToken | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
+  checkAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>(null!); // Non-null assertion
@@ -18,32 +19,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [userToken, setUserToken] = useState<AuthToken | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  useEffect(() => {
-    const initializeAuth = async () => {
-      const tokenString = localStorage.getItem('jwtToken');
-      if (tokenString) {
-        const token: AuthToken = JSON.parse(tokenString);
-        if (validateToken()) {
+  const checkAuth = async () => {
+    const tokenString = localStorage.getItem('jwtToken');
+    if (tokenString) {
+      const token: AuthToken = JSON.parse(tokenString);
+      if (validateToken()) {
+        setIsAuthenticated(true);
+        setUserToken(token);
+      } else {
+        try {
+          const newToken = await refreshToken(token.id);
+          localStorage.setItem('jwtToken', JSON.stringify(newToken));
           setIsAuthenticated(true);
-          setUserToken(token);
-        } else {
-          // Token is expired or invalid, try to refresh it
-          try {
-            const newToken = await refreshToken(token.id); // Assume refreshToken is a function that you will implement
-            localStorage.setItem('jwtToken', JSON.stringify(newToken));
-            setIsAuthenticated(true);
-            setUserToken(newToken);
-          } catch (error) {
-            // Refresh token failed
-            localStorage.removeItem('jwtToken');
-            setIsAuthenticated(false);
-            setUserToken(null);
-          }
+          setUserToken(newToken);
+        } catch (error) {
+          localStorage.removeItem('jwtToken');
+          setIsAuthenticated(false);
+          setUserToken(null);
         }
-      }
-    };
+      } 
+    }
+  };
 
-    initializeAuth();
+  useEffect(() => {
+    checkAuth();
   }, []);
 
   const handleLogin = async (username: string, password: string) => {
@@ -65,6 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     userToken,
     login: handleLogin,
     logout: handleLogout,
+    checkAuth,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

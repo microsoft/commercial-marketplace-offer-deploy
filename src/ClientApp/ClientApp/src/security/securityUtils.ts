@@ -26,9 +26,8 @@ export interface AuthToken {
         return true;
       } else {
         console.log('token expired - currentTimestamp > expirationDate');
+        return false;
       }
-      // Token is expired
-      return false;
     } catch (error) {
       console.error('Error parsing the token from local storage:', error);
       return false;
