@@ -1,5 +1,6 @@
 using Azure.Identity;
 using Modm.Configuration;
+using Modm.Extensions;
 using Modm.ServiceHost;
 
 var host = Host.CreateDefaultBuilder(args)
@@ -8,7 +9,7 @@ var host = Host.CreateDefaultBuilder(args)
     {
         builder.AddEnvironmentVariables();
 
-        if (!context.HostingEnvironment.IsDevelopment())
+        if (!context.HostingEnvironment.IsDevelopment() && !context.HostingEnvironment.IsPacker())
         {
             var provider = AppConfigurationEndpointProvider.New(context, builder.Build());
 
