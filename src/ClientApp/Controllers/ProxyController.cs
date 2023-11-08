@@ -3,9 +3,10 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Modm.Engine;
+using System.Net.Http.Headers;
 using Modm.Deployments;
 using Modm.Diagnostics;
+using Modm.Engine;
 
 namespace Modm.ClientApp.Controllers
 {
@@ -24,22 +25,41 @@ namespace Modm.ClientApp.Controllers
             this.configuration = configuration;
         }
 
-        [HttpGet("deployments")]
-        public async Task<IActionResult> GetDeployments()
+        private string RetrieveJwtToken()
+        {
+            if (HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
+            {
+                var token = authHeader.ToString().Split(' ').Last();
+                return token;
+            }
+
+            return null;
+        }
+
+        private async Task<IActionResult> GetFromBackendService<T>(string endpoint)
         {
             string backendUrl = this.configuration[BackendUrlSettingName];
             if (string.IsNullOrEmpty(backendUrl))
             {
                 return BadRequest("Backend URL is not configured.");
             }
+
+            var token = RetrieveJwtToken();
+            if (token == null)
+            {
+                return Unauthorized("JWT Token is missing");
+            }
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
             try
             {
-                var response = await client.GetAsync($"{backendUrl}/api/deployments");
+                var response = await client.GetAsync($"{backendUrl}/api/{endpoint}");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var engineInfo = JsonSerializer.Deserialize<GetDeploymentResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                    return Ok(engineInfo);
+                    var result = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    return Ok(result);
                 }
                 else
                 {
@@ -48,99 +68,34 @@ namespace Modm.ClientApp.Controllers
             }
             catch (HttpRequestException ex)
             {
-                // Log exception details (use ILogger for logging)
-                return StatusCode(503, "Unable to reach the backend service."); // Service Unavailable
+                return StatusCode(503, "Unable to reach the backend service.");
             }
             catch (JsonException ex)
             {
-                // Log exception details (use ILogger for logging)
-                return StatusCode(500, "Error parsing the response from the backend service."); // Internal Server Error
+                return StatusCode(500, "Error parsing the response from the backend service.");
             }
             catch (Exception ex)
             {
-                // Log exception details (use ILogger for logging)
-                return StatusCode(500, "An unexpected error occurred."); // Internal Server Error
+                return StatusCode(500, "An unexpected error occurred.");
             }
+        }
+
+        [HttpGet("deployments")]
+        public Task<IActionResult> GetDeployments()
+        {
+            return GetFromBackendService<GetDeploymentResponse>("deployments");
         }
 
         [HttpGet("diagnostics")]
-        public async Task<IActionResult> GetDiagnostics()
+        public Task<IActionResult> GetDiagnostics()
         {
-            string backendUrl = this.configuration[BackendUrlSettingName];
-            if (string.IsNullOrEmpty(backendUrl))
-            {
-                return BadRequest("Backend URL is not configured.");
-            }
-
-            try
-            {
-                var response = await client.GetAsync($"{backendUrl}/api/diagnostics");
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var diagnosticsResponse = JsonSerializer.Deserialize<GetDiagnosticsResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                    return Ok(diagnosticsResponse);
-                }
-                else
-                {
-                    return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
-                }
-            }
-            catch (HttpRequestException ex)
-            {
-                // Log exception details (use ILogger for logging)
-                return StatusCode(503, "Unable to reach the backend service."); // Service Unavailable
-            }
-            catch (JsonException ex)
-            {
-                // Log exception details (use ILogger for logging)
-                return StatusCode(500, "Error parsing the response from the backend service."); // Internal Server Error
-            }
-            catch (Exception ex)
-            {
-                // Log exception details (use ILogger for logging)
-                return StatusCode(500, "An unexpected error occurred."); // Internal Server Error
-            }
+            return GetFromBackendService<GetDiagnosticsResponse>("diagnostics");
         }
 
         [HttpGet("status")]
-        public async Task<IActionResult> GetStatus()
+        public Task<IActionResult> GetStatus()
         {
-            string backendUrl = this.configuration[BackendUrlSettingName];
-            if (string.IsNullOrEmpty(backendUrl))
-            {
-                return BadRequest("Backend URL is not configured.");
-            }
-
-            try
-            {
-                var response = await client.GetAsync($"{backendUrl}/api/status");
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var engineInfo = JsonSerializer.Deserialize<EngineInfo>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                    return Ok(engineInfo);
-                }
-                else
-                {
-                    return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
-                }
-            }
-            catch (HttpRequestException ex)
-            {
-                // Log exception details (use ILogger for logging)
-                return StatusCode(503, "Unable to reach the backend service."); // Service Unavailable
-            }
-            catch (JsonException ex)
-            {
-                // Log exception details (use ILogger for logging)
-                return StatusCode(500, "Error parsing the response from the backend service."); // Internal Server Error
-            }
-            catch (Exception ex)
-            {
-                // Log exception details (use ILogger for logging)
-                return StatusCode(500, "An unexpected error occurred."); // Internal Server Error
-            }
+            return GetFromBackendService<EngineInfo>("status");
         }
     }
 }
