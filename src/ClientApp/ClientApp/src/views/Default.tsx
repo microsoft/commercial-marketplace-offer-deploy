@@ -16,7 +16,6 @@ import { useAuth } from '../security/AuthContext';
 export const Default = () => {
 
   const [filter, setFilter] = React.useState<'All' | 'Succeeded' | 'Failed'>('All');
-//   const [backendUrl, setBackendUrl] = React.useState<string | null>(null);
   const [offerName, setOfferName] = React.useState<string | null>(null);
   const [deploymentId, setDeploymentId] = React.useState<string | null>(null);
   const [subscriptionId, setSubscriptionId] = React.useState<string | null>(null);
@@ -121,7 +120,7 @@ export const Default = () => {
     } catch (error) {
       console.error(error);
     } finally {
-      setLoading(false); // Set loading to false once data is fetched or an error occurred
+      setLoading(false); 
     }
   }
 
@@ -155,9 +154,7 @@ export const Default = () => {
           console.error(error);
         }
       };
-    
-     // doGetBackendUrl();
-    
+        
     // Start the interval
     const intervalId = setInterval(() => {
         checkEngineHealth();
