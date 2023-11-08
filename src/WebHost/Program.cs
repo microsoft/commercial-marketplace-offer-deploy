@@ -17,6 +17,10 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddJwtBearerAuthentication(builder.Configuration);
 
+
+// the app config endpoint is set via env variables or directly in appsettings
+// Production: the env variable is set by the ServiceHost, flowing to the container instance
+
 var appConfigEndpoint = builder.Configuration["Azure:AppConfigEndpoint"] ?? string.Empty;
 
 if (!string.IsNullOrEmpty(appConfigEndpoint))
