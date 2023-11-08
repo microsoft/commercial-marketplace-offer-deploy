@@ -80,6 +80,47 @@ namespace Modm.ClientApp.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("resources/{resourceGroupName}/deletemodmresources")]
+        public async Task<IActionResult> DeleteResourcesWithTagAsync([FromRoute] string resourceGroupName)
+        {
+            string backendUrl = this.configuration[BackendUrlSettingName];
+            if (string.IsNullOrEmpty(backendUrl))
+            {
+                return BadRequest("Backend URL is not configured.");
+            }
+
+            var token = RetrieveJwtToken();
+            if (token == null)
+            {
+                return Unauthorized("JWT Token is missing");
+            }
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            try
+            {
+                var response = await client.PostAsync($"{backendUrl}/api/resources/{resourceGroupName}/deletemodmresources", null);
+
+                var content = await response.Content.ReadAsStringAsync();
+                return new ContentResult
+                {
+                    Content = content,
+                    ContentType = "application/json",
+                    StatusCode = (int)response.StatusCode
+                };
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(503, "Unable to reach the backend service.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An unexpected error occurred.");
+            }
+        }
+
+
         [HttpGet("deployments")]
         public Task<IActionResult> GetDeployments()
         {

@@ -179,12 +179,12 @@ export const Default = () => {
   );
 
   const _items: ICommandBarItemProps[] = [
-    {
-      key: 'redeploy',
-      text: 'Redeploy',
-      iconProps: { iconName: 'Upload' },
-      onClick: () => console.log('Redeploy clicked'),
-    },
+    // {
+    //   key: 'redeploy',
+    //   text: 'Redeploy',
+    //   iconProps: { iconName: 'Upload' },
+    //   onClick: () => console.log('Redeploy clicked'),
+    // },
     {
         key: 'delete',
         text: 'Delete',
