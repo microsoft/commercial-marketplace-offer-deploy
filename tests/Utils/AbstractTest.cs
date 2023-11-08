@@ -32,7 +32,12 @@ namespace Modm.Tests.Utils
             configure(Mock);
         }
 
-
+        /// <summary>
+        /// Loads a service type up to then perform assertions with it using the
+        /// instance that comes from the Provider built into the test
+        /// </summary>
+        /// <typeparam name="TService"></typeparam>
+        /// <param name="action"></param>
         protected void With<TService>(Action<TService> action) where TService : notnull
         {
             var instance = Provider.GetRequiredService<TService>();

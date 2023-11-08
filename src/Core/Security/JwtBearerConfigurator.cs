@@ -1,22 +1,22 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using Modm.Configuration;
 
-namespace ClientApp.Security
+namespace Modm.Security
 {
     public class JwtBearerConfigurator
     {
-        private readonly IConfiguration configuration;
+        private readonly JwtSettings settings;
 
         public JwtBearerConfigurator(IConfiguration configuration)
         {
-            this.configuration = configuration;
+            this.settings = new JwtSettings(configuration);
         }
 
         public void Configure(JwtBearerOptions options)
         {
-            var settings = new JwtSettings(configuration);
-
             options.RequireHttpsMetadata = false;
             options.Authority = settings.GetIssuer();
             options.Configuration = new OpenIdConnectConfiguration();
@@ -30,14 +30,6 @@ namespace ClientApp.Security
                 ValidateAudience = true,
                 ValidateLifetime = false,
                 ValidateIssuerSigningKey = true,
-            };
-
-            options.Events = new JwtBearerEvents
-            {
-                OnAuthenticationFailed = context =>
-                {
-                    return Task.CompletedTask;
-                }
             };
         }
     }

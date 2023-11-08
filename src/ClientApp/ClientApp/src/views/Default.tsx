@@ -11,11 +11,11 @@ import StyledSuccessIcon from './StyledSuccessIcon';
 import StyledFailureIcon from './StyledFailureIcon';
 import { toLocalDateTime } from '../utils/DateUtils';
 import { Separator } from '@fluentui/react';
+import { useAuth } from '../security/AuthContext';
 
 export const Default = () => {
 
   const [filter, setFilter] = React.useState<'All' | 'Succeeded' | 'Failed'>('All');
-//   const [backendUrl, setBackendUrl] = React.useState<string | null>(null);
   const [offerName, setOfferName] = React.useState<string | null>(null);
   const [deploymentId, setDeploymentId] = React.useState<string | null>(null);
   const [subscriptionId, setSubscriptionId] = React.useState<string | null>(null);
@@ -24,6 +24,15 @@ export const Default = () => {
   const [loading, setLoading] = React.useState<boolean>(true);
   const [isHealthy, setIsHealthy] = React.useState(false);
   const [enableFocusTrap, setEnableFocusTrap] = React.useState(false);
+  const { userToken } = useAuth();
+
+  const getAuthHeader = (): HeadersInit | undefined => {
+    if (userToken && userToken.token) {
+      return {
+        'Authorization': `Bearer ${userToken.token}`
+      };
+    }
+  };
 
   const columns: IColumn[] = [
     { key: 'name', name: 'Name', fieldName: 'name', minWidth: 100, maxWidth: 300, isResizable: true },
@@ -65,35 +74,14 @@ export const Default = () => {
     },
   ];
 
-//   const doGetBackendUrl = async () => {
-//     console.log('inside doGetBackendUrl');
-
-//     const response = await fetch(`${AppConstants.baseUrl}/api/settings?key=backendUrl`, {
-//         headers: {
-//           Accept: 'application/json',
-//         },
-//       });
-//       console.log(`Pulled results from /api/settings?key=backendUrl`)
-//       if (!response.ok) {
-//         throw new Error(`HTTP error! status: ${response.status}`);
-//       }
-
-//       const result = await response.json();
-//       console.log('got the result from response.json();');
-//       console.log(JSON.stringify(result));
-
-//       if (result) {
-//         console.log(`setBackendUrl: ${result}`);
-//         setBackendUrl(result);
-//       }
-//   }
-
   const doGetDeployedResources = async () => {
     try {
       const backendUrl = AppConstants.baseUrl;
+      const headers = getAuthHeader();
       const response = await fetch(`${backendUrl}/api/Deployments`, {
         headers: {
           Accept: 'application/json',
+          ...headers,
         },
       });
 
@@ -132,7 +120,7 @@ export const Default = () => {
     } catch (error) {
       console.error(error);
     } finally {
-      setLoading(false); // Set loading to false once data is fetched or an error occurred
+      setLoading(false); 
     }
   }
 
@@ -141,10 +129,12 @@ export const Default = () => {
     const checkEngineHealth = async () => {
         try {
           const backendUrl = AppConstants.baseUrl;
+          const headers = getAuthHeader();
           console.log(`inside checkEngineHealth with a backendUrl of ${backendUrl}}`);
           const response = await fetch(`${backendUrl}/api/status`, {
             headers: {
               Accept: 'application/json',
+              ...headers,
             },
           });
   
@@ -164,9 +154,7 @@ export const Default = () => {
           console.error(error);
         }
       };
-    
-     // doGetBackendUrl();
-    
+        
     // Start the interval
     const intervalId = setInterval(() => {
         checkEngineHealth();
@@ -191,12 +179,12 @@ export const Default = () => {
   );
 
   const _items: ICommandBarItemProps[] = [
-    {
-      key: 'redeploy',
-      text: 'Redeploy',
-      iconProps: { iconName: 'Upload' },
-      onClick: () => console.log('Redeploy clicked'),
-    },
+    // {
+    //   key: 'redeploy',
+    //   text: 'Redeploy',
+    //   iconProps: { iconName: 'Upload' },
+    //   onClick: () => console.log('Redeploy clicked'),
+    // },
     {
         key: 'delete',
         text: 'Delete',
@@ -205,8 +193,13 @@ export const Default = () => {
           // Here, you can make your API call or any other logic for the delete action
           try {
             const backendUrl = AppConstants.baseUrl;
+            const headers = getAuthHeader();
             const deleteResponse = await fetch(`${backendUrl}/api/resources/${deploymentResourceGroup}/deletemodmresources`, {
               method: 'POST',
+              headers: {
+                Accept: 'application/json',
+              ...headers,
+              },
             });
             if (!deleteResponse.ok) {
               throw new Error(`HTTP error! status: ${deleteResponse.status}`);

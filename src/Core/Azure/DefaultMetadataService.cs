@@ -50,6 +50,20 @@ namespace Modm.Azure
             return $"{dnsLabel}.{metadata.Compute.Location}.cloudapp.azure.com";
         }
 
+        public async Task<UserDataResult> TryGetUserData()
+        {
+            try
+            {
+                var metadata = await GetAsync();
+                var userData = UserData.Deserialize(metadata.Compute.UserData);
+                return new UserDataResult(userData);
+            }
+            catch
+            {
+            }
+            return new UserDataResult(null);
+        }
+
         private async Task<T> GetAsync<T>(string uri, string apiVersion, string otherParams = default)
         {
             var result = await asyncRetryPolicy.ExecuteAsync(async () => {

@@ -2,10 +2,12 @@
 using System.Security.Claims;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
+using Modm.Configuration;
+using Modm.Security;
 
 namespace ClientApp.Security
 {
-	public sealed class AuthManager
+    public sealed class AuthManager
 	{
         private readonly IMemoryCache cache;
         private readonly AdminCredentialsProvider adminCredentialsProvider;
@@ -83,8 +85,6 @@ namespace ClientApp.Security
             var credentials = adminCredentialsProvider.Get();
             return request.Username == credentials.Username && request.Password == credentials.Password;
         }
-
-        
 	}
 }
 

@@ -1,27 +1,48 @@
 import React from 'react';
 import { AppConstants } from '../constants/app-constants';
 import { useEffect } from 'react';
+import { useAuth } from '../security/AuthContext';
 
 interface DiagnosticsRespoonse {
   deploymentEngine: string;
 }
 
 export const Diagnostics = () => {
-
+  const { userToken } = useAuth();
   const [diagnostics, setDiagnostics] = React.useState<DiagnosticsRespoonse>({ deploymentEngine: "" });
 
-  useEffect(() => {
-    (async () => {
-      const backendUrl = AppConstants.baseUrl;
-      const response = await fetch(`${backendUrl}/api/diagnostics`, {
-        headers: {
-          Accept: 'application/json',
-        },
-      });
+  const getAuthHeader = (): HeadersInit | undefined => {
+    if (userToken && userToken.token) {
+      return {
+        'Authorization': `Bearer ${userToken.token}`
+      };
+    }
+  };
 
-      const result = await response.json();
-      setDiagnostics(result);
-    })();
+  useEffect(() => {
+    const fetchData = async () => {
+      const backendUrl = AppConstants.baseUrl;
+      const headers = getAuthHeader();
+      try {
+        const response = await fetch(`${backendUrl}/api/diagnostics`, {
+          headers: {
+            Accept: 'application/json',
+            ...headers,
+          },
+        });
+  
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+  
+        const result = await response.json();
+        setDiagnostics(result);
+      } catch (error) {
+        console.error('Failed to fetch diagnostics:', error);
+      }
+    };
+  
+    fetchData();
   });
 
   return (<>

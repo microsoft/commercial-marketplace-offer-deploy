@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 
 namespace Modm.Azure.Model
 {
@@ -11,6 +12,9 @@ namespace Modm.Azure.Model
 
         [JsonPropertyName("network")]
         public required Network Network { get; set; }
+
+        [JsonIgnore]
+        public ResourceId ResourceGroupId => ResourceId.FromString($"/subscriptions/{Compute.SubscriptionId}/resourceGroups/{Compute.ResourceGroupName}");
     }
 
     public partial class Compute

@@ -1,8 +1,7 @@
+from copy import deepcopy
 import json
 import os
-
 from packaging.installer.reserved_template_parameter import ReservedTemplateParameter
-
 from .arm_template_parameter import ArmTemplateParameter
 
 
@@ -13,7 +12,7 @@ class CreateUiDefinition:
     def validate(self, template_parameters: list[ArmTemplateParameter]):
         reserved_template_parameters = ReservedTemplateParameter.all()
         validation_results = []
-        outputs = self.document["parameters"]["outputs"]
+        outputs = deepcopy(self.document["parameters"]["outputs"])
 
         if outputs is None:
             validation_results.append(ValueError("The createUiDefinition.json must contain an outputs section"))
@@ -33,6 +32,11 @@ class CreateUiDefinition:
 
         outputs_keys = set(outputs.keys())
         template_parameters_keys = set(list(map(lambda p: p.name, template_parameters)))
+        
+        for reserved_key in reserved_template_parameters:
+            if reserved_key in template_parameters_keys:
+                template_parameters_keys.remove(reserved_key)
+
         diff = template_parameters_keys.symmetric_difference(outputs_keys)
 
         if len(diff) > 0:

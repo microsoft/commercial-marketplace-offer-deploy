@@ -31,11 +31,6 @@ namespace Modm.Azure.Model
             Converters = { new DictionaryStringObjectJsonConverter() }
         };
 
-        /// <summary>
-        /// The URL that points the client app which will redirect to MODM's dashboard
-        /// </summary>
-        public required string DashboardUrl { get; set; }
-
         [JsonPropertyName("installerPackage")]
         public required InstallerPackageInfo InstallerPackage { get; set; }
 
@@ -62,7 +57,7 @@ namespace Modm.Azure.Model
 
         public bool IsValid()
         {
-            return this.InstallerPackage.IsValid() && !string.IsNullOrEmpty(this.DashboardUrl);
+            return this.InstallerPackage.IsValid();
         }
     }
 }

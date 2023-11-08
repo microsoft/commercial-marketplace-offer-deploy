@@ -1,7 +1,11 @@
+using Azure.Identity;
+using System.Configuration;
 using Modm.WebHost;
+using Modm.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddWebHost(builder.Configuration, builder.Environment);
+builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddCors(options =>
 {
@@ -10,6 +14,25 @@ builder.Services.AddCors(options =>
         builder.WithOrigins("https://localhost:44482");
     });
 });
+
+builder.Services.AddJwtBearerAuthentication(builder.Configuration);
+
+
+// the app config endpoint is set via env variables or directly in appsettings
+// Production: the env variable is set by the ServiceHost, flowing to the container instance
+
+if (!builder.Environment.IsDevelopment())
+{
+    var appConfigEndpoint = builder.Configuration["Azure:AppConfigEndpoint"] ?? string.Empty;
+
+    if (!string.IsNullOrEmpty(appConfigEndpoint))
+    {
+        builder.Configuration.AddAzureAppConfiguration(options =>
+          options.Connect(
+              new Uri(appConfigEndpoint),
+              new DefaultAzureCredential()));
+    }
+}
 
 var app = builder.Build();
 
@@ -21,10 +44,14 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowLocal");
+
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseHttpsRedirection();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller}/{action=Index}/{id?}");
+    pattern: "{controller}/{action=Index}/{id?}"
+).RequireAuthorization();
 
 app.Run();

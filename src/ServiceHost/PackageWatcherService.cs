@@ -6,6 +6,9 @@ using Modm.Azure.Model;
 using Modm.Azure;
 using System.Text.Json;
 using Modm.Engine;
+using Modm.Security;
+using System.Net.Http.Headers;
+using System.Text;
 
 namespace Modm.ServiceHost
 {
@@ -15,12 +18,12 @@ namespace Modm.ServiceHost
     public class PackageWatcherService : BackgroundService
     {
         const int DefaultWaitDelaySeconds = 30;
-        const int MaxAttempts = 10;
         private const int MillisecondsInASecond = 1000;
 
         private readonly IMetadataService metadataService;
         private readonly ILogger<PackageWatcherService> logger;
         private UserData? userData;
+        private readonly Guid instanceId;
         PackageWatcherOptions? options;
         private EngineChecker engineChecker;
 
@@ -29,12 +32,14 @@ namespace Modm.ServiceHost
 
         private readonly HttpClient httpClient;
         private IConfiguration config;
+        private readonly JwtTokenFactory jwtTokenFactory;
 
         public PackageWatcherService(
             IMetadataService metadataService,
             HttpClient httpClient,
             EngineChecker engineChecker,
             IConfiguration config,
+            JwtTokenFactory jwtTokenFactory,
             ILogger<PackageWatcherService> logger)
 		{
             this.metadataService = metadataService;
@@ -42,7 +47,9 @@ namespace Modm.ServiceHost
             this.engineChecker = engineChecker;
             this.logger = logger;
             this.config = config;
+            this.jwtTokenFactory = jwtTokenFactory;
             this.userData = null;
+            this.instanceId = Guid.NewGuid();
         }
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -68,10 +75,11 @@ namespace Modm.ServiceHost
 
             if (this.userData == null)
             {
-                var base64UserData = await FetchBase64UserData(cancellation);
-                if (!String.IsNullOrEmpty(base64UserData))
+                var result = await metadataService.TryGetUserData();
+
+                if (result.IsValid)
                 {
-                    this.userData = UserData.Deserialize(base64UserData) ?? throw new InvalidDataException("The userData on the virtual machine instance is null");
+                    this.userData = result.UserData;
                 }
                 else
                 {
@@ -85,25 +93,9 @@ namespace Modm.ServiceHost
             return await TryStartDeployment(cancellation);
         }
 
-        private async Task<string?> FetchBase64UserData(CancellationToken cancellation)
-        {
-            while (!cancellation.IsCancellationRequested)
-            {
-                var instanceData = await this.metadataService.GetAsync();
-                if (!string.IsNullOrEmpty(instanceData.Compute.UserData))
-                {
-                    return instanceData.Compute.UserData;
-                }
-
-                await Task.Delay(DefaultWaitDelaySeconds * MillisecondsInASecond, cancellation);
-            }
-
-            return null;
-        }
-
         private string GetStateFilePath()
         {
-            if (this.options == null || String.IsNullOrEmpty(this.options.StateFilePath))
+            if (this.options == null || string.IsNullOrEmpty(this.options.StateFilePath))
             {
                 return Path.Combine(this.config.GetHomeDirectory(), "service/state.txt");
             }
@@ -138,7 +130,6 @@ namespace Modm.ServiceHost
                     Parameters = userData.Parameters ?? new Dictionary<string, object>()
                 };
 
-                
                 var isHealthy = await this.engineChecker.IsEngineHealthy();
                 if (!isHealthy)
                 {
@@ -162,10 +153,10 @@ namespace Modm.ServiceHost
                 try
                 {
                     var response = await StartDeployment(request);
-                    var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true });
-                    var stateFilePath = GetStateFilePath();
-                    await File.WriteAllTextAsync(stateFilePath, json);
                     logger.LogInformation("Received deployment result, Id: {id}", response?.Deployment.Id);
+
+                    await UpdateState(request, cancellation);
+
                     return;
                 }
                 catch (Exception ex)
@@ -176,14 +167,36 @@ namespace Modm.ServiceHost
             }
         }
 
+        private async Task UpdateState(StartDeploymentRequest request, CancellationToken cancellation)
+        {
+            var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true });
+
+            var stateFilePath = GetStateFilePath();
+            await File.WriteAllTextAsync(stateFilePath, json, cancellation);
+        }
+
         private async Task<StartDeploymentResult?> StartDeployment(StartDeploymentRequest request)
         {
-            HttpResponseMessage response = await this.httpClient.PostAsJsonAsync(this.options?.DeploymentsUrl, request);
+            var token = jwtTokenFactory.Create(new JwtTokenOptions
+            {
+                Expires = DateTimeOffset.UtcNow.AddMinutes(10),
+                Id = instanceId,
+                Sub = nameof(PackageWatcherService)
+            });
+
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, this.options?.DeploymentsUrl)
+            {
+                Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json")
+            };
+
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var response = await this.httpClient.SendAsync(httpRequest);
+
             response.EnsureSuccessStatusCode();
 
             this.logger.LogInformation("HTTP Post to [{url}] successful.", this.options?.DeploymentsUrl);
 
-            return await System.Text.Json.JsonSerializer.DeserializeAsync<StartDeploymentResult>(
+            return await JsonSerializer.DeserializeAsync<StartDeploymentResult>(
                 response.Content.ReadAsStream(), new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true,

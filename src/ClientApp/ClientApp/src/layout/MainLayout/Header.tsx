@@ -1,4 +1,5 @@
 import { IPersonaSharedProps, Persona, PersonaSize, PersonaPresence, PersonaInitialsColor, IPersonaProps } from '@fluentui/react/lib/Persona';
+import { ContextualMenu, IContextualMenuProps } from '@fluentui/react/lib/ContextualMenu';
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars, faDashboard, faArchive } from '@fortawesome/free-solid-svg-icons'
@@ -7,7 +8,10 @@ import { useAuth } from '../../security/AuthContext';
 
 const Header = () => {
   const [renderDetails, updateRenderDetails] = useState(true);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
+  const [showContextMenu, setShowContextMenu] = useState(false);
+  const [contextMenuTarget, setContextMenuTarget] = useState<HTMLElement | null>(null);
+
   const onChange = (ev: unknown, checked: boolean | undefined) => {
     updateRenderDetails(!!checked);
   };
@@ -21,6 +25,33 @@ const Header = () => {
     return <span className='position-absolute text-white' style={{ left: 'auto', right: 50, top: 0 }}>{props?.text}</span>;
   };
 
+  const menuItems = [
+    {
+      key: 'logout',
+      text: 'Logout',
+      iconProps: { iconName: 'SignOut' },
+      onClick: () => {
+        console.log('logging out');
+        logout();
+      },
+    },
+  ];
+
+  const onPersonaClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    setContextMenuTarget(event.currentTarget);
+    setShowContextMenu(true);
+  };
+
+  const onMenuDismiss = () => {
+    setShowContextMenu(false);
+  };
+
+  const contextualMenuProps: IContextualMenuProps = {
+    items: menuItems,
+    target: contextMenuTarget,
+    onDismiss: onMenuDismiss,
+    directionalHintFixed: true,
+  };
 
   return (
     <header className="navbar navbar-dark sticky-top bg-blue flex-md-nowrap p-0">
@@ -41,6 +72,7 @@ const Header = () => {
       <div className="navbar-nav d-flex">
         <div className="nav-item text-nowrap">
         {isAuthenticated && (
+            <>
             <Persona
             {...adminPersona}
             text="MODM Admin"
@@ -50,11 +82,12 @@ const Header = () => {
             initialsColor={PersonaInitialsColor.gray}
             onRenderPrimaryText={renderPrimaryTextHandler}
             color='white'
+            onClick={onPersonaClick}
           />
+          {showContextMenu && <ContextualMenu {...contextualMenuProps} />}
+          </>
         )}
-        
         </div>
-        
       </div>
     </header>
   )

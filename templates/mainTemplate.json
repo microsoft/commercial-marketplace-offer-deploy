@@ -24,7 +24,15 @@
     },
     "variables": {
         "location": "[resourceGroup().location]",
+        "roleDefinitionId": {
+            "appConfigOwner": "5ae67dd6-50cb-40e7-96ff-dc2bfa4b606b",
+            "appConfigReader": "516239f1-63e1-4d78-a4de-a74fb236a071"
+        },
+        "configStoreName": "[concat('modmconfig-', substring(uniqueString(resourceGroup().id), 0, 8))]",
         "clientAppName": "{{clientAppName}}",
+        "clientAppUrl": "{{dashboardUrl}}",
+        "clientAppCredentials": "[base64(concat(parameters('_installerUsername'), '|', parameters('_installerPassword')))]",
+        "clientAppSigningKey": "[uniqueString(resourceGroup().id, newGuid())]",
         "clientAppStorageAccountName": "[format('{0}modm', uniqueString(resourceGroup().id))]",
         "clientAppPackageUrl": "[concat(variables('artifactsContainerLocation'), '/', 'clientapp.zip')]",
         "vmiReferenceId": "{{vmiReferenceId}}",
@@ -46,7 +54,6 @@
         "publicIpAddressName": "[concat(variables('virtualMachineName'), '-publicip')]",
         "nsgName": "[concat(variables('virtualMachineName'), '-nsg')]",
         "userData": {
-            "dashboardUrl": "{{dashboardUrl}}",
             "installerPackage": {
                 "uri": "[concat(variables('artifactsContainerLocation'), '/', 'installer.zip')]",
                 "hash": "{{installerPackageHash}}"
@@ -63,7 +70,7 @@
             "apiVersion": "2022-05-01",
             "name": "[variables('clientAppStorageAccountName')]",
             "comments": "Storage account for the azure function which will serve up the dashboard",
-            "location": "[resourceGroup().location]",
+            "location": "[variables('location')]",
             "sku": {
                 "name": "Standard_LRS"
             },
@@ -79,7 +86,7 @@
             "type": "Microsoft.Web/serverfarms",
             "apiVersion": "2022-03-01",
             "name": "[variables('clientAppName')]",
-            "location": "[resourceGroup().location]",
+            "location": "[variables('location')]",
             "sku": {
                 "name": "F1"
             },
@@ -92,7 +99,7 @@
             "type": "Microsoft.Web/sites",
             "apiVersion": "2022-03-01",
             "name": "[variables('clientAppName')]",
-            "location": "[resourceGroup().location]",
+            "location": "[variables('location')]",
             "identity": {
                 "type": "SystemAssigned"
             },
@@ -110,18 +117,6 @@
                         {
                             "name": "WEBSITE_RUN_FROM_PACKAGE",
                             "value": "[variables('clientAppPackageUrl')]"
-                        },
-                        {
-                            "name": "BackendUrl",
-                            "value": "[variables('backendUrl')]"
-                        },
-                        {
-                            "name": "AdminCredentials",
-                            "value": "[base64(concat(parameters('_installerUsername'), '|', parameters('_installerPassword')))]"
-                        },
-                        {
-                            "name": "SigningKey",
-                            "value": "[uniqueString(resourceGroup().id, newGuid())]"
                         }
                     ],
                     "linuxFxVersion": "DOTNET-ISOLATED|7.0",
@@ -129,7 +124,88 @@
                 },
                 "publicNetworkAccess": "Enabled",
                 "httpsOnly": true
-            }
+            },
+            "resources": [
+                {
+                    "type": "config",
+                    "name": "appsettings",
+                    "apiVersion": "2021-03-01",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', variables('clientAppName'))]",
+                        "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+                    ],
+                    "properties": {
+                        "Credentials": "[concat('@Microsoft.AppConfiguration(Endpoint=', reference(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))).endpoint,'; Key=Credentials)')]",
+                        "SigningKey": "[concat('@Microsoft.AppConfiguration(Endpoint=', reference(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))).endpoint,'; Key=SigningKey)')]",
+                        "BackendUrl": "[concat('@Microsoft.AppConfiguration(Endpoint=', reference(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))).endpoint,'; Key=BackendUrl)')]",
+                        "DashboardUrl":"[concat('@Microsoft.AppConfiguration(Endpoint=', reference(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))).endpoint,'; Key=SigningKey)')]"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.AppConfiguration/configurationStores",
+            "apiVersion": "2021-10-01-preview",
+            "name": "[variables('configStoreName')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "standard"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('clientAppName'))]"
+            ],
+            "properties": {},
+            "resources": [
+                {
+                    "type": "keyValues",
+                    "name": "Credentials",
+                    "apiVersion": "2021-10-01-preview",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+                    ],
+                    "properties": {
+                        "value": "[variables('clientAppCredentials')]",
+                        "contentType": "text/plain"
+                    }
+                },
+                {
+                    "type": "keyValues",
+                    "name": "SigningKey",
+                    "apiVersion": "2021-10-01-preview",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+                    ],
+                    "properties": {
+                        "value": "[variables('clientAppSigningKey')]",
+                        "contentType": "text/plain"
+                    }
+                },
+                {
+                    "type": "keyValues",
+                    "name": "DashboardUrl",
+                    "apiVersion": "2021-10-01-preview",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+                    ],
+                    "properties": {
+                        "value": "[variables('clientAppUrl')]",
+                        "contentType": "text/plain"
+                    }
+                },
+                {
+                    "type": "keyValues",
+                    "name": "BackendUrl",
+                    "apiVersion": "2021-10-01-preview",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+                    ],
+                    "properties": {
+                        "value": "[variables('backendUrl')]",
+                        "contentType": "text/plain"
+                    }
+                }
+            ],
+            "tags": "[variables('commonTags')]"
         },
         {
             "name": "[variables('vnetName')]",
@@ -258,6 +334,28 @@
                 "principalType": "ServicePrincipal",
                 "roleDefinitionId": "[variables('Owner')]",
                 "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), '2022-03-01', 'Full').identity.principalId]"
+            }
+        },
+        {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2020-10-01-preview",
+            "scope": "[format('Microsoft.AppConfiguration/configurationStores/{0}', variables('configStoreName'))]",
+            "name": "[guid(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName')), reference(resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), '2022-03-01', 'Full').identity.principalId, subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').appConfigOwner))]",
+            "properties": {
+            "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').appConfigOwner)]",
+            "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), '2022-03-01', 'Full').identity.principalId]",
+            "principalType": "ServicePrincipal"
+            }
+        },
+        {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2020-10-01-preview",
+            "scope": "[format('Microsoft.AppConfiguration/configurationStores/{0}', variables('configStoreName'))]",
+            "name": "[guid(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName')), reference(resourceId('Microsoft.Web/sites', variables('clientAppName')), '2022-03-01', 'Full').identity.principalId, subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').appConfigReader))]",
+            "properties": {
+            "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').appConfigReader)]",
+            "principalId": "[reference(resourceId('Microsoft.Web/sites', variables('clientAppName')), '2022-03-01', 'Full').identity.principalId]",
+            "principalType": "ServicePrincipal"
             }
         },
         {

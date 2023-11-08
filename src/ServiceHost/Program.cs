@@ -1,12 +1,25 @@
+using Azure.Identity;
+using Modm.Configuration;
 using Modm.ServiceHost;
 
 var host = Host.CreateDefaultBuilder(args)
     .UseSystemd()
-    .ConfigureAppConfiguration(builder =>
+    .ConfigureAppConfiguration((context, builder) =>
     {
         builder.AddEnvironmentVariables();
+
+        if (!context.HostingEnvironment.IsDevelopment())
+        {
+            var provider = AppConfigurationEndpointProvider.New(context, builder.Build());
+
+            builder.AddAzureAppConfiguration(options =>
+                  options.Connect(provider.Get(), new DefaultAzureCredential()));
+        }
     })
-    .ConfigureServices((context, services) => services.AddServiceHost(context))
+    .ConfigureServices((context, services) =>
+    {
+        services.AddServiceHost(context);
+    })
     .Build();
 
 await host.RunAsync();
