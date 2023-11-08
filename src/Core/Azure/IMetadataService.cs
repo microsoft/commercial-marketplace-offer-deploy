@@ -6,5 +6,6 @@ namespace Modm.Azure
     {
         Task<InstanceMetadata> GetAsync();
         Task<string> GetFqdnAsync();
+        Task<UserData> GetUserData();
     }
 }

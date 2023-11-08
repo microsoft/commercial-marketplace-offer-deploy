@@ -15,7 +15,8 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "MODM_HOME": "/Users/bobjacobs/work/src/github.com/microsoft/commercial-marketplace-offer-deploy/home",
-        "AZURE_SUBSCRIPTION_ID": " "
+        "AZURE_SUBSCRIPTION_ID": " ",
+        "Azure__AppConfigEndpoint": "https://kehillitestconfig.azconfig.io"
       }
     },
     "IIS Express": {

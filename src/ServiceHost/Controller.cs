@@ -24,6 +24,7 @@ namespace Modm.ServiceHost
         private readonly ILogger<Controller> logger;
         ICompositeService? composeService;
         readonly IManagedIdentityService managedIdentityService;
+        private readonly IMetadataService metadataService;
         private readonly IHostEnvironment environment;
 
         string EnvFilePath
@@ -49,7 +50,8 @@ namespace Modm.ServiceHost
         #endregion
 
         public Controller(ControllerOptions options, 
-            IManagedIdentityService managedServiceIdentity, 
+            IManagedIdentityService managedServiceIdentity,
+            IMetadataService metadataService,
             IHostEnvironment environment, 
             IConfiguration configuration, 
             IMediator mediator, 
@@ -60,6 +62,7 @@ namespace Modm.ServiceHost
             this.mediator = mediator;
             this.logger = logger;
             this.managedIdentityService = managedServiceIdentity;
+            this.metadataService = metadataService;
             this.environment = environment;
         }
 
@@ -103,12 +106,17 @@ namespace Modm.ServiceHost
 
         private async Task UpdateEnvFileAsync()
         {
+            var userData = await metadataService.GetUserData();
+
             using var envFile = await GetEnvFileAsync();
 
             envFile.Set("MODM_HOME", configuration.GetHomeDirectory());
 
             var password = environment.IsDevelopment() ? "admin" : options.MachineName;
             envFile.Set("DEFAULT_ADMIN_PASSWORD", password);
+
+            // app config endpoint for web host to read from
+            envFile.Set("Azure__AppConfigEndpoint", userData.AppConfigEndpoint);
 
             // set for caddy to work
             envFile.Set("SITE_ADDRESS", options.Fqdn);
@@ -148,13 +156,7 @@ namespace Modm.ServiceHost
                 builder.WithEnvironment(envFile.ToArray());
             }
 
-            var service = builder.RemoveOrphans()
-                        //.WaitForHttp("jenkins", "http://localhost:8080/login", timeout: 60000, (response, attempt) =>
-                        //{
-                        //    logger.LogInformation("Engine check [{attempt}]. HTTP Status [{statusCode}]", attempt, response.Code);
-                        //    return response.Code == System.Net.HttpStatusCode.OK ? 0 : 500;
-                        //})
-                        .Build();
+            var service = builder.RemoveOrphans().Build();
 
             service.StateChange += (object sender, StateChangeEventArgs e) =>
             {

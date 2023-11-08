@@ -63,7 +63,8 @@ namespace Modm.ServiceHost
 
             return new Controller(this.options,
                 serviceProvider.GetRequiredService<IManagedIdentityService>(),
-				serviceProvider.GetRequiredService<IHostEnvironment>(),
+                serviceProvider.GetRequiredService<IMetadataService>(),
+                serviceProvider.GetRequiredService<IHostEnvironment>(),
                 serviceProvider.GetRequiredService<IConfiguration>(),
                 serviceProvider.GetRequiredService<IMediator>(),
                 serviceProvider.GetRequiredService<ILogger<Controller>>()
