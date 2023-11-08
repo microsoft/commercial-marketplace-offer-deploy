@@ -9,17 +9,17 @@ var host = Host.CreateDefaultBuilder(args)
     {
         builder.AddEnvironmentVariables();
 
-        if (!context.HostingEnvironment.IsDevelopment())
-        {
-            try
-            {
-                var provider = AppConfigurationEndpointProvider.New(context, builder.Build());
-                builder.AddAzureAppConfiguration(options => options.Connect(provider.Get(), new DefaultAzureCredential()));
-            }
-            catch
-            {
-            }
-        }
+        //if (!context.HostingEnvironment.IsDevelopment())
+        //{
+        //    try
+        //    {
+        //        var provider = AppConfigurationEndpointProvider.New(context, builder.Build());
+        //        builder.AddAzureAppConfiguration(options => options.Connect(provider.Get(), new DefaultAzureCredential()));
+        //    }
+        //    catch
+        //    {
+        //    }
+        //}
     })
     .ConfigureServices((context, services) =>
     {
