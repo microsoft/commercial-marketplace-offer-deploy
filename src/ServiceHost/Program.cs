@@ -10,7 +10,7 @@ var host = Host.CreateDefaultBuilder(args)
 
         if (!context.HostingEnvironment.IsDevelopment())
         {
-            var provider = AppConfigurationEndpointProvider.FromHostBuilderContext(context);
+            var provider = AppConfigurationEndpointProvider.New(context, builder.Build());
 
             builder.AddAzureAppConfiguration(options =>
                   options.Connect(provider.Get(), new DefaultAzureCredential()));
