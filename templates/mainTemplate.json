@@ -204,7 +204,8 @@
                         "contentType": "text/plain"
                     }
                 }
-            ]
+            ],
+            "tags": "[variables('commonTags')]"
         },
         {
             "name": "[variables('vnetName')]",
