@@ -6,14 +6,7 @@
         "basics": [
             {}
         ],
-        "steps": [
-            {
-                "name": "setup",
-                "label": "App Setup",
-                "elements": [
-                ]
-            }
-        ],
+        "steps": [],
         "outputs": {
             "location": "[location()]"
         }

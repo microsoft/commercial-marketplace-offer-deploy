@@ -7,19 +7,10 @@ from packaging.installer.reserved_template_parameter import ReservedTemplatePara
 
 
 class UserData:
-    dashboard_url_key = "dashboardUrl"
     installer_package_key = "installerPackage"
 
     def __init__(self, document: dict) -> None:
         self.document = document
-
-    @property
-    def dashboard_url(self):
-        return self.document.get(self.dashboard_url_key)
-
-    @dashboard_url.setter
-    def dashboard_url(self, value):
-        self.document[self.dashboard_url_key] = value
 
     def set_installer_package_hash(self, value):
         if self.installer_package_key not in self.document:
@@ -46,6 +37,7 @@ class MainTemplate(ArmTemplate):
 
     client_app_name_prefix = "modm"
     client_app_name_variable = "clientAppName"
+    client_app_url_variable = "clientAppUrl"
     vmi_reference_id_variable = "vmiReferenceId"
     vm_storage_profile_image_reference = "imageReference"
 
@@ -53,13 +45,21 @@ class MainTemplate(ArmTemplate):
         super().__init__(document)
         self._vm_offer = None
         self.client_app_name = create_client_app_name(self.client_app_name_prefix)
-        self.dashboard_url = f"https://{self.client_app_name}.azurewebsites.net/dashboard"
+        self.dashboard_url = f"https://{self.client_app_name}.azurewebsites.net/"
         self._user_data = UserData(self.document["variables"]["userData"])
         self._user_data.dashboard_url = self.dashboard_url
 
     def set_parameters(self, parameters: list[ArmTemplateParameter]):
         super().set_parameters(parameters)
         self._user_data.insert_parameters(parameters)
+
+    @property
+    def dashboard_url(self):
+        return self.document["variables"][self.client_app_url_variable]
+
+    @dashboard_url.setter
+    def dashboard_url(self, value):
+        self.document["variables"][self.client_app_url_variable] = value
 
     @property
     def vmi_reference_id(self):

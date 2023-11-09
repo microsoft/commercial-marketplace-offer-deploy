@@ -165,9 +165,10 @@ class ApplicationPackage:
 
         self._finalize_main_template(info, installer_package, options)
         self._finalize_view_definition(info, options)
+        self._finalize_create_ui_definition(info, options)
 
         result = CreateApplicationPackageResult(installer_package=installer_package, client_app_name=self.main_template.client_app_name)
-        result.file = self._zip(info, installer_package, options, out_dir)
+        result.file = self._zip(installer_package, options, out_dir)
 
         if result.file is None or not result.file.exists():
             result.validation_results.append(Exception("Failed to create application package"))
@@ -198,7 +199,14 @@ class ApplicationPackage:
             vmi_reference_id=options.vmi_reference_id,
         )
 
-    def _zip(self, info, installer_package, options, out_dir=None) -> Path:
+    def _finalize_create_ui_definition(self, info: ApplicationPackageInfo, options: CreateApplicationPackageOptions):
+        create_ui_definition = info.create_ui_definition
+        create_ui_definition_step = self._get_resources(options).create_ui_definition_step
+        create_ui_definition_step.append_to(create_ui_definition)
+
+        self.create_ui_definition = create_ui_definition
+
+    def _zip(self, installer_package, options, out_dir=None) -> Path:
         installer_resources = self._get_resources(options)
 
         out_dir = out_dir if out_dir is not None else tempfile.mkdtemp()
@@ -209,7 +217,7 @@ class ApplicationPackage:
             zip_file.write(installer_package.path, installer_package.name)
             zip_file.writestr(MAIN_TEMPLATE_FILE_NAME, self.main_template.to_json())
             zip_file.writestr(VIEW_DEFINITION_FILE_NAME, self.view_definition.to_json())
-            zip_file.writestr(CREATE_UI_DEFINITION_FILE_NAME, info.create_ui_definition.to_json())
+            zip_file.writestr(CREATE_UI_DEFINITION_FILE_NAME, self.create_ui_definition.to_json())
             zip_file.close()
 
         return file
