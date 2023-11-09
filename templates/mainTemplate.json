@@ -25,6 +25,7 @@
     "variables": {
         "location": "[resourceGroup().location]",
         "roleDefinitionId": {
+            "owner": "8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
             "appConfigOwner": "5ae67dd6-50cb-40e7-96ff-dc2bfa4b606b",
             "appConfigReader": "516239f1-63e1-4d78-a4de-a74fb236a071"
         },
@@ -340,9 +341,9 @@
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2020-10-01-preview",
             "scope": "[format('Microsoft.AppConfiguration/configurationStores/{0}', variables('configStoreName'))]",
-            "name": "[guid(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName')), reference(resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), '2022-03-01', 'Full').identity.principalId, subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').appConfigOwner))]",
+            "name": "[guid(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName')), reference(resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), '2022-03-01', 'Full').identity.principalId, subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').owner))]",
             "properties": {
-            "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').appConfigOwner)]",
+            "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').owner)]",
             "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), '2022-03-01', 'Full').identity.principalId]",
             "principalType": "ServicePrincipal"
             }

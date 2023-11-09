@@ -1,5 +1,3 @@
-using Azure.Identity;
-using System.Configuration;
 using Modm.WebHost;
 using Modm.Extensions;
 
@@ -16,23 +14,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddJwtBearerAuthentication(builder.Configuration);
-
-
-// the app config endpoint is set via env variables or directly in appsettings
-// Production: the env variable is set by the ServiceHost, flowing to the container instance
-
-if (!builder.Environment.IsDevelopment())
-{
-    var appConfigEndpoint = builder.Configuration["Azure:AppConfigEndpoint"] ?? string.Empty;
-
-    if (!string.IsNullOrEmpty(appConfigEndpoint))
-    {
-        builder.Configuration.AddAzureAppConfiguration(options =>
-          options.Connect(
-              new Uri(appConfigEndpoint),
-              new DefaultAzureCredential()));
-    }
-}
+builder.Configuration.AddAppConfigurationSafely(builder.Environment);
 
 var app = builder.Build();
 

@@ -6,7 +6,7 @@ var host = Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration((context, builder) =>
     {
         builder.AddEnvironmentVariables();
-        builder.AddAppConfigurationIfExists(context);
+        builder.AddAppConfigurationSafely(context.HostingEnvironment);
     })
     .ConfigureServices((context, services) =>
     {
