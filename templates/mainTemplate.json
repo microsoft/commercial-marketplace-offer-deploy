@@ -91,7 +91,7 @@
             "name": "[variables('clientAppName')]",
             "location": "[variables('location')]",
             "sku": {
-                "name": "F1"
+                "name": "S1"
             },
             "properties": {
                 "reserved": true
