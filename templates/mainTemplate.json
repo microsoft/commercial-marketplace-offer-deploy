@@ -34,7 +34,7 @@
         "clientAppUrl": "{{dashboardUrl}}",
         "clientAppCredentials": "[base64(concat(parameters('_installerUsername'), '|', parameters('_installerPassword')))]",
         "clientAppSigningKey": "[uniqueString(resourceGroup().id, variables('clientAppName'))]",
-        "clientAppStorageAccountName": "[format('{0}modm', uniqueString(resourceGroup().id))]",
+        "clientAppStorageAccountName": "[format('modm{0}', uniqueString(resourceGroup().id))]",
         "clientAppPackageUrl": "[concat(variables('artifactsContainerLocation'), '/', 'clientapp.zip')]",
         "vmiReferenceId": "{{vmiReferenceId}}",
         "virtualMachineSize": "Standard_D2s_v3",
@@ -59,7 +59,9 @@
                 "uri": "[concat(variables('artifactsContainerLocation'), '/', 'installer.zip')]",
                 "hash": "{{installerPackageHash}}"
             },
-            "parameters": {}
+            "parameters": {
+                "resourceGroupName": "[resourceGroup().name]"
+            }
         },
         "commonTags": {
             "modm": "true"
@@ -89,7 +91,7 @@
             "name": "[variables('clientAppName')]",
             "location": "[variables('location')]",
             "sku": {
-                "name": "F1"
+                "name": "S1"
             },
             "properties": {
                 "reserved": true
@@ -113,16 +115,6 @@
             "properties": {
                 "reserved": true,
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('clientAppName'))]",
-                "siteConfig": {
-                    "appSettings": [
-                        {
-                            "name": "WEBSITE_RUN_FROM_PACKAGE",
-                            "value": "[variables('clientAppPackageUrl')]"
-                        }
-                    ],
-                    "linuxFxVersion": "DOTNET-ISOLATED|7.0",
-                    "netFrameworkVersion": "7.0"
-                },
                 "publicNetworkAccess": "Enabled",
                 "httpsOnly": true
             },
@@ -136,10 +128,36 @@
                         "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
                     ],
                     "properties": {
+                        "WEBSITE_RUN_FROM_PACKAGE": "[variables('clientAppPackageUrl')]",
                         "Credentials": "[concat('@Microsoft.AppConfiguration(Endpoint=', reference(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))).endpoint,'; Key=Credentials)')]",
                         "SigningKey": "[concat('@Microsoft.AppConfiguration(Endpoint=', reference(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))).endpoint,'; Key=SigningKey)')]",
                         "BackendUrl": "[concat('@Microsoft.AppConfiguration(Endpoint=', reference(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))).endpoint,'; Key=BackendUrl)')]",
                         "DashboardUrl":"[concat('@Microsoft.AppConfiguration(Endpoint=', reference(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))).endpoint,'; Key=SigningKey)')]"
+                    }
+                },
+                {
+                    "type": "config",
+                    "name": "web",
+                    "apiVersion": "2021-03-01",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', variables('clientAppName'))]",
+                        "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+                    ],
+                    "properties": {
+                        "linuxFxVersion": "DOTNETCORE|7.0",
+                        "netFrameworkVersion": "7.0"
+                    }
+                },
+                {
+                    "type": "config",
+                    "name": "metadata",
+                    "apiVersion": "2021-03-01",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', variables('clientAppName'))]",
+                        "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+                    ],
+                    "properties": {
+                       "CURRENT_STACK": "dotnet"
                     }
                 }
             ]

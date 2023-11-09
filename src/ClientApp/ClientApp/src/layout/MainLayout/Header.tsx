@@ -18,7 +18,7 @@ const Header = () => {
 
   const adminPersona: IPersonaSharedProps = {
     imageInitials: 'MA',
-    text: 'MODM Admin',
+    text: 'Installer Admin',
   };
 
   const renderPrimaryTextHandler: IRenderFunction<IPersonaProps> = (props) => {

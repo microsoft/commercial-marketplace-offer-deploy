@@ -33,7 +33,7 @@ function createApplicationPackage() {
     echo "Creating resources tarball."
     echo ""
 
-    modm util create-resources-tarball -t ./templates -f src/Functions/Functions.csproj -o ./bin
+    modm util create-resources-tarball -t ./templates -f src/ClientApp/ClientApp.csproj -o ./bin
     resources_file=./bin/resources.tar.gz
 
     # build application package, e.g. app.zip
