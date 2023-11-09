@@ -91,7 +91,7 @@
             "name": "[variables('clientAppName')]",
             "location": "[variables('location')]",
             "sku": {
-                "name": "S1"
+                "name": "B2"
             },
             "properties": {
                 "reserved": true
@@ -128,6 +128,7 @@
                         "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
                     ],
                     "properties": {
+                        "ASPNETCORE_HTTPS_PORT": "443",
                         "WEBSITE_RUN_FROM_PACKAGE": "[variables('clientAppPackageUrl')]",
                         "Credentials": "[concat('@Microsoft.AppConfiguration(Endpoint=', reference(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))).endpoint,'; Key=Credentials)')]",
                         "SigningKey": "[concat('@Microsoft.AppConfiguration(Endpoint=', reference(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))).endpoint,'; Key=SigningKey)')]",
@@ -145,7 +146,8 @@
                     ],
                     "properties": {
                         "linuxFxVersion": "DOTNETCORE|7.0",
-                        "netFrameworkVersion": "7.0"
+                        "netFrameworkVersion": "7.0",
+                        "appCommandLine": "dotnet \"ClientApp.dll\""
                     }
                 },
                 {
