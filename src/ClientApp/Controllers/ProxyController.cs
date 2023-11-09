@@ -38,7 +38,7 @@ namespace Modm.ClientApp.Controllers
 
         private async Task<IActionResult> GetFromBackendService<T>(string endpoint)
         {
-            string backendUrl = this.configuration[BackendUrlSettingName];
+            string backendUrl = this.configuration[BackendUrlSettingName]?.TrimEnd('/');
             if (string.IsNullOrEmpty(backendUrl))
             {
                 return BadRequest("Backend URL is not configured.");
