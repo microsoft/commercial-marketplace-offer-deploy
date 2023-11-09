@@ -59,7 +59,9 @@
                 "uri": "[concat(variables('artifactsContainerLocation'), '/', 'installer.zip')]",
                 "hash": "{{installerPackageHash}}"
             },
-            "parameters": {}
+            "parameters": {
+                "resourceGroupName": "[resourceGroup().name]"
+            }
         },
         "commonTags": {
             "modm": "true"

@@ -25,14 +25,4 @@ class TestMainTemplateFinalizer(unittest.TestCase):
         installer_package=CreateInstallerPackageResult(self.data_path.joinpath("installer.zip"))
         result = self.finalizer.finalize(installer_resources=self.installer_resources, installer_package=installer_package)
         self.assertEqual(result.vm_offer, self.installer_resources.vm_offer)
-    
-    
-    def test_set_reserved_parameters(self):
-        installer_package=CreateInstallerPackageResult(self.data_path.joinpath("installer.zip"))
-        main_template = self.finalizer.finalize(installer_resources=self.installer_resources, installer_package=installer_package)
 
-        parameters = main_template.document["parameters"]
-
-        self.assertIn("resourceGroupName", parameters)
-        self.assertEqual(parameters["resourceGroupName"]["type"], "string")
-        self.assertEqual(parameters["resourceGroupName"]["defaultValue"], "[resourceGroup().name]")
