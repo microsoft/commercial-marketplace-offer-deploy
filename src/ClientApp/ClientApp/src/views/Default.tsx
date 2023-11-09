@@ -187,7 +187,7 @@ export const Default = () => {
     // },
     {
         key: 'delete',
-        text: 'Delete',
+        text: 'Delete Installer',
         iconProps: { iconName: 'Delete' }, // Using 'Delete' as the iconName
         onClick: async () => {
           // Here, you can make your API call or any other logic for the delete action
