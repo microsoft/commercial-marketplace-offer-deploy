@@ -341,7 +341,7 @@
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2020-10-01-preview",
             "scope": "[format('Microsoft.AppConfiguration/configurationStores/{0}', variables('configStoreName'))]",
-            "name": "[guid(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName')), reference(resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), '2022-03-01', 'Full').identity.principalId, subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').owner))]",
+            "name": "[guid(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName')), resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').owner))]",
             "properties": {
             "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').owner)]",
             "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), '2022-03-01', 'Full').identity.principalId]",
@@ -352,7 +352,7 @@
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2020-10-01-preview",
             "scope": "[format('Microsoft.AppConfiguration/configurationStores/{0}', variables('configStoreName'))]",
-            "name": "[guid(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName')), reference(resourceId('Microsoft.Web/sites', variables('clientAppName')), '2022-03-01', 'Full').identity.principalId, subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').appConfigReader))]",
+            "name": "[guid(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName')), resourceId('Microsoft.Web/sites', variables('clientAppName')), subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').appConfigReader))]",
             "properties": {
             "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').appConfigReader)]",
             "principalId": "[reference(resourceId('Microsoft.Web/sites', variables('clientAppName')), '2022-03-01', 'Full').identity.principalId]",
