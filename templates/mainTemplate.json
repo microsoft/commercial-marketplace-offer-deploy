@@ -144,8 +144,20 @@
                         "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
                     ],
                     "properties": {
-                        "linuxFxVersion": "DOTNET-ISOLATED|7.0",
+                        "linuxFxVersion": "DOTNETCORE|7.0",
                         "netFrameworkVersion": "7.0"
+                    }
+                },
+                {
+                    "type": "config",
+                    "name": "metadata",
+                    "apiVersion": "2021-03-01",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', variables('clientAppName'))]",
+                        "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+                    ],
+                    "properties": {
+                       "CURRENT_STACK": "dotnet"
                     }
                 }
             ]

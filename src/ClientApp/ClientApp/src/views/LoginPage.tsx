@@ -24,7 +24,7 @@ const LoginPage: React.FC = () => {
     <div className="login-container">
       <div className="login-logo">
         <img src={Logo} alt="Logo" className="logo" /> 
-        <h1>MODM Marketplace Installer</h1>
+        <h1>Marketplace App Installer</h1>
       </div>
       <div className="login-form">
         <form onSubmit={handleLogin}>
