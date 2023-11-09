@@ -34,7 +34,7 @@
         "clientAppUrl": "{{dashboardUrl}}",
         "clientAppCredentials": "[base64(concat(parameters('_installerUsername'), '|', parameters('_installerPassword')))]",
         "clientAppSigningKey": "[uniqueString(resourceGroup().id, variables('clientAppName'))]",
-        "clientAppStorageAccountName": "[format('{0}modm', uniqueString(resourceGroup().id))]",
+        "clientAppStorageAccountName": "[format('modm{0}', uniqueString(resourceGroup().id))]",
         "clientAppPackageUrl": "[concat(variables('artifactsContainerLocation'), '/', 'clientapp.zip')]",
         "vmiReferenceId": "{{vmiReferenceId}}",
         "virtualMachineSize": "Standard_D2s_v3",
