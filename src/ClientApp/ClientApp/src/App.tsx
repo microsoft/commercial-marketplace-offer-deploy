@@ -1,5 +1,13 @@
-import Routes from './routes';
+import { useRoutes } from 'react-router-dom';
+import MainRoutes from './routes/MainRoutes';
 
 export default function App() {
-  return (<Routes />);
+
+  const routes = useRoutes(MainRoutes);
+
+  return (
+    <>
+      {routes} 
+    </>
+  );
 }

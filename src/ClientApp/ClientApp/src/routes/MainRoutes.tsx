@@ -21,12 +21,11 @@ const MainRoutes: RouteObject[] = [
         path: 'diagnostics',
         element: <ProtectedRoute component={Diagnostics} />,
       },
-      {
-        path: 'login',
-        element: <LoginPage />,
-      },
-      // ...other routes here...
     ],
+  },
+  {
+    path: 'login',
+    element: <LoginPage />,
   },
 ];
 
