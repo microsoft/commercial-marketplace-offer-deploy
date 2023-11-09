@@ -1,11 +1,9 @@
-﻿using System;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Modm.Jenkins;
 using Modm.Jenkins.Client;
 using Polly;
-using Polly.Utilities;
 using Polly.Retry;
 
 namespace Modm.Engine
@@ -19,7 +17,6 @@ namespace Modm.Engine
         private const int MillisecondsInASecond = 1000;
         private const int MaxRetries = 6;
 
-        private readonly IDeploymentEngine engine;
         private readonly HttpClient httpClient;
         private readonly ILogger<JenkinsReadinessService> logger;
 

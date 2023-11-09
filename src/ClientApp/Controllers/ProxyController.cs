@@ -66,15 +66,15 @@ namespace Modm.ClientApp.Controllers
                     return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
                 }
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException)
             {
                 return StatusCode(503, "Unable to reach the backend service.");
             }
-            catch (JsonException ex)
+            catch (JsonException)
             {
                 return StatusCode(500, "Error parsing the response from the backend service.");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, "An unexpected error occurred.");
             }
@@ -110,11 +110,11 @@ namespace Modm.ClientApp.Controllers
                     StatusCode = (int)response.StatusCode
                 };
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException)
             {
                 return StatusCode(503, "Unable to reach the backend service.");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, "An unexpected error occurred.");
             }
