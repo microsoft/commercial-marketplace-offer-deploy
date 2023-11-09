@@ -11,11 +11,11 @@
                 "label": "Installer settings",
                 "elements": [
                     {
-                        "name": "tbAdminUser",
+                        "name": "username",
                         "type": "Microsoft.Common.TextBox",
                         "label": "Admin Username",
                         "placeholder": "",
-                        "defaultValue": "modmadmin",
+                        "defaultValue": "admin",
                         "toolTip": "Use only allowed characters",
                         "constraints": {
                             "required": true,
@@ -25,7 +25,7 @@
                         "visible": true
                     },
                     {
-                        "name": "pbAdminPassword",
+                        "name": "password",
                         "type": "Microsoft.Common.PasswordBox",
                         "label": {
                             "password": "Password",
