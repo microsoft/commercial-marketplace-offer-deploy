@@ -11,8 +11,8 @@ export const Diagnostics = () => {
   const [diagnostics, setDiagnostics] = React.useState<DiagnosticsRespoonse>({ deploymentEngine: "" });
   const [isHealthy, setIsHealthy] = React.useState(false);
   
-  const checkEngineIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const fetchDiagnosticsIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const checkEngineIntervalRef = useRef<number | null>(null);
+  const fetchDiagnosticsIntervalRef = useRef<number | null>(null);
   const fetchCount = useRef(0);
 
   const getAuthHeader = (): HeadersInit | undefined => {
@@ -47,6 +47,11 @@ export const Diagnostics = () => {
     }
   };
 
+  // Function to start checking engine health
+  const startEngineHealthCheck = () => {
+    checkEngineIntervalRef.current = setInterval(checkEngineHealth, 1000) as unknown as number; // Check every second
+  };
+
 //   const fetchDiagnosticsTest = async () => {
 //     // Simulate an API call delay
 //     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -59,6 +64,12 @@ export const Diagnostics = () => {
 
 //     fetchCount.current += 1;
 //   };
+
+  // Function to start getting resources
+  const startGettingDiagnostics = () => {
+    fetchDiagnostics(); // Call immediately
+    fetchDiagnosticsIntervalRef.current = setInterval(fetchDiagnostics, 5000) as unknown as number; // Then every 5 seconds
+  };
 
   const fetchDiagnostics = async () => {
     const backendUrl = AppConstants.baseUrl;
@@ -84,7 +95,7 @@ export const Diagnostics = () => {
 
   // Start engine health check interval
   useEffect(() => {
-    checkEngineIntervalRef.current = setInterval(checkEngineHealth, 1000); // Check every second
+    startEngineHealthCheck(); 
 
     return () => {
       if (checkEngineIntervalRef.current) {
@@ -97,9 +108,8 @@ export const Diagnostics = () => {
   useEffect(() => {
     if (isHealthy) {
       fetchDiagnostics(); // Fetch immediately once healthy
-      fetchDiagnosticsIntervalRef.current = setInterval(fetchDiagnostics, 5000); // Then every 5 seconds
+      startGettingDiagnostics(); // Start interval
 
-      
       if (checkEngineIntervalRef.current) {
         clearInterval(checkEngineIntervalRef.current);
         checkEngineIntervalRef.current = null;
