@@ -15,8 +15,7 @@
             }
         ],
         "outputs": {
-            "location": "[location()]",
-            "resource_group_name": "[resourceGroup().name]"
+            "location": "[location()]"
         }
     }
 }
