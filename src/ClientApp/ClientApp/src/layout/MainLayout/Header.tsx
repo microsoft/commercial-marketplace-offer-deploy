@@ -70,12 +70,12 @@ const Header = () => {
       Marketplace Installer
       </div>
       <div className="navbar-nav d-flex">
-        <div className="nav-item text-nowrap">
+        <div className="nav-item text-nowrap persona">
         {isAuthenticated && (
             <>
             <Persona
             {...adminPersona}
-            text="MODM Admin"
+            text="Admininstrator"
             size={PersonaSize.size24}
             presence={PersonaPresence.none}
             hidePersonaDetails={!renderDetails}

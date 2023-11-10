@@ -13,7 +13,6 @@ export const Diagnostics = () => {
   
   const checkEngineIntervalRef = useRef<number | null>(null);
   const fetchDiagnosticsIntervalRef = useRef<number | null>(null);
-  const fetchCount = useRef(0);
 
   const getAuthHeader = (): HeadersInit | undefined => {
     if (userToken && userToken.token) {
