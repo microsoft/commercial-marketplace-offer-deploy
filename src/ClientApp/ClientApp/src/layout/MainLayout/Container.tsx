@@ -7,7 +7,7 @@ const Container = () => {
     <div className="container-fluid">
   
       <div className="row">
-        <main className="col-md-9 ms-sm-auto col-lg-10 px-lg-5 px-md-5 px-sm-5">
+        <main className="pt-3 px-3 pr-5" style={{ position: 'relative', left: '225px', width: '84%' }}>
           <Outlet />
         </main>
       </div>

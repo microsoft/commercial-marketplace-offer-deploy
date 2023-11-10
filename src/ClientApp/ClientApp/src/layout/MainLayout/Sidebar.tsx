@@ -19,7 +19,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       <ul className="nav flex-column mb-auto">
         <li className="nav-item p-2">
           <Link to={'/'} className='nav-link text-dark' >
-            <FontAwesomeIcon icon={faDashboard} size='xl' className='text-primary' /> <span className='ml-1'>Deployment</span>
+            <FontAwesomeIcon icon={faDashboard} size='xl' className='text-primary mr-1' /> <span className='ml-2'>Dashboard</span>
           </Link>
         </li>
         <li className="nav-item p-2">

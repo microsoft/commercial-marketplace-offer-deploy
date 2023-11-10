@@ -1,9 +1,9 @@
 using Modm.ClientApp.Controllers;
 using ClientApp.Security;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Logging;
 using Modm.Security;
 using Modm.Extensions;
+using ClientApp.Backend;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,9 +14,11 @@ builder.Services.AddSingleton<AdminCredentialsProvider>();
 builder.Services.AddHttpClient<ProxyController>().ConfigureHttpClient((provider, client) =>
 {
     var backendUrl = provider.GetRequiredService<IConfiguration>()
-                                .GetValue<string>(ProxyController.BackendUrlSettingName);
+                                .GetValue<string>(ProxyClientFactory.BackendUrlSettingName);
     client.BaseAddress = new Uri(backendUrl ?? string.Empty);
 });
+
+builder.Services.AddSingleton<ProxyClientFactory>();
 
 builder.Services.AddJwtBearerAuthentication(builder.Configuration);
 

@@ -32,7 +32,7 @@
   "dependencies": {
     "@azure/msal-browser": "^3.1.0",
     "@azure/msal-react": "^2.0.3",
-    "@fluentui/react": "^8.111.2",
+    "@fluentui/react": "^8.112.8",
     "@fortawesome/fontawesome-svg-core": "^6.4.2",
     "@fortawesome/free-brands-svg-icons": "^6.4.2",
     "@fortawesome/free-regular-svg-icons": "^6.4.2",
