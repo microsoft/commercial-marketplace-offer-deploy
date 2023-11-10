@@ -7,6 +7,7 @@ import './LoginPage.css';
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // New state for error message
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -16,7 +17,8 @@ const LoginPage: React.FC = () => {
       await login(username, password);
       navigate('/');
     } catch (error) {
-      console.error('Login failed:', error);
+      // Set the error message state if login fails
+      setErrorMessage('Login failed. Please check your username and password.');
     }
   };
 
@@ -28,6 +30,7 @@ const LoginPage: React.FC = () => {
       </div>
       <div className="login-form">
         <form onSubmit={handleLogin}>
+          {errorMessage && <div className="login-error">{errorMessage}</div>} {/* Display error message */}
           <div className="form-group">
             <label htmlFor="username">Username</label>
             <input
@@ -50,6 +53,14 @@ const LoginPage: React.FC = () => {
           </div>
           <button type="submit" className="login-button">Login</button>
         </form>
+        <div className="login-instructions">
+        <p>To find your login credentials:</p>
+        <ol>
+            <li>Go to the <strong>Azure portal</strong> and navigate to your <strong>managed resource group</strong>.</li>
+            <li>Find and select the <strong>deployment</strong>.</li>
+            <li>In the deployment's left blade, click on the <strong>Outputs tab</strong> to view your credentials.</li>
+        </ol>
+        </div>
       </div>
     </div>
   );

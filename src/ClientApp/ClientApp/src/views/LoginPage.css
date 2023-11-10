@@ -55,4 +55,26 @@
   .login-button:hover {
     background-color: #003d82;
   }
+
+  .login-error {
+    color: red;
+    margin-bottom: 10px; 
+  }
+  
+  .login-instructions {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f3f2f1; /* Light grey background */
+    border: 1px solid #edebe9; /* Slightly darker grey border */
+    border-radius: 4px;
+  }
+  
+  .login-instructions p {
+    margin-bottom: 5px;
+  }
+  
+  .login-instructions ol {
+    margin-top: 0;
+    padding-left: 20px;
+  }
   

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DetailsList, DetailsListLayoutMode, SelectionMode, IColumn, ConstrainMode } from '@fluentui/react/lib/DetailsList';
 import { FocusTrapZone } from '@fluentui/react/lib/FocusTrapZone';
 import { Checkbox } from '@fluentui/react/lib/Checkbox';
@@ -26,6 +26,9 @@ export const Default = () => {
   const [enableFocusTrap, setEnableFocusTrap] = React.useState(false);
   const { userToken } = useAuth();
 
+  const checkEngineIntervalRef = useRef<number | null>(null);
+  const updateResourcesIntervalRef = useRef<number | null>(null);
+
   const getAuthHeader = (): HeadersInit | undefined => {
     if (userToken && userToken.token) {
       return {
@@ -33,6 +36,94 @@ export const Default = () => {
       };
     }
   };
+
+  const checkEngineHealth = async () => {
+    try {
+        const backendUrl = AppConstants.baseUrl;
+        const headers = getAuthHeader();
+        console.log(`inside checkEngineHealth with a backendUrl of ${backendUrl}}`);
+        const response = await fetch(`${backendUrl}/api/status`, {
+          headers: {
+            Accept: 'application/json',
+            ...headers,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const statusData = await response.json();
+        console.log(JSON.stringify(statusData));
+        setIsHealthy(statusData.isHealthy);
+    } catch (error) {
+        console.error(error);
+    }
+  };
+
+  const getDeployedResources = async () => {
+    try {
+        console.log(`inside getDeployedResources`);
+        const backendUrl = AppConstants.baseUrl;
+        const headers = getAuthHeader();
+        console.log(`calling get deployments`);
+        const response = await fetch(`${backendUrl}/api/Deployments`, {
+          headers: {
+            Accept: 'application/json',
+            ...headers,
+          },
+        });
+  
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+  
+        const result = await response.json();
+        console.log(JSON.stringify(result, null, 2));
+        
+        if (result.deployment && result.deployment.id !== undefined && result.deployment.id !== null) {
+          setDeploymentId(result.deployment.id);
+        }
+  
+        if (result.deployment && result.deployment.resourceGroup !== undefined && result.deployment.resourceGroup !== null) {
+          setDeploymentResourceGroup(result.deployment.resourceGroup);
+        }
+  
+        if (result.deployment && result.deployment.offerName !== undefined && result.deployment.offerName !== null) {
+          setOfferName(result.deployment.offerName);
+        }
+  
+        if (result.deployment && result.deployment.subscriptionId !== undefined && result.deployment.subscriptionId !== null) {
+          setSubscriptionId(result.deployment.subscriptionId);
+        }
+  
+        if (result.deployment.resources) {
+          const formattedResources = result.deployment.resources.map((resource: any) => ({
+            name: resource.name,
+            state: resource.state,
+            type: resource.type,
+            timestamp: resource.timestamp
+          }));
+          setDeployedResources(formattedResources);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false); 
+      }
+  };
+
+  // Function to start checking engine health
+  const startEngineHealthCheck = () => {
+    checkEngineIntervalRef.current = setInterval(checkEngineHealth, 1000) as unknown as number; // Check every second
+  };
+  
+  // Function to start getting resources
+  const startGettingResources = () => {
+    getDeployedResources(); // Call immediately
+    updateResourcesIntervalRef.current = setInterval(getDeployedResources, 5000) as unknown as number; // Then every 5 seconds
+  };
+  
 
   const columns: IColumn[] = [
     { key: 'name', name: 'Name', fieldName: 'name', minWidth: 100, maxWidth: 300, isResizable: true },
@@ -74,95 +165,46 @@ export const Default = () => {
     },
   ];
 
-  const doGetDeployedResources = async () => {
-    try {
-      const backendUrl = AppConstants.baseUrl;
-      const headers = getAuthHeader();
-      const response = await fetch(`${backendUrl}/api/Deployments`, {
-        headers: {
-          Accept: 'application/json',
-          ...headers,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log(JSON.stringify(result, null, 2));
-      
-      if (result.deployment && result.deployment.id !== undefined && result.deployment.id !== null) {
-        setDeploymentId(result.deployment.id);
-      }
-
-      if (result.deployment && result.deployment.resourceGroup !== undefined && result.deployment.resourceGroup !== null) {
-        setDeploymentResourceGroup(result.deployment.resourceGroup);
-      }
-
-      if (result.deployment && result.deployment.offerName !== undefined && result.deployment.offerName !== null) {
-        setOfferName(result.deployment.offerName);
-      }
-
-      if (result.deployment && result.deployment.subscriptionId !== undefined && result.deployment.subscriptionId !== null) {
-        setSubscriptionId(result.deployment.subscriptionId);
-      }
-
-      if (result.deployment.resources) {
-        const formattedResources = result.deployment.resources.map((resource: any) => ({
-          name: resource.name,
-          state: resource.state,
-          type: resource.type,
-          timestamp: resource.timestamp
-        }));
-        setDeployedResources(formattedResources);
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false); 
-    }
-  }
-
-  React.useEffect(() => {
+    useEffect(() => {
+        console.log(`inside useEffect for checkEngineHealth`);
+        startEngineHealthCheck(); 
+        console.log(`inside useEffect for checkEngineHealth after startEngineHealthCheck`);
+        return () => {
+            console.log(`inside useEffect for checkEngineHealth return`);
+          if (checkEngineIntervalRef.current) {
+            console.log(`inside useEffect for checkEngineHealth return clearInterval`);
+            clearInterval(checkEngineIntervalRef.current);
+          }
+        };
+      }, []);
     
-    const checkEngineHealth = async () => {
-        try {
-          const backendUrl = AppConstants.baseUrl;
-          const headers = getAuthHeader();
-          console.log(`inside checkEngineHealth with a backendUrl of ${backendUrl}}`);
-          const response = await fetch(`${backendUrl}/api/status`, {
-            headers: {
-              Accept: 'application/json',
-              ...headers,
-            },
-          });
-  
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-  
-          const statusData = await response.json();
-          console.log(JSON.stringify(statusData));
-          setIsHealthy(statusData.isHealthy);
-          
-          if (statusData.isHealthy) {
-            console.log('Engine is healthy');
-            doGetDeployedResources();
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      };
-        
-    // Start the interval
-    const intervalId = setInterval(() => {
-        checkEngineHealth();
-    }, 5000); // 5 seconds
+      
+      useEffect(() => {
+        console.log(`inside useEffect for startGettingResources`);
+        if (isHealthy) {
+          console.log(`inside useEffect for startGettingResources isHealthy`);
+          getDeployedResources();  
+          startGettingResources();
+          console.log(`inside useEffect for startGettingResources after startGettingResources`);
 
-    // Clear the interval when the component unmounts
-    return () => clearInterval(intervalId);
-  }, []);
+          if (checkEngineIntervalRef.current) {
+            console.log(`inside useEffect for startGettingResources clearInterval`);
+            clearInterval(checkEngineIntervalRef.current);
+            console.log(`inside useEffect for startGettingResources after clearInterval`);
+            checkEngineIntervalRef.current = null;
+          }
+        }
+    
+        // Cleanup function to clear the resources interval when the component unmounts
+        return () => {
+            console.log(`inside useEffect for startGettingResources return`);
+          if (updateResourcesIntervalRef.current) {
+            console.log(`inside useEffect for startGettingResources return clearInterval`);
+            clearInterval(updateResourcesIntervalRef.current);
+            console.log(`inside useEffect for startGettingResources return after clearInterval`);
+          }
+        };
+      }, [isHealthy]);
 
   const filteredDeployedResources = React.useMemo(() => {
     if (filter === 'All') {
@@ -219,7 +261,7 @@ export const Default = () => {
   : null;
 
   if (!isHealthy) {
-    return <h4>Engine is loading...</h4>;
+    return <h4>Starting up...</h4>;
   }
 
   return (
@@ -230,7 +272,7 @@ export const Default = () => {
       <div style={{ display: 'flex', alignItems: 'center' }}>
     
             {(() => {
-              if (loading) return <h4>Installer is Loading...</h4>; 
+              if (loading) return <h4>Starting up...</h4>; 
 
               const failedCount = deployedResources.filter(r => r.state === "Failed").length;
               const successCount = deployedResources.filter(r => r.state === "Succeeded").length;
