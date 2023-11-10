@@ -10,17 +10,18 @@
   
   .login-logo {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 40px;
   }
   
   .login-logo img {
-    width: 150px; /* Adjust as needed */
+    width: 100px; /* Adjust as needed */
     margin-bottom: 10px;
   }
   
   .login-form {
-    width: 300px; /* Adjust as needed */
-    padding: 20px;
+    width: 25%; /* Adjust as needed */
+    min-width: 350px;
+    padding: 3em;
     background: rgba(255, 255, 255, 0.9);
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);

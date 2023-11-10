@@ -1,12 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Text.Json;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Http.Headers;
 using Modm.Deployments;
 using Modm.Diagnostics;
 using Modm.Engine;
+using ClientApp.Backend;
 
 namespace Modm.ClientApp.Controllers
 {
@@ -15,128 +12,47 @@ namespace Modm.ClientApp.Controllers
     [Authorize]
     public class ProxyController : ControllerBase
     {
-        public const string BackendUrlSettingName = "BackendUrl";
-        private readonly HttpClient client;
-        private readonly IConfiguration configuration;
+        private readonly ProxyClientFactory clientFactory;
+        private IProxyClient client;
 
-        public ProxyController(HttpClient client, IConfiguration configuration)
+        /// <summary>
+        /// The instance of the proxy client based on the incoming http request
+        /// </summary>
+        private IProxyClient Client
         {
-            this.client = client;
-            this.configuration = configuration;
+            get { return client ??= clientFactory.Create(HttpContext.Request); }
         }
 
-        private string RetrieveJwtToken()
+        public ProxyController(ProxyClientFactory clientFactory)
         {
-            if (HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
-            {
-                var token = authHeader.ToString().Split(' ').Last();
-                return token;
-            }
-
-            return null;
-        }
-
-        private async Task<IActionResult> GetFromBackendService<T>(string endpoint)
-        {
-            string backendUrl = this.configuration[BackendUrlSettingName]?.TrimEnd('/');
-            if (string.IsNullOrEmpty(backendUrl))
-            {
-                return BadRequest("Backend URL is not configured.");
-            }
-
-            var token = RetrieveJwtToken();
-            if (token == null)
-            {
-                return Unauthorized("JWT Token is missing");
-            }
-
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            try
-            {
-                var response = await client.GetAsync($"{backendUrl}/api/{endpoint}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var result = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                    return Ok(result);
-                }
-                else
-                {
-                    return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
-                }
-            }
-            catch (HttpRequestException)
-            {
-                return StatusCode(503, "Unable to reach the backend service.");
-            }
-            catch (JsonException)
-            {
-                return StatusCode(500, "Error parsing the response from the backend service.");
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "An unexpected error occurred.");
-            }
+            this.clientFactory = clientFactory;
         }
 
         [HttpPost]
         [Route("resources/{resourceGroupName}/deletemodmresources")]
         public async Task<IActionResult> DeleteResourcesWithTagAsync([FromRoute] string resourceGroupName)
         {
-            string backendUrl = this.configuration[BackendUrlSettingName];
-            if (string.IsNullOrEmpty(backendUrl))
-            {
-                return BadRequest("Backend URL is not configured.");
-            }
-
-            var token = RetrieveJwtToken();
-            if (token == null)
-            {
-                return Unauthorized("JWT Token is missing");
-            }
-
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            try
-            {
-                var response = await client.PostAsync($"{backendUrl}/api/resources/{resourceGroupName}/deletemodmresources", null);
-
-                var content = await response.Content.ReadAsStringAsync();
-                return new ContentResult
-                {
-                    Content = content,
-                    ContentType = "application/json",
-                    StatusCode = (int)response.StatusCode
-                };
-            }
-            catch (HttpRequestException)
-            {
-                return StatusCode(503, "Unable to reach the backend service.");
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "An unexpected error occurred.");
-            }
+            var relativeUri = string.Format(Routes.DeleteInstallerFormat, resourceGroupName);
+            return await Client.PostAsync(relativeUri);
         }
 
 
         [HttpGet("deployments")]
-        public Task<IActionResult> GetDeployments()
+        public async Task<IActionResult> GetDeployments()
         {
-            return GetFromBackendService<GetDeploymentResponse>("deployments");
+            return await Client.GetAsync<GetDeploymentResponse>(Routes.GetDeployments);
         }
 
         [HttpGet("diagnostics")]
-        public Task<IActionResult> GetDiagnostics()
+        public async Task<IActionResult> GetDiagnostics()
         {
-            return GetFromBackendService<GetDiagnosticsResponse>("diagnostics");
+            return await Client.GetAsync<GetDiagnosticsResponse>(Routes.GetDiagnostics);
         }
 
         [HttpGet("status")]
-        public Task<IActionResult> GetStatus()
+        public async Task<IActionResult> GetStatus()
         {
-            return GetFromBackendService<EngineInfo>("status");
+            return await Client.GetAsync<EngineInfo>(Routes.GetStatus);
         }
     }
 }

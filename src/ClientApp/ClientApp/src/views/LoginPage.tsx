@@ -1,7 +1,6 @@
 import React, { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../security/AuthContext';
-import Logo from './azure.png';
 import './LoginPage.css'; 
 
 const LoginPage: React.FC = () => {
@@ -25,8 +24,8 @@ const LoginPage: React.FC = () => {
   return (
     <div className="login-container">
       <div className="login-logo">
-        <img src={Logo} alt="Logo" className="logo" /> 
-        <h1>Marketplace App Installer</h1>
+        <img src="/Azure-512p-maskable.png" alt="Logo" className="logo" /> 
+        <h3>Marketplace Application Installer</h3>
       </div>
       <div className="login-form">
         <form onSubmit={handleLogin}>

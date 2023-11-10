@@ -1,17 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DetailsList, DetailsListLayoutMode, SelectionMode, IColumn, ConstrainMode } from '@fluentui/react/lib/DetailsList';
 import { FocusTrapZone } from '@fluentui/react/lib/FocusTrapZone';
-import { Checkbox } from '@fluentui/react/lib/Checkbox';
-import { Icon } from '@fluentui/react/lib/Icon';
 import { CommandBar, ICommandBarItemProps } from '@fluentui/react/lib/CommandBar';
 import { AppConstants } from '../constants/app-constants';
 import { DeploymentResource } from '@/models/deployment-models';
-import { DeploymentProgressBar } from '@/components/DeploymentProgressBar';
 import StyledSuccessIcon from './StyledSuccessIcon';
 import StyledFailureIcon from './StyledFailureIcon';
 import { toLocalDateTime } from '../utils/DateUtils';
 import { Separator } from '@fluentui/react';
 import { useAuth } from '../security/AuthContext';
+import { ProgressIndicator } from '@fluentui/react/lib/ProgressIndicator';
 
 export const Default = () => {
 
@@ -261,11 +259,28 @@ export const Default = () => {
   : null;
 
   if (!isHealthy) {
-    return <h4>Starting up...</h4>;
+    return <>
+    <div className='row'>
+        <div className='col-3'><h4>Starting up...</h4></div>
+    </div>
+    
+    
+    </>;
   }
 
   return (
     <>
+
+        <div className='row'>
+        <FocusTrapZone disabled={!enableFocusTrap}>
+                <CommandBar
+                  items={_items}
+                  ariaLabel="Inbox actions"
+                  primaryGroupAriaLabel="Email actions"
+                  farItemsGroupAriaLabel="More actions"
+                />
+          </FocusTrapZone>  
+        </div>
       
       <Separator />
 
@@ -282,23 +297,14 @@ export const Default = () => {
               }
               if (successCount === deployedResources.length) {
                 return (
-                  <h4 style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  <h5 style={{ display: 'inline-flex', alignItems: 'center' }}>
                     <StyledSuccessIcon style={{ marginRight: '4px' }} />
-                    <span>{offerName} succeeded</span>
-                  </h4>
+                    <span>{offerName} deployment succeeded</span>
+                  </h5>
                 );
               }
               return <h4>... {offerName} is in progress</h4>;
             })()}
-
-          <FocusTrapZone style={{ marginTop: '-5px' }}  disabled={!enableFocusTrap}>
-                <CommandBar
-                  items={_items}
-                  ariaLabel="Inbox actions"
-                  primaryGroupAriaLabel="Email actions"
-                  farItemsGroupAriaLabel="More actions"
-                />
-          </FocusTrapZone>  
       </div>
 
       <div className="row mt-3"> {/* Added margin-top for some spacing */}
@@ -350,15 +356,14 @@ export const Default = () => {
           </div>
         </div>
 
-      <Separator />
-      
+      <div className='row'>
       <DetailsList
         items={filteredDeployedResources}
         columns={columns}
         selectionMode={SelectionMode.none}
-        layoutMode={DetailsListLayoutMode.fixedColumns}
-        constrainMode={ConstrainMode.unconstrained}
+        layoutMode={DetailsListLayoutMode.justified}
       />
+      </div>
 
     </>
   );
