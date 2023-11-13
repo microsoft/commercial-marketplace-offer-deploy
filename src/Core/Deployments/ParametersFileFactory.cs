@@ -14,6 +14,11 @@ namespace Modm.Deployments
 				return new TerraformParametersFile(destinationDirectory);
 			}
 
+            if (deploymentType == DeploymentType.ArmTemplate)
+			{
+				return new ArmParametersFile(destinationDirectory);
+			}	
+
 			throw new ArgumentException($"Deployment type {deploymentType} not supported yet.");
 		}
 	}

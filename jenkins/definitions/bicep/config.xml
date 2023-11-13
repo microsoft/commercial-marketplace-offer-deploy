@@ -1,0 +1,29 @@
+<project>
+  <actions />
+  <description />
+  <keepDependencies>false</keepDependencies>
+  <properties />
+  <scm class="hudson.scm.NullSCM" /> 
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <authToken>auth-token</authToken>
+  <triggers />
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+      <hudson.tasks.Shell>
+          <command>$MODM_HOME/source/jenkins/definitions/bicep/deploy.sh</command>
+          <configuredLocalRules />
+      </hudson.tasks.Shell>
+  </builders>
+  <publishers />
+  <buildWrappers>
+      <hudson.plugins.ws__cleanup.PreBuildCleanup plugin="ws-cleanup@0.45">
+          <deleteDirs>false</deleteDirs>
+          <cleanupParameter />
+          <externalDelete />
+          <disableDeferredWipeout>false</disableDeferredWipeout>
+      </hudson.plugins.ws__cleanup.PreBuildCleanup>
+  </buildWrappers>
+</project>
