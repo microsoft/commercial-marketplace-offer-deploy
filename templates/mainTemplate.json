@@ -366,7 +366,11 @@
             "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').owner)]",
             "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), '2022-03-01', 'Full').identity.principalId]",
             "principalType": "ServicePrincipal"
-            }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]",
+                "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+            ]
         },
         {
             "type": "Microsoft.Authorization/roleAssignments",
@@ -377,7 +381,11 @@
             "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').appConfigReader)]",
             "principalId": "[reference(resourceId('Microsoft.Web/sites', variables('clientAppName')), '2022-03-01', 'Full').identity.principalId]",
             "principalType": "ServicePrincipal"
-            }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]",
+                "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+            ]
         },
         {
             "type": "Microsoft.Compute/virtualMachines",
