@@ -6,7 +6,7 @@ from packaging.installer import ManifestInfo, OfferInfo, DeploymentType
 class TestManifest(unittest.TestCase):
     def test_deployment_type_enum(self):
         self.assertEqual(DeploymentType.terraform.value, "terraform")
-        self.assertEqual(DeploymentType.bicep.value, "bicep")
+        self.assertEqual(DeploymentType.arm.value, "arm")
 
     def test_manifest_info_construction(self):
         manifest = ManifestInfo(main_template="main.tf", deployment_type=DeploymentType.terraform)
@@ -21,7 +21,7 @@ class TestManifest(unittest.TestCase):
         self.assertEqual(manifest.deployment_type, DeploymentType.terraform)
 
         manifest = ManifestInfo(main_template="main.bicep")
-        self.assertEqual(manifest.deployment_type, DeploymentType.bicep)
+        self.assertEqual(manifest.deployment_type, DeploymentType.arm)
 
     def test_manifest_info_serialization(self):
         manifest = ManifestInfo(main_template="main.tf", deployment_type=DeploymentType.terraform)

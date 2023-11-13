@@ -29,7 +29,7 @@ class ManifestInfo(Model):
             if template.endswith(".tf"):
                 self.deployment_type = DeploymentType.terraform
             elif template.endswith(".bicep"):
-                self.deployment_type = DeploymentType.bicep
+                self.deployment_type = DeploymentType.arm
 
     def to_json(self):
         return json.dumps(self.serialize(), indent=2)
