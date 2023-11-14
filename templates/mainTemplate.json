@@ -398,7 +398,8 @@
             },
             "dependsOn": [
                 "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]",
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]"
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]",
+                "[resourceId('Microsoft.Web/sites', variables('clientAppName'))]"
             ],
             "properties": {
                 "hardwareProfile": {
