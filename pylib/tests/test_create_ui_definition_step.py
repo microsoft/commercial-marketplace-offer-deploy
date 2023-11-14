@@ -3,14 +3,15 @@ import os
 import unittest
 from modm.marketplace.create_ui_definition_step import from_file
 from modm.marketplace.create_ui_definition import CreateUiDefinition
+from tests import TestCaseBase
 
-class TestCreateUiDefinitionInstallerStep(unittest.TestCase):
+class TestCreateUiDefinitionInstallerStep(TestCaseBase):
     def setUp(self):
         self.base_path = os.path.join(os.path.dirname(__file__))
 
         # pull the template file for the installer step located at the repo root
         self.template_file = os.path.join(self.base_path,  "../../templates", "createUiDefinition.json")
-        self.file_path = os.path.join(self.base_path, "data", "createUiDefinition.json")
+        self.file_path = self.data_path / "createUiDefinition.json"
 
         self.create_ui_definition = CreateUiDefinition.from_file(self.file_path)
 

@@ -20,6 +20,6 @@ class testZipUtils(unittest.TestCase):
         self.assertTrue(os.path.exists(file_path))
 
         unzip_file(file_path, self.test_dir)
-        self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'installer.zip')))
+        self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'test.zip')))
 
         

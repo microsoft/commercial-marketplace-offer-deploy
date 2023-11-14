@@ -2,12 +2,12 @@ import os
 import unittest
 from modm.arm.arm_template_parameter import ArmTemplateParameter
 from modm.marketplace.create_ui_definition import CreateUiDefinition
+from tests import TestCaseBase
 
 
-class TestCreateUiDefinition(unittest.TestCase):
+class TestCreateUiDefinition(TestCaseBase):
     def setUp(self):
-        self.data_path = os.path.join(os.path.dirname(__file__), "data")
-        self.file_path = os.path.join(self.data_path, "createUiDefinition.json")
+        self.file_path = self.data_path / "createUiDefinition.json"
         self.create_ui_definition = CreateUiDefinition.from_file(self.file_path)
 
     def test_validate(self):

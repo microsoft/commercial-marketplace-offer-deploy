@@ -1,10 +1,11 @@
 import unittest
 import os
 from modm.terraform.terraform_file import TerraformFile
+from tests import TestCaseBase
 
-class TestTerraformFile(unittest.TestCase):
+class TestTerraformFile(TestCaseBase):
     def setUp(self):
-        self.file_path = os.path.join(os.path.dirname(__file__), 'data/variables.tf')
+        self.file_path = self.data_path / 'variables.tf'
         self.terraform_file = TerraformFile(self.file_path)
 
     def test_parse_variables(self):
@@ -37,7 +38,7 @@ class TestTerraformFile(unittest.TestCase):
 
 
     def test_reserved_input_parameter(self):
-        file_path = os.path.join(os.path.dirname(__file__), 'data/reserved_parameters/main.tf')
+        file_path = self.data_path / 'reserved_parameters/main.tf'
         file = TerraformFile(file_path)
 
         # resource group name should exists in the result
