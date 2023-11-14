@@ -54,12 +54,12 @@ namespace Modm.Engine.Pipelines
 	public class DownloadAndExtractInstallerPackage : IPipelineBehavior<CreateDeploymentDefinition, DeploymentDefinition>
     {
         private readonly IPackageDownloader downloader;
-        private readonly IValidator<PackageFile> validator;
+        private readonly IServiceScopeFactory serviceScopeFactory;
 
-        public DownloadAndExtractInstallerPackage(IPackageDownloader downloader, IValidator<PackageFile> validator)
+        public DownloadAndExtractInstallerPackage(IPackageDownloader downloader, IServiceScopeFactory serviceScopeFactory)
         {
             this.downloader = downloader;
-            this.validator = validator;
+            this.serviceScopeFactory = serviceScopeFactory;
         }
 
         public async Task<DeploymentDefinition> Handle(CreateDeploymentDefinition request, RequestHandlerDelegate<DeploymentDefinition> next, CancellationToken cancellationToken)
@@ -68,6 +68,18 @@ namespace Modm.Engine.Pipelines
             definition.InstallerPackageHash = request.PackageHash;
 
             var file = await downloader.DownloadAsync(definition.Source);
+            Validate(request, file);
+
+            file.Extract();
+            definition.WorkingDirectory = file.ExtractedTo;
+
+            return definition;
+        }
+
+        private void Validate(CreateDeploymentDefinition request, PackageFile file)
+        {
+            using var scope = serviceScopeFactory.CreateScope();
+            var validator = scope.ServiceProvider.GetRequiredService<IValidator<PackageFile>>();
 
             var context = new ValidationContext<PackageFile>(file);
             context.RootContextData[PackageFile.HashAttributeName] = request.PackageHash;
@@ -78,11 +90,6 @@ namespace Modm.Engine.Pipelines
             {
                 throw new ValidationException("Error handling installer package extraction", validationResult.Errors);
             }
-
-            file.Extract();
-            definition.WorkingDirectory = file.ExtractedTo;
-
-            return definition;
         }
     }
 

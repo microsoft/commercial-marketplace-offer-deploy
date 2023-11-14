@@ -24,7 +24,7 @@ class Config:
         return cls.__instance._config.get(key)
 
     def _load_from_package_resources(self):
-        resources = files("modm.resources")
-        with as_file(resources.joinpath("config.json")) as config_file:
+        config = files("modm.config")
+        with as_file(config.joinpath("config.json")) as config_file:
             with open(config_file, 'r') as config_file:
                 self._config = json.load(config_file)

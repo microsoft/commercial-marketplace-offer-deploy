@@ -1,8 +1,8 @@
 import json
 import os
-from modm.azure import ArmTemplate
-from modm.azure.arm_template_parameter import ArmTemplateParameter
-from modm.azure.client_app import create_client_app_name
+from modm.arm.arm_template import ArmTemplate
+from modm.arm.arm_template_parameter import ArmTemplateParameter
+from .client_app import create_client_app_name
 from modm.installer.reserved_template_parameter import ReservedTemplateParameter
 
 
@@ -31,7 +31,7 @@ class UserData:
 class MainTemplate(ArmTemplate):
     """
     This is the main template of the app.zip that will be used to deploy MODM;
-    not to be confused with the "main template" for the application which will
+    not to be confused with the solution template for the application which will
     reside in the installer package (installer.zip) included in the app.zip
     """
 
@@ -133,3 +133,4 @@ class MainTemplate(ArmTemplate):
 def from_file(file_path: str) -> MainTemplate:
     instance = MainTemplate.from_file(file_path)
     return instance
+

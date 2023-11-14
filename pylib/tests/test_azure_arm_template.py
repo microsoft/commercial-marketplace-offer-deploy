@@ -1,5 +1,5 @@
 import unittest
-from modm.azure.arm_template import ArmTemplate
+from modm.arm.arm_template import ArmTemplate
 
 
 class TestArmTemplate(unittest.TestCase):

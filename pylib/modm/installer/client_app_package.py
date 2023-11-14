@@ -6,6 +6,10 @@ import urllib.request
 
 
 class ClientAppPackage:
+    """
+    A class that represents a client app package which is the frontend ClientApp
+    that will be deployed to app services.
+    """
     file_name = "clientapp.zip"
 
     def __init__(self, file):

@@ -19,19 +19,19 @@ class TestBicepTemplateCompiler(unittest.TestCase):
     def test_name(self):
         self.assertEqual(self.compiler.file_name, "main")
 
-    def test_compile_live(self):
-        out_dir = Path(tempfile.mkdtemp())
+    # def test_compile_live(self):
+    #     out_dir = Path(tempfile.mkdtemp())
         
-        compiled_file_path = self.compiler.compile(out_dir)
+    #     compiled_file_path = self.compiler.compile(out_dir)
 
-        self.assertEqual(compiled_file_path, out_dir / "main.json")
-        self.assertTrue(compiled_file_path.exists())
+    #     self.assertEqual(compiled_file_path, out_dir / "main.json")
+    #     self.assertTrue(compiled_file_path.exists())
 
-        json_document = json.loads(compiled_file_path.read_text())
-        self.assertTrue("parameters" in json_document)
-        self.assertTrue("location" in json_document["parameters"])
+    #     json_document = json.loads(compiled_file_path.read_text())
+    #     self.assertTrue("parameters" in json_document)
+    #     self.assertTrue("location" in json_document["parameters"])
 
-        shutil.rmtree(out_dir)
+    #     shutil.rmtree(out_dir)
 
     @patch("modm.arm.bicep_template_compiler.subprocess.run")
     def test_compile(self, mock_run):

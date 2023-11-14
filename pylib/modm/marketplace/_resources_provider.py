@@ -4,7 +4,7 @@ from pathlib import Path
 
 import requests
 from modm.config import Config
-from modm.installer.resources import InstallerResources, ResourcesInfo
+from ._resources import InstallerResources, ResourcesInfo
 from modm.installer.version import InstallerVersion, InstallerVersionProvider
 from . import _httputil as httputil
 import tarfile

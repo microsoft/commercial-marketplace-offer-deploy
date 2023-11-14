@@ -3,42 +3,10 @@ from pathlib import Path
 import modm._zip_utils as ziputils
 import shutil
 import tempfile
+
+from .installer_package_result import InstallerPackageResult
 from .manifest import ManifestInfo, write_manifest
-import hashlib
 
-class CreateInstallerPackageResult:
-    """
-    The result of creating an installer package
-    """
-
-    def __init__(self, file):
-        self.file = file
-        self._hash = None
-
-    @property
-    def name(self):
-        return self.file.name
-    
-    @property
-    def path(self):
-        return self.file
-
-    @property
-    def hash(self):
-        if self._hash is None:
-            self._hash = self._compute_sha256(self.file)
-        return self._hash
-
-    def _compute_sha256(self, file_name):
-        hash_sha256 = hashlib.sha256()
-        with open(file_name, "rb") as f:
-            for chunk in iter(lambda: f.read(4096), b""):
-                hash_sha256.update(chunk)
-        return hash_sha256.hexdigest()
-
-    def __str__(self):
-        return self.file
-    
 class InstallerPackage:
     """
     The installer package, e.g. the installer.zip, which is a zip archive
@@ -50,7 +18,7 @@ class InstallerPackage:
     def __init__(self, manifest: ManifestInfo):
         self.manifest = manifest
 
-    def create(self) -> CreateInstallerPackageResult:
+    def create(self) -> InstallerPackageResult:
         validation_results = self.manifest.validate()
         if len(validation_results) > 0:
             raise ValueError(validation_results)
@@ -62,7 +30,7 @@ class InstallerPackage:
 
         file = ziputils.zip_dir(templates_dir, dest_file_path)
 
-        return CreateInstallerPackageResult(file)
+        return InstallerPackageResult(file)
 
     def unpack(self, file_path, extract_dir):
         if not os.path.exists(file_path):
@@ -76,7 +44,7 @@ class InstallerPackage:
         shutil.unpack_archive(file, extract_dir)
 
     def _get_copy_of_templates_dir(self):
-        source_templates_dir = Path(self.manifest.main_template).parent
+        source_templates_dir = Path(self.manifest.solution_template).parent
         temp_dir = tempfile.mkdtemp()
         templates_dir = Path(os.path.join(temp_dir, source_templates_dir.name))
 
@@ -85,7 +53,7 @@ class InstallerPackage:
         return (Path(temp_dir), templates_dir)
 
 
-def create_installer_package(manifest) -> CreateInstallerPackageResult:
+def create_installer_package(manifest) -> InstallerPackageResult:
     """
     Creates an installer package for the given manifest.
 

@@ -11,7 +11,7 @@ class ApplicationPackageOptions:
         installer_version (InstallerVersion | str): The version of the installer to use.
         vmi_reference (bool, optional): Whether to use a VMI reference of the published/released reference. Defaults to False.
         vmi_reference_id (str, optional): The ID of the VMI reference to use to override the published reference.
-         out_dir (Optional[str]): The output directory for the application package.
+        out_dir (Optional[str]): The output directory for the application package.
     """
 
     def __init__(

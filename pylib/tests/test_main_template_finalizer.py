@@ -1,10 +1,9 @@
 import os
 from pathlib import Path
 import unittest
-from modm.installer.main_template import MainTemplate
-from modm.installer import MainTemplateFinalizer
-from modm.installer.package import CreateInstallerPackageResult
-from modm.installer.resources import InstallerResources
+from modm.marketplace import MainTemplate, MainTemplateFinalizer
+from modm.installer.installer_package_result import InstallerPackageResult
+from modm.marketplace._resources import InstallerResources
 
 
 class TestMainTemplateFinalizer(unittest.TestCase):
@@ -22,7 +21,7 @@ class TestMainTemplateFinalizer(unittest.TestCase):
             self.finalizer.finalize()
 
     def test_finalize_with_false_use_vmi_reference(self):
-        installer_package=CreateInstallerPackageResult(self.data_path.joinpath("installer.zip"))
+        installer_package=InstallerPackageResult(self.data_path.joinpath("installer.zip"))
         result = self.finalizer.finalize(installer_resources=self.installer_resources, installer_package=installer_package)
         self.assertEqual(result.vm_offer, self.installer_resources.vm_offer)
 

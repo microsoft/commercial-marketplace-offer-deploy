@@ -1,5 +1,4 @@
 from enum import Enum
-from pathlib import Path
 
 
 class DeploymentType(Enum):
@@ -13,14 +12,3 @@ class DeploymentType(Enum):
 
     terraform = "terraform"
     arm = "arm"
-
-    @staticmethod
-    def is_arm(template_file: Path):
-        """
-        Check if the deployment type is arm.
-
-        Returns:
-          bool: True if the deployment type is arm, False otherwise
-        """
-        extension = template_file.suffix.lstrip(".")
-        return extension == DeploymentType.arm.value or extension == "bicep"

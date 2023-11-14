@@ -7,10 +7,10 @@ import tarfile
 import tempfile
 import click
 from modm import _zip_utils
-from modm.application_packaging_options import ApplicationPackageOptions
-from modm.application_package_info import ApplicationPackageInfo
-from modm.application_package import new_application_package
-from modm.client_app_package import ClientAppPackage
+from modm.marketplace.application_packaging_options import ApplicationPackageOptions
+from modm.marketplace.application_package_info import ApplicationPackageInfo
+from modm.marketplace.application_package import new_application_package
+from modm.installer.client_app_package import ClientAppPackage
 from modm.installer.version import InstallerVersion
 
 

@@ -1,6 +1,6 @@
 import copy
-from modm.installer.main_template import MainTemplate
-from modm.installer.resources import InstallerResources
+from .main_template import MainTemplate
+from ._resources import InstallerResources
 
 
 class MainTemplateFinalizer:

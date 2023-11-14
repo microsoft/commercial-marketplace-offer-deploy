@@ -1,8 +1,10 @@
 from pathlib import Path
-from modm.installer import main_template, view_definition, create_ui_definition_step
+from . import main_template, view_definition
 from modm.installer.version import InstallerVersion
 from msrest.serialization import Model
 import tarfile
+
+from . import create_ui_definition_step
 
 
 class ResourcesInfo(Model):

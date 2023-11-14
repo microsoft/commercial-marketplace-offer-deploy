@@ -4,14 +4,15 @@ import shutil
 import tempfile
 import unittest
 import os
-from modm.installer import CreateInstallerPackageResult, ManifestInfo, InstallerPackage, DeploymentType
+from modm.installer import ManifestInfo, InstallerPackage, DeploymentType
+from modm.installer.installer_package_result import InstallerPackageResult
 
 class TestInstallerPackage(unittest.TestCase):
     def setUp(self):
         self.data_path = os.path.join(os.path.dirname(__file__), 'data')
         self.main_template_file = os.path.join(self.data_path, 'simple_terraform', 'main.tf')
 
-        self.manifest = ManifestInfo(main_template=self.main_template_file, 
+        self.manifest = ManifestInfo(solution_template=self.main_template_file, 
                                      deployment_type=DeploymentType.terraform)
 
         self.installer_package = InstallerPackage(self.manifest)
@@ -20,7 +21,7 @@ class TestInstallerPackage(unittest.TestCase):
         self.assertEqual(InstallerPackage.file_name, 'installer.zip')
 
     def test_init(self):
-        self.assertEqual(self.installer_package.manifest.main_template, self.manifest.main_template)
+        self.assertEqual(self.installer_package.manifest.solution_template, self.manifest.solution_template)
 
     def test_create(self):
         result = self.installer_package.create()
@@ -43,7 +44,7 @@ class TestInstallerPackage(unittest.TestCase):
             f.close()
             file_path = f.name
 
-            result = CreateInstallerPackageResult(Path(file_path))
+            result = InstallerPackageResult(Path(file_path))
             expected_hash = hashlib.sha256(b"hello world").hexdigest()
 
             self.assertEqual(result.hash, expected_hash)

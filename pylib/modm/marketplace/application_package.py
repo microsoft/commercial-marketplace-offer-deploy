@@ -1,13 +1,10 @@
 from pathlib import Path
 from zipfile import ZipFile
-from modm.application_package_result import ApplicationPackageResult
-from modm.application_packaging_options import ApplicationPackageOptions
-from modm.application_package_info import ApplicationPackageInfo
-from modm.installer import CreateInstallerPackageResult, create_installer_package
-from importlib.resources import files, as_file
-from modm.installer import MainTemplateFinalizer
-from modm.installer.resources import InstallerResources
-from modm.installer.resources_provider import InstallerResourcesProvider
+from .application_package_result import ApplicationPackageResult
+from .application_packaging_options import ApplicationPackageOptions
+from .application_package_info import ApplicationPackageInfo
+from modm import InstallerResources, InstallerResourcesProvider
+from modm.installer import InstallerPackageResult, MainTemplateFinalizer, create_installer_package
 
 
 MAIN_TEMPLATE_FILE_NAME = "mainTemplate.json"
@@ -80,9 +77,9 @@ class ApplicationPackage:
         self.view_definition = view_definition
 
     def _finalize_main_template(
-        self, info: ApplicationPackageInfo, installer_package: CreateInstallerPackageResult, options: ApplicationPackageOptions
+        self, info: ApplicationPackageInfo, installer_package: InstallerPackageResult, options: ApplicationPackageOptions
     ):
-        """the app package's main template"""
+        """the app package's main template, NOT the installer.zip container the solution template"""
         installer_resources = self._get_resources(options)
 
         finalizer = MainTemplateFinalizer(installer_resources.main_template)
