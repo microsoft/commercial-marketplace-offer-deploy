@@ -1,5 +1,4 @@
 from pathlib import Path
-import tempfile
 from zipfile import ZipFile
 from packaging.application_package_result import ApplicationPackageResult
 from packaging.application_packaging_options import ApplicationPackageOptions
@@ -34,19 +33,18 @@ class ApplicationPackage:
         - modules
         - <modules>
     """
-
+    
     file_name = "app.zip"
 
     def __init__(self, resourcesProvider: InstallerResourcesProvider) -> None:
         self._resourcesProvider = resourcesProvider
 
-    def create(self, info: ApplicationPackageInfo, options: ApplicationPackageOptions, out_dir=None) -> ApplicationPackageResult:
+    def create(self, info: ApplicationPackageInfo, options: ApplicationPackageOptions) -> ApplicationPackageResult:
         """
         Creates an application package based on the current manifest and UI definition.
 
         Args:
             info (ApplicationPackageInfo): The application package info.
-            out_dir (Optional[str]): The output directory for the application package.
             If not specified, the package will be created in a randomly generated temp directory.
 
         Returns:
@@ -65,7 +63,7 @@ class ApplicationPackage:
         self._finalize_create_ui_definition(info, options)
 
         result = ApplicationPackageResult(installer_package=installer_package, client_app_name=self.main_template.client_app_name)
-        result.file = self._zip(installer_package, options, out_dir)
+        result.file = self._zip(installer_package, options)
 
         if result.file is None or not result.file.exists():
             result.validation_results.append(Exception("Failed to create application package"))
@@ -103,11 +101,9 @@ class ApplicationPackage:
 
         self.create_ui_definition = create_ui_definition
 
-    def _zip(self, installer_package, options, out_dir=None) -> Path:
+    def _zip(self, installer_package, options: ApplicationPackageOptions) -> Path:
         installer_resources = self._get_resources(options)
-
-        out_dir = out_dir if out_dir is not None else tempfile.mkdtemp()
-        file = Path(out_dir).joinpath(self.file_name)
+        file = Path(options.out_dir).joinpath(self.file_name)
 
         with ZipFile(file, "w") as zip_file:
             zip_file.write(installer_resources.client_app_package, installer_resources.client_app_package.name)

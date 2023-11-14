@@ -53,10 +53,10 @@ def build_application_package(
         resources_file = cwd.joinpath(resources_file).resolve()
 
     info = ApplicationPackageInfo(resolved_template_file, resolved_create_ui_definition, name, description)
-    options = ApplicationPackageOptions(version, vmi_reference, vmi_reference_id, resources_file)
+    options = ApplicationPackageOptions(version, vmi_reference, vmi_reference_id, resources_file, out_dir)
 
     package = new_application_package()
-    result = package.create(info, options, out_dir)
+    result = package.create(info, options)
 
     click.echo(json.dumps(result.serialize(), indent=2))
 

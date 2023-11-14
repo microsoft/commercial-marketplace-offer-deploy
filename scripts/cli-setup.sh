@@ -7,7 +7,7 @@ cli_path=$PWD/cli
 function modm() {
     cwd=$PWD
     pushd $cli_path &> /dev/null
-        python -m devcli "$@" $cwd
+        python -m cli "$@" $cwd
     popd &> /dev/null
 }
 

@@ -1,3 +1,4 @@
+import tempfile
 from packaging.installer.version import InstallerVersion, InstallerVersionProvider
 from pathlib import Path
 
@@ -10,9 +11,18 @@ class ApplicationPackageOptions:
         installer_version (InstallerVersion | str): The version of the installer to use.
         vmi_reference (bool, optional): Whether to use a VMI reference of the published/released reference. Defaults to False.
         vmi_reference_id (str, optional): The ID of the VMI reference to use to override the published reference.
+         out_dir (Optional[str]): The output directory for the application package.
     """
 
-    def __init__(self, installer_version: InstallerVersion | str, vmi_reference: bool = False, vmi_reference_id: str = None, resources_file: str | Path = None) -> None:
+    def __init__(
+        self,
+        installer_version: InstallerVersion | str,
+        vmi_reference: bool = False,
+        vmi_reference_id: str = None,
+        resources_file: str | Path = None,
+        out_dir=None,
+    ) -> None:
+        self._out_dir = out_dir
         self._use_vmi_reference = vmi_reference
         self._vmi_reference_id = vmi_reference_id
 
@@ -45,3 +55,12 @@ class ApplicationPackageOptions:
     @property
     def use_vmi_reference(self):
         return self._use_vmi_reference
+
+    @property
+    def out_dir(self):
+        """
+        Returns the output directory for the packaged application.
+        If the output directory is not set, a temporary directory is created and returned.
+        """
+        out_dir = self._out_dir if self._out_dir is not None else tempfile.mkdtemp()
+        return out_dir
