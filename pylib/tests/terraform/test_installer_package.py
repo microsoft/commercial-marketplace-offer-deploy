@@ -9,7 +9,7 @@ from modm.installer.installer_package_result import InstallerPackageResult
 
 class TestInstallerPackage(unittest.TestCase):
     def setUp(self):
-        self.data_path = os.path.join(os.path.dirname(__file__), 'data')
+        self.data_path = os.path.join(os.path.dirname(__file__), '../data')
         self.main_template_file = os.path.join(self.data_path, 'simple_terraform', 'main.tf')
 
         self.manifest = ManifestInfo(solution_template=self.main_template_file, 

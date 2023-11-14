@@ -11,7 +11,7 @@ class TestManifest(unittest.TestCase):
     def test_manifest_info_construction(self):
         manifest = ManifestInfo(solution_template="main.tf", deployment_type=DeploymentType.terraform)
 
-        self.assertEqual(manifest.solution_template, "main.tf")
+        self.assertEqual(str(manifest.solution_template), "main.tf")
         self.assertEqual(manifest.deployment_type, DeploymentType.terraform)
 
         self.assertIsInstance(manifest.offer, OfferInfo)
@@ -34,8 +34,8 @@ class TestManifest(unittest.TestCase):
         manifest = ManifestInfo(solution_template="main.tf", deployment_type=DeploymentType.terraform)
 
         json_str = manifest.to_json()
-        from_json = manifest.deserialize(json.loads(json_str))
-        self.assertEqual(from_json.main_template, manifest.solution_template)
+        from_json: ManifestInfo = manifest.deserialize(json.loads(json_str))
+        self.assertEqual(from_json.solution_template, manifest.solution_template)
 
     def test_manifest_info_serialization(self):
         manifest = ManifestInfo(solution_template="main.tf", deployment_type=DeploymentType.terraform)

@@ -27,14 +27,21 @@ class ManifestInfo(Model):
         super().__init__(**kwargs)
 
         self.solution_template = Path(solution_template)
+        self._template_type = SolutionTemplateType.from_template(self.solution_template)
+
         self.offer = OfferInfo()
 
-        self._template_type = SolutionTemplateType.from_template(solution_template)
+        if self._template_type == SolutionTemplateType.terraform:
+            self.deployment_type = DeploymentType.terraform
+        else:
+            self.deployment_type = DeploymentType.arm
 
     @property
     def template_type(self) -> SolutionTemplateType:
         return self._template_type
-        
+    
+
+
     def to_json(self):
         return json.dumps(self.serialize(), indent=2)
 

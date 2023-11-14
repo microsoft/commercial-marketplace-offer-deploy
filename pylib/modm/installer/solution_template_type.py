@@ -47,7 +47,7 @@ class SolutionTemplateType(Enum):
           bool: True if the deployment type is terraform, False otherwise
         """
         extension = template_file.suffix.lstrip(".")
-        return extension == SolutionTemplateType.terraform.value
+        return extension == "tf"
 
     @staticmethod
     def from_template(solution_template: Path):
