@@ -141,6 +141,7 @@ namespace Modm.Engine.Pipelines
 
         private async Task Publish(Deployment deployment, CancellationToken cancellationToken)
         {
+            this.logger.LogInformation("Inside SubmitDeployment:Publish - publishing DeploymentStarted");
             await mediator.Publish(new DeploymentStarted
             {
                 Id = deployment.Id,
@@ -151,12 +152,15 @@ namespace Modm.Engine.Pipelines
         private async Task<bool> TryToSubmit(Deployment deployment)
         {
             using var client = await clientFactory.Create();
+            this.logger.LogInformation($"Prior to calling client.Build  - {DateTime.UtcNow}");
             var (id, status) = await client.Build(deployment.Definition.DeploymentType);
+            this.logger.LogInformation($"After to calling client.Build  - {DateTime.UtcNow}");
             deployment.Status = status;
 
             if (id.HasValue)
             {
                 deployment.Id = id.Value;
+                this.logger.LogInformation($"The deployment.Id has a value of {deployment.Id}");
                 return true;
             }
             return false;
@@ -167,14 +171,19 @@ namespace Modm.Engine.Pipelines
     public class WriteDeploymentToDisk : IRequestPostProcessor<StartDeploymentRequest, StartDeploymentResult>
     {
         private readonly DeploymentFile file;
+        private readonly ILogger<WriteDeploymentToDisk> logger;
 
-        public WriteDeploymentToDisk(DeploymentFile file) => this.file = file;
-
+        public WriteDeploymentToDisk(DeploymentFile file, ILogger<WriteDeploymentToDisk> logger)
+        {
+            this.file = file;
+            this.logger = logger;
+        }
         public async Task Process(
             StartDeploymentRequest request,
             StartDeploymentResult response,
             CancellationToken cancellationToken)
         {
+            this.logger.LogInformation("Inside WriteDeploymentToDisk:Process");
             await file.Write(response.Deployment, cancellationToken);
         }
     }

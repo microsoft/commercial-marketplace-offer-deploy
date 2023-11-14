@@ -4,6 +4,7 @@ using MediatR.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Modm.Packaging;
 using Modm.Deployments;
+using Microsoft.Extensions.Logging;
 
 namespace Modm.Engine.Pipelines
 {
@@ -54,12 +55,19 @@ namespace Modm.Engine.Pipelines
 	public class DownloadAndExtractInstallerPackage : IPipelineBehavior<CreateDeploymentDefinition, DeploymentDefinition>
     {
         private readonly IPackageDownloader downloader;
-        private readonly IValidator<PackageFile> validator;
+        private readonly IServiceProvider serviceProvider;
+        //private readonly IValidator<PackageFile> validator;
 
-        public DownloadAndExtractInstallerPackage(IPackageDownloader downloader, IValidator<PackageFile> validator)
+        //public DownloadAndExtractInstallerPackage(IPackageDownloader downloader, IValidator<PackageFile> validator)
+        //{
+        //    this.downloader = downloader;
+        //    this.validator = validator;
+        //}
+
+        public DownloadAndExtractInstallerPackage(IPackageDownloader downloader, IServiceProvider serviceProvider)
         {
             this.downloader = downloader;
-            this.validator = validator;
+            this.serviceProvider = serviceProvider;
         }
 
         public async Task<DeploymentDefinition> Handle(CreateDeploymentDefinition request, RequestHandlerDelegate<DeploymentDefinition> next, CancellationToken cancellationToken)
@@ -72,13 +80,17 @@ namespace Modm.Engine.Pipelines
             var context = new ValidationContext<PackageFile>(file);
             context.RootContextData[PackageFile.HashAttributeName] = request.PackageHash;
 
-            var validationResult = validator.Validate(context);
-
-            if (!validationResult.IsValid)
+            using (var scope = this.serviceProvider.CreateScope())
             {
-                throw new ValidationException("Error handling installer package extraction", validationResult.Errors);
-            }
+                var validator = scope.ServiceProvider.GetRequiredService<IValidator<PackageFile>>();
+                var validationResult = validator.Validate(context);
 
+                if (!validationResult.IsValid)
+                {
+                    throw new ValidationException("Error handling installer package extraction", validationResult.Errors);
+                }
+            }
+            
             file.Extract();
             definition.WorkingDirectory = file.ExtractedTo;
 
@@ -124,18 +136,28 @@ namespace Modm.Engine.Pipelines
     public class WriteToDisk : IRequestPostProcessor<CreateDeploymentDefinition, DeploymentDefinition>
     {
         private readonly DeploymentFile file;
+        private ILogger<WriteToDisk> logger;
 
-        public WriteToDisk(DeploymentFile file) => this.file = file;
+        public WriteToDisk(DeploymentFile file, ILogger<WriteToDisk> logger)
+        {
+            this.file = file;
+            this.logger = logger;
+        }
 
-        public async Task Process(
-            CreateDeploymentDefinition request,
-            DeploymentDefinition response,
-            CancellationToken cancellationToken) => await file.Write(new Deployment
+        public async Task Process(CreateDeploymentDefinition request, DeploymentDefinition response, CancellationToken cancellationToken)
+        {
+            this.logger.LogInformation("Inside WriteToDisk of CreateDeploymentPipeline");
+
+            await file.Write(new Deployment
             {
                 Definition = response,
                 Id = 0,
+                Timestamp = DateTime.UtcNow,
                 Status = DeploymentStatus.Undefined
             }, cancellationToken);
+
+            this.logger.LogInformation("Wrote Deployment to file");
+        } 
     }
 
     #endregion

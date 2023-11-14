@@ -30,6 +30,7 @@ namespace Modm.Deployments
                 return new Deployment
                 {
                     Id = 0,
+                    Timestamp = DateTime.UtcNow,
                     Status = DeploymentStatus.Undefined
                 };
             }
