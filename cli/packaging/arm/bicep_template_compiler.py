@@ -44,4 +44,4 @@ class BicepTemplateCompiler:
                     errors.append(line)
 
             error_msg = os.linesep.join(errors)
-            raise ValueError(error_msg)
+            raise Exception(error_msg)

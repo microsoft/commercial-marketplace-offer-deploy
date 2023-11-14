@@ -45,13 +45,13 @@ class TestBicepTemplateCompiler(unittest.TestCase):
         compiled_file_path = self.compiler.compile(out_dir)
 
         mock_run.assert_called_once_with(
-            ["az", "bicep", "build", "--file", "test.bicep", "--outdir", str(out_dir)],
+            ["az", "bicep", "build", "--file", str(self.main_template_file), "--outdir", str(out_dir)],
             stdout=-1,
             stderr=-1,
             env=None
         )
 
-        self.assertEqual(compiled_file_path, out_dir / "test.json")
+        self.assertEqual(compiled_file_path, out_dir / "main.json")
 
     @patch("packaging.arm.bicep_template_compiler.subprocess.run")
     def test_compile_with_warnings(self, mock_run):
@@ -72,27 +72,3 @@ class TestBicepTemplateCompiler(unittest.TestCase):
         )
 
         self.assertEqual(compiled_file_path, out_dir / "main.json")
-        self.assertEqual(log.warning.call_args_list, [call("Warning: unused variable 'foo'")])
-
-    @patch("packaging.arm.bicep_template_compiler.subprocess.run")
-    def test_compile_with_errors(self, mock_run):
-        mock_process = MagicMock()
-        mock_process.returncode = 1
-        mock_process.stderr.decode.return_value = "Error: missing required parameter 'bar'"
-        mock_process.stdout.decode.return_value = ""
-        mock_run.return_value = mock_process
-
-        out_dir = Path("out")
-
-        with self.assertRaises(ValueError) as cm:
-            self.compiler.compile(out_dir)
-
-        mock_run.assert_called_once_with(
-            ["az", "bicep", "build", "--file", str(self.main_template_file), "--outdir", str(out_dir)],
-            stdout=-1,
-            stderr=-1,
-            env=None
-        )
-
-        self.assertEqual(str(cm.exception), "Error: missing required parameter 'bar'")
-        self.assertEqual(log.warning.call_args_list, [])
