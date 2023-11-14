@@ -31,7 +31,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
             python-version: '3.10' 
-      - run: pip install -r cli/requirements.txt
+      - run: pip install -r pylib/requirements.txt
 
       - name: Setup .NET ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v3
