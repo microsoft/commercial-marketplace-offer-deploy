@@ -1,122 +1,19 @@
 from pathlib import Path
 import tempfile
 from zipfile import ZipFile
-from packaging.installer import ManifestInfo, CreateInstallerPackageResult, create_installer_package
-from packaging.azure import CreateUiDefinition
+from packaging.application_package_result import ApplicationPackageResult
+from packaging.application_packaging_options import ApplicationPackageOptions
+from packaging.application_package_info import ApplicationPackageInfo
+from packaging.installer import CreateInstallerPackageResult, create_installer_package
 from importlib.resources import files, as_file
-from msrest.serialization import Model
 from packaging.installer import MainTemplateFinalizer
 from packaging.installer.resources import InstallerResources
 from packaging.installer.resources_provider import InstallerResourcesProvider
-from packaging.installer.version import InstallerVersion, InstallerVersionProvider
 
 
 MAIN_TEMPLATE_FILE_NAME = "mainTemplate.json"
 CREATE_UI_DEFINITION_FILE_NAME = "createUiDefinition.json"
 VIEW_DEFINITION_FILE_NAME = "viewDefinition.json"
-
-
-class CreateApplicationPackageResult(Model):
-    _attribute_map = {
-        "file": {"key": "file", "type": "str"},
-        "validation_results": {"key": "validationResults", "type": "[object]"},
-    }
-
-    def __init__(self, **kwargs) -> None:
-        self.file = None
-        self.validation_results = kwargs.get("validation_results", [])
-        self._installer_package = kwargs.get("installer_package", None)
-        self._client_app_name = kwargs.get("client_app_name", None)
-
-    @property
-    def client_app_name(self):
-        return self._client_app_name
-
-    @property
-    def installer_package(self):
-        return self._installer_package
-
-
-class CreateApplicationPackageOptions:
-    """
-    Options for creating an application package.
-
-    Args:
-        installer_version (InstallerVersion | str): The version of the installer to use.
-        vmi_reference (bool, optional): Whether to use a VMI reference of the published/released reference. Defaults to False.
-        vmi_reference_id (str, optional): The ID of the VMI reference to use to override the published reference.
-    """
-
-    def __init__(self, installer_version: InstallerVersion | str, vmi_reference: bool = False, vmi_reference_id: str = None, resources_file: str | Path = None) -> None:
-        self._use_vmi_reference = vmi_reference
-        self._vmi_reference_id = vmi_reference_id
-
-        if isinstance(resources_file, str):
-            self._resources_file = Path(resources_file)
-        else:
-            self._resources_file = resources_file
-
-        if installer_version is not None and resources_file is None:
-            if isinstance(installer_version, str):
-                if installer_version == "latest":
-                    self.installer_version = InstallerVersionProvider().get_latest()
-                else:
-                    self.installer_version = InstallerVersion(installer_version)
-            else:
-                self.installer_version = installer_version
-
-        if vmi_reference_id is not None:
-            self._use_vmi_reference = True
-
-    @property
-    def resources_file(self):
-        return self._resources_file
-
-    @property
-    def vmi_reference_id(self):
-        """This is the ID of the VMI reference to use to override the published reference."""
-        return self._vmi_reference_id
-
-    @property
-    def use_vmi_reference(self):
-        return self._use_vmi_reference
-
-
-class ApplicationPackageInfo(Model):
-    def __init__(self, main_template: str | Path, create_ui_definition: str | CreateUiDefinition, name="", description=""):
-        super().__init__()
-        self.create_ui_definition = create_ui_definition
-
-        # not to be confused with the main template of the application package.
-        # this is the main template for the app the installer will deploy
-        self.main_template = main_template
-        if isinstance(create_ui_definition, str) or isinstance(create_ui_definition, Path):
-            self.create_ui_definition = CreateUiDefinition.from_file(create_ui_definition)
-        else:
-            self.create_ui_definition = create_ui_definition
-
-        self.manifest = ManifestInfo(main_template=main_template)
-        self.manifest.offer.name = name
-        self.manifest.offer.description = description
-
-    @property
-    def name(self):
-        return self.manifest.offer.name
-
-    @property
-    def description(self):
-        return self.manifest.offer.description
-
-    @property
-    def template_parameters(self):
-        return self.manifest.get_parameters()
-
-    def validate(self):
-        template_parameters = self.manifest.get_parameters()
-        validation_results = self.manifest.validate()
-        validation_results += self.create_ui_definition.validate(template_parameters)
-
-        return validation_results
 
 
 class ApplicationPackage:
@@ -143,7 +40,7 @@ class ApplicationPackage:
     def __init__(self, resourcesProvider: InstallerResourcesProvider) -> None:
         self._resourcesProvider = resourcesProvider
 
-    def create(self, info: ApplicationPackageInfo, options: CreateApplicationPackageOptions, out_dir=None) -> CreateApplicationPackageResult:
+    def create(self, info: ApplicationPackageInfo, options: ApplicationPackageOptions, out_dir=None) -> ApplicationPackageResult:
         """
         Creates an application package based on the current manifest and UI definition.
 
@@ -159,7 +56,7 @@ class ApplicationPackage:
         validation_results = info.validate()
 
         if len(validation_results) > 0:
-            return CreateApplicationPackageResult(validation_results=validation_results)
+            return ApplicationPackageResult(validation_results=validation_results)
 
         installer_package = create_installer_package(info.manifest)
 
@@ -167,7 +64,7 @@ class ApplicationPackage:
         self._finalize_view_definition(info, options)
         self._finalize_create_ui_definition(info, options)
 
-        result = CreateApplicationPackageResult(installer_package=installer_package, client_app_name=self.main_template.client_app_name)
+        result = ApplicationPackageResult(installer_package=installer_package, client_app_name=self.main_template.client_app_name)
         result.file = self._zip(installer_package, options, out_dir)
 
         if result.file is None or not result.file.exists():
@@ -176,7 +73,7 @@ class ApplicationPackage:
 
         return result
 
-    def _finalize_view_definition(self, info: ApplicationPackageInfo, options: CreateApplicationPackageOptions):
+    def _finalize_view_definition(self, info: ApplicationPackageInfo, options: ApplicationPackageOptions):
         view_definition = self._get_resources(options).view_definition
         view_definition.add_input("dashboardUrl", self.main_template.dashboard_url)
         view_definition.add_input("offerName", info.manifest.offer.name)
@@ -185,7 +82,7 @@ class ApplicationPackage:
         self.view_definition = view_definition
 
     def _finalize_main_template(
-        self, info: ApplicationPackageInfo, installer_package: CreateInstallerPackageResult, options: CreateApplicationPackageOptions
+        self, info: ApplicationPackageInfo, installer_package: CreateInstallerPackageResult, options: ApplicationPackageOptions
     ):
         """the app package's main template"""
         installer_resources = self._get_resources(options)
@@ -199,7 +96,7 @@ class ApplicationPackage:
             vmi_reference_id=options.vmi_reference_id,
         )
 
-    def _finalize_create_ui_definition(self, info: ApplicationPackageInfo, options: CreateApplicationPackageOptions):
+    def _finalize_create_ui_definition(self, info: ApplicationPackageInfo, options: ApplicationPackageOptions):
         create_ui_definition = info.create_ui_definition
         create_ui_definition_step = self._get_resources(options).create_ui_definition_step
         create_ui_definition_step.append_to(create_ui_definition)
@@ -222,7 +119,7 @@ class ApplicationPackage:
 
         return file
 
-    def _get_resources(self, options: CreateApplicationPackageOptions):
+    def _get_resources(self, options: ApplicationPackageOptions):
         if options.resources_file is not None:
             return InstallerResources.from_file(options.resources_file)
         return self._resourcesProvider.get(options.installer_version)

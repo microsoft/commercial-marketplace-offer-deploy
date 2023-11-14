@@ -1,0 +1,47 @@
+from packaging.installer.version import InstallerVersion, InstallerVersionProvider
+from pathlib import Path
+
+
+class ApplicationPackageOptions:
+    """
+    Options for creating an application package.
+
+    Args:
+        installer_version (InstallerVersion | str): The version of the installer to use.
+        vmi_reference (bool, optional): Whether to use a VMI reference of the published/released reference. Defaults to False.
+        vmi_reference_id (str, optional): The ID of the VMI reference to use to override the published reference.
+    """
+
+    def __init__(self, installer_version: InstallerVersion | str, vmi_reference: bool = False, vmi_reference_id: str = None, resources_file: str | Path = None) -> None:
+        self._use_vmi_reference = vmi_reference
+        self._vmi_reference_id = vmi_reference_id
+
+        if isinstance(resources_file, str):
+            self._resources_file = Path(resources_file)
+        else:
+            self._resources_file = resources_file
+
+        if installer_version is not None and resources_file is None:
+            if isinstance(installer_version, str):
+                if installer_version == "latest":
+                    self.installer_version = InstallerVersionProvider().get_latest()
+                else:
+                    self.installer_version = InstallerVersion(installer_version)
+            else:
+                self.installer_version = installer_version
+
+        if vmi_reference_id is not None:
+            self._use_vmi_reference = True
+
+    @property
+    def resources_file(self):
+        return self._resources_file
+
+    @property
+    def vmi_reference_id(self):
+        """This is the ID of the VMI reference to use to override the published reference."""
+        return self._vmi_reference_id
+
+    @property
+    def use_vmi_reference(self):
+        return self._use_vmi_reference
