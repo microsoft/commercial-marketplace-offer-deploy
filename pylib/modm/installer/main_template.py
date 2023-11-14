@@ -1,9 +1,9 @@
 import json
 import os
-from packaging.azure import ArmTemplate
-from packaging.azure.arm_template_parameter import ArmTemplateParameter
-from packaging.azure.client_app import create_client_app_name
-from packaging.installer.reserved_template_parameter import ReservedTemplateParameter
+from modm.azure import ArmTemplate
+from modm.azure.arm_template_parameter import ArmTemplateParameter
+from modm.azure.client_app import create_client_app_name
+from modm.installer.reserved_template_parameter import ReservedTemplateParameter
 
 
 class UserData:

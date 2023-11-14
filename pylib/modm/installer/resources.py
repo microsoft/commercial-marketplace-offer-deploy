@@ -1,6 +1,6 @@
 from pathlib import Path
-from packaging.installer import main_template, view_definition, create_ui_definition_step
-from packaging.installer.version import InstallerVersion
+from modm.installer import main_template, view_definition, create_ui_definition_step
+from modm.installer.version import InstallerVersion
 from msrest.serialization import Model
 import tarfile
 

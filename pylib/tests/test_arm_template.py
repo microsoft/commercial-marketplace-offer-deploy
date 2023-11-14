@@ -1,6 +1,6 @@
 import unittest
 import os
-from packaging.azure.arm_template import ArmTemplate, ArmTemplateParameter
+from modm.azure.arm_template import ArmTemplate, ArmTemplateParameter
 
 class TestArmTemplate(unittest.TestCase):
     def setUp(self):

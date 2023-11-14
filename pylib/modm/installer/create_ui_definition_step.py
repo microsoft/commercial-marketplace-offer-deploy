@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from pybars import Compiler
 
-from packaging.azure.create_ui_definition import CreateUiDefinition
+from modm.azure.create_ui_definition import CreateUiDefinition
 
 
 class CreateUiDefinitionInstallerStep:

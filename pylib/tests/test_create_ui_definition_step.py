@@ -1,8 +1,8 @@
 from copy import deepcopy
 import os
 import unittest
-from packaging.installer.create_ui_definition_step import from_file
-from packaging.azure.create_ui_definition import CreateUiDefinition
+from modm.installer.create_ui_definition_step import from_file
+from modm.azure.create_ui_definition import CreateUiDefinition
 
 class TestCreateUiDefinitionInstallerStep(unittest.TestCase):
     def setUp(self):

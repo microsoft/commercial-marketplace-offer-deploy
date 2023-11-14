@@ -1,13 +1,13 @@
 from pathlib import Path
 from zipfile import ZipFile
-from packaging.application_package_result import ApplicationPackageResult
-from packaging.application_packaging_options import ApplicationPackageOptions
-from packaging.application_package_info import ApplicationPackageInfo
-from packaging.installer import CreateInstallerPackageResult, create_installer_package
+from modm.application_package_result import ApplicationPackageResult
+from modm.application_packaging_options import ApplicationPackageOptions
+from modm.application_package_info import ApplicationPackageInfo
+from modm.installer import CreateInstallerPackageResult, create_installer_package
 from importlib.resources import files, as_file
-from packaging.installer import MainTemplateFinalizer
-from packaging.installer.resources import InstallerResources
-from packaging.installer.resources_provider import InstallerResourcesProvider
+from modm.installer import MainTemplateFinalizer
+from modm.installer.resources import InstallerResources
+from modm.installer.resources_provider import InstallerResourcesProvider
 
 
 MAIN_TEMPLATE_FILE_NAME = "mainTemplate.json"

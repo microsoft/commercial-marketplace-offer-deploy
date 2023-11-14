@@ -5,8 +5,8 @@ import copy
 import os
 import jsonschema
 from pathlib import Path
-from packaging.terraform import TerraformFile
-from packaging.azure import ArmTemplateParameter, from_terraform_input_variable
+from modm.terraform import TerraformFile
+from modm.azure import ArmTemplateParameter, from_terraform_input_variable
 from .deployment_type import DeploymentType
 
 

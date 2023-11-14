@@ -1,6 +1,6 @@
 import unittest
 import os
-from packaging.terraform.terraform_file import TerraformFile
+from modm.terraform.terraform_file import TerraformFile
 
 class TestTerraformFile(unittest.TestCase):
     def setUp(self):

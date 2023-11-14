@@ -1,5 +1,5 @@
 import tempfile
-from packaging.installer.version import InstallerVersion, InstallerVersionProvider
+from modm.installer.version import InstallerVersion, InstallerVersionProvider
 from pathlib import Path
 
 

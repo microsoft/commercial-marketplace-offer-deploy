@@ -1,7 +1,7 @@
 import re
 import requests
 
-from packaging.config.config import Config
+from modm.config.config import Config
 from . import _github_release as github
 
 

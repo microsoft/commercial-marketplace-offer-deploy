@@ -1,10 +1,10 @@
 import os
 from pathlib import Path
 import unittest
-from packaging.installer.main_template import MainTemplate
-from packaging.installer import MainTemplateFinalizer
-from packaging.installer.package import CreateInstallerPackageResult
-from packaging.installer.resources import InstallerResources
+from modm.installer.main_template import MainTemplate
+from modm.installer import MainTemplateFinalizer
+from modm.installer.package import CreateInstallerPackageResult
+from modm.installer.resources import InstallerResources
 
 
 class TestMainTemplateFinalizer(unittest.TestCase):

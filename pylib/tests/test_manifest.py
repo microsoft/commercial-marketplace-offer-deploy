@@ -1,6 +1,6 @@
 import json
 import unittest
-from packaging.installer import ManifestInfo, OfferInfo, DeploymentType
+from modm.installer import ManifestInfo, OfferInfo, DeploymentType
 
 
 class TestManifest(unittest.TestCase):

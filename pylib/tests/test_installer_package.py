@@ -4,7 +4,7 @@ import shutil
 import tempfile
 import unittest
 import os
-from packaging.installer import CreateInstallerPackageResult, ManifestInfo, InstallerPackage, DeploymentType
+from modm.installer import CreateInstallerPackageResult, ManifestInfo, InstallerPackage, DeploymentType
 
 class TestInstallerPackage(unittest.TestCase):
     def setUp(self):

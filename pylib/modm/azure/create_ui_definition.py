@@ -1,7 +1,7 @@
 from copy import deepcopy
 import json
 import os
-from packaging.installer.reserved_template_parameter import ReservedTemplateParameter
+from modm.installer.reserved_template_parameter import ReservedTemplateParameter
 from .arm_template_parameter import ArmTemplateParameter
 
 

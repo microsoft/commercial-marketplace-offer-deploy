@@ -1,6 +1,6 @@
 from enum import Enum
-from packaging.terraform.input_variable import TerraformInputVariable
-from packaging.terraform.variable_types import TerraformInputVariableType
+from modm.terraform.input_variable import TerraformInputVariable
+from modm.terraform.variable_types import TerraformInputVariableType
 
 
 class ArmTemplateParameter:

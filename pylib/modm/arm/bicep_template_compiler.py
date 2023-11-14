@@ -22,7 +22,6 @@ class BicepTemplateCompiler:
             ["az", "bicep", "build", "--file", str(self.file_path), "--outdir", str(out_dir)],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            shell=True,
             env=None)
 
         try:

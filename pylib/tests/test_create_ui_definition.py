@@ -1,7 +1,7 @@
 import os
 import unittest
-from packaging.azure.arm_template_parameter import ArmTemplateParameter
-from packaging.azure.create_ui_definition import CreateUiDefinition
+from modm.azure.arm_template_parameter import ArmTemplateParameter
+from modm.azure.create_ui_definition import CreateUiDefinition
 
 
 class TestCreateUiDefinition(unittest.TestCase):

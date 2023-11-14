@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch, call, MagicMock
-from packaging.arm.bicep_template_compiler import BicepTemplateCompiler
+from modm.arm.bicep_template_compiler import BicepTemplateCompiler
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ class TestBicepTemplateCompiler(unittest.TestCase):
 
         shutil.rmtree(out_dir)
 
-    @patch("packaging.arm.bicep_template_compiler.subprocess.run")
+    @patch("modm.arm.bicep_template_compiler.subprocess.run")
     def test_compile(self, mock_run):
         mock_process = MagicMock()
         mock_process.returncode = 0
@@ -53,7 +53,7 @@ class TestBicepTemplateCompiler(unittest.TestCase):
 
         self.assertEqual(compiled_file_path, out_dir / "main.json")
 
-    @patch("packaging.arm.bicep_template_compiler.subprocess.run")
+    @patch("modm.arm.bicep_template_compiler.subprocess.run")
     def test_compile_with_warnings(self, mock_run):
         mock_process = MagicMock()
         mock_process.returncode = 0

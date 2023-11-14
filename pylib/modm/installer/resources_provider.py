@@ -3,9 +3,9 @@ import os
 from pathlib import Path
 
 import requests
-from packaging.config import Config
-from packaging.installer.resources import InstallerResources, ResourcesInfo
-from packaging.installer.version import InstallerVersion, InstallerVersionProvider
+from modm.config import Config
+from modm.installer.resources import InstallerResources, ResourcesInfo
+from modm.installer.version import InstallerVersion, InstallerVersionProvider
 from . import _httputil as httputil
 import tarfile
 

@@ -6,12 +6,12 @@ import shutil
 import tarfile
 import tempfile
 import click
-from packaging import ApplicationPackage, _zip_utils
-from packaging.application_packaging_options import ApplicationPackageOptions
-from packaging.application_package_info import ApplicationPackageInfo
-from packaging.application_package import new_application_package
-from packaging.client_app_package import ClientAppPackage
-from packaging.installer.version import InstallerVersion
+from modm import _zip_utils
+from modm.application_packaging_options import ApplicationPackageOptions
+from modm.application_package_info import ApplicationPackageInfo
+from modm.application_package import new_application_package
+from modm.client_app_package import ClientAppPackage
+from modm.installer.version import InstallerVersion
 
 
 @click.help_option("-h", "--help")

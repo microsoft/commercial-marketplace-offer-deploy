@@ -1,5 +1,5 @@
 import unittest
-from packaging.installer import InstallerVersion
+from modm.installer import InstallerVersion
 
 class TestInstallerVersion(unittest.TestCase):
     def test_constructor_with_version_name(self):

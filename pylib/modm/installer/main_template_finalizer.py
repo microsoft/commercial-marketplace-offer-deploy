@@ -1,6 +1,6 @@
 import copy
-from packaging.installer.main_template import MainTemplate
-from packaging.installer.resources import InstallerResources
+from modm.installer.main_template import MainTemplate
+from modm.installer.resources import InstallerResources
 
 
 class MainTemplateFinalizer:

@@ -2,7 +2,7 @@ import os
 import shutil
 import tempfile
 import unittest
-from packaging._zip_utils import zip_dir, unzip_file
+from modm._zip_utils import zip_dir, unzip_file
 
 class testZipUtils(unittest.TestCase):
     def setUp(self):

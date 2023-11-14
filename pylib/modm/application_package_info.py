@@ -1,5 +1,5 @@
-from packaging.azure import CreateUiDefinition
-from packaging.installer import ManifestInfo
+from modm.azure import CreateUiDefinition
+from modm.installer import ManifestInfo
 from msrest.serialization import Model
 from pathlib import Path
 
