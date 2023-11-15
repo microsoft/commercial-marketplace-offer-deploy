@@ -115,6 +115,7 @@ namespace Modm.Jenkins.Client
 
             try
             {
+                this.logger.LogInformation($"Inside GetBuildStatus prior to calling jenkinsNetClient.Builds.GetAsync with jobName:{jobName} and buildNumber:{buildNumber.ToString()}");
                 var build = await jenkinsNetClient.Builds.GetAsync<JenkinsBuildBase>(jobName, buildNumber.ToString());
                 if (build != null && !string.IsNullOrEmpty(build.Result))
                 {
@@ -124,6 +125,7 @@ namespace Modm.Jenkins.Client
             }
             catch // unfortunately we have to just catch all since the jenkinsNet client will throw if it doesn't exist
             {
+                this.logger.LogError("An exception was caught when trying to Get the Build status");
             }
 
             return status;
@@ -188,7 +190,7 @@ namespace Modm.Jenkins.Client
                         this.logger.LogInformation($"returned the following status - {status}");
                     }
 
-                    isBuildStarted = (id.HasValue && !status.Equals("undefined"));
+                    isBuildStarted = (id.HasValue);
                 }
 
                 if (!isBuildStarted)
