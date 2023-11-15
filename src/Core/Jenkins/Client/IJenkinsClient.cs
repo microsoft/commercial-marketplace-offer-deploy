@@ -26,7 +26,7 @@ namespace Modm.Jenkins.Client
 
         Task<bool> IsJobRunningOrWasAlreadyQueued(string jobName);
 
-        Task<(int?, string)> Build(string jobName);
+        Task<int?> Build(string jobName);
 
         Task<string> GetBuildLogs(string jobName, int buildNumber);
 

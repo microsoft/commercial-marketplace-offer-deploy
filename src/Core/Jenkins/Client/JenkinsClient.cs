@@ -131,40 +131,7 @@ namespace Modm.Jenkins.Client
             return status;
         }
 
-        //private async Task<(int?, string)> TryBuildWithRetries(string jobName, int attempt = 1, int maxAttempts = 5)
-        //{
-        //    if (attempt > maxAttempts)
-        //    {
-        //        logger.LogWarning($"Max attempts reached for job {jobName}. Build number could not be determined.");
-        //        return (null, DeploymentStatus.Undefined);
-        //    }
-
-        //    var response = await jenkinsNetClient.Jobs.BuildAsync(jobName);
-        //    var queueId = response.GetQueueItemNumber().GetValueOrDefault(0);
-
-        //    if (queueId == 0)
-        //    {
-        //        logger.LogWarning($"Failed to enqueue job {jobName} on attempt {attempt}.");
-        //        return (null, DeploymentStatus.Undefined);
-        //    }
-
-        //    var queueItem = await jenkinsNetClient.Queue.GetItemAsync(queueId);
-        //    var buildNumber = queueItem?.Executable?.Number;
-
-        //    if (buildNumber.HasValue)
-        //    {
-        //        return (buildNumber.Value, DeploymentStatus.Running);
-        //    }
-        //    else
-        //    {
-        //        logger.LogInformation($"Waiting for build to start for job {jobName}. Attempt: {attempt}.");
-        //        await Task.Delay(5000); // Wait for 5 seconds before retrying
-        //        return await TryBuildWithRetries(jobName, attempt + 1, maxAttempts);
-        //    }
-        //}
-
-
-        public async Task<(int?, string)> Build(string jobName)
+        public async Task<int?> Build(string jobName)
         {
             var (id, status) = await ExecuteBuild(jobName);
             if (!id.HasValue)
@@ -199,7 +166,7 @@ namespace Modm.Jenkins.Client
                 }
             }
 
-            return (id, status);
+            return id;
         }
 
         private async Task<(int?, string)> ExecuteBuild(string jobName)
