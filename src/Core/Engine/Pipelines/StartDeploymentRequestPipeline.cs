@@ -154,7 +154,7 @@ namespace Modm.Engine.Pipelines
             using var client = await clientFactory.Create();
             this.logger.LogInformation($"Prior to calling client.Build  - {DateTime.UtcNow}");
             var (id, status) = await client.Build(deployment.Definition.DeploymentType);
-            this.logger.LogInformation($"After to calling client.Build  - {DateTime.UtcNow}");
+            this.logger.LogInformation($"After to calling client.Build.  id:{id} status:{status} - {DateTime.UtcNow}");
             deployment.Status = status;
 
             if (id.HasValue)
