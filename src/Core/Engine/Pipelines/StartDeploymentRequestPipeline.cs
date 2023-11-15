@@ -173,14 +173,15 @@ namespace Modm.Engine.Pipelines
                     await Task.Delay(delay);
 
                     id = await client.GetLastBuildNumberAsync(deployment.Definition.DeploymentType);
-                    isBuildStarted = id.HasValue;
-
+                    
                     if (id.HasValue)
                     {
                         this.logger.LogInformation("id.HasValue was true");
                         status = await client.GetBuildStatus(deployment.Definition.DeploymentType, id.Value);
                         this.logger.LogInformation($"returned the following status - {status}");
                     }
+
+                    isBuildStarted = (id.HasValue && !status.Equals("undefined"));
                 }
 
                 if (!isBuildStarted)
