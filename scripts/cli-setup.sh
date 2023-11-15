@@ -2,7 +2,7 @@
 
 echo "Setting up Development CLI..."
 echo ""
-cli_path=$PWD/pylib
+cli_path=$PWD/cli
 
 function modm() {
     cwd=$PWD

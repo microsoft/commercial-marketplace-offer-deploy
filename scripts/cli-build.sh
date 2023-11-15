@@ -16,7 +16,7 @@ echo "Installing build tools."
 python -m pip install --upgrade build
 
 echo "Executing tests"
-python -m unittest discover ./pylib -v
+python -m unittest discover ./cli -v
 
 echo "Building wheel..."
-python -m build --wheel ./pylib
+python -m build --wheel ./cli

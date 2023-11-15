@@ -1,7 +1,7 @@
 {
     "editor.foldingStrategy": "indentation",
     "python.analysis.extraPaths": [
-        "./pylib"
+        "./cli"
     ],
     "editor.detectIndentation": false,
     "editor.tabSize": 4,
