@@ -7,8 +7,7 @@ from modm.release.resources_archive import ResourcesArchive
 from .application_package_result import ApplicationPackageResult
 from .application_packaging_options import ApplicationPackageOptions
 from .application_package_info import ApplicationPackageInfo
-from ._resources import InstallerResources
-from ._resources_provider import ReleaseProvider
+from modm.release.release_provider import ReleaseProvider
 from .main_template_finalizer import MainTemplateFinalizer
 from modm.installer import InstallerPackageResult, create_installer_package
 
