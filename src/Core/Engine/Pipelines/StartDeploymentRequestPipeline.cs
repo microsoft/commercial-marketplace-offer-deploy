@@ -158,37 +158,44 @@ namespace Modm.Engine.Pipelines
             var (id, status) = await client.Build(deployment.Definition.DeploymentType);
             this.logger.LogInformation($"After to calling client.Build.  id:{id} status:{status} - {DateTime.UtcNow}");
 
+            //if (!id.HasValue)
+            //{
+            //    bool isBuildStarted = false;
+            //    int maxAttempts = 20; 
+            //    int attempt = 0;
+            //    int delay = 5000;
+
+            //    while (!isBuildStarted && attempt < maxAttempts)
+            //    {
+            //        attempt++;
+            //        this.logger.LogInformation($"Waiting for build to start. Attempt: {attempt}");
+
+            //        await Task.Delay(delay);
+
+            //        id = await client.GetLastBuildNumberAsync(deployment.Definition.DeploymentType);
+                    
+            //        if (id.HasValue)
+            //        {
+            //            this.logger.LogInformation("id.HasValue was true");
+            //            status = await client.GetBuildStatus(deployment.Definition.DeploymentType, id.Value);
+            //            this.logger.LogInformation($"returned the following status - {status}");
+            //        }
+
+            //        isBuildStarted = (id.HasValue && !status.Equals("undefined"));
+            //    }
+
+            //    if (!isBuildStarted)
+            //    {
+            //        this.logger.LogInformation("Build did not start after polling attempts.");
+            //        return false;
+            //    }
+            //}
+
+            // this was added in replace of commented section
             if (!id.HasValue)
             {
-                bool isBuildStarted = false;
-                int maxAttempts = 20; 
-                int attempt = 0;
-                int delay = 5000;
-
-                while (!isBuildStarted && attempt < maxAttempts)
-                {
-                    attempt++;
-                    this.logger.LogInformation($"Waiting for build to start. Attempt: {attempt}");
-
-                    await Task.Delay(delay);
-
-                    id = await client.GetLastBuildNumberAsync(deployment.Definition.DeploymentType);
-                    
-                    if (id.HasValue)
-                    {
-                        this.logger.LogInformation("id.HasValue was true");
-                        status = await client.GetBuildStatus(deployment.Definition.DeploymentType, id.Value);
-                        this.logger.LogInformation($"returned the following status - {status}");
-                    }
-
-                    isBuildStarted = (id.HasValue && !status.Equals("undefined"));
-                }
-
-                if (!isBuildStarted)
-                {
-                    this.logger.LogInformation("Build did not start after polling attempts.");
-                    return false;
-                }
+                this.logger.LogInformation("id does not have value in TryToSubmit");
+                return false;
             }
 
             // If we get here, it means we have a valid build ID

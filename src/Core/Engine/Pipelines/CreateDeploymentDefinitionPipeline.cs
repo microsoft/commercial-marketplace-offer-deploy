@@ -152,7 +152,7 @@ namespace Modm.Engine.Pipelines
             {
                 Definition = response,
                 Id = 0,
-                Timestamp = DateTime.UtcNow,
+                Timestamp = DateTimeOffset.UtcNow,
                 Status = DeploymentStatus.Undefined
             }, cancellationToken);
 

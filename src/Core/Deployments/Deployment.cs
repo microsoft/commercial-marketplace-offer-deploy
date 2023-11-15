@@ -10,7 +10,7 @@ namespace Modm.Deployments
 	{
 		public int Id { get; set; }
 
-        public DateTime Timestamp { get; set; }
+        public DateTimeOffset Timestamp { get; set; }
 
         public string Status { get; set; }
 

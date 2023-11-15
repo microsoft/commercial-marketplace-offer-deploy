@@ -9,6 +9,14 @@ namespace Modm.Deployments
 	{
         public const string FileName = "deployment.json";
 
+        public DateTimeOffset Timestamp
+        {
+            get
+            {
+                return new FileInfo(GetDeploymentFilePath()).LastWriteTimeUtc;
+            }
+        }
+
         private static readonly JsonSerializerOptions serializerOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -34,7 +42,7 @@ namespace Modm.Deployments
                 return new Deployment
                 {
                     Id = 0,
-                    Timestamp = DateTime.UtcNow,
+                    Timestamp = DateTimeOffset.UtcNow,
                     Status = DeploymentStatus.Undefined
                 };
             }
