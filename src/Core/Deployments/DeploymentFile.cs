@@ -32,23 +32,29 @@ namespace Modm.Deployments
             this.logger = logger;
         }
 
-        public async Task<Deployment> Read(CancellationToken cancellationToken = default)
+        public async Task<DeploymentRecord> Read(CancellationToken cancellationToken = default)
         {
             var path = GetDeploymentFilePath();
 
             if (!File.Exists(path))
             {
                 this.logger.LogError($"{path} was not found");
-                return new Deployment
+                var deploymentRecord = new DeploymentRecord(new Deployment
                 {
                     Id = 0,
                     Timestamp = DateTimeOffset.UtcNow,
                     Status = DeploymentStatus.Undefined
-                };
+                });
+
+                var auditRecord = new AuditRecord();
+                auditRecord.AdditionalData.Add("status", "Initial Deployment Record Create");
+
+                deploymentRecord.AuditRecords.Add(auditRecord);
+       
             }
 
             var json = await File.ReadAllTextAsync(GetDeploymentFilePath(), cancellationToken);
-            var deployment = JsonSerializer.Deserialize<Deployment>(json, serializerOptions);
+            var deployment = JsonSerializer.Deserialize<DeploymentRecord>(json, serializerOptions);
 
             return deployment;
         }
