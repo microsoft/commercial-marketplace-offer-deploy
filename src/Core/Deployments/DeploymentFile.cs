@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Modm.Extensions;
 
 namespace Modm.Deployments
@@ -15,10 +16,12 @@ namespace Modm.Deployments
         };
 
         private readonly IConfiguration configuration;
+        private readonly ILogger<DeploymentFile> logger;
 
-        public DeploymentFile(IConfiguration configuration)
+        public DeploymentFile(IConfiguration configuration, ILogger<DeploymentFile> logger)
 		{
             this.configuration = configuration;
+            this.logger = logger;
         }
 
         public async Task<Deployment> Read(CancellationToken cancellationToken = default)
@@ -27,6 +30,7 @@ namespace Modm.Deployments
 
             if (!File.Exists(path))
             {
+                this.logger.LogError($"{path} was not found");
                 return new Deployment
                 {
                     Id = 0,
@@ -44,7 +48,9 @@ namespace Modm.Deployments
         public async Task Write(Deployment deployment, CancellationToken cancellationToken)
         {
             var json = JsonSerializer.Serialize(deployment, serializerOptions);
+            this.logger.LogInformation($"Writing Deployment json - {json}");
             await File.WriteAllTextAsync(GetDeploymentFilePath(), json, cancellationToken);
+            this.logger.LogInformation($"Wrote the deployment json to {GetDeploymentFilePath()}");
         }
 
         private string GetDeploymentFilePath()

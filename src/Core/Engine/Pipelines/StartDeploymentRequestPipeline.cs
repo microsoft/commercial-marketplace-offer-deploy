@@ -163,6 +163,7 @@ namespace Modm.Engine.Pipelines
                 this.logger.LogInformation($"The deployment.Id has a value of {deployment.Id}");
                 return true;
             }
+            this.logger.LogInformation("Returning false from TryToSubmit");
             return false;
         }
     }
