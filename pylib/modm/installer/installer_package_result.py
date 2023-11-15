@@ -1,4 +1,5 @@
 import hashlib
+from pathlib import Path
 
 
 class InstallerPackageResult:
@@ -6,7 +7,7 @@ class InstallerPackageResult:
     The result of creating an installer package
     """
 
-    def __init__(self, file):
+    def __init__(self, file: Path):
         self.file = file
         self._hash = None
 
@@ -15,7 +16,7 @@ class InstallerPackageResult:
         return self.file.name
 
     @property
-    def path(self):
+    def path(self) -> Path:
         return self.file
 
     @property

@@ -3,6 +3,9 @@ from pathlib import Path
 import modm._zip_utils as ziputils
 import shutil
 import tempfile
+from modm.arm.bicep_template_compiler import BicepTemplateCompiler
+
+from modm.installer.solution_template_type import SolutionTemplateType
 
 from .installer_package_result import InstallerPackageResult
 from .manifest import ManifestInfo, write_manifest
@@ -23,14 +26,14 @@ class InstallerPackage:
         if len(validation_results) > 0:
             raise ValueError(validation_results)
 
-        temp_dir, templates_dir = self._get_copy_of_templates_dir()
+        parent_working_dir, templates_dir = self.get_solution_template_dir()
 
-        write_manifest(templates_dir, self.manifest)
-        dest_file_path = Path(os.path.join(temp_dir, InstallerPackage.file_name))
+        self._write_manifest(templates_dir)
 
-        file = ziputils.zip_dir(templates_dir, dest_file_path)
+        installer_package_file_path = Path(os.path.join(parent_working_dir, InstallerPackage.file_name))
+        installer_package_file = ziputils.zip_dir(templates_dir, installer_package_file_path)
 
-        return InstallerPackageResult(file)
+        return InstallerPackageResult(installer_package_file)
 
     def unpack(self, file_path, extract_dir):
         if not os.path.exists(file_path):
@@ -43,15 +46,39 @@ class InstallerPackage:
 
         shutil.unpack_archive(file, extract_dir)
 
-    def _get_copy_of_templates_dir(self):
-        source_templates_dir = Path(self.manifest.solution_template).parent
-        temp_dir = tempfile.mkdtemp()
-        templates_dir = Path(os.path.join(temp_dir, source_templates_dir.name))
+    def get_solution_template_dir(self):
+        """
+        Gets the solution template from the solution template directory to a temporary directory
+        and returns the temp parent directory and the templates directory.
+        """
+        src_templates_dir = Path(self.manifest.solution_template).parent
+        dest_dir = Path(tempfile.mkdtemp())
 
-        shutil.copytree(str(source_templates_dir), templates_dir, dirs_exist_ok=True)
+        new_templates_dir = Path(os.path.join(dest_dir, src_templates_dir.name))
+        new_templates_dir.mkdir()
+        
+        # if the template type is bicep, we're going to compile it and use the compiled arm template
+        # otherwise, it's just a standard copy
+        if self.manifest.template_type == SolutionTemplateType.bicep:
+            # the installer.zip's .bicep folder is for reference only. MODM will use the compiled arm template
+            ref_bicep_dir = Path(os.path.join(dest_dir, ".bicep"))
+            self._copy_dir(src_templates_dir, ref_bicep_dir)
 
-        return (Path(temp_dir), templates_dir)
+            compiler = BicepTemplateCompiler(self.manifest.solution_template)
+            arm_template_file = compiler.compile(new_templates_dir)
 
+            # update the solution template we're pointing to since it's now the compiled arm template
+            self.manifest.solution_template = arm_template_file
+        else:
+            self._copy_dir(src_templates_dir, new_templates_dir)
+
+        return (dest_dir, new_templates_dir)
+
+    def _write_manifest(self, templates_dir):
+        write_manifest(templates_dir, self.manifest)
+    
+    def _copy_dir(self, src_dir: Path, dest_dir):
+        shutil.copytree(str(src_dir), str(dest_dir), dirs_exist_ok=True)
 
 def create_installer_package(manifest) -> InstallerPackageResult:
     """

@@ -2,7 +2,7 @@ import re
 import requests
 
 from modm.config.config import Config
-from . import _github_release as github
+from modm.config import _github_release as github
 
 
 class InstallerVersion:
