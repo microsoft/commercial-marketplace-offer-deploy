@@ -3,8 +3,10 @@ from zipfile import ZipFile
 from .application_package_result import ApplicationPackageResult
 from .application_packaging_options import ApplicationPackageOptions
 from .application_package_info import ApplicationPackageInfo
-from modm import InstallerResources, InstallerResourcesProvider
-from modm.installer import InstallerPackageResult, MainTemplateFinalizer, create_installer_package
+from ._resources import InstallerResources
+from ._resources_provider import InstallerResourcesProvider
+from .main_template_finalizer import MainTemplateFinalizer
+from modm.installer import InstallerPackageResult, create_installer_package
 
 
 MAIN_TEMPLATE_FILE_NAME = "mainTemplate.json"
