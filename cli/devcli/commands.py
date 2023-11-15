@@ -11,7 +11,7 @@ from modm.marketplace.application_packaging_options import ApplicationPackageOpt
 from modm.marketplace.application_package_info import ApplicationPackageInfo
 from modm.marketplace.application_package import new_application_package
 from modm.installer.client_app_package import ClientAppPackage
-from modm.installer.version import InstallerVersion
+from modm.release.version import Version
 
 
 @click.help_option("-h", "--help")
@@ -90,7 +90,7 @@ def create_resources_tarball(version, templates_dir, csproj_file, current_workin
     client_app_file = _create_client_app_package(csproj_file, current_working_dir, out_dir)
 
     if version is not None:
-        installer_version = InstallerVersion(version)
+        installer_version = Version(version)
         out_file = out_dir / f"resources-{installer_version.name}.tar.gz"
     else:
         out_file = out_dir / f"resources.tar.gz"

@@ -1,10 +1,14 @@
 from pathlib import Path
 from zipfile import ZipFile
+from modm.release.release_info import ReferenceInfo
+from modm.release.release_provider import ReleaseProvider
+
+from modm.release.resources_archive import ResourcesArchive
 from .application_package_result import ApplicationPackageResult
 from .application_packaging_options import ApplicationPackageOptions
 from .application_package_info import ApplicationPackageInfo
 from ._resources import InstallerResources
-from ._resources_provider import InstallerResourcesProvider
+from ._resources_provider import ReleaseProvider
 from .main_template_finalizer import MainTemplateFinalizer
 from modm.installer import InstallerPackageResult, create_installer_package
 
@@ -35,8 +39,8 @@ class ApplicationPackage:
     
     file_name = "app.zip"
 
-    def __init__(self, resourcesProvider: InstallerResourcesProvider) -> None:
-        self._resourcesProvider = resourcesProvider
+    def __init__(self, releaseProvider: ReleaseProvider) -> None:
+        self._releaseProvider: ReleaseProvider = releaseProvider
 
     def create(self, info: ApplicationPackageInfo, options: ApplicationPackageOptions) -> ApplicationPackageResult:
         """
@@ -82,12 +86,12 @@ class ApplicationPackage:
         self, info: ApplicationPackageInfo, installer_package: InstallerPackageResult, options: ApplicationPackageOptions
     ):
         """the app package's main template, NOT the installer.zip container the solution template"""
-        installer_resources = self._get_resources(options)
+        resources_archive = self._get_resources(options)
 
-        finalizer = MainTemplateFinalizer(installer_resources.main_template)
+        finalizer = MainTemplateFinalizer(resources_archive.main_template)
         self.main_template = finalizer.finalize(
             template_parameters=info.template_parameters,
-            installer_resources=installer_resources,
+            reference_info=self._get_reference(options),
             installer_package=installer_package,
             use_vmi_reference=options.use_vmi_reference,
             vmi_reference_id=options.vmi_reference_id,
@@ -101,11 +105,11 @@ class ApplicationPackage:
         self.create_ui_definition = create_ui_definition
 
     def _zip(self, installer_package, options: ApplicationPackageOptions) -> Path:
-        installer_resources = self._get_resources(options)
+        resources_archive = self._get_resources(options)
         file = Path(options.out_dir).joinpath(self.file_name)
 
         with ZipFile(file, "w") as zip_file:
-            zip_file.write(installer_resources.client_app_package, installer_resources.client_app_package.name)
+            zip_file.write(resources_archive.client_app_package, resources_archive.client_app_package.name)
             zip_file.write(installer_package.path, installer_package.name)
             zip_file.writestr(MAIN_TEMPLATE_FILE_NAME, self.main_template.to_json())
             zip_file.writestr(VIEW_DEFINITION_FILE_NAME, self.view_definition.to_json())
@@ -114,10 +118,16 @@ class ApplicationPackage:
 
         return file
 
-    def _get_resources(self, options: ApplicationPackageOptions):
-        if options.resources_file is not None:
-            return InstallerResources.from_file(options.resources_file)
-        return self._resourcesProvider.get(options.installer_version)
+    def _get_reference(self, options: ApplicationPackageOptions) -> ReferenceInfo:
+        """Gets the reference information for the released version"""
+        release = self._releaseProvider.get(options.installer_version)
+        
+        if release is not None:
+            return release.reference
+        return None
+    
+    def _get_reference(self, options: ApplicationPackageOptions) -> ResourcesArchive:
+        return self._releaseProvider.get_resources(options.installer_version)
 
 def new_application_package() -> ApplicationPackage:
-    return ApplicationPackage(InstallerResourcesProvider())
+    return ApplicationPackage(ReleaseProvider())

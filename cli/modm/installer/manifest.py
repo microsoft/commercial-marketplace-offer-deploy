@@ -20,7 +20,7 @@ class ManifestInfo(Model):
     _attribute_map = {
         "solution_template": {"key": "mainTemplate", "type": "str"},
         "deployment_type": {"key": "deploymentType", "type": "str"},
-        "offer": {"key": "offer", "type": "OfferInfo"},
+        "offer": {"key": "offer", "type": "OfferProperties"},
     }
 
     def __init__(self, solution_template: Path, **kwargs):
@@ -29,7 +29,7 @@ class ManifestInfo(Model):
         self.solution_template = Path(solution_template)
         self._template_type = SolutionTemplateType.from_template(self.solution_template)
 
-        self.offer = OfferInfo()
+        self.offer = OfferProperties()
 
         if self._template_type == SolutionTemplateType.terraform:
             self.deployment_type = DeploymentType.terraform
@@ -82,7 +82,7 @@ class ManifestInfo(Model):
         return validation_results
 
 
-class OfferInfo(Model):
+class OfferProperties(Model):
     """
     This is information about the publisher's offer NOT the app installer's offer. 
     """

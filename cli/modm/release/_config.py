@@ -12,8 +12,16 @@ class Config:
         return cls.__instance
 
     @classmethod
-    def index_url(cls):
-        return cls.get_value("index_url")
+    def releases_index_url(cls):
+        return cls.get_value("releases_index_url")
+
+    @classmethod
+    def latest_release_url(cls):
+        return cls.get_value("latest_release_url")
+
+    @classmethod
+    def release_by_tag_url_format(cls):
+        return cls.get_value("release_by_tag_url_format")
 
     @classmethod
     def get(cls):
@@ -24,7 +32,7 @@ class Config:
         return cls.__instance._config.get(key)
 
     def _load_from_package_resources(self):
-        config = files("modm.config")
+        config = files("modm.release")
         with as_file(config.joinpath("config.json")) as config_file:
             with open(config_file, 'r') as config_file:
                 self._config = json.load(config_file)

@@ -1,27 +1,12 @@
 from pathlib import Path
 from . import main_template, view_definition
-from modm.installer.version import InstallerVersion
-from msrest.serialization import Model
+from modm.release.version import Version
 import tarfile
 
 from . import create_ui_definition_step
 
 
-class ResourcesInfo(Model):
-    _attribute_map = {
-        "download_url": {"key": "downloadUrl", "type": "str"},
-        "filename": {"key": "filename", "type": "str"},
-        "sha256_digest": {"key": "sha256Digest", "type": "str"},
-    }
-
-    def __init__(self, download_url=None, filename=None, sha256_digest=None):
-        super(ResourcesInfo, self).__init__()
-        self.download_url = download_url
-        self.filename = filename
-        self.sha256_digest = sha256_digest
-
-
-class InstallerResources:
+class ApplicationPackageResources:
     def __init__(self, location: Path, installer_version = None, release_reference: dict = None):
         self.installer_version = installer_version
         if release_reference is not None:
@@ -44,7 +29,7 @@ class InstallerResources:
         with tarfile.open(resources_file, "r:gz") as tar:
             tar.extractall(path=resources_file.parent)
 
-        return InstallerResources(resources_file.parent)
+        return ApplicationPackageResources(resources_file.parent)
     
     def to_file(self, resources_dir: Path, version: str = None, out_dir: Path = None) -> Path:
         main_template_file = resources_dir / 'mainTemplate.json'
@@ -53,7 +38,7 @@ class InstallerResources:
         client_app_file = resources_dir / 'clientapp.zip'
         
         if version is not None:
-            installer_version = InstallerVersion(version)
+            installer_version = Version(version)
             out_file = out_dir / f"resources-{installer_version.name}.tar.gz"
         else:
             out_file = out_dir / f"resources.tar.gz"

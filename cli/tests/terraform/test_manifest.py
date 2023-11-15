@@ -1,6 +1,6 @@
 import json
 import unittest
-from modm.installer import ManifestInfo, OfferInfo, DeploymentType
+from modm.installer import ManifestInfo, OfferProperties, DeploymentType
 
 
 class TestManifest(unittest.TestCase):
@@ -14,7 +14,7 @@ class TestManifest(unittest.TestCase):
         self.assertEqual(str(manifest.solution_template), "main.tf")
         self.assertEqual(manifest.deployment_type, DeploymentType.terraform)
 
-        self.assertIsInstance(manifest.offer, OfferInfo)
+        self.assertIsInstance(manifest.offer, OfferProperties)
 
     def test_manifest_info_uses_file_ext_to_set_deployment_type(self):
         manifest = ManifestInfo(solution_template="main.tf")
@@ -42,10 +42,10 @@ class TestManifest(unittest.TestCase):
 
 
     def test_offer_info(self):
-        offer = OfferInfo(name = "test", description = "test")
+        offer = OfferProperties(name = "test", description = "test")
         self.assertEqual(offer.name, "test")
         self.assertEqual(offer.name, "test")
 
-        offer = OfferInfo()
+        offer = OfferProperties()
         self.assertEqual(offer.name, "")
         self.assertEqual(offer.name, "")

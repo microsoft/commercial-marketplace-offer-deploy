@@ -1,6 +1,6 @@
 import copy
+from modm.release.release_info import ReferenceInfo
 from .main_template import MainTemplate
-from ._resources import InstallerResources
 
 
 class MainTemplateFinalizer:
@@ -17,15 +17,10 @@ class MainTemplateFinalizer:
             so MODM can bootstrap the application with it's parameters when it performs the deployment
         """
         main_template = copy.deepcopy(self.main_template)
-        
-        installer_resources: InstallerResources = kwargs.get("installer_resources")
-
-        if installer_resources is None:
-            raise ValueError("installer_resources must be provided")
-        
         main_template.set_parameters(kwargs.get("template_parameters", []))
         main_template.user_data.set_installer_package_hash(kwargs.get("installer_package").hash)
 
+        reference_info: ReferenceInfo = kwargs.get("reference_info")
         use_vmi_reference = kwargs.get("use_vmi_reference", False)
         vmi_reference_id = kwargs.get("vmi_reference_id", None)
 
@@ -33,8 +28,10 @@ class MainTemplateFinalizer:
             if vmi_reference_id is not None:
                 main_template.vmi_reference_id = vmi_reference_id
             else:
-                main_template.vmi_reference_id = installer_resources.vmi_reference_id
+                main_template.vmi_reference_id = reference_info.vmi
         else:
-            main_template.vm_offer = installer_resources.vm_offer
+            if reference_info is None:
+                raise ValueError("reference_info is required when not passing a VMI reference")
+            main_template.vm_offer = reference_info.offer.serialize()
 
         return main_template
