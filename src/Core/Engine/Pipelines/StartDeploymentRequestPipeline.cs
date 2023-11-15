@@ -153,18 +153,48 @@ namespace Modm.Engine.Pipelines
         {
             using var client = await clientFactory.Create();
             this.logger.LogInformation($"Prior to calling client.Build  - {DateTime.UtcNow}");
+
+
             var (id, status) = await client.Build(deployment.Definition.DeploymentType);
             this.logger.LogInformation($"After to calling client.Build.  id:{id} status:{status} - {DateTime.UtcNow}");
-            deployment.Status = status;
 
-            if (id.HasValue)
+            if (!id.HasValue)
             {
-                deployment.Id = id.Value;
-                this.logger.LogInformation($"The deployment.Id has a value of {deployment.Id}");
-                return true;
+                bool isBuildStarted = false;
+                int maxAttempts = 20; 
+                int attempt = 0;
+                int delay = 5000;
+
+                while (!isBuildStarted && attempt < maxAttempts)
+                {
+                    attempt++;
+                    this.logger.LogInformation($"Waiting for build to start. Attempt: {attempt}");
+
+                    await Task.Delay(delay);
+
+                    id = await client.GetLastBuildNumberAsync(deployment.Definition.DeploymentType);
+                    isBuildStarted = id.HasValue;
+
+                    if (id.HasValue)
+                    {
+                        this.logger.LogInformation("id.HasValue was true");
+                        status = await client.GetBuildStatus(deployment.Definition.DeploymentType, id.Value);
+                        this.logger.LogInformation($"returned the following status - {status}");
+                    }
+                }
+
+                if (!isBuildStarted)
+                {
+                    this.logger.LogInformation("Build did not start after polling attempts.");
+                    return false;
+                }
             }
-            this.logger.LogInformation("Returning false from TryToSubmit");
-            return false;
+
+            // If we get here, it means we have a valid build ID
+            deployment.Id = id.Value;
+            deployment.Status = status;
+            this.logger.LogInformation($"The deployment.Id has a value of {deployment.Id}");
+            return true;
         }
     }
 

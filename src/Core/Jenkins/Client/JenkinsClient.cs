@@ -120,6 +120,7 @@ namespace Modm.Jenkins.Client
                 {
                     status = build.Result.ToLower();
                 }
+                
             }
             catch // unfortunately we have to just catch all since the jenkinsNet client will throw if it doesn't exist
             {
@@ -150,6 +151,27 @@ namespace Modm.Jenkins.Client
 
             return (buildNumber.Value, DeploymentStatus.Running);
         }
+
+        public async Task<int?> GetLastBuildNumberAsync(string jobName)
+        {
+            try
+            {
+                
+                var lastBuild = await jenkinsNetClient.Builds.GetAsync<JenkinsBuildBase>(jobName, "lastBuild");
+
+                if (lastBuild != null)
+                {
+                    return lastBuild.Number;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Failed to fetch the last build number for job {jobName}.");
+            }
+
+            return null;
+        }
+
 
         public async Task<bool> IsJobRunningOrWasAlreadyQueued(string jobName)
         {
