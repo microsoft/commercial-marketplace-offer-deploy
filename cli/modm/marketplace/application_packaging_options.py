@@ -1,6 +1,8 @@
 import tempfile
-from modm.release.version import Version, InstallerVersionProvider
+from modm.release.version import Version
 from pathlib import Path
+
+from modm.release.version_provider import VersionProvider
 
 
 class ApplicationPackageOptions:
@@ -16,7 +18,7 @@ class ApplicationPackageOptions:
 
     def __init__(
         self,
-        installer_version: Version | str,
+        version: Version | str,
         vmi_reference: bool = False,
         vmi_reference_id: str = None,
         resources_file: str | Path = None,
@@ -31,14 +33,14 @@ class ApplicationPackageOptions:
         else:
             self._resources_file = resources_file
 
-        if installer_version is not None and resources_file is None:
-            if isinstance(installer_version, str):
-                if installer_version == "latest":
-                    self.installer_version = InstallerVersionProvider().get_latest()
+        if version is not None:
+            if isinstance(version, str):
+                if version == "latest":
+                    self.version = VersionProvider().get_latest()
                 else:
-                    self.installer_version = Version(installer_version)
+                    self.version = Version(version)
             else:
-                self.installer_version = installer_version
+                self.version = version
 
         if vmi_reference_id is not None:
             self._use_vmi_reference = True

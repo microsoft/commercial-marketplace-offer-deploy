@@ -120,14 +120,14 @@ class ApplicationPackage:
 
     def _get_reference(self, options: ApplicationPackageOptions) -> ReferenceInfo:
         """Gets the reference information for the released version"""
-        release = self._releaseProvider.get(options.installer_version)
+        release = self._releaseProvider.get(options.version)
         
         if release is not None:
             return release.reference
         return None
     
     def _get_reference(self, options: ApplicationPackageOptions) -> ResourcesArchive:
-        return self._releaseProvider.get_resources(options.installer_version)
+        return self._releaseProvider.get_resources(options.version)
 
 def new_application_package() -> ApplicationPackage:
     return ApplicationPackage(ReleaseProvider())

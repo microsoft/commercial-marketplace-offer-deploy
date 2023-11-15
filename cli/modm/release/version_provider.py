@@ -37,8 +37,8 @@ class VersionProvider:
             response = requests.get(Config().releases_index_url(), headers={"Accept": "application/json"})
             response.raise_for_status()
             document = response.json()
-            self._versions = {}
+            self._versions: dict[str, Version] = {}
             for release in document["releases"]:
                 name = release["version"]
                 self._versions[name] = Version(name)
-        return self._index
+        return self._versions

@@ -93,3 +93,11 @@ class Version:
 
         return major, minor, build, suffix
 
+    def __eq__(self, __value: object) -> bool:
+        if isinstance(__value, str):
+            value = Version(__value)
+            return self.major == value.major and self.minor == value.minor and self.patch == value.patch and self.suffix == value.suffix
+        if isinstance(__value, Version):
+            return self.major == __value.major and self.minor == __value.minor and self.patch == __value.patch and self.suffix == __value.suffix
+        else:
+            return False
