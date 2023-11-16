@@ -20,6 +20,21 @@ namespace Modm.Tests.UnitTests
             Assert.True(Directory.Exists(terraform));
         }
 
+        [Fact]
+        public void jenkins_jobs_created_during_init_hook_should_match()
+        {
+            var definedJobsList = $"final jobs = ['{DeploymentType.Terraform}', '{DeploymentType.Arm}']";
+            var scriptContent = GetInitHookScriptContents();
+
+            Assert.Contains(definedJobsList, scriptContent);
+        }
+
+        private static string GetInitHookScriptContents()
+        {
+            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../../", "jenkins/init-hooks/terraform-job.groovy");
+            return File.ReadAllText(path);
+        }
+
         private static string CreateDefinitionPath(string deploymentType)
 		{
             return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../../", $"jenkins/definitions/{deploymentType}");
