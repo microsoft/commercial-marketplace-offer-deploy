@@ -41,6 +41,7 @@ namespace Modm.Extensions
 		{
             services.AddScoped<IValidator<PackageFile>, PackageFileValidator>();
             services.AddSingleton<PackageFileFactory>();
+            services.AddSingleton<ParametersFileFactory>();
 
             if (environment.IsDevelopment())
             {

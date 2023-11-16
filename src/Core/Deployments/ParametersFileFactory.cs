@@ -1,13 +1,9 @@
 ﻿using System;
 namespace Modm.Deployments
 {
-	public class ParametersFileFactory
+	public sealed class ParametersFileFactory
 	{
-		public ParametersFileFactory()
-		{
-		}
-
-		public IDeploymentParametersFile Create(string deploymentType, string destinationDirectory)
+		public IDeploymentParametersFile Create(DeploymentType deploymentType, string destinationDirectory)
 		{
 			if (deploymentType == DeploymentType.Terraform)
 			{
