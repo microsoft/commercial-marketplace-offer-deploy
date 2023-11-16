@@ -9,7 +9,7 @@ import click
 from modm import _zip_utils
 from modm.marketplace.application_packaging_options import ApplicationPackageOptions
 from modm.marketplace.application_package_info import ApplicationPackageInfo
-from modm.marketplace.application_package import new_application_package
+from modm.marketplace.application_package import ApplicationPackage
 from modm.installer.client_app_package import ClientAppPackage
 from modm.release.version import Version
 
@@ -55,8 +55,8 @@ def build_application_package(
     info = ApplicationPackageInfo(resolved_template_file, resolved_create_ui_definition, name, description)
     options = ApplicationPackageOptions(version, vmi_reference, vmi_reference_id, resources_file, out_dir)
 
-    package = new_application_package()
-    result = package.create(info, options)
+    package = ApplicationPackage(info)
+    result = package.create(options)
 
     click.echo(json.dumps(result.serialize(), indent=2))
 
@@ -72,7 +72,7 @@ def create_client_app_package(csproj_file, current_working_dir, out_dir=None):
 
 
 @click.help_option("-h", "--help")
-@click.command("create-resources-tarball")
+@click.command("create-resources-archive")
 @click.option("-v", "--version", default=None, type=str, help="The version of the installer (modm) to package the application with.")
 @click.option(
     "-t", "--templates-dir", help="The location where the templates file is located (mainTemplate.json and viewDefinition.json)", required=True
@@ -80,7 +80,7 @@ def create_client_app_package(csproj_file, current_working_dir, out_dir=None):
 @click.option("-f", "--csproj-file", help="Path to the .csproj file of the client app", required=True)
 @click.option("-o", "--out-dir", help="The location where the tarball will be created", required=True)
 @click.argument("current_working_dir", type=click.Path(exists=True))
-def create_resources_tarball(version, templates_dir, csproj_file, current_working_dir, out_dir=None):
+def create_resources_archive(version, templates_dir, csproj_file, current_working_dir, out_dir=None):
     cwd = Path(current_working_dir)
     out_dir = _resolve_path(cwd, out_dir)
 

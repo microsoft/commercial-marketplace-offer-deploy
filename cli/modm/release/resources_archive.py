@@ -13,7 +13,7 @@ class ResourcesArchive:
     """
     The archive file contained in the resources tarball that gets uploaded to the release and referenced in the index.json releases index
     """
-    def __init__(self, resources_dir: Path, resources_file: Path = None, version: str = None):
+    def __init__(self, resources_dir: Path = None, resources_file: Path = None, version: str = None):
         self._version = version
 
         if resources_file is not None:
@@ -24,10 +24,10 @@ class ResourcesArchive:
             self.directory: Path = resources_dir
             self.file: Path = None
 
-        self.main_template = resources_dir.joinpath("mainTemplate.json")
-        self.view_definition = resources_dir.joinpath("viewDefinition.json")
-        self.create_ui_definition_step = resources_dir.joinpath("createUiDefinition.json")
-        self.client_app_package = resources_dir.joinpath("clientapp.zip")
+        self.main_template = self.directory.joinpath("mainTemplate.json")
+        self.view_definition = self.directory.joinpath("viewDefinition.json")
+        self.create_ui_definition_step = self.directory.joinpath("createUiDefinition.json")
+        self.client_app_package = self.directory.joinpath("clientapp.zip")
 
     @property
     def version(self) -> Version:

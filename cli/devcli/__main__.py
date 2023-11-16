@@ -1,7 +1,7 @@
 
 import json
 import click
-from .commands import build_application_package, create_client_app_package, create_resources_tarball
+from .commands import build_application_package, create_client_app_package, create_resources_archive
 
 
 @click.group()
@@ -20,7 +20,7 @@ def util():
     pass
 
 util.add_command(create_client_app_package)
-util.add_command(create_resources_tarball)
+util.add_command(create_resources_archive)
 
 @cli.group('package')
 def package():

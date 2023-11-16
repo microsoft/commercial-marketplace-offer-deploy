@@ -33,18 +33,27 @@ class ReleaseProvider:
 
         return cls.__instance
 
-    def get(self, version_name: str) -> ReleaseInfo:
+    def get(self, version: Version | str) -> ReleaseInfo:
         """
         Gets the release info for the given version.
         """
         self._load_releases_index()
+        if isinstance(version, str):
+            version_name = version
+        else:
+            version_name = version.name
         return self._index[version_name]
 
-    def get_resources(self, version_name: str) -> ResourcesArchive:
+    def get_resources(self, version: Version | str) -> ResourcesArchive:
         """
         Gets the resources archive for the given version.
         """
         self._load_releases_index()
+
+        if isinstance(version, str):
+            version_name = version
+        else:
+            version_name = version.name
         return self._get_resources(version_name)
     
     def _get_home_dir(self):
@@ -97,7 +106,7 @@ class ReleaseProvider:
         else:
             version = Version(version_name)
 
-        if version in self._entries:
+        if version.name in self._entries:
             return self._entries[version]
         else:
             return self._download(version)
@@ -107,7 +116,7 @@ class ReleaseProvider:
         Downloads the resources archive tarball for the given version and extracts it to the resources directory
         into a directory named after the version.
         """
-        if version in self._entries:
+        if version.name in self._entries:
             return self._entries[version]
 
         if version.name not in self._index:
@@ -120,6 +129,6 @@ class ReleaseProvider:
         resources.directory = self._resources_dir
         resources.extract()
 
-        self._entries[version] = resources
+        self._entries[version.name] = resources
 
         return resources
