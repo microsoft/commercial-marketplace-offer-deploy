@@ -1,10 +1,13 @@
 import json
 from pathlib import Path
+import shutil
+import tempfile
 from msrest.serialization import Model
 import copy
 import os
 import jsonschema
 from pathlib import Path
+from modm.arm.bicep_template_compiler import BicepTemplateCompiler
 from modm.terraform import TerraformFile
 from modm.arm import ArmTemplateParameter, from_terraform_input_variable
 from modm.arm.arm_template import ArmTemplate
@@ -28,6 +31,7 @@ class ManifestInfo(Model):
 
         self.solution_template = Path(solution_template)
         self._template_type = SolutionTemplateType.from_template(self.solution_template)
+        self._compile_bicep_template()
 
         self.offer = OfferProperties()
 
@@ -40,7 +44,9 @@ class ManifestInfo(Model):
     def template_type(self) -> SolutionTemplateType:
         return self._template_type
     
-
+    @property 
+    def bicep_templates_dir(self) -> Path:
+        return self._bicep_templates_dir
 
     def to_json(self):
         return json.dumps(self.serialize(), indent=2)
@@ -56,7 +62,7 @@ class ManifestInfo(Model):
 
             return parameters
         elif self.template_type == SolutionTemplateType.arm:
-            arm_template = ArmTemplate(self.solution_template)
+            arm_template = ArmTemplate.from_file(self.solution_template)
             return arm_template.get_parameters()
         else:
             raise ValueError(f"Unsupported template type {self.template_type}")
@@ -80,6 +86,22 @@ class ManifestInfo(Model):
             validation_results.append(ValueError(f"Main template file {self.solution_template} must have a .tf extension"))
 
         return validation_results
+
+    def _compile_bicep_template(self):
+        if self.template_type == SolutionTemplateType.bicep:
+            src_templates_dir = self.solution_template.parent
+            temp_dir = Path(tempfile.mkdtemp())
+
+            self._bicep_templates_dir = temp_dir / ".bicep"
+            self._bicep_templates_dir.mkdir()
+            shutil.copytree(str(src_templates_dir), str(self.bicep_templates_dir), dirs_exist_ok=True)
+
+            compiler = BicepTemplateCompiler(self.solution_template)
+            arm_template_file = compiler.compile(temp_dir)
+
+            # update the solution template we're pointing to since it's now the compiled arm template
+            self.solution_template = arm_template_file
+            self._template_type = SolutionTemplateType.arm
 
 
 class OfferProperties(Model):

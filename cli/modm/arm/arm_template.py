@@ -30,6 +30,13 @@ class ArmTemplate:
     def set_parameter(self, parameter: ArmTemplateParameter):
         self.document["parameters"][parameter.name] = parameter.value()
 
+    def get_parameters(self) -> list[ArmTemplateParameter]:
+        parameters = []
+        for name, parameter in self.document["parameters"].items():
+            parameters.append(ArmTemplateParameter(name, parameter['type']))
+
+        return parameters
+
     def to_json(self):
         return json.dumps(self.document, indent=4)
 

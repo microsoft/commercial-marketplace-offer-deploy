@@ -56,21 +56,11 @@ class InstallerPackage:
 
         new_templates_dir = Path(os.path.join(dest_dir, src_templates_dir.name))
         new_templates_dir.mkdir()
-        
-        # if the template type is bicep, we're going to compile it and use the compiled arm template
-        # otherwise, it's just a standard copy
-        if self.manifest.template_type == SolutionTemplateType.bicep:
-            # the installer.zip's .bicep folder is for reference only. MODM will use the compiled arm template
-            ref_bicep_dir = Path(os.path.join(dest_dir, ".bicep"))
-            self._copy_dir(src_templates_dir, ref_bicep_dir)
 
-            compiler = BicepTemplateCompiler(self.manifest.solution_template)
-            arm_template_file = compiler.compile(new_templates_dir)
+        if self.manifest.bicep_templates_dir.exists():
+            self._copy_dir(src_templates_dir, self.manifest.bicep_templates_dir)
 
-            # update the solution template we're pointing to since it's now the compiled arm template
-            self.manifest.solution_template = arm_template_file
-        else:
-            self._copy_dir(src_templates_dir, new_templates_dir)
+        self._copy_dir(src_templates_dir, new_templates_dir)
 
         return (dest_dir, new_templates_dir)
 
