@@ -1,37 +1,29 @@
-﻿using System;
-using Modm.Deployments;
+﻿using Modm.Deployments;
 using Xunit.Abstractions;
-using NSubstitute;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Modm.Extensions;
 using Modm.Configuration;
+using Modm.Tests.Utils;
 
 namespace Modm.Tests.UnitTests
 {
-	public class DeploymentRecordUnitTests
+    public class DeploymentRecordTests : IDisposable
 	{
         private readonly IConfiguration configuration;
         private readonly DeploymentFile deploymentFile;
         private readonly ITestOutputHelper output;
-        private string tempPath;
+        private readonly DisposableDirectory<DeploymentRecordTests> tempDir;
 
-        public DeploymentRecordUnitTests(ITestOutputHelper output)
+        public DeploymentRecordTests(ITestOutputHelper output)
 		{
 			this.output = output;
-            
-            this.tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            this.tempDir = Test.Directory<DeploymentRecordTests>();
 
-            var inMemorySettings = new Dictionary<string, string> {
-                {EnvironmentVariable.Names.HomeDirectory, this.tempPath}
-            };
-            //this.configuration = Substitute.For<IConfiguration>();
-            //this.configuration.GetHomeDirectory().Returns(tempPath);
             this.configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(inMemorySettings)
-            .Build();
-
-            Directory.CreateDirectory(tempPath);
+            .AddInMemoryCollection(new Dictionary<string, string?> {
+                { EnvironmentVariable.Names.HomeDirectory, this.tempDir.FullName }
+            }).Build();
 
             this.deploymentFile = new DeploymentFile(this.configuration, new NullLogger<DeploymentFile>());
         }
@@ -39,16 +31,8 @@ namespace Modm.Tests.UnitTests
         [Fact]
         public void ConfigurationSubstitute_ShouldReturnExpectedHomeDirectory()
         {
-            // Arrange
-            var expectedPath = this.tempPath;
-           // var configuration = Substitute.For<IConfiguration>();
-            //this.configuration.GetHomeDirectory().Returns(expectedPath);
-
-            // Act
             var actualPath = configuration.GetHomeDirectory();
-
-            // Assert
-            Assert.Equal(expectedPath, actualPath);
+            Assert.Equal(tempDir.FullName, actualPath);
         }
 
         [Fact]
@@ -69,7 +53,7 @@ namespace Modm.Tests.UnitTests
 
             await this.deploymentFile.Write(deploymentRecord, default);
 
-            var filePath = Path.Combine(tempPath, DeploymentFile.FileName);
+            var filePath = Path.Combine(tempDir.FullName, DeploymentFile.FileName);
             Assert.True(File.Exists(filePath));
         }
 
@@ -99,10 +83,7 @@ namespace Modm.Tests.UnitTests
 
         public void Dispose()
         {
-            if (Directory.Exists(this.tempPath))
-            {
-                Directory.Delete(this.tempPath, true);
-            }
+            tempDir.Dispose();
         }
     }
 }
