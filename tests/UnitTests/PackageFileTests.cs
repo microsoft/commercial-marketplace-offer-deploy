@@ -35,23 +35,6 @@ namespace Modm.Tests.UnitTests
             Assert.True(file.IsValidHash(expectedHash));
         }
 
-        [Fact]
-        public void should_generate_hash()
-        {
-            string filePath = Test.DataFile.Get("installer.zip").FullName;
-            var computedHash = ComputeSha256Hash(filePath);
-            Assert.True(computedHash.Length > 0);
-        }
-
-        private static string ComputeSha256Hash(string filePath)
-        {
-            using FileStream stream = File.OpenRead(filePath);
-            using SHA256 sha256 = SHA256.Create();
-
-            byte[] hashBytes = sha256.ComputeHash(stream);
-            return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
-        }
-
         protected override void ConfigureServices()
         {
             var file = Test.DataFile.Get(PackageFile.FileName);

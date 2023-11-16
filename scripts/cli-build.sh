@@ -4,7 +4,7 @@
 
 # docs: https://pypa-build.readthedocs.io/en/latest/
 # copy files to resources folder to include them in the distributable
-echo "Building Python CLI."
+echo "Building Python Library."
 
 # prefix output with indent
 exec > >(trap "" INT TERM; sed 's/^/  /')

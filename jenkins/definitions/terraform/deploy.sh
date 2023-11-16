@@ -1,7 +1,5 @@
 #!/bin/bash
 
-echo "Hello crom deploy.sh"
-
 cd $MODM_HOME/installer
 
 if [ -z "$AZURE_CLIENT_SECRET" ]; then
@@ -17,6 +15,10 @@ else
   export ARM_SUBSCRIPTION_ID=$AZURE_SUBSCRIPTION_ID
   export ARM_TENANT_ID=$AZURE_TENANT_ID
 fi
+
+# special case where echoing this will strip the Jenkins preamble
+# from the job output
+echo "-----------------"
 
 # Initialize Terraform (required before first run)
 terraform init -backend=false
