@@ -33,6 +33,8 @@ class InstallerPackage:
         installer_package_file_path = Path(os.path.join(parent_working_dir, InstallerPackage.file_name))
         installer_package_file = ziputils.zip_dir(templates_dir, installer_package_file_path)
 
+        self.manifest.dispose()
+        
         return InstallerPackageResult(installer_package_file)
 
     def unpack(self, file_path, extract_dir):
@@ -57,10 +59,11 @@ class InstallerPackage:
         new_templates_dir = Path(os.path.join(dest_dir, src_templates_dir.name))
         new_templates_dir.mkdir()
 
-        if self.manifest.bicep_templates_dir.exists():
-            self._copy_dir(src_templates_dir, self.manifest.bicep_templates_dir)
-
         self._copy_dir(src_templates_dir, new_templates_dir)
+
+        if self.manifest.bicep_templates_dir.exists():
+            bicep_dir = new_templates_dir / ".bicep"
+            self._copy_dir(self.manifest.bicep_templates_dir, bicep_dir)
 
         return (dest_dir, new_templates_dir)
 

@@ -94,7 +94,7 @@ class ManifestInfo(Model):
 
             self._bicep_templates_dir = temp_dir / ".bicep"
             self._bicep_templates_dir.mkdir()
-            shutil.copytree(str(src_templates_dir), str(self.bicep_templates_dir), dirs_exist_ok=True)
+            shutil.copytree(str(src_templates_dir), str(self._bicep_templates_dir), dirs_exist_ok=True)
 
             compiler = BicepTemplateCompiler(self.solution_template)
             arm_template_file = compiler.compile(temp_dir)
@@ -103,6 +103,9 @@ class ManifestInfo(Model):
             self.solution_template = arm_template_file
             self._template_type = SolutionTemplateType.arm
 
+    def dispose(self):
+        if self._bicep_templates_dir is not None and self._bicep_templates_dir.exists():
+            shutil.rmtree(self._bicep_templates_dir)
 
 class OfferProperties(Model):
     """
