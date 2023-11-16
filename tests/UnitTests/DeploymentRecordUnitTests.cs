@@ -5,6 +5,7 @@ using NSubstitute;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Modm.Extensions;
+using Modm.Configuration;
 
 namespace Modm.Tests.UnitTests
 {
@@ -18,10 +19,17 @@ namespace Modm.Tests.UnitTests
         public DeploymentRecordUnitTests(ITestOutputHelper output)
 		{
 			this.output = output;
-            this.configuration = Substitute.For<IConfiguration>();
+            
             this.tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            this.configuration.GetHomeDirectory().Returns(tempPath);
+            var inMemorySettings = new Dictionary<string, string> {
+                {EnvironmentVariable.Names.HomeDirectory, this.tempPath}
+            };
+            //this.configuration = Substitute.For<IConfiguration>();
+            //this.configuration.GetHomeDirectory().Returns(tempPath);
+            this.configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings)
+            .Build();
 
             Directory.CreateDirectory(tempPath);
 
@@ -33,8 +41,8 @@ namespace Modm.Tests.UnitTests
         {
             // Arrange
             var expectedPath = this.tempPath;
-            var configuration = Substitute.For<IConfiguration>();
-            configuration.GetHomeDirectory().Returns(expectedPath);
+           // var configuration = Substitute.For<IConfiguration>();
+            //this.configuration.GetHomeDirectory().Returns(expectedPath);
 
             // Act
             var actualPath = configuration.GetHomeDirectory();
@@ -60,8 +68,6 @@ namespace Modm.Tests.UnitTests
             deploymentRecord.AuditRecords.Add(auditRecord2);
 
             await this.deploymentFile.Write(deploymentRecord, default);
-
-            configuration.Received().GetHomeDirectory();
 
             var filePath = Path.Combine(tempPath, DeploymentFile.FileName);
             Assert.True(File.Exists(filePath));
