@@ -10,7 +10,7 @@ variable "resourceGroupName" {
 
 variable "location" {
   description = "Azure region for the resources"
-  type = "string"
+  type = string
   default     = "West US"
 }
 
