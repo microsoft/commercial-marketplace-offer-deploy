@@ -189,7 +189,15 @@ namespace Modm.Engine.Pipelines
             CancellationToken cancellationToken)
         {
             this.logger.LogInformation("Inside WriteDeploymentToDisk:Process");
-            await file.Write(response.Deployment, cancellationToken);
+
+            var deploymentRecord = await this.file.Read(cancellationToken);
+            deploymentRecord.Deployment = response.Deployment;
+
+            var auditRecord = new AuditRecord();
+            auditRecord.AdditionalData.Add("WriteDeploymentToDisk:Process", response.Deployment);
+            deploymentRecord.AuditRecords.Add(auditRecord);
+
+            await file.Write(deploymentRecord, cancellationToken);
         }
     }
 

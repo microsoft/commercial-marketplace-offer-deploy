@@ -32,30 +32,36 @@ namespace Modm.Deployments
             this.logger = logger;
         }
 
-        public async Task<Deployment> Read(CancellationToken cancellationToken = default)
+        public async Task<DeploymentRecord> Read(CancellationToken cancellationToken = default)
         {
             var path = GetDeploymentFilePath();
 
             if (!File.Exists(path))
             {
                 this.logger.LogError($"{path} was not found");
-                return new Deployment
+                var deployment = new Deployment
                 {
                     Id = 0,
                     Timestamp = DateTimeOffset.UtcNow,
                     Status = DeploymentStatus.Undefined
                 };
+          
+                var newRecord = new DeploymentRecord(deployment);
+                var auditRecord = new AuditRecord();
+                auditRecord.AdditionalData.Add("initialState", deployment);
+                newRecord.AuditRecords.Add(auditRecord);
+                return newRecord;
             }
 
             var json = await File.ReadAllTextAsync(GetDeploymentFilePath(), cancellationToken);
-            var deployment = JsonSerializer.Deserialize<Deployment>(json, serializerOptions);
+            var deploymentRecord = JsonSerializer.Deserialize<DeploymentRecord>(json, serializerOptions);
 
-            return deployment;
+            return deploymentRecord;
         }
 
-        public async Task Write(Deployment deployment, CancellationToken cancellationToken)
+        public async Task Write(DeploymentRecord deploymentRecord, CancellationToken cancellationToken)
         {
-            var json = JsonSerializer.Serialize(deployment, serializerOptions);
+            var json = JsonSerializer.Serialize(deploymentRecord, serializerOptions);
             this.logger.LogInformation($"Writing Deployment json - {json}");
             await File.WriteAllTextAsync(GetDeploymentFilePath(), json, cancellationToken);
             this.logger.LogInformation($"Wrote the deployment json to {GetDeploymentFilePath()}");
