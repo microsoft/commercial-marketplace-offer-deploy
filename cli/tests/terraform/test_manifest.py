@@ -1,5 +1,6 @@
 import json
 import unittest
+from unittest.mock import patch
 from modm.installer import ManifestInfo, OfferProperties, DeploymentType
 
 
@@ -16,7 +17,10 @@ class TestManifest(unittest.TestCase):
 
         self.assertIsInstance(manifest.offer, OfferProperties)
 
-    def test_manifest_info_uses_file_ext_to_set_deployment_type(self):
+    @patch('modm.installer.ManifestInfo._compile_bicep_template')
+    def test_manifest_info_uses_file_ext_to_set_deployment_type(self, mock_compile_bicep_template):
+        mock_compile_bicep_template.return_value = None
+        
         manifest = ManifestInfo(solution_template="main.tf")
         self.assertEqual(manifest.deployment_type, DeploymentType.terraform)
 

@@ -31,6 +31,8 @@ class ManifestInfo(Model):
 
         self.solution_template = Path(solution_template)
         self._template_type = SolutionTemplateType.from_template(self.solution_template)
+
+        self._bicep_templates_dir = None
         self._compile_bicep_template()
 
         self.offer = OfferProperties()
@@ -44,6 +46,10 @@ class ManifestInfo(Model):
     def template_type(self) -> SolutionTemplateType:
         return self._template_type
     
+    @property 
+    def has_bicep_source(self) -> Path:
+        return self._bicep_templates_dir is not None and self._bicep_templates_dir.exists()
+
     @property 
     def bicep_templates_dir(self) -> Path:
         return self._bicep_templates_dir
@@ -104,7 +110,7 @@ class ManifestInfo(Model):
             self._template_type = SolutionTemplateType.arm
 
     def dispose(self):
-        if self._bicep_templates_dir is not None and self._bicep_templates_dir.exists():
+        if self.has_bicep_source:
             shutil.rmtree(self._bicep_templates_dir)
 
 class OfferProperties(Model):

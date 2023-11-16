@@ -61,7 +61,7 @@ class InstallerPackage:
 
         self._copy_dir(src_templates_dir, new_templates_dir)
 
-        if self.manifest.bicep_templates_dir.exists():
+        if self.manifest.has_bicep_source:
             bicep_dir = new_templates_dir / ".bicep"
             self._copy_dir(self.manifest.bicep_templates_dir, bicep_dir)
 
