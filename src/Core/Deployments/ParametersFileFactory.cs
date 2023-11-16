@@ -14,7 +14,7 @@ namespace Modm.Deployments
 				return new TerraformParametersFile(destinationDirectory);
 			}
 
-            if (deploymentType == DeploymentType.ArmTemplate)
+            if (deploymentType == DeploymentType.Arm)
 			{
 				return new ArmParametersFile(destinationDirectory);
 			}	
