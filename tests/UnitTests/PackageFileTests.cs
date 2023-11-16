@@ -38,7 +38,7 @@ namespace Modm.Tests.UnitTests
         [Fact]
         public void should_generate_hash()
         {
-            string filePath = "/Users/bobjacobs/work/src/github.com/microsoft/commercial-marketplace-offer-deploy/public/installer.zip";
+            string filePath = Test.DataFile.Get("installer.zip").FullName;
             var computedHash = ComputeSha256Hash(filePath);
             Assert.True(computedHash.Length > 0);
         }
