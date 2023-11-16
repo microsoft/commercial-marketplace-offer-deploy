@@ -22,7 +22,8 @@ namespace Modm.Deployments
 
             using var client = await clientFactory.Create();
 
-            var deployment = await file.Read(cancellationToken);
+            var deploymentRecord = await file.Read(cancellationToken);
+            var deployment = deploymentRecord.Deployment;
             deployment.Status = await client.GetBuildStatus(deployment.Definition.DeploymentType, deployment.Id);
             deployment.IsStartable = await client.IsJobRunningOrWasAlreadyQueued(deployment.Definition.DeploymentType);
 

@@ -89,6 +89,8 @@ namespace Modm.Engine
 
             public Task Handle(DeploymentStarted notification, CancellationToken cancellationToken)
             {
+
+                //todo: write to file deployment file here
                 service.deploymentStarted = true;
                 service.id = notification.Id;
                 service.name = notification.Name;
