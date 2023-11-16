@@ -1,5 +1,4 @@
 ﻿using Modm.Deployments;
-using Xunit.Abstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Modm.Extensions;
@@ -12,12 +11,10 @@ namespace Modm.Tests.UnitTests
 	{
         private readonly IConfiguration configuration;
         private readonly DeploymentFile deploymentFile;
-        private readonly ITestOutputHelper output;
         private readonly DisposableDirectory<DeploymentRecordTests> tempDir;
 
-        public DeploymentRecordTests(ITestOutputHelper output)
+        public DeploymentRecordTests()
 		{
-			this.output = output;
             this.tempDir = Test.Directory<DeploymentRecordTests>();
 
             this.configuration = new ConfigurationBuilder()
