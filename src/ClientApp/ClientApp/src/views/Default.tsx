@@ -16,6 +16,7 @@ export const Default = () => {
   const [filter, setFilter] = React.useState<'All' | 'Succeeded' | 'Failed'>('All');
   const [offerName, setOfferName] = React.useState<string | null>(null);
   const [deploymentId, setDeploymentId] = React.useState<string | null>(null);
+  const [deploymentType, setDeploymentType] = React.useState<string | null>(null);
   const [subscriptionId, setSubscriptionId] = React.useState<string | null>(null);
   const [deploymentResourceGroup, setDeploymentResourceGroup] = React.useState<string | null>(null);
   const [deployedResources, setDeployedResources] = React.useState<DeploymentResource[]>([]);
@@ -54,10 +55,27 @@ export const Default = () => {
         const statusData = await response.json();
         console.log(JSON.stringify(statusData));
         setIsHealthy(statusData.isHealthy);
+        setLoading(false);
     } catch (error) {
         console.error(error);
     }
   };
+
+  const isValidDeploymentType = (deployment) => {
+    return deployment?.definition?.deploymentType;
+  };
+
+  const isValidDeploymentResourceGroup = (deployment) => {
+    return deployment?.resourceGroup ?? null;
+  };
+
+  const isValidOfferName = (deployment) => {
+    return deployment?.offerName ?? null;
+  }
+
+  const isValidSubscriptionId = (deployment) => {
+    return deployment?.subscriptionId ?? null;
+  }
 
   const getDeployedResources = async () => {
     try {
@@ -77,22 +95,26 @@ export const Default = () => {
         const result = await response.json();
         console.log(JSON.stringify(result, null, 2));
         
-        if (result.deployment && result.deployment.id !== undefined && result.deployment.id !== null) {
-          setDeploymentId(result.deployment.id);
+        const deploymentType = isValidDeploymentType(result.deployment);
+        if (deploymentType) {
+            setDeploymentType(deploymentType);
+        }
+
+        const deploymentResourceGroup = isValidDeploymentResourceGroup(result.deployment);
+        if (deploymentResourceGroup) {
+            setDeploymentResourceGroup(deploymentResourceGroup);
         }
   
-        if (result.deployment && result.deployment.resourceGroup !== undefined && result.deployment.resourceGroup !== null) {
-          setDeploymentResourceGroup(result.deployment.resourceGroup);
+        const offerName = isValidOfferName(result.deployment);
+        if (offerName) {
+            setOfferName(offerName);
         }
-  
-        if (result.deployment && result.deployment.offerName !== undefined && result.deployment.offerName !== null) {
-          setOfferName(result.deployment.offerName);
+        
+        const subscriptionId = isValidSubscriptionId(result.deployment);
+        if (subscriptionId) {
+            setSubscriptionId(subscriptionId);
         }
-  
-        if (result.deployment && result.deployment.subscriptionId !== undefined && result.deployment.subscriptionId !== null) {
-          setSubscriptionId(result.deployment.subscriptionId);
-        }
-  
+          
         if (result.deployment.resources) {
           const formattedResources = result.deployment.resources.map((resource: any) => ({
             name: resource.name,
@@ -166,9 +188,9 @@ export const Default = () => {
         return () => {
           if (checkEngineIntervalRef.current) {
             clearInterval(checkEngineIntervalRef.current);
-          }
+            }
         };
-      }, []);
+    }, []);
     
       
       useEffect(() => {
@@ -188,7 +210,7 @@ export const Default = () => {
             clearInterval(updateResourcesIntervalRef.current);
           }
         };
-      }, [isHealthy]);
+    }, [isHealthy]);
 
   const filteredDeployedResources = React.useMemo(() => {
     if (filter === 'All') {
@@ -244,15 +266,15 @@ export const Default = () => {
   ? new Date(Math.min(...deployedResources.map(resource => new Date(resource.timestamp).getTime())))
   : null;
 
-  if (!isHealthy) {
-    return <>
-    <div className='row'>
-        <div className='col-3'><h4>Starting up...</h4></div>
-    </div>
+//   if (!isHealthy) {
+//     return <>
+//     <div className='row'>
+//         <div className='col-3'><h4>Starting up...</h4></div>
+//     </div>
     
     
-    </>;
-  }
+//     </>;
+//   }
 
   return (
     <>
@@ -273,7 +295,7 @@ export const Default = () => {
       <div style={{ display: 'flex', alignItems: 'center' }}>
     
             {(() => {
-              if (loading) return <h4>Starting up...</h4>; 
+              if (!isHealthy) return <h4>Deployment pending...</h4>; 
 
               const failedCount = deployedResources.filter(r => r.state === "Failed").length;
               const successCount = deployedResources.filter(r => r.state === "Succeeded").length;
@@ -295,16 +317,16 @@ export const Default = () => {
 
       <div className="row mt-3"> {/* Added margin-top for some spacing */}
         <div className="col-md-6">
-          <strong>Deployment Id: </strong> {deploymentId}
+          <strong>Deployment Type: </strong> {deploymentType}
         </div>
         <div className="col-md-6">
-          <strong>Start time: </strong> {earliestTimestamp ? toLocalDateTime(earliestTimestamp.toISOString()) : 'N/A'}
+        <strong>Subscription: </strong> {subscriptionId}
         </div>
       </div>
 
       <div className="row mt-3">
         <div className="col-md-6">
-          <strong>Subscription: </strong> {subscriptionId}
+          <strong>Start time: </strong> {earliestTimestamp ? toLocalDateTime(earliestTimestamp.toISOString()) : 'N/A'}
         </div>
         <div className="col-md-6">
           <strong>Resource Group: </strong> {deploymentResourceGroup}

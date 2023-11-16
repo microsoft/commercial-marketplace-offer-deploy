@@ -6,6 +6,7 @@
                 "id": 1,
                 "status": "running",
                 "resourceGroup": "rg-64-20230921101915",
+                "subscriptionId": "<Enter subscription here>",
                 "definition": {
                     "workingDirectory": "/Users/kehilli/Workspace/github.com/microsoft/commercial-marketplace-offer-deploy/home/content",
                     "mainTemplatePath": "main.tf",
