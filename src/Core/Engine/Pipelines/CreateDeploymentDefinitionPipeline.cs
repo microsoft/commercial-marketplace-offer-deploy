@@ -148,13 +148,21 @@ namespace Modm.Engine.Pipelines
         {
             this.logger.LogInformation("Inside WriteToDisk of CreateDeploymentPipeline");
 
-            await file.Write(new Deployment
+            var deployment = new Deployment
             {
                 Definition = response,
                 Id = 0,
                 Timestamp = DateTimeOffset.UtcNow,
                 Status = DeploymentStatus.Undefined
-            }, cancellationToken);
+            };
+
+            var newRecord = new DeploymentRecord(deployment);
+
+            var auditRecord = new AuditRecord();
+            auditRecord.AdditionalData.Add("createDeploymentPipeline", deployment);
+
+            newRecord.AuditRecords.Add(auditRecord);
+            await file.Write(newRecord, cancellationToken);
 
             this.logger.LogInformation("Wrote Deployment to file");
         } 
