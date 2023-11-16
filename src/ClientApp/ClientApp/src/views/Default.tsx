@@ -79,8 +79,10 @@ export const Default = () => {
 
   const getDeployedResources = async () => {
     try {
+        console.log(`inside getDeployedResources`);
         const backendUrl = AppConstants.baseUrl;
         const headers = getAuthHeader();
+        console.log(`calling get deployments`);
         const response = await fetch(`${backendUrl}/api/Deployments`, {
           headers: {
             Accept: 'application/json',
@@ -184,30 +186,42 @@ export const Default = () => {
   ];
 
     useEffect(() => {
+        console.log(`inside useEffect for checkEngineHealth`);
         startEngineHealthCheck(); 
+        console.log(`inside useEffect for checkEngineHealth after startEngineHealthCheck`);
         return () => {
-          if (checkEngineIntervalRef.current) {
+            console.log(`inside useEffect for checkEngineHealth return`);
+            if (checkEngineIntervalRef.current) {
+            console.log(`inside useEffect for checkEngineHealth return clearInterval`);
             clearInterval(checkEngineIntervalRef.current);
             }
         };
     }, []);
     
       
-      useEffect(() => {
+    useEffect(() => {
+        console.log(`inside useEffect for startGettingResources`);
         if (isHealthy) {
-          getDeployedResources();  
-          startGettingResources();
+            console.log(`inside useEffect for startGettingResources isHealthy`);
+            getDeployedResources();  
+            startGettingResources();
+            console.log(`inside useEffect for startGettingResources after startGettingResources`);
 
-          if (checkEngineIntervalRef.current) {
-            clearInterval(checkEngineIntervalRef.current);
-            checkEngineIntervalRef.current = null;
-          }
+            if (checkEngineIntervalRef.current) {
+                console.log(`inside useEffect for startGettingResources clearInterval`);
+                clearInterval(checkEngineIntervalRef.current);
+                console.log(`inside useEffect for startGettingResources after clearInterval`);
+                checkEngineIntervalRef.current = null;
+            }
         }
     
         // Cleanup function to clear the resources interval when the component unmounts
         return () => {
+            console.log(`inside useEffect for startGettingResources return`);
           if (updateResourcesIntervalRef.current) {
+            console.log(`inside useEffect for startGettingResources return clearInterval`);
             clearInterval(updateResourcesIntervalRef.current);
+            console.log(`inside useEffect for startGettingResources return after clearInterval`);
           }
         };
     }, [isHealthy]);
