@@ -1,6 +1,6 @@
 import logging
 import unittest
-from packaging.azure.client_app import create_client_app_name
+from modm.marketplace.client_app import create_client_app_name
 
 log = logging.getLogger(__name__)
 

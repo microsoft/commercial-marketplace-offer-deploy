@@ -1,10 +1,11 @@
 import unittest
 import os
-from packaging.azure.arm_template import ArmTemplate, ArmTemplateParameter
+from modm.arm.arm_template import ArmTemplate, ArmTemplateParameter
+from tests import TestCaseBase
 
-class TestArmTemplate(unittest.TestCase):
+class TestArmTemplate(TestCaseBase):
     def setUp(self):
-        self.file_path = os.path.join(os.path.dirname(__file__), 'data/mainTemplate.json')
+        self.file_path = self.data_path / 'mainTemplate.json'
         self.arm_template = ArmTemplate.from_file(self.file_path)
 
     def test_set_parameter(self):

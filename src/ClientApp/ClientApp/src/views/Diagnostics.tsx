@@ -86,6 +86,7 @@ export const Diagnostics = () => {
       }
 
       const result = await response.json();
+      console.log(`fetchDiagnostics result - ${JSON.stringify(result)}`);
       setDiagnostics(result);
     } catch (error) {
       console.error('Failed to fetch diagnostics:', error);

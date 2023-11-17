@@ -2,7 +2,7 @@ import os
 import shutil
 import tempfile
 import unittest
-from packaging._zip_utils import zip_dir, unzip_file
+from modm._zip_utils import zip_dir, unzip_file
 
 class testZipUtils(unittest.TestCase):
     def setUp(self):
@@ -20,6 +20,6 @@ class testZipUtils(unittest.TestCase):
         self.assertTrue(os.path.exists(file_path))
 
         unzip_file(file_path, self.test_dir)
-        self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'installer.zip')))
+        self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'test.zip')))
 
         

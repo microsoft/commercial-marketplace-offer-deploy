@@ -117,11 +117,16 @@ namespace Modm.Engine.Pipelines
     // #3
     public class CreateParametersFile : IPipelineBehavior<CreateDeploymentDefinition, DeploymentDefinition>
     {
+        private readonly ParametersFileFactory factory;
+
+        public CreateParametersFile(ParametersFileFactory parametersFileFactory)
+        {
+            this.factory = parametersFileFactory;
+        }
+
         public async Task<DeploymentDefinition> Handle(CreateDeploymentDefinition request, RequestHandlerDelegate<DeploymentDefinition> next, CancellationToken cancellationToken)
         {
             var definition = await next();
-
-            var factory = new ParametersFileFactory();
             var file = factory.Create(definition.DeploymentType, definition.GetMainTemplateDirectoryName());
 
             // the file must always have at least an empty object
