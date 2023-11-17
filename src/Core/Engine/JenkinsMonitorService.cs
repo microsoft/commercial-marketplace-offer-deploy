@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Modm.Jenkins.Client;
 using Modm.Engine.Notifications;
+using Modm.Deployments;
 
 namespace Modm.Engine
 {
@@ -12,15 +13,17 @@ namespace Modm.Engine
 	public class JenkinsMonitorService : BackgroundService
 	{
         private JenkinsClientFactory clientFactory;
+        private DeploymentFile deploymentFile;
         private readonly ILogger<JenkinsMonitorService> logger;
 
         private bool deploymentStarted;
         private int id;
         private string name;
 
-        public JenkinsMonitorService(JenkinsClientFactory clientFactory, ILogger<JenkinsMonitorService> logger)
+        public JenkinsMonitorService(JenkinsClientFactory clientFactory, DeploymentFile deploymentFile, ILogger<JenkinsMonitorService> logger)
         {
             this.clientFactory = clientFactory;
+            this.deploymentFile = deploymentFile;
             this.logger = logger;
         }
 
@@ -50,6 +53,10 @@ namespace Modm.Engine
         async Task MonitorDeployment(CancellationToken cancellationToken)
         {
             using var client = await clientFactory.Create();
+
+            var initialStatus = await client.GetBuildStatus(name, id);
+            await UpdateDeploymentStatus(initialStatus, cancellationToken);
+
             var isBuilding = await client.IsBuilding(name, id, cancellationToken);
 
             // wait for the deployment to complete
@@ -57,6 +64,12 @@ namespace Modm.Engine
             {
                 try
                 {
+                    var currentStatus = await client.GetBuildStatus(name, id);
+                    if (!currentStatus.Equals(initialStatus))
+                    {
+                        await UpdateDeploymentStatus(initialStatus, cancellationToken);
+                    }
+
                     isBuilding = await client.IsBuilding(name, id, cancellationToken);
                 }
                 catch (Exception ex)
@@ -69,6 +82,19 @@ namespace Modm.Engine
             // deployment is complete
             logger.LogInformation("Deployment [{id}] completed at: {time}", id, DateTimeOffset.Now);
             Reset();
+        }
+
+        private async Task UpdateDeploymentStatus(string status, CancellationToken token)
+        {
+            DeploymentRecord deploymentRecord = await this.deploymentFile.Read(token);
+            Deployment deployment = deploymentRecord.Deployment;
+            deployment.Status = status;
+
+            AuditRecord newStatusAudit = new AuditRecord();
+            newStatusAudit.AdditionalData.Add("statusChange", deployment);
+            deploymentRecord.AuditRecords.Add(newStatusAudit);
+
+            await this.deploymentFile.Write(deploymentRecord, token);
         }
 
         void Reset()

@@ -9,7 +9,7 @@ using Modm.Configuration;
 
 namespace Modm.Tests.UnitTests
 {
-	public class DeploymentRecordUnitTests
+	public class DeploymentRecordUnitTests : IDisposable
 	{
         private readonly IConfiguration configuration;
         private readonly DeploymentFile deploymentFile;
@@ -25,11 +25,10 @@ namespace Modm.Tests.UnitTests
             var inMemorySettings = new Dictionary<string, string> {
                 {EnvironmentVariable.Names.HomeDirectory, this.tempPath}
             };
-            //this.configuration = Substitute.For<IConfiguration>();
-            //this.configuration.GetHomeDirectory().Returns(tempPath);
+
             this.configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(inMemorySettings)
-            .Build();
+                .AddInMemoryCollection(inMemorySettings)
+                .Build();
 
             Directory.CreateDirectory(tempPath);
 
@@ -41,8 +40,6 @@ namespace Modm.Tests.UnitTests
         {
             // Arrange
             var expectedPath = this.tempPath;
-           // var configuration = Substitute.For<IConfiguration>();
-            //this.configuration.GetHomeDirectory().Returns(expectedPath);
 
             // Act
             var actualPath = configuration.GetHomeDirectory();
@@ -95,6 +92,42 @@ namespace Modm.Tests.UnitTests
 
             Assert.Equal(1, readRecord.Deployment.Id);
             Assert.Equal("Test2", readRecord.Deployment.Status);
+        }
+
+        [Fact]
+        public async Task Update_DeploymentRecord_ReadsWritesFile()
+        {
+            var initialDeployment = new Deployment { Id = 1, Timestamp = DateTimeOffset.UtcNow, Status = "Initial" };
+            var deploymentRecord = new DeploymentRecord(initialDeployment);
+
+            var auditRecord = new AuditRecord();
+            auditRecord.AdditionalData.Add("initial", initialDeployment);
+            deploymentRecord.AuditRecords.Add(auditRecord);
+
+            await this.deploymentFile.Write(deploymentRecord, default);
+
+            var readRecord = await deploymentFile.Read(default);
+
+            Assert.Equal(1, readRecord.Deployment.Id);
+            Assert.Equal("Initial", readRecord.Deployment.Status);
+            Assert.Single(readRecord.AuditRecords);
+
+            var readDeployment = readRecord.Deployment;
+            readDeployment.Status = "Updated";
+
+            var updatedAuditRecord = new AuditRecord();
+            updatedAuditRecord.AdditionalData.Add("updated", readDeployment);
+
+            readRecord.AuditRecords.Add(updatedAuditRecord);
+            await this.deploymentFile.Write(readRecord, default);
+
+
+            var readUpdatedRecord = await deploymentFile.Read(default);
+            var readUpdatedDeployment = readUpdatedRecord.Deployment;
+
+            Assert.Equal(1, readUpdatedDeployment.Id);
+            Assert.Equal("Updated", readUpdatedDeployment.Status);
+            Assert.Equal(2, readUpdatedRecord.AuditRecords.Count);
         }
 
         public void Dispose()
