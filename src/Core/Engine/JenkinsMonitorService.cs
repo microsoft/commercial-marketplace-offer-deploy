@@ -14,16 +14,22 @@ namespace Modm.Engine
 	{
         private JenkinsClientFactory clientFactory;
         private DeploymentFile deploymentFile;
+        private AuditFile auditFile;
         private readonly ILogger<JenkinsMonitorService> logger;
 
         private bool deploymentStarted;
         private int id;
         private string name;
 
-        public JenkinsMonitorService(JenkinsClientFactory clientFactory, DeploymentFile deploymentFile, ILogger<JenkinsMonitorService> logger)
+        public JenkinsMonitorService(
+            JenkinsClientFactory clientFactory,
+            DeploymentFile deploymentFile,
+            AuditFile auditFile,
+            ILogger<JenkinsMonitorService> logger)
         {
             this.clientFactory = clientFactory;
             this.deploymentFile = deploymentFile;
+            this.auditFile = auditFile;
             this.logger = logger;
         }
 
@@ -56,6 +62,7 @@ namespace Modm.Engine
 
             var initialStatus = await client.GetBuildStatus(name, id);
             await UpdateDeploymentStatus(initialStatus, cancellationToken);
+            var currentStatus = initialStatus;
 
             var isBuilding = await client.IsBuilding(name, id, cancellationToken);
 
@@ -64,10 +71,11 @@ namespace Modm.Engine
             {
                 try
                 {
-                    var currentStatus = await client.GetBuildStatus(name, id);
-                    if (!currentStatus.Equals(initialStatus))
+                    var status = await client.GetBuildStatus(name, id);
+                    if (!currentStatus.Equals(status))
                     {
-                        await UpdateDeploymentStatus(initialStatus, cancellationToken);
+                        await UpdateDeploymentStatus(status, cancellationToken);
+                        currentStatus = status;
                     }
 
                     isBuilding = await client.IsBuilding(name, id, cancellationToken);
@@ -86,15 +94,16 @@ namespace Modm.Engine
 
         private async Task UpdateDeploymentStatus(string status, CancellationToken token)
         {
-            DeploymentRecord deploymentRecord = await this.deploymentFile.Read(token);
-            Deployment deployment = deploymentRecord.Deployment;
+            Deployment deployment = await this.deploymentFile.ReadAsync(token);
             deployment.Status = status;
+            await this.deploymentFile.WriteAsync(deployment, token);
+
+            var auditRecords = await this.auditFile.ReadAsync(token);
 
             AuditRecord newStatusAudit = new AuditRecord();
             newStatusAudit.AdditionalData.Add("statusChange", deployment);
-            deploymentRecord.AuditRecords.Add(newStatusAudit);
-
-            await this.deploymentFile.Write(deploymentRecord, token);
+            auditRecords.Add(newStatusAudit);
+            await this.auditFile.WriteAsync(auditRecords, token);
         }
 
         void Reset()

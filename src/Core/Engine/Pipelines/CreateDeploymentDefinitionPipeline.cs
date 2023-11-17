@@ -140,12 +140,14 @@ namespace Modm.Engine.Pipelines
     // #4
     public class WriteToDisk : IRequestPostProcessor<CreateDeploymentDefinition, DeploymentDefinition>
     {
-        private readonly DeploymentFile file;
+        private readonly DeploymentFile deploymentFile;
+        private readonly AuditFile auditFile;
         private ILogger<WriteToDisk> logger;
 
-        public WriteToDisk(DeploymentFile file, ILogger<WriteToDisk> logger)
+        public WriteToDisk(DeploymentFile deploymentFile, AuditFile auditFile, ILogger<WriteToDisk> logger)
         {
-            this.file = file;
+            this.deploymentFile = deploymentFile;
+            this.auditFile = auditFile;
             this.logger = logger;
         }
 
@@ -161,15 +163,13 @@ namespace Modm.Engine.Pipelines
                 Status = DeploymentStatus.Undefined
             };
 
-            var newRecord = new DeploymentRecord(deployment);
+            await deploymentFile.WriteAsync(deployment, cancellationToken);
+            this.logger.LogInformation("Wrote Deployment to deployment file");
 
             var auditRecord = new AuditRecord();
             auditRecord.AdditionalData.Add("createDeploymentPipeline", deployment);
 
-            newRecord.AuditRecords.Add(auditRecord);
-            await file.Write(newRecord, cancellationToken);
-
-            this.logger.LogInformation("Wrote Deployment to file");
+            await this.auditFile.WriteAsync(new List<AuditRecord>() { auditRecord }, cancellationToken);
         } 
     }
 
