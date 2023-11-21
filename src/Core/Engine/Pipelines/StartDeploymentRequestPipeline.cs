@@ -175,12 +175,14 @@ namespace Modm.Engine.Pipelines
     // #3
     public class WriteDeploymentToDisk : IRequestPostProcessor<StartDeploymentRequest, StartDeploymentResult>
     {
-        private readonly DeploymentFile file;
+        private readonly DeploymentFile deploymentFile;
+        private readonly AuditFile auditFile;
         private readonly ILogger<WriteDeploymentToDisk> logger;
 
-        public WriteDeploymentToDisk(DeploymentFile file, ILogger<WriteDeploymentToDisk> logger)
+        public WriteDeploymentToDisk(DeploymentFile deploymentFile, AuditFile auditFile, ILogger<WriteDeploymentToDisk> logger)
         {
-            this.file = file;
+            this.deploymentFile = deploymentFile;
+            this.auditFile = auditFile;
             this.logger = logger;
         }
         public async Task Process(
@@ -190,14 +192,14 @@ namespace Modm.Engine.Pipelines
         {
             this.logger.LogInformation("Inside WriteDeploymentToDisk:Process");
 
-            var deploymentRecord = await this.file.Read(cancellationToken);
-            deploymentRecord.Deployment = response.Deployment;
+            var deployment = await this.deploymentFile.ReadAsync(cancellationToken);
+            await deploymentFile.WriteAsync(deployment, cancellationToken);
 
+            var auditRecords = await this.auditFile.ReadAsync(cancellationToken);
             var auditRecord = new AuditRecord();
             auditRecord.AdditionalData.Add("WriteDeploymentToDisk:Process", response.Deployment);
-            deploymentRecord.AuditRecords.Add(auditRecord);
-
-            await file.Write(deploymentRecord, cancellationToken);
+            auditRecords.Add(auditRecord);
+            await this.auditFile.WriteAsync(auditRecords, cancellationToken);
         }
     }
 

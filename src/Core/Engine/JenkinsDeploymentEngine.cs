@@ -46,15 +46,13 @@ namespace Modm.Engine
         {
             using var client = await clientFactory.Create();
 
-            var deploymentRecord = await file.Read();
-            var deployment = deploymentRecord.Deployment;
+            var deployment = await file.ReadAsync();
             return await client.GetBuildLogs(deployment.Definition.DeploymentType, deployment.Id);
         }
 
         public async Task<Deployment> Get()
         {
-            var deploymentRecord = await file.Read();
-            var deployment = deploymentRecord.Deployment;
+            var deployment = await file.ReadAsync();
 
             // load up the resources
             var compute = (await metadataService.GetAsync()).Compute;

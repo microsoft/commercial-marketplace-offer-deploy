@@ -123,9 +123,9 @@ namespace Modm.Jenkins.Client
                 }
                 
             }
-            catch // unfortunately we have to just catch all since the jenkinsNet client will throw if it doesn't exist
+            catch(Exception ex) // unfortunately we have to just catch all since the jenkinsNet client will throw if it doesn't exist
             {
-                this.logger.LogError("An exception was caught when trying to Get the Build status");
+                this.logger.LogError(ex.Message);
             }
 
             return status;
