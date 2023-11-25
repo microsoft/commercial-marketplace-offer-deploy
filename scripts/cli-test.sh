@@ -6,7 +6,7 @@ echo "------------------"
 echo ""
 
 echo "Create resources archive"
-modm util create-resources-tarball -t ./templates -f src/ClientApp/ClientApp.csproj -o ./dist
+modm util create-resources-archive -t ./templates -f src/ClientApp/ClientApp.csproj -o ./dist
 
 
 echo "Build terraform complex app"
