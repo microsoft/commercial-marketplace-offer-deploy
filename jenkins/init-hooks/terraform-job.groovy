@@ -11,7 +11,9 @@ import com.cloudbees.hudson.plugins.folder.*
 
 final jobs = ['terraform', 'arm']
 
-def createJob(jobName) {
+def instance = Jenkins.get()
+
+def createJob(jobName, instance) {
     def modmHome = System.getenv('MODM_HOME')
     def jobConfigXmlPath = "${modmHome}/source/jenkins/definitions/${jobName}/config.xml"
 
@@ -27,10 +29,8 @@ def createJob(jobName) {
     job = instance.createProjectFromXML(jobName, xmlStream)
 }
 
-def instance = Jenkins.get()
-
 jobs.each { job ->
-    createJob(job)
+    createJob(job, instance)
 }
 
 instance.save()
