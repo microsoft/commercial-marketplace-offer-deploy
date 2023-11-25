@@ -39,7 +39,7 @@ modm package build \
 ## resources file
 
 ```
-modm util create-resources-tarball -v 2.0.0 -t ./templates -f src/Functions/Functions.csproj -o ./dist
+modm util create-resources-archive -v 2.0.0 -t ./templates -f src/Functions/Functions.csproj -o ./dist
 
 # reference the resource file directly
 modm package build \
