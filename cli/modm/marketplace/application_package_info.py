@@ -50,7 +50,7 @@ class ApplicationPackageInfo(Model):
         return self.manifest.template_type
     
     def print_manifest_as_json(self):
-        manifest_dict = self.manifest.to_dict()
+        manifest_dict = self.manifest.as_dict()
         manifest_json = json.dumps(manifest_dict, indent=2)
         print(manifest_json)
 
