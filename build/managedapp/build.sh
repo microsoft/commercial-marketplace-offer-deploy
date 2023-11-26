@@ -36,13 +36,17 @@ function createApplicationPackage() {
     modm util create-resources-archive -t ./templates -f src/ClientApp/ClientApp.csproj -o ./bin
     resources_file=./bin/resources.tar.gz
 
+    # Extract mainTemplate, default to "main.tf" if not present
+    main_template=$(jq -r '.mainTemplate // "main.tf"' $SCENARIO_PATH/manifest.json)
+    
+
     # build application package, e.g. app.zip
     modm package build \
         --name "$(echo $info | jq .offer.name -r)" \
         --description "$(echo $info | jq .offer.name -r)" \
         --resources-file $resources_file \
         --vmi-reference-id $IMAGE_ID \
-        --main-template $SCENARIO_PATH/templates/main.tf \
+        --main-template $SCENARIO_PATH/templates/$main_template \
         --create-ui-definition $SCENARIO_PATH/createUiDefinition.json \
         --out-dir ./bin
 

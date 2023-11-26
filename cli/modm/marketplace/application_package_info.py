@@ -1,3 +1,4 @@
+import json
 from .create_ui_definition import CreateUiDefinition
 from modm.installer import ManifestInfo
 from msrest.serialization import Model
@@ -46,6 +47,11 @@ class ApplicationPackageInfo(Model):
     @property
     def template_type(self):
         return self.manifest.template_type
+    
+    def print_manifest_as_json(self):
+        manifest_dict = self.manifest.as_dict()
+        manifest_json = json.dumps(manifest_dict, indent=2)
+        print(manifest_json)
 
     def validate(self):
         template_parameters = self.manifest.get_parameters()

@@ -1,4 +1,6 @@
 {
+    "deploymentType": "arm",
+    "mainTemplate": "main.bicep",
     "offer": {
         "name": "Simple storage account",
         "description": "description"
