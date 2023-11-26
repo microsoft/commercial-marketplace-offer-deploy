@@ -108,6 +108,7 @@ namespace Modm.Engine
 
         void Reset()
         {
+            this.logger.LogInformation("JenkinsMonitorService:Reset called");
             deploymentStarted = false;
             id = 0;
             name = string.Empty;
@@ -116,16 +117,18 @@ namespace Modm.Engine
         public class DeploymentStartedHandler : INotificationHandler<DeploymentStarted>
         {
             private readonly JenkinsMonitorService service;
+            private readonly ILogger<DeploymentStartedHandler> logger;
 
-            public DeploymentStartedHandler(JenkinsMonitorService service)
+            public DeploymentStartedHandler(JenkinsMonitorService service, ILogger<DeploymentStartedHandler> logger)
             {
                 this.service = service;
+                this.logger = logger;
             }
 
             public Task Handle(DeploymentStarted notification, CancellationToken cancellationToken)
             {
+                this.logger.LogInformation($"Received DeploymentStarted notification {notification}");
 
-                //todo: write to file deployment file here
                 service.deploymentStarted = true;
                 service.id = notification.Id;
                 service.name = notification.Name;

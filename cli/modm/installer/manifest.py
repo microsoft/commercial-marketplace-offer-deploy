@@ -63,7 +63,6 @@ class ManifestInfo(Model):
         """
         Returns the parameters of the app's main template as a list of ArmTemplateParameter
         """
-        print(f"Inside get_parameters, self.to_json: {self.to_json}")
         if self.template_type == SolutionTemplateType.terraform:
             terraform_file = TerraformFile(self.solution_template)
             input_variables = terraform_file.parse_variables()

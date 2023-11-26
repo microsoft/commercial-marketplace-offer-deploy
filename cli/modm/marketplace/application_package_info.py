@@ -31,7 +31,6 @@ class ApplicationPackageInfo(Model):
         self.manifest = ManifestInfo(solution_template=solution_template)
         self.manifest.offer.name = name
         self.manifest.offer.description = description
-        self.print_manifest_as_json()
 
     @property
     def name(self):
