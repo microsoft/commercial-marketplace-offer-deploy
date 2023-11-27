@@ -1,4 +1,5 @@
 param location string
+param resourceGroupName string
 
 module stgModule 'modules/storageAccount.bicep' = {
   name: 'storageDeploy'
