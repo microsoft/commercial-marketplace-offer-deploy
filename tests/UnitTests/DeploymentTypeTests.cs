@@ -1,12 +1,8 @@
-﻿using System;
-using System.IO;
-using Microsoft.CodeAnalysis.Elfie.Model.Tree;
-using Modm.Deployments;
-using NSubstitute;
+﻿using Modm.Deployments;
 
 namespace Modm.Tests.UnitTests
 {
-	public class DeploymentTypeTests
+    public class DeploymentTypeTests
 	{
         [Fact]
         public void should_throw_null_argument_exception()
