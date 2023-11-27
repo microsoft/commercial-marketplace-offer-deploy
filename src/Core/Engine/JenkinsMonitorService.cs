@@ -61,7 +61,7 @@ namespace Modm.Engine
             using var client = await clientFactory.Create();
 
             var initialStatus = await client.GetBuildStatus(name, id);
-            await UpdateDeploymentStatus(initialStatus, cancellationToken);
+            await UpdateDeploymentStatus(id, initialStatus, cancellationToken);
             var currentStatus = initialStatus;
 
             var isBuilding = await client.IsBuilding(name, id, cancellationToken);
@@ -74,7 +74,7 @@ namespace Modm.Engine
                     var status = await client.GetBuildStatus(name, id);
                     if (!currentStatus.Equals(status))
                     {
-                        await UpdateDeploymentStatus(status, cancellationToken);
+                        await UpdateDeploymentStatus(id, status, cancellationToken);
                         currentStatus = status;
                     }
 
@@ -92,9 +92,10 @@ namespace Modm.Engine
             Reset();
         }
 
-        private async Task UpdateDeploymentStatus(string status, CancellationToken token)
+        private async Task UpdateDeploymentStatus(int deploymentId, string status, CancellationToken token)
         {
             Deployment deployment = await this.deploymentFile.ReadAsync(token);
+            deployment.Id = id;
             deployment.Status = status;
             await this.deploymentFile.WriteAsync(deployment, token);
 
