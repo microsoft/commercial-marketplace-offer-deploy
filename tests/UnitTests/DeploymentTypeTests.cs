@@ -1,10 +1,8 @@
-﻿using System;
-using System.IO;
-using Modm.Deployments;
+﻿using Modm.Deployments;
 
 namespace Modm.Tests.UnitTests
 {
-	public class DeploymentTypeTests
+    public class DeploymentTypeTests
 	{
         [Fact]
         public void should_throw_null_argument_exception()
@@ -40,6 +38,16 @@ namespace Modm.Tests.UnitTests
 
                 Assert.Null(exception);
             }
+        }
+
+        [Fact]
+        public void jenkins_arm_deploy_script_should_use_variable_set_from_manifest_for_main_template()
+        {
+            var armPath = CreateDefinitionPath(DeploymentType.Arm);
+            var deployScript = File.ReadAllText(Path.Combine(armPath, "deploy.sh"));
+
+            Assert.Contains("template_file=$(cat ./manifest.json | jq -r '.mainTemplate')", deployScript);
+            Assert.Contains("--template-file $template_file", deployScript);
         }
 
         /// <summary>
@@ -78,6 +86,8 @@ namespace Modm.Tests.UnitTests
 		{
             return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../../", $"jenkins/definitions/{deploymentType}");
         }
+
+
 	}
 }
 
