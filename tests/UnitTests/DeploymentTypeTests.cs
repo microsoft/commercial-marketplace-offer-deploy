@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
+using Microsoft.CodeAnalysis.Elfie.Model.Tree;
 using Modm.Deployments;
+using NSubstitute;
 
 namespace Modm.Tests.UnitTests
 {
@@ -42,6 +44,16 @@ namespace Modm.Tests.UnitTests
             }
         }
 
+        [Fact]
+        public void jenkins_arm_deploy_script_should_use_variable_set_from_manifest_for_main_template()
+        {
+            var armPath = CreateDefinitionPath(DeploymentType.Arm);
+            var deployScript = File.ReadAllText(Path.Combine(armPath, "deploy.sh"));
+
+            Assert.Contains("template_file=$(cat ./manifest.json | jq -r '.mainTemplate')", deployScript);
+            Assert.Contains("--template-file $template_file", deployScript);
+        }
+
         /// <summary>
         /// Ensures that the deployment types defined match the jenkins definitions path
         /// which work through convention
@@ -78,6 +90,8 @@ namespace Modm.Tests.UnitTests
 		{
             return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../../", $"jenkins/definitions/{deploymentType}");
         }
+
+
 	}
 }
 

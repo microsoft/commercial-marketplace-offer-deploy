@@ -26,5 +26,5 @@ fi
 # Deploy using the extracted resource group name
 az deployment group create --resource-group $resource_group_name \
     --name deployment1 \
-    --template-file ./main.json \
+    --template-file $template_file \
     --parameters @$parameters_file
