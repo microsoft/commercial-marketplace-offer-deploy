@@ -9,14 +9,21 @@
             },
             "defaultValue": "[deployment().properties.templateLink.uri]"
         },
-        "_installerUsername": {
+        "applicationInstallerUserName": {
             "type": "string",
             "metadata": {
                 "description": "The base URI where artifacts required by this template are located including a trailing '/'"
             }
         },
-        "_installerPassword": {
+        "applicationInstallerPassword": {
             "type": "string",
+            "metadata": {
+                "description": "The base URI where artifacts required by this template are located including a trailing '/'"
+            }
+        },
+        "applicationInstallerUrl": {
+            "type": "string",
+            "defaultValue": "[concat('modm', substring(uniqueString(resourceGroup().id), 0, 12))]",
             "metadata": {
                 "description": "The base URI where artifacts required by this template are located including a trailing '/'"
             }
@@ -31,8 +38,8 @@
         },
         "configStoreName": "[concat('modmconfig-', substring(uniqueString(resourceGroup().id), 0, 8))]",
         "clientAppName": "[concat('modm', substring(uniqueString(resourceGroup().id), 0, 12))]",
-        "clientAppUrl": "[concat('https://', variables('clientAppName'), '.azurewebsites.net/')]",
-        "clientAppCredentials": "[base64(concat(parameters('_installerUsername'), '|', parameters('_installerPassword')))]",
+        "clientAppUrl": "[parameters('applicationInstallerUrl')]",
+        "clientAppCredentials": "[base64(concat(parameters('applicationInstallerUserName'), '|', parameters('applicationInstallerPassword')))]",
         "clientAppSigningKey": "[uniqueString(resourceGroup().id, variables('clientAppName'))]",
         "clientAppStorageAccountName": "[format('modm{0}', uniqueString(resourceGroup().id))]",
         "clientAppPackageUrl": "[concat(variables('artifactsContainerLocation'), '/', 'clientapp.zip')]",
@@ -173,7 +180,6 @@
                 "name": "standard"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', variables('clientAppName'))]"
             ],
             "properties": {},
             "resources": [
@@ -384,7 +390,6 @@
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Web/sites', variables('clientAppName'))]",
-                "[resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]",
                 "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
             ]
         },
@@ -448,14 +453,6 @@
         }
     ],
     "outputs": {
-        "installerDashboard": {
-            "type": "object",
-            "value": {
-                "url": "[variables('clientAppUrl')]",
-                "username": "[parameters('_installerUsername')]",
-                "password": "[parameters('_installerPassword')]"
-            }
-        },
         "virtualMachinePassword": {
             "type": "string",
             "value": "[variables('virtualMachinePassword')]"
