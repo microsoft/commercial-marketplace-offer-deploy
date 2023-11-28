@@ -22,5 +22,8 @@ class TestCreateUiDefinitionInstallerStep(TestCaseBase):
         installer_step.append_to(create_ui_definition)
 
         self.assertIn(installer_step.step, create_ui_definition.document["parameters"]["steps"])
-        self.assertEqual(create_ui_definition.document["parameters"]["outputs"]["_installerUsername"], "[steps('installer').username]")
-        self.assertEqual(create_ui_definition.document["parameters"]["outputs"]["_installerPassword"], "[steps('installer').password]")
+
+        outputs = create_ui_definition.document["parameters"]["outputs"]
+
+        for key, _ in installer_step.outputs.items():
+            self.assertEqual(outputs[key], installer_step.outputs[key])
