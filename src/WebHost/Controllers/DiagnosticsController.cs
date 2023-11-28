@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Modm.Diagnostics;
 using Modm.Engine;
+using Modm.Extensions;
 
 namespace WebHost.Controllers
 {
@@ -8,6 +9,7 @@ namespace WebHost.Controllers
     [ApiController]
     public class DiagnosticsController : ControllerBase
     {
+        private readonly string stripMarker = "-----------------";
         private readonly IDeploymentEngine engine;
 
         public DiagnosticsController(IDeploymentEngine engine)
@@ -17,10 +19,14 @@ namespace WebHost.Controllers
 
         public async Task<IResult> Get()
         {
+            string logsContent = await engine.GetLogs();
+
             return Results.Json(new GetDiagnosticsResponse
             {
-                DeploymentEngine = await engine.GetLogs()
-            });
+                DeploymentEngine = logsContent
+                    .SubstringAfterMarker(this.stripMarker)
+                    .Replace("jenkins", "***")
+            }); 
         }
     }
 }
