@@ -4,19 +4,9 @@
     "views": [
       {
         "kind": "Overview",
-        "name": "overview",
         "properties": {
-          "displayName": "Overview",
-          "version": "1.0.0",
-          "header": "{{offerName}} Details",   
-          "description": "{{offerDescription}} <br /><a href=\"{{dashboardUrl}}\">Dashboard</a><br /><br />To locate your login credentials: <ol><li>Access the <strong>Azure portal</strong> and go to the <strong>managed resource group</strong>.</li><li>Select the <strong>deployment</strong> within the resource group.</li><li>In the deployment's menu, click on the <strong>Outputs tab</strong> to find your credentials.</li></ol>",
-          "commands": [
-            {
-              "displayName": "Visit VM FQDN",
-              "path": "[[vmFQDN]]",
-              "icon": "Go"
-            }
-          ]
+          "header": "{{offerName}}",   
+          "description": "{{offerDescription}} <br /><h3>App Installer Dashboard</h3>The dashboard URL and login can be found in this application's Azure portal menu under <strong>Settings</strong> > <strong>Parameters and Outputs</strong>.<br />Under <em>outputs</em>, look for <strong>Installer Dashboard</strong> and <strong> which will include the URL and the username, password</strong>."
         }
       }
     ]

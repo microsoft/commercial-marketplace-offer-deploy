@@ -30,8 +30,8 @@
             "appConfigReader": "516239f1-63e1-4d78-a4de-a74fb236a071"
         },
         "configStoreName": "[concat('modmconfig-', substring(uniqueString(resourceGroup().id), 0, 8))]",
-        "clientAppName": "{{clientAppName}}",
-        "clientAppUrl": "{{dashboardUrl}}",
+        "clientAppName": "[concat('modm', substring(uniqueString(resourceGroup().id), 0, 12))]",
+        "clientAppUrl": "[concat('https://', variables('clientAppName'), '.azurewebsites.net/')]",
         "clientAppCredentials": "[base64(concat(parameters('_installerUsername'), '|', parameters('_installerPassword')))]",
         "clientAppSigningKey": "[uniqueString(resourceGroup().id, variables('clientAppName'))]",
         "clientAppStorageAccountName": "[format('modm{0}', uniqueString(resourceGroup().id))]",
@@ -447,6 +447,14 @@
         }
     ],
     "outputs": {
+        "installerDashboard": {
+            "type": "object",
+            "value": {
+                "url": "[variables('clientAppUrl')]",
+                "username": "[parameters('_installerUsername')]",
+                "password": "[parameters('_installerPassword')]"
+            }
+        },
         "virtualMachinePassword": {
             "type": "string",
             "value": "[variables('virtualMachinePassword')]"

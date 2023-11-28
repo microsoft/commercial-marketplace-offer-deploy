@@ -66,7 +66,7 @@ class ApplicationPackage:
         self._finalize_view_definition(options)
         self._finalize_create_ui_definition(options)
 
-        result = ApplicationPackageResult(installer_package=installer_package, client_app_name=self.main_template.client_app_name)
+        result = ApplicationPackageResult(installer_package=installer_package)
         result.file = self._zip(installer_package, options)
 
         if result.file is None or not result.file.exists():
@@ -77,7 +77,6 @@ class ApplicationPackage:
 
     def _finalize_view_definition(self, options: ApplicationPackageOptions):
         view_definition = options.resources.view_definition
-        view_definition.add_input("dashboardUrl", self.main_template.dashboard_url)
         view_definition.add_input("offerName", self.info.manifest.offer.name)
         view_definition.add_input("offerDescription", self.info.manifest.offer.description)
 

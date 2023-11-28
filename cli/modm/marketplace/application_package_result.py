@@ -11,11 +11,6 @@ class ApplicationPackageResult(Model):
         self.file = None
         self.validation_results = kwargs.get("validation_results", [])
         self._installer_package = kwargs.get("installer_package", None)
-        self._client_app_name = kwargs.get("client_app_name", None)
-
-    @property
-    def client_app_name(self):
-        return self._client_app_name
 
     @property
     def installer_package(self):
