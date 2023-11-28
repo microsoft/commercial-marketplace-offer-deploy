@@ -383,6 +383,7 @@
             "principalType": "ServicePrincipal"
             },
             "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('clientAppName'))]",
                 "[resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]",
                 "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
             ]
