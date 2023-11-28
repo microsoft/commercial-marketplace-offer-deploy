@@ -11,36 +11,51 @@
                 "label": "Installer settings",
                 "elements": [
                     {
-                        "name": "username",
-                        "type": "Microsoft.Common.TextBox",
-                        "label": "Admin Username",
-                        "placeholder": "",
-                        "defaultValue": "admin",
-                        "toolTip": "Use only allowed characters",
-                        "constraints": {
-                            "required": true,
-                            "regex": "^[a-z0-9A-Z]{1,30}$",
-                            "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-30 characters long."
-                        },
-                        "visible": true
-                    },
-                    {
-                        "name": "password",
-                        "type": "Microsoft.Common.PasswordBox",
-                        "label": {
-                            "password": "Password",
-                            "confirmPassword": "Confirm password"
-                        },
-                        "toolTip": "",
-                        "constraints": {
-                            "required": true,
-                            "regex": "^[a-zA-Z0-9]{8,}$",
-                            "validationMessage": "Password must be at least 8 characters long, contain only numbers and letters"
-                        },
-                        "options": {
-                            "hideConfirmation": false
-                        },
-                        "visible": true
+                        "name": "installerSection",
+                        "type": "Microsoft.Common.Section",
+                        "label": "Installer Section",
+                        "elements": [
+                            {
+                                "name": "installerTextBlock",
+                                "type": "Microsoft.Common.TextBlock",
+                                "visible": true,
+                                "options": {
+                                    "text": "Please provide the admin username and password for your marketplace installer dashboard."
+                                }
+                            },
+                            {
+                                "name": "username",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Admin Username",
+                                "placeholder": "",
+                                "defaultValue": "admin",
+                                "toolTip": "Use only allowed characters",
+                                "constraints": {
+                                    "required": true,
+                                    "regex": "^[a-z0-9A-Z]{1,30}$",
+                                    "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-30 characters long."
+                                },
+                                "visible": true
+                            },
+                            {
+                                "name": "password",
+                                "type": "Microsoft.Common.PasswordBox",
+                                "label": {
+                                    "password": "Password",
+                                    "confirmPassword": "Confirm password"
+                                },
+                                "toolTip": "",
+                                "constraints": {
+                                    "required": true,
+                                    "regex": "^[a-zA-Z0-9]{8,}$",
+                                    "validationMessage": "Password must be at least 8 characters long, contain only numbers and letters"
+                                },
+                                "options": {
+                                    "hideConfirmation": false
+                                },
+                                "visible": true
+                            }
+                        ]
                     }
                 ]
             }
