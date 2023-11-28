@@ -61,8 +61,8 @@
             }
         ],
         "outputs": {
-            "_installerUsername": "[steps('installer').dashboard.username]",
-            "_installerPassword": "[steps('installer').dashboard.password]"
+            "applicationInstallerUserName": "[steps('installer').dashboard.username]",
+            "applicationInstallerPassword": "[steps('installer').dashboard.password]"
         }
     }
 }

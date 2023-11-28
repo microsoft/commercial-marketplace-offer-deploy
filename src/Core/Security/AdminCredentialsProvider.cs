@@ -13,7 +13,7 @@ namespace Modm.Security
         /// Example ARM template setup:
         ///     {
         ///       "name": "Credentials",
-        ///       "value": "[base64(concat(parameters('_installerUsername'), '|', parameters('_installerPassword')))]"
+        ///       "value": "[base64(concat(parameters('username'), '|', parameters('password')))]"
         ///     }
         /// </remarks>
         public const string AppSettingsKeyName = "Credentials";
