@@ -62,7 +62,7 @@ def build_application_package(
 
 
 @click.help_option("-h", "--help")
-@click.command("create-function-app-package")
+@click.command("create-client-app-package")
 @click.option("-f", "--csproj-file", help="Path to the .csproj file of the client app", required=True)
 @click.option("-o", "--out-dir", help="The location where the zip will be placed")
 @click.argument("current_working_dir", type=click.Path(exists=True))
@@ -135,13 +135,15 @@ def _create_client_app_package(csproj_file, current_working_dir, out_dir=None):
 
     while True:
         output = process.stdout.readline()
-        click.echo("  " + output.strip())
+        if len(output) > 0:
+            click.echo("  " + output.strip())
         # Do something else
         return_code = process.poll()
         if return_code is not None:
             # Process has finished, read rest of the output
             for output in process.stdout.readlines():
-                click.echo("  " + output.strip())
+                if len(output) > 0:
+                    click.echo("  " + output.strip())
             break
 
     click.echo("Creating client app package.")
