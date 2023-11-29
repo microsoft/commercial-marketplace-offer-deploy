@@ -37,8 +37,6 @@ class ManifestInfo(Model):
 
         self.offer = OfferProperties()
 
-        print(f"Template type: {self._template_type}")
-
         if self._template_type == SolutionTemplateType.terraform:
             self.deployment_type = DeploymentType.terraform
         else:
