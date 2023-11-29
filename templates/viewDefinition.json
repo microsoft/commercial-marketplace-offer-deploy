@@ -6,7 +6,7 @@
         "kind": "Overview",
         "properties": {
           "header": "{{offerName}}",   
-          "description": "{{offerDescription}} <br /><h3>App Installer Dashboard</h3>The dashboard URL and login can be found in this application's Azure portal menu under <strong>Settings</strong> > <strong>Parameters and Outputs</strong>.<br />Under <em>outputs</em>, look for <strong>Installer Dashboard</strong> and <strong> which will include the URL and the username, password</strong>."
+          "description": "{{offerDescription}} <br /><h3>App Installer Dashboard</h3>The dashboard URL and credentials to login can be found in the Azure portal menu under <strong>Settings > Parameters and Outputs</strong> under <em>outputs</em>."
         }
       }
     ]
