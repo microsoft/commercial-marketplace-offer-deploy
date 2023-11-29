@@ -90,10 +90,23 @@ function createServiceDefinition() {
         --file $PACKAGE_FILE \
         --overwrite
 
-
-    blob=$(az storage blob url --account-name $STORAGE_ACCOUNT_NAME \
+    storage_account_connection_string=$(az storage account show-connection-string \
+        --name $STORAGE_ACCOUNT_NAME \
+        --resource-group $RESOURCE_GROUP \
+        --output tsv \
+        --query connectionString)
+    
+    expiry=$(gdate -d "+730 days" '+%Y-%m-%dT%H:%MZ')
+    blob=$(az storage blob generate-sas \
+        --account-name $STORAGE_ACCOUNT_NAME \
         --container-name $STORAGE_CONTAINER_NAME \
-        --name app.zip --output tsv)
+        --connection-string $storage_account_connection_string \
+        --name app.zip \
+        --permissions r \
+        --expiry $expiry \
+        --https-only \
+        --full-uri \
+        --output tsv)
     
     roleid=$(az role definition list --name Owner --query [].name --output tsv)
     groupid="d391271a-216a-49e1-a36e-c24b2c619f14"
