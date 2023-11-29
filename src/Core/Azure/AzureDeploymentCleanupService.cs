@@ -10,17 +10,32 @@ namespace Modm.Azure
     {
         private readonly IMediator mediator;
         private readonly string resourceGroupName;
+        private DateTime autoDeleteTime;
 
         public AzureDeploymentCleanupService(IMediator mediator, string resourceGroupName)
 		{
             this.mediator = mediator;
             this.resourceGroupName = resourceGroupName;
+            this.autoDeleteTime = GetDeployTime().AddHours(24);
+        }
+
+        private DateTime GetDeployTime()
+        {
+            return DateTime.UtcNow;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var cleanupLimitReached = new CleanupLimitReached(this.resourceGroupName);
-            await mediator.Send(cleanupLimitReached);
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                if (DateTime.UtcNow > autoDeleteTime)
+                {
+                    var cleanupLimitReached = new CleanupLimitReached(this.resourceGroupName);
+                    await mediator.Send(cleanupLimitReached);
+                    break;
+                }
+                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+            }
         }
     }
 }
