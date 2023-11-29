@@ -20,12 +20,6 @@ namespace Modm.ClientApp.Controllers
         private readonly ArmClient armClient;
         private readonly ILogger<ProxyController> logger;
 
-        public ProxyController(ArmClient armClient, ILogger<ProxyController> logger)
-        {
-            this.armClient = armClient;
-            this.logger = logger;
-        }
-
         /// <summary>
         /// The instance of the proxy client based on the incoming http request
         /// </summary>
@@ -34,9 +28,11 @@ namespace Modm.ClientApp.Controllers
             get { return client ??= clientFactory.Create(HttpContext.Request); }
         }
 
-        public ProxyController(ProxyClientFactory clientFactory)
+        public ProxyController(ProxyClientFactory clientFactory, ArmClient armClient, ILogger<ProxyController> logger)
         {
             this.clientFactory = clientFactory;
+            this.armClient = armClient;
+            this.logger = logger;
         }
 
         [HttpPost]

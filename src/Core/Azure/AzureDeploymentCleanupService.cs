@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Modm.Azure.Notifications;
 
 namespace Modm.Azure
@@ -12,10 +13,10 @@ namespace Modm.Azure
         private readonly string resourceGroupName;
         private DateTime autoDeleteTime;
 
-        public AzureDeploymentCleanupService(IMediator mediator, string resourceGroupName)
+        public AzureDeploymentCleanupService(IMediator mediator, IOptions<AzureDeploymentCleanupConfig> config)
 		{
             this.mediator = mediator;
-            this.resourceGroupName = resourceGroupName;
+            this.resourceGroupName = config.Value.ResourceGroupName;
             this.autoDeleteTime = GetDeployTime().AddHours(24);
         }
 
@@ -37,6 +38,11 @@ namespace Modm.Azure
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }
         }
+    }
+
+    public class AzureDeploymentCleanupConfig
+    {
+        public string ResourceGroupName { get; set; }
     }
 }
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DetailsList, DetailsListLayoutMode, SelectionMode, IColumn, ConstrainMode } from '@fluentui/react/lib/DetailsList';
+import { Dialog, DialogType, DialogFooter, PrimaryButton, DefaultButton } from '@fluentui/react';
 import { FocusTrapZone } from '@fluentui/react/lib/FocusTrapZone';
 import { CommandBar, ICommandBarItemProps } from '@fluentui/react/lib/CommandBar';
 import { AppConstants } from '../constants/app-constants';
@@ -14,6 +15,7 @@ import { ProgressIndicator } from '@fluentui/react/lib/ProgressIndicator';
 export const Default = () => {
 
   const [filter, setFilter] = React.useState<'All' | 'Succeeded' | 'Failed'>('All');
+  const [isConfirmDialogVisible, setIsConfirmDialogVisible] = useState(false);
   const [offerName, setOfferName] = React.useState<string | null>(null);
   const [deploymentId, setDeploymentId] = React.useState<string | null>(null);
   const [deploymentType, setDeploymentType] = React.useState<string | null>(null);
@@ -240,6 +242,29 @@ export const Default = () => {
     [],
   );
 
+  const handleConfirmDelete = async () => {
+    setIsConfirmDialogVisible(false); // Close the dialog
+    try {
+      const backendUrl = AppConstants.baseUrl;
+      const headers = getAuthHeader();
+      const deleteResponse = await fetch(`${backendUrl}/api/resources/${deploymentResourceGroup}/deletemodmresources`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          ...headers,
+        },
+      });
+      if (!deleteResponse.ok) {
+        throw new Error(`HTTP error! status: ${deleteResponse.status}`);
+      }
+      const deleteResult = await deleteResponse.json();
+      console.log(deleteResult);
+      // Add any additional logic needed after successful deletion
+    } catch (error) {
+      console.error("Error deleting:", error);
+    }
+  };
+
   const _items: ICommandBarItemProps[] = [
     // {
     //   key: 'redeploy',
@@ -251,29 +276,8 @@ export const Default = () => {
         key: 'delete',
         text: 'Delete Installer',
         iconProps: { iconName: 'Delete' }, // Using 'Delete' as the iconName
-        onClick: async () => {
-          // Here, you can make your API call or any other logic for the delete action
-          try {
-            const backendUrl = AppConstants.baseUrl;
-            const headers = getAuthHeader();
-            const deleteResponse = await fetch(`${backendUrl}/api/resources/${deploymentResourceGroup}/deletemodmresources`, {
-              method: 'POST',
-              headers: {
-                Accept: 'application/json',
-              ...headers,
-              },
-            });
-            if (!deleteResponse.ok) {
-              throw new Error(`HTTP error! status: ${deleteResponse.status}`);
-            }
-            const deleteResult = await deleteResponse.json();
-            console.log(deleteResult);
-            // You can also update your component's state or trigger other side effects here if necessary
-          } catch (error) {
-            console.error("Error deleting:", error);
-          }
-        },
-      }
+        onClick: () => setIsConfirmDialogVisible(true),
+    }
   ];
 
   const earliestTimestamp = deployedResources.length > 0
@@ -386,6 +390,21 @@ export const Default = () => {
         layoutMode={DetailsListLayoutMode.justified}
       />
       </div>
+
+      <Dialog
+  hidden={!isConfirmDialogVisible}
+  onDismiss={() => setIsConfirmDialogVisible(false)}
+  dialogContentProps={{
+    type: DialogType.normal,
+    title: 'Confirm Deletion',
+    subText: 'Are you sure you want to delete the installer?'
+  }}
+>
+  <DialogFooter>
+    <PrimaryButton onClick={handleConfirmDelete} text="Yes" />
+    <DefaultButton onClick={() => setIsConfirmDialogVisible(false)} text="No" />
+  </DialogFooter>
+</Dialog>
 
     </>
   );

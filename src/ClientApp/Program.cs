@@ -47,7 +47,7 @@ builder.Services.Configure<HostOptions>(hostOptions =>
 });
 builder.Services.AddAzureClients(clientBuilder =>
 {
-  //  clientBuilder.AddArmClient(configuration.GetSection("Azure"));
+    clientBuilder.AddArmClient(builder.Configuration.GetSection("Azure"));
     clientBuilder.UseCredential(new DefaultAzureCredential());
 });
 
@@ -56,15 +56,8 @@ builder.Services.AddMediatR(c =>
     c.RegisterServicesFromAssemblyContaining<ProxyController>();
 });
 
+builder.Services.Configure<AzureDeploymentCleanupConfig>(builder.Configuration.GetSection("AzureDeploymentCleanup"));
 builder.Services.AddHostedService<AzureDeploymentCleanupService>();
-builder.Services.AddSingleton(provider =>
-{
-    var configuration = provider.GetRequiredService<IConfiguration>();
-    var resourceGroupName = configuration["ResourceGroupName"]; 
-    var mediator = provider.GetRequiredService<IMediator>(); 
-    return new AzureDeploymentCleanupService(mediator, resourceGroupName);
-});
-
 
 builder.Configuration.AddEnvironmentVariables();
 
