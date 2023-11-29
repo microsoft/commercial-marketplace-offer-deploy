@@ -39,7 +39,7 @@
         "configStoreName": "[concat('modmconfig-', substring(uniqueString(resourceGroup().id), 0, 8))]",
         "clientAppName": "[concat('modm', substring(uniqueString(parameters('_artifactsLocation')), 0, 12))]",
         "clientAppUrl": "[parameters('applicationInstallerUrl')]",
-        "clientAppCredentials": "[base64(concat(parameters('applicationInstallerUserName'), '|', parameters('applicationInstallerPassword')))]",
+        "clientAppCredentials": "[base64(concat(trim(parameters('applicationInstallerUserName')), '|', trim(parameters('applicationInstallerPassword'))))]",
         "clientAppSigningKey": "[uniqueString(resourceGroup().id, variables('clientAppName'))]",
         "clientAppStorageAccountName": "[format('modm{0}', uniqueString(resourceGroup().id))]",
         "clientAppPackageUrl": "[concat(variables('artifactsContainerLocation'), '/', 'clientapp.zip')]",
@@ -137,10 +137,10 @@
                     "properties": {
                         "ASPNETCORE_HTTPS_PORT": "443",
                         "WEBSITE_RUN_FROM_PACKAGE": "[variables('clientAppPackageUrl')]",
-                        "Credentials": "[concat('@Microsoft.AppConfiguration(Endpoint=', reference(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))).endpoint,'; Key=Credentials)')]",
-                        "SigningKey": "[concat('@Microsoft.AppConfiguration(Endpoint=', reference(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))).endpoint,'; Key=SigningKey)')]",
-                        "BackendUrl": "[concat('@Microsoft.AppConfiguration(Endpoint=', reference(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))).endpoint,'; Key=BackendUrl)')]",
-                        "DashboardUrl":"[concat('@Microsoft.AppConfiguration(Endpoint=', reference(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))).endpoint,'; Key=SigningKey)')]"
+                        "Credentials": "[concat('@Microsoft.AppConfiguration(Endpoint=',reference(resourceId('Microsoft.AppConfiguration/configurationStores',variables('configStoreName'))).endpoint,';Key=Credentials)')]",
+                        "SigningKey": "[concat('@Microsoft.AppConfiguration(Endpoint=',reference(resourceId('Microsoft.AppConfiguration/configurationStores',variables('configStoreName'))).endpoint,';Key=SigningKey)')]",
+                        "BackendUrl": "[concat('@Microsoft.AppConfiguration(Endpoint=',reference(resourceId('Microsoft.AppConfiguration/configurationStores',variables('configStoreName'))).endpoint,';Key=BackendUrl)')]",
+                        "DashboardUrl":"[concat('@Microsoft.AppConfiguration(Endpoint=',reference(resourceId('Microsoft.AppConfiguration/configurationStores',variables('configStoreName'))).endpoint,';Key=SigningKey)')]"
                     }
                 },
                 {

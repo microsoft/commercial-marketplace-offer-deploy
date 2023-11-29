@@ -7,13 +7,6 @@ namespace Modm.Tests.UnitTests
 {
 	public class AppConfigurationResourceTests
 	{
-        /// <summary>
-        /// The name of the ARM template variable that must have matching value
-        /// as the what is created by the AppConfigurationResource
-        /// </summary>
-        private const string templateVariableName = "configStoreName";
-        private const string templateVariableValue = "[concat('modmconfig-', substring(uniqueString(resourceGroup().id), 0, 8))]";
-
         private readonly ResourceId resourceGroupId;
         private readonly AppConfigurationResource resource;
 
