@@ -4,6 +4,12 @@ using Microsoft.IdentityModel.Logging;
 using Modm.Security;
 using Modm.Extensions;
 using ClientApp.Backend;
+using Modm.Azure;
+using MediatR;
+using Microsoft.Azure.Management.Storage.Fluent.Models;
+using System.Web.Services.Description;
+using Microsoft.Extensions.Azure;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,10 +36,36 @@ builder.Services.AddCors(options =>
         builder
             .WithOrigins("https://localhost:44482", "https://localhost:7153", "http://localhost:5207", "http://localhost:44482")
             .AllowAnyMethod()
-            .AllowAnyHeader();
+        .AllowAnyHeader();
         
     });
 });
+
+builder.Services.Configure<HostOptions>(hostOptions =>
+{
+    hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+});
+builder.Services.AddAzureClients(clientBuilder =>
+{
+  //  clientBuilder.AddArmClient(configuration.GetSection("Azure"));
+    clientBuilder.UseCredential(new DefaultAzureCredential());
+});
+
+builder.Services.AddMediatR(c =>
+{
+    c.RegisterServicesFromAssemblyContaining<ProxyController>();
+});
+
+builder.Services.AddHostedService<AzureDeploymentCleanupService>();
+builder.Services.AddSingleton(provider =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    var resourceGroupName = configuration["ResourceGroupName"]; 
+    var mediator = provider.GetRequiredService<IMediator>(); 
+    return new AzureDeploymentCleanupService(mediator, resourceGroupName);
+});
+
+
 builder.Configuration.AddEnvironmentVariables();
 
 var app = builder.Build();

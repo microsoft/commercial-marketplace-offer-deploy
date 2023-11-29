@@ -4,6 +4,8 @@ using Modm.Deployments;
 using Modm.Diagnostics;
 using Modm.Engine;
 using ClientApp.Backend;
+using Azure.ResourceManager;
+using Modm.Azure;
 
 namespace Modm.ClientApp.Controllers
 {
@@ -14,6 +16,15 @@ namespace Modm.ClientApp.Controllers
     {
         private readonly ProxyClientFactory clientFactory;
         private IProxyClient client;
+
+        private readonly ArmClient armClient;
+        private readonly ILogger<ProxyController> logger;
+
+        public ProxyController(ArmClient armClient, ILogger<ProxyController> logger)
+        {
+            this.armClient = armClient;
+            this.logger = logger;
+        }
 
         /// <summary>
         /// The instance of the proxy client based on the incoming http request
@@ -32,8 +43,15 @@ namespace Modm.ClientApp.Controllers
         [Route("resources/{resourceGroupName}/deletemodmresources")]
         public async Task<IActionResult> DeleteResourcesWithTagAsync([FromRoute] string resourceGroupName)
         {
-            var relativeUri = string.Format(Routes.DeleteInstallerFormat, resourceGroupName);
-            return await Client.PostAsync(relativeUri);
+            var armCleanup = new AzureDeploymentCleanup(armClient);
+            bool deleted = await armCleanup.DeleteResourcePostDeployment(resourceGroupName);
+
+            if (!deleted)
+            {
+                return BadRequest("Some resources could not be deleted after multiple attempts.");
+            }
+
+            return Ok("Resources with modm tag applied have been deleted. App Service Being deleted without waiting.");
         }
 
 
