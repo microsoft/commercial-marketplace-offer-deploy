@@ -388,11 +388,7 @@
             "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').appConfigReader)]",
             "principalId": "[reference(resourceId('Microsoft.Web/sites', variables('clientAppName')), '2022-03-01', 'Full').identity.principalId]",
             "principalType": "ServicePrincipal"
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', variables('clientAppName'))]",
-                "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
-            ]
+            }
         },
         {
             "type": "Microsoft.Compute/virtualMachines",
