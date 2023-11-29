@@ -23,6 +23,15 @@
 # shared functions
 # ------------------------------------------------------------
 
+function getExpiry() {
+    if command -v gdate &> /dev/null
+    then
+        alias date=gdate
+    fi
+    local expiry=$(date -d "+730 days" '+%Y-%m-%dT%H:%MZ')
+    echo $expiry
+}
+
 function createApplicationPackage() {
     echo "Creating application package."
 
@@ -96,7 +105,7 @@ function createServiceDefinition() {
         --output tsv \
         --query connectionString)
     
-    expiry=$(gdate -d "+730 days" '+%Y-%m-%dT%H:%MZ')
+    expiry=$(getExpiry)
     blob=$(az storage blob generate-sas \
         --account-name $STORAGE_ACCOUNT_NAME \
         --container-name $STORAGE_CONTAINER_NAME \
