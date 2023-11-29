@@ -23,7 +23,7 @@
         },
         "applicationInstallerUrl": {
             "type": "string",
-            "defaultValue": "[concat('modm', substring(uniqueString(resourceGroup().id), 0, 12))]",
+            "defaultValue": "[concat('https://', 'modm', substring(uniqueString(parameters('_artifactsLocation')), 0, 12), '.azurewebsites.net')]",
             "metadata": {
                 "description": "The base URI where artifacts required by this template are located including a trailing '/'"
             }
@@ -37,7 +37,7 @@
             "appConfigReader": "516239f1-63e1-4d78-a4de-a74fb236a071"
         },
         "configStoreName": "[concat('modmconfig-', substring(uniqueString(resourceGroup().id), 0, 8))]",
-        "clientAppName": "[concat('modm', substring(uniqueString(resourceGroup().id), 0, 12))]",
+        "clientAppName": "[concat('modm', substring(uniqueString(parameters('_artifactsLocation')), 0, 12))]",
         "clientAppUrl": "[parameters('applicationInstallerUrl')]",
         "clientAppCredentials": "[base64(concat(parameters('applicationInstallerUserName'), '|', parameters('applicationInstallerPassword')))]",
         "clientAppSigningKey": "[uniqueString(resourceGroup().id, variables('clientAppName'))]",
@@ -370,9 +370,9 @@
             "scope": "[format('Microsoft.AppConfiguration/configurationStores/{0}', variables('configStoreName'))]",
             "name": "[guid(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName')), resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').owner))]",
             "properties": {
-            "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').owner)]",
-            "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), '2022-03-01', 'Full').identity.principalId]",
-            "principalType": "ServicePrincipal"
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').owner)]",
+                "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), '2022-03-01', 'Full').identity.principalId]",
+                "principalType": "ServicePrincipal"
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]",
@@ -385,10 +385,14 @@
             "scope": "[format('Microsoft.AppConfiguration/configurationStores/{0}', variables('configStoreName'))]",
             "name": "[guid(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName')), resourceId('Microsoft.Web/sites', variables('clientAppName')), subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').appConfigReader))]",
             "properties": {
-            "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').appConfigReader)]",
-            "principalId": "[reference(resourceId('Microsoft.Web/sites', variables('clientAppName')), '2022-03-01', 'Full').identity.principalId]",
-            "principalType": "ServicePrincipal"
-            }
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').appConfigReader)]",
+                "principalId": "[reference(resourceId('Microsoft.Web/sites', variables('clientAppName')), '2022-03-01', 'Full').identity.principalId]",
+                "principalType": "ServicePrincipal"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('clientAppName'))]",
+                "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+            ]
         },
         {
             "type": "Microsoft.Compute/virtualMachines",
