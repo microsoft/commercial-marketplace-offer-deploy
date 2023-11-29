@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "commercial-marketplace-offer-deploy"
-version = "0.1.0"
+version = "2.0.0"
 authors = [
   { name="Kevin Hillinger", email="kevin.hillinger@outlook.com" },
 ]
