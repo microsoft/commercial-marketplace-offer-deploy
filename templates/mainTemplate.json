@@ -71,7 +71,10 @@
             }
         },
         "commonTags": {
-            "modm": "true"
+            "modm": "standard"
+        },
+        "postTags": {
+            "modm": "post"
         }
     },
     "resources": [
@@ -103,7 +106,7 @@
             "properties": {
                 "reserved": true
             },
-            "tags": "[variables('commonTags')]"
+            "tags": "[variables('postTags')]"
         },
         {
             "type": "Microsoft.Web/sites",
@@ -117,7 +120,7 @@
                 "[resourceId('Microsoft.Web/serverfarms', variables('clientAppName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('clientAppStorageAccountName'))]"
             ],
-            "tags": "[variables('commonTags')]",
+            "tags": "[variables('postTags')]",
             "kind": "linux",
             "properties": {
                 "reserved": true,
@@ -370,9 +373,9 @@
             "scope": "[format('Microsoft.AppConfiguration/configurationStores/{0}', variables('configStoreName'))]",
             "name": "[guid(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName')), resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').owner))]",
             "properties": {
-            "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').owner)]",
-            "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), '2022-03-01', 'Full').identity.principalId]",
-            "principalType": "ServicePrincipal"
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').owner)]",
+                "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), '2022-03-01', 'Full').identity.principalId]",
+                "principalType": "ServicePrincipal"
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]",
@@ -385,9 +388,9 @@
             "scope": "[format('Microsoft.AppConfiguration/configurationStores/{0}', variables('configStoreName'))]",
             "name": "[guid(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName')), resourceId('Microsoft.Web/sites', variables('clientAppName')), subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').appConfigReader))]",
             "properties": {
-            "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').appConfigReader)]",
-            "principalId": "[reference(resourceId('Microsoft.Web/sites', variables('clientAppName')), '2022-03-01', 'Full').identity.principalId]",
-            "principalType": "ServicePrincipal"
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').appConfigReader)]",
+                "principalId": "[reference(resourceId('Microsoft.Web/sites', variables('clientAppName')), '2022-03-01', 'Full').identity.principalId]",
+                "principalType": "ServicePrincipal"
             }
         },
         {
