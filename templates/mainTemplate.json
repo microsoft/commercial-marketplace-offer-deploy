@@ -180,7 +180,6 @@
                 "name": "standard"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', variables('clientAppName'))]"
             ],
             "properties": {},
             "resources": [
