@@ -18,7 +18,7 @@ namespace Modm.Azure
 		{
             this.deploymentClient = deploymentClient;
             this.armClient = armClient;
-            this.autoDeleteTime = GetDeployTime().AddMinutes(1);
+            this.autoDeleteTime = GetDeployTime().AddHours(24);
         }
 
         private DateTime GetDeployTime()
