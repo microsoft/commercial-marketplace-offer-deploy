@@ -19,6 +19,7 @@ export const Default = () => {
   const [offerName, setOfferName] = React.useState<string | null>(null);
   const [deploymentId, setDeploymentId] = React.useState<string | null>(null);
   const [deploymentType, setDeploymentType] = React.useState<string | null>(null);
+  const [deploymentStatus, setDeploymentStatus] = React.useState<string | null>(null);
   const [subscriptionId, setSubscriptionId] = React.useState<string | null>(null);
   const [deploymentResourceGroup, setDeploymentResourceGroup] = React.useState<string | null>(null);
   const [deployedResources, setDeployedResources] = React.useState<DeploymentResource[]>([]);
@@ -79,6 +80,10 @@ export const Default = () => {
     return deployment?.subscriptionId ?? null;
   }
 
+  const isValidDeploymentStatus = (deployment) => {
+    return deployment?.status ?? null;
+  }
+
   const getDeployedResources = async () => {
     try {
         console.log(`inside getDeployedResources`);
@@ -117,6 +122,11 @@ export const Default = () => {
         const subscriptionId = isValidSubscriptionId(result.deployment);
         if (subscriptionId) {
             setSubscriptionId(subscriptionId);
+        }
+
+        const deploymentStatus = isValidDeploymentStatus(result.deployment);
+        if (deploymentStatus) {
+            setDeploymentStatus(deploymentStatus);
         }
           
         if (result.deployment.resources) {
@@ -318,10 +328,11 @@ export const Default = () => {
               const failedCount = deployedResources.filter(r => r.state === "Failed").length;
               const successCount = deployedResources.filter(r => r.state === "Succeeded").length;
 
-              if (failedCount > 0 && (failedCount + successCount) === deployedResources.length) {
+              const failedCountIndicatesFailure = failedCount > 0 && (failedCount + successCount) === deployedResources.length;
+              if (failedCountIndicatesFailure || deploymentStatus === "failed") {
                 return <h4>{offerName} failed</h4>;
               }
-              if (successCount === deployedResources.length) {
+              if (deploymentStatus === "success") {
                 return (
                   <h5 style={{ display: 'inline-flex', alignItems: 'center' }}>
                     <StyledSuccessIcon style={{ marginRight: '4px' }} />

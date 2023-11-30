@@ -69,6 +69,7 @@ builder.Services.AddAzureClients(clientBuilder =>
 builder.Services.AddHostedService<AzureDeploymentCleanupService>();
 
 builder.Configuration.AddEnvironmentVariables();
+builder.Configuration.AddAppConfigurationSafely(builder.Environment);
 
 var app = builder.Build();
 

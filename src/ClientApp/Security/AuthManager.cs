@@ -2,7 +2,6 @@
 using System.Security.Claims;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
-using Modm.Configuration;
 using Modm.Security;
 
 namespace ClientApp.Security

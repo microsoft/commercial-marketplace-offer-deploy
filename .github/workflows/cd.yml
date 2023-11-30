@@ -10,6 +10,12 @@ on:
       - closed
     branches:
       - main
+    paths:
+      - 'build/container/**'
+      - 'build/vmi/**'
+      - 'jenkins/**'
+      - 'src/**'
+      - 'tests/**'
   workflow_dispatch:
 
 env:

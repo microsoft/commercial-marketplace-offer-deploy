@@ -1,13 +1,8 @@
-﻿using Azure.Identity;
-using Azure.ResourceManager;
+﻿using Azure.ResourceManager;
 using Microsoft.Extensions.Configuration;
-using Modm.Azure;
 using Microsoft.Extensions.Logging;
-using Azure.Core;
 using Azure.ResourceManager.AppConfiguration;
 using Azure;
-using Azure.ResourceManager.Resources;
-using Azure.ResourceManager.AppConfiguration.Models;
 
 namespace Modm.Configuration
 {
@@ -17,14 +12,14 @@ namespace Modm.Configuration
     /// </summary>
     public class AppConfigurationRegistrar
 	{
-        private readonly IMetadataService metadataService;
+        private readonly IAppConfigurationResourceProvider provider;
         private readonly ArmClient client;
         private readonly IConfigurationBuilder builder;
         private readonly ILogger<AppConfigurationRegistrar> logger;
 
-        public AppConfigurationRegistrar(IMetadataService metadataService, ArmClient client, IConfigurationBuilder builder, ILogger<AppConfigurationRegistrar> logger)
+        public AppConfigurationRegistrar(IAppConfigurationResourceProvider provider, ArmClient client, IConfigurationBuilder builder, ILogger<AppConfigurationRegistrar> logger)
 		{
-            this.metadataService = metadataService;
+            this.provider = provider;
             this.client = client;
             this.builder = builder;
             this.logger = logger;
@@ -32,12 +27,11 @@ namespace Modm.Configuration
 
         public void AddAppConfigurationIfExists()
         {
-            var metadata = metadataService.GetAsync().GetAwaiter().GetResult();
-            var resource = new AppConfigurationResource(metadata.ResourceGroupId);
+            var resource = provider.Get();
 
             using (logger.BeginScope(new Dictionary<string, object>
             {
-                ["resourceGroupId"] = metadata.ResourceGroupId.Id,
+                ["resourceGroup"] = resource.Identifier.ResourceGroupName,
                 ["appConfigurationResourceId"] = resource.Identifier.ToString()
             }))
             {
