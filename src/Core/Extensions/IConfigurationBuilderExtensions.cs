@@ -46,19 +46,28 @@ namespace Modm.Extensions
                 clientBuilder.UseCredential(new DefaultAzureCredential());
             });
 
-            if (environment.IsDevelopment())
+            if (configuration.IsAppServiceEnvironment())
             {
-                services.AddSingleton<IMetadataService, LocalMetadataService>();
+                services.AddSingleton<IAppConfigurationResourceProvider, AppServiceAppConfigurationResourceProvider>();
             }
             else
             {
-                services.AddSingleton<IMetadataService, DefaultMetadataService>();
+                services.AddSingleton<IAppConfigurationResourceProvider, VirtualMachineAppConfigurationResourceProvider>();
+
+                if (environment.IsDevelopment())
+                {
+                    services.AddSingleton<IMetadataService, LocalMetadataService>();
+                }
+                else
+                {
+                    services.AddSingleton<IMetadataService, DefaultMetadataService>();
+                }
             }
 
             services.AddSingleton(provider =>
             {
                 return new AppConfigurationRegistrar(
-                    provider.GetRequiredService<IMetadataService>(),
+                    provider.GetRequiredService<IAppConfigurationResourceProvider>(),
                     provider.GetRequiredService<ArmClient>(),
                     builder,
                     provider.GetRequiredService<ILogger<AppConfigurationRegistrar>>());
