@@ -11,6 +11,7 @@ using System.Web.Services.Description;
 using Microsoft.Extensions.Azure;
 using Azure.Identity;
 using Modm.Azure.Notifications;
+using ClientApp.Notifications;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,11 +61,13 @@ builder.Services.AddAzureClients(clientBuilder =>
     clientBuilder.UseCredential(new DefaultAzureCredential());
 });
 
-//builder.Services.AddMediatR(c =>
-//{
-//    c.RegisterServicesFromAssemblyContaining<CleanupLimitReached>();
-//});
+builder.Services.AddSingleton<IAzureResourceManager, AzureResourceManager>();
 
+
+builder.Services.AddMediatR(c =>
+{
+    c.RegisterServicesFromAssemblyContaining<DeleteInitiated>();
+});
 
 builder.Services.AddHostedService<AzureDeploymentCleanupService>();
 

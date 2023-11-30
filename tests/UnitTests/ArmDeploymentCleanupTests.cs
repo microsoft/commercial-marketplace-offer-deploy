@@ -8,64 +8,67 @@
 
 //namespace Modm.Tests.UnitTests
 //{
-//	public class ArmDeploymentCleanupTests
-//	{
-//		public ArmDeploymentCleanupTests()
-//		{
-//		}
-
-
-//[Fact]
-//public async Task should_delete_resources()
-//{
-//    string resourceGroupName = "rg-193-20231129094617";
-
-//    var azureCredentials = new DefaultAzureCredential(false);
-//    var armClient = new ArmClient(azureCredentials);
-//    var armCleanup = new AzureDeploymentCleanup(armClient);
-
-//    bool deleted = await armCleanup.DeleteResourcePostDeployment(resourceGroupName);
-//    Assert.True(deleted);
-//}
-
-//        [Fact]
-//        public async Task should_delete_resources()
+//    public class ArmDeploymentCleanupTests
+//    {
+//        public ArmDeploymentCleanupTests()
 //        {
-//            // Arrange
-//            string resourceGroupName = "rg-193-20231129094617";
-//            bool deleted = false;
-
-//            var substituteArmClient = Substitute.For<ArmClient>(new DefaultAzureCredential(true), null);
-
-//            var fakeSubscription = Substitute.For<SubscriptionResource>();
-//            substituteArmClient.GetDefaultSubscriptionAsync().Returns(Task.FromResult(fakeSubscription));
-
-
-//            var fakeResourceGroupResponse = Substitute.For<Response<ResourceGroupResource>>();
-//            var fakeResourceGroup = Substitute.For<ResourceGroupResource>();
-//            fakeResourceGroupResponse.Value.Returns(fakeResourceGroup);
-//            fakeSubscription.GetResourceGroupAsync(resourceGroupName).Returns(Task.FromResult(fakeResourceGroupResponse));
-
-//            fakeResourceGroup.GetGenericResourcesAsync().Returns(GetFakeAsyncEnumerable());
-
-//            // Use the substitute instead of the real ArmClient
-//            var armCleanup = new AzureDeploymentCleanup(substituteArmClient);
-
-//            // Act
-//            deleted = await armCleanup.DeleteResourcePostDeployment(resourceGroupName);
-//            Assert.True(deleted);
 //        }
 
-//        // Helper method to create a fake IAsyncEnumerable<GenericResource>
-//        private IAsyncEnumerable<GenericResource> GetFakeAsyncEnumerable()
+
+//        //[Fact]
+//        //public async Task should_delete_resources()
+//        //{
+//        //    string resourceGroupName = "rg-193-20231129094617";
+
+//        //    var azureCredentials = new DefaultAzureCredential(false);
+//        //    var armClient = new ArmClient(azureCredentials);
+//        //    var armCleanup = new AzureDeploymentCleanup(armClient);
+
+//        //    bool deleted = await armCleanup.DeleteResourcePostDeployment(resourceGroupName);
+//        //    Assert.True(deleted);
+//        //}
+
+//        [Fact]
+//        public async Task DeleteResourcePostDeployment_Should_ReturnFalse_When_AnyPhaseDeletionFails()
 //        {
-//            // Create a substitute for IAsyncEnumerable<GenericResource>
-//            var fakeAsyncEnumerable = Substitute.For<IAsyncEnumerable<GenericResource>>();
+//            // Arrange
+//            var mockAzureResourceManager = Substitute.For<IAzureResourceManager>();
+//            var resourceGroupName = "test-rg";
+//            var phases = new string[] { "standard", "post" };
+//            var cleanup = new AzureDeploymentCleanup(mockAzureResourceManager);
 
-//            // You need to set up a way to enumerate the fakeAsyncEnumerable, depending on how your method iterates over it.
-//            // This is a non-trivial task and requires setting up a substitute enumerator that returns your fake resources.
+//            // Setup the mock to return a single resource for deletion
+//            mockAzureResourceManager.GetResourcesToDeleteAsync(resourceGroupName, Arg.Any<string>())
+//                .Returns(Task.FromResult(new List<GenericResource> { new GenericResource() }));
 
-//            return fakeAsyncEnumerable;
+//            // Setup the mock to simulate a deletion failure
+//            mockAzureResourceManager.TryDeleteResourceAsync(Arg.Any<GenericResource>())
+//                .Returns(Task.FromResult(false));
+
+//            // Act
+//            var result = await cleanup.DeleteResourcePostDeployment(resourceGroupName);
+
+//            // Assert
+//            Assert.False(result);
+//        }
+
+//        [Fact]
+//        public async Task DeleteResourcePostDeployment_Should_ReturnTrue_When_AllResourcesDeleted()
+//        {
+//            // Arrange
+//            var mockAzureResourceManager = Substitute.For<IAzureResourceManager>();
+//            var resourceGroupName = "test-rg";
+//            var cleanup = new AzureDeploymentCleanup(mockAzureResourceManager);
+
+//            // Setup the mock to return no resources for deletion
+//            mockAzureResourceManager.GetResourcesToDeleteAsync(resourceGroupName, Arg.Any<string>())
+//                .Returns(Task.FromResult(new List<GenericResource>()));
+
+//            // Act
+//            var result = await cleanup.DeleteResourcePostDeployment(resourceGroupName);
+
+//            // Assert
+//            Assert.True(result);
 //        }
 
 

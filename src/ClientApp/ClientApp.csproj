@@ -46,6 +46,7 @@
     <None Remove="Security\" />
     <None Remove="Extensions\" />
     <None Remove="Backend\" />
+    <None Remove="Notifications\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -53,6 +54,7 @@
     <Folder Include="Security\" />
     <Folder Include="Extensions\" />
     <Folder Include="Backend\" />
+    <Folder Include="Notifications\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj">

@@ -6,6 +6,8 @@ using Modm.Engine;
 using ClientApp.Backend;
 using Azure.ResourceManager;
 using Modm.Azure;
+using MediatR;
+using ClientApp.Notifications;
 
 namespace Modm.ClientApp.Controllers
 {
@@ -17,7 +19,8 @@ namespace Modm.ClientApp.Controllers
         private readonly ProxyClientFactory clientFactory;
         private IProxyClient client;
 
-        private readonly ArmClient armClient;
+        private readonly IAzureResourceManager resourceManager;
+        private readonly IMediator mediator;
         private readonly ILogger<ProxyController> logger;
 
         /// <summary>
@@ -28,10 +31,11 @@ namespace Modm.ClientApp.Controllers
             get { return client ??= clientFactory.Create(HttpContext.Request); }
         }
 
-        public ProxyController(ProxyClientFactory clientFactory, ArmClient armClient, ILogger<ProxyController> logger)
+        public ProxyController(ProxyClientFactory clientFactory, IMediator mediator, IAzureResourceManager resourceManager, ILogger<ProxyController> logger)
         {
             this.clientFactory = clientFactory;
-            this.armClient = armClient;
+            this.mediator = mediator;
+            this.resourceManager = resourceManager;
             this.logger = logger;
         }
 
@@ -39,15 +43,10 @@ namespace Modm.ClientApp.Controllers
         [Route("resources/{resourceGroupName}/deletemodmresources")]
         public async Task<IActionResult> DeleteResourcesWithTagAsync([FromRoute] string resourceGroupName)
         {
-            var armCleanup = new AzureDeploymentCleanup(armClient);
-            bool deleted = await armCleanup.DeleteResourcePostDeployment(resourceGroupName);
+            var deleteInitiated = new DeleteInitiated(resourceGroupName);
+            await this.mediator.Send(deleteInitiated);
 
-            if (!deleted)
-            {
-                return BadRequest("Some resources could not be deleted after multiple attempts.");
-            }
-
-            return Ok("Resources with modm tag applied have been deleted. App Service Being deleted without waiting.");
+            return Ok("Successfully submitted a delete");
         }
 
 

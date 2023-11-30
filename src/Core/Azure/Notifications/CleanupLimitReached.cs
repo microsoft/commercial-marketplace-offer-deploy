@@ -22,16 +22,16 @@ namespace Modm.Azure.Notifications
 
     public class CleanupLimitReachedHandler : IRequestHandler<CleanupLimitReached>
     {
-        private readonly ArmClient armClient;
+        private readonly IAzureResourceManager resourceManager;
 
-        public CleanupLimitReachedHandler(ArmClient armClient)
+        public CleanupLimitReachedHandler(IAzureResourceManager resourceManager)
         {
-            this.armClient = armClient;
+            this.resourceManager = resourceManager;
         }
 
         public async Task Handle(CleanupLimitReached request, CancellationToken cancellationToken)
         {
-            var armCleanup = new AzureDeploymentCleanup(armClient);
+            var armCleanup = new AzureDeploymentCleanup(resourceManager);
             bool deleted = await armCleanup.DeleteResourcePostDeployment(request.ResourceGroupName);
         }
     }
