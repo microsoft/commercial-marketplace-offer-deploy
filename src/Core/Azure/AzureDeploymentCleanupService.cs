@@ -1,23 +1,24 @@
 ﻿using System;
-using MediatR;
+using Azure.ResourceManager;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Modm.Azure.Notifications;
+using Modm.Deployments;
 
 namespace Modm.Azure
 {
 	public class AzureDeploymentCleanupService : BackgroundService
     {
-        private readonly IMediator mediator;
-        private readonly string resourceGroupName;
+        private readonly DeploymentClient deploymentClient;
+        private readonly ArmClient armClient;
         private DateTime autoDeleteTime;
 
-        public AzureDeploymentCleanupService(IMediator mediator, IOptions<AzureDeploymentCleanupConfig> config)
+        public AzureDeploymentCleanupService(DeploymentClient deploymentClient, ArmClient armClient)
 		{
-            this.mediator = mediator;
-            this.resourceGroupName = config.Value.ResourceGroupName;
-            this.autoDeleteTime = GetDeployTime().AddHours(24);
+            this.deploymentClient = deploymentClient;
+            this.armClient = armClient;
+            this.autoDeleteTime = GetDeployTime().AddMinutes(1);
         }
 
         private DateTime GetDeployTime()
@@ -31,18 +32,19 @@ namespace Modm.Azure
             {
                 if (DateTime.UtcNow > autoDeleteTime)
                 {
-                    var cleanupLimitReached = new CleanupLimitReached(this.resourceGroupName);
-                    await mediator.Send(cleanupLimitReached);
+                    var deploymentsResponse = await this.deploymentClient.GetDeploymentInfo();
+                    var resourceGroup = deploymentsResponse.Deployment.ResourceGroup;
+                    
+                    var armCleanup = new AzureDeploymentCleanup(armClient);
+                    bool deleted = await armCleanup.DeleteResourcePostDeployment(resourceGroup);
+
+                    //var cleanupLimitReached = new CleanupLimitReached(resourceGroup);
+                    //await mediator.Send(cleanupLimitReached);
                     break;
                 }
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }
         }
-    }
-
-    public class AzureDeploymentCleanupConfig
-    {
-        public string ResourceGroupName { get; set; }
     }
 }
 

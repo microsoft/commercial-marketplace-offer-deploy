@@ -10,6 +10,7 @@ using Microsoft.Azure.Management.Storage.Fluent.Models;
 using System.Web.Services.Description;
 using Microsoft.Extensions.Azure;
 using Azure.Identity;
+using Modm.Azure.Notifications;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,13 @@ builder.Services.AddHttpClient<ProxyController>().ConfigureHttpClient((provider,
 {
     var backendUrl = provider.GetRequiredService<IConfiguration>()
                                 .GetValue<string>(ProxyClientFactory.BackendUrlSettingName);
+    client.BaseAddress = new Uri(backendUrl ?? string.Empty);
+});
+
+builder.Services.AddHttpClient<Modm.Deployments.DeploymentClient>().ConfigureHttpClient((provider, client) =>
+{
+    var backendUrl = provider.GetRequiredService<IConfiguration>()
+                              .GetValue<string>(ProxyClientFactory.BackendUrlSettingName); 
     client.BaseAddress = new Uri(backendUrl ?? string.Empty);
 });
 
@@ -45,18 +53,19 @@ builder.Services.Configure<HostOptions>(hostOptions =>
 {
     hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
 });
+
 builder.Services.AddAzureClients(clientBuilder =>
 {
     clientBuilder.AddArmClient(builder.Configuration.GetSection("Azure"));
     clientBuilder.UseCredential(new DefaultAzureCredential());
 });
 
-builder.Services.AddMediatR(c =>
-{
-    c.RegisterServicesFromAssemblyContaining<ProxyController>();
-});
+//builder.Services.AddMediatR(c =>
+//{
+//    c.RegisterServicesFromAssemblyContaining<CleanupLimitReached>();
+//});
 
-builder.Services.Configure<AzureDeploymentCleanupConfig>(builder.Configuration.GetSection("AzureDeploymentCleanup"));
+
 builder.Services.AddHostedService<AzureDeploymentCleanupService>();
 
 builder.Configuration.AddEnvironmentVariables();

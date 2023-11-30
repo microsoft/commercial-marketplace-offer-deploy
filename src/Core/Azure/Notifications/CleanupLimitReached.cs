@@ -1,6 +1,7 @@
 ﻿using System;
 using Azure.ResourceManager;
 using MediatR;
+using Modm.Deployments;
 
 namespace Modm.Azure.Notifications
 {
