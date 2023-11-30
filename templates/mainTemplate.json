@@ -33,7 +33,7 @@
         "location": "[resourceGroup().location]",
         "roleDefinitionId": {
             "owner": "8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
-            "appConfigOwner": "5ae67dd6-50cb-40e7-96ff-dc2bfa4b606b",
+            "contributor": "b24988ac-6180-42a0-ab88-20f7382dd24c",
             "appConfigReader": "516239f1-63e1-4d78-a4de-a74fb236a071"
         },
         "configStoreName": "[concat('modmconfig-', substring(uniqueString(resourceGroup().id), 0, 8))]",
@@ -136,11 +136,7 @@
                     ],
                     "properties": {
                         "ASPNETCORE_HTTPS_PORT": "443",
-                        "WEBSITE_RUN_FROM_PACKAGE": "[variables('clientAppPackageUrl')]",
-                        "Credentials": "[concat('@Microsoft.AppConfiguration(Endpoint=',reference(resourceId('Microsoft.AppConfiguration/configurationStores',variables('configStoreName'))).endpoint,';Key=Credentials)')]",
-                        "SigningKey": "[concat('@Microsoft.AppConfiguration(Endpoint=',reference(resourceId('Microsoft.AppConfiguration/configurationStores',variables('configStoreName'))).endpoint,';Key=SigningKey)')]",
-                        "BackendUrl": "[concat('@Microsoft.AppConfiguration(Endpoint=',reference(resourceId('Microsoft.AppConfiguration/configurationStores',variables('configStoreName'))).endpoint,';Key=BackendUrl)')]",
-                        "DashboardUrl":"[concat('@Microsoft.AppConfiguration(Endpoint=',reference(resourceId('Microsoft.AppConfiguration/configurationStores',variables('configStoreName'))).endpoint,';Key=SigningKey)')]"
+                        "WEBSITE_RUN_FROM_PACKAGE": "[variables('clientAppPackageUrl')]"
                     }
                 },
                 {
@@ -148,8 +144,7 @@
                     "name": "web",
                     "apiVersion": "2021-03-01",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Web/sites', variables('clientAppName'))]",
-                        "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+                        "[resourceId('Microsoft.Web/sites', variables('clientAppName'))]"
                     ],
                     "properties": {
                         "linuxFxVersion": "DOTNETCORE|7.0",
@@ -162,8 +157,7 @@
                     "name": "metadata",
                     "apiVersion": "2021-03-01",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Web/sites', variables('clientAppName'))]",
-                        "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+                        "[resourceId('Microsoft.Web/sites', variables('clientAppName'))]"
                     ],
                     "properties": {
                        "CURRENT_STACK": "dotnet"
@@ -376,6 +370,21 @@
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]",
+                "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2020-10-01-preview",
+            "scope": "[format('Microsoft.AppConfiguration/configurationStores/{0}', variables('configStoreName'))]",
+            "name": "[guid(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName')), resourceId('Microsoft.Web/sites', variables('clientAppName')), subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').contributor))]",
+            "properties": {
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').contributor)]",
+                "principalId": "[reference(resourceId('Microsoft.Web/sites', variables('clientAppName')), '2022-03-01', 'Full').identity.principalId]",
+                "principalType": "ServicePrincipal"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('clientAppName'))]",
                 "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
             ]
         },
