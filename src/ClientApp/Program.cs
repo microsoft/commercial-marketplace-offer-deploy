@@ -34,7 +34,9 @@ builder.Services.AddCors(options =>
         
     });
 });
+
 builder.Configuration.AddEnvironmentVariables();
+builder.Configuration.AddAppConfigurationSafely(builder.Environment);
 
 var app = builder.Build();
 
