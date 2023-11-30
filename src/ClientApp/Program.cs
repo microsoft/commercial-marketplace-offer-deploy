@@ -12,6 +12,8 @@ using Microsoft.Extensions.Azure;
 using Azure.Identity;
 using Modm.Azure.Notifications;
 using ClientApp.Notifications;
+using ClientApp;
+using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +52,12 @@ builder.Services.AddCors(options =>
     });
 });
 
+var dataDirectory = builder.Environment.IsDevelopment()
+        ? builder.Configuration["DataDirectory"]
+        : builder.Configuration["AppServiceDataDirectory"];
+
+builder.Services.Configure<DeleteServiceOptions>(options => options.DataDirectory = dataDirectory);
+
 builder.Services.Configure<HostOptions>(hostOptions =>
 {
     hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
@@ -63,13 +71,16 @@ builder.Services.AddAzureClients(clientBuilder =>
 
 builder.Services.AddSingleton<IAzureResourceManager, AzureResourceManager>();
 
+builder.Services.AddSingletonHostedService<DeleteService>();
+builder.Services.AddSingletonHostedService<AzureDeploymentCleanupService>();
+
 
 builder.Services.AddMediatR(c =>
 {
     c.RegisterServicesFromAssemblyContaining<DeleteInitiated>();
 });
 
-builder.Services.AddHostedService<AzureDeploymentCleanupService>();
+
 
 builder.Configuration.AddEnvironmentVariables();
 builder.Configuration.AddAppConfigurationSafely(builder.Environment);

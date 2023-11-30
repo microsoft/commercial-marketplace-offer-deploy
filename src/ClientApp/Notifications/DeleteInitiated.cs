@@ -31,7 +31,7 @@ namespace ClientApp.Notifications
 
         public async Task Handle(DeleteInitiated request, CancellationToken cancellationToken)
         {
-            this.deleteService.Start();
+            this.deleteService.Start(request.ResourceGroupName);
         }
     }
 }
