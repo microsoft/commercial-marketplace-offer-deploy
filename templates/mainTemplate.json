@@ -68,6 +68,7 @@
         "publicIpAddressSku": "Standard",
         "publicIpAddressName": "[concat(variables('virtualMachineName'), '-publicip')]",
         "nsgName": "[concat(variables('virtualMachineName'), '-nsg')]",
+        "autoDeleteExireInMinutes": "1440",
         "userData": {
             "installerPackage": {
                 "uri": "[concat(variables('artifactsContainerLocation'), '/', 'installer.zip')]",
@@ -256,7 +257,7 @@
                         "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
                     ],
                     "properties": {
-                        "value": "[if(parameters('autoDelete'), string(addMinutes(utcNow(), 1440)), '-1')]",
+                        "value": "[if(parameters('autoDelete'), variables('autoDeleteExireInMinutes'), '-1')]",
                         "contentType": "text/plain"
                     }
                 }
