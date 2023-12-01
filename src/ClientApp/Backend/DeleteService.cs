@@ -7,7 +7,7 @@ namespace ClientApp.Backend
 {
 	public class DeleteService : BackgroundService
     {
-        bool controllerStarted;
+        bool deleteStarted;
         string resourceGroupName;
 
         private readonly DeleteServiceOptions options;
@@ -25,7 +25,7 @@ namespace ClientApp.Backend
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            await WaitForControllerToStart(cancellationToken);
+            await WaitForDelete(cancellationToken);
 
             if (!cancellationToken.IsCancellationRequested)
             {
@@ -33,16 +33,16 @@ namespace ClientApp.Backend
             }
         }
 
-        async Task WaitForControllerToStart(CancellationToken cancellationToken)
+        async Task WaitForDelete(CancellationToken cancellationToken)
         {
-            while (!controllerStarted || String.IsNullOrEmpty(this.resourceGroupName))
+            while (!deleteStarted || String.IsNullOrEmpty(this.resourceGroupName))
             {
                 await Task.Delay(DefaultWaitDelaySeconds * 1000, cancellationToken);
 
                 string stateFileContent = ReadStateFile();
                 if (!String.IsNullOrEmpty(stateFileContent))
                 {
-                    this.controllerStarted = true;
+                    this.deleteStarted = true;
                     this.resourceGroupName = stateFileContent;
                 }
             }
@@ -51,7 +51,7 @@ namespace ClientApp.Backend
         public void Start(string resourceGroupName)
         {
             this.resourceGroupName = resourceGroupName;
-            this.controllerStarted = true;
+            this.deleteStarted = true;
             WriteStateFile(resourceGroupName);
         }
 
