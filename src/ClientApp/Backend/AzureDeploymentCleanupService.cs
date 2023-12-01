@@ -1,4 +1,5 @@
-﻿using ClientApp.Notifications;
+﻿using System.Globalization;
+using ClientApp.Notifications;
 using MediatR;
 
 namespace ClientApp.Backend
@@ -26,7 +27,12 @@ namespace ClientApp.Backend
         private DateTime CalculateAutoDeleteTime()
         {
             var installedTimeString = this.configuration[InstalledTimeKey];
-            if (!DateTime.TryParse(installedTimeString, out var installedTime))
+            if (!DateTime.TryParseExact(
+                installedTimeString,
+                "yyyy-MM-ddTHH:mm:ss.fffffffZ",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                out var installedTime))
             {
                 installedTime = DateTime.UtcNow;
             }
