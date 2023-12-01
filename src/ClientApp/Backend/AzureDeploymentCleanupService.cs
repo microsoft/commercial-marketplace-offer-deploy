@@ -1,19 +1,10 @@
-﻿using System;
-using Azure.ResourceManager;
-using ClientApp.Notifications;
+﻿using ClientApp.Notifications;
 using MediatR;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Modm.Azure.Notifications;
-using Modm.Deployments;
 
 namespace ClientApp.Backend
 {
-	public class AzureDeploymentCleanupService : BackgroundService
+    public class AzureDeploymentCleanupService : BackgroundService
     {
-        private readonly DeploymentClient deploymentClient;
         private DateTime autoDeleteTime;
         private readonly IMediator mediator;
         private readonly IConfiguration configuration;
@@ -21,13 +12,12 @@ namespace ClientApp.Backend
 
         private const string InstalledTimeKey = "InstalledTime";
         private const string ExpireInKey = "ExpireIn";
+        private const string ResourceGroupNameKey = "WEBSITE_RESOURCE_GROUP";
 
         public AzureDeploymentCleanupService(
-            DeploymentClient deploymentClient,
             IMediator mediator,
             IConfiguration configuration)
 		{
-            this.deploymentClient = deploymentClient;
             this.configuration = configuration;
             this.mediator = mediator;
             this.autoDeleteTime = CalculateAutoDeleteTime();
@@ -58,13 +48,14 @@ namespace ClientApp.Backend
             {
                 if (DateTime.UtcNow > autoDeleteTime)
                 {
-                    var deploymentsResponse = await this.deploymentClient.GetDeploymentInfo();
-                    var resourceGroup = deploymentsResponse.Deployment.ResourceGroup;
+                    var resourceGroupName = configuration[ResourceGroupNameKey];
+                    var deleteInitiated = new DeleteInitiated(resourceGroupName);
 
-                    var deleteInitiated = new DeleteInitiated(resourceGroup);
                     await mediator.Send(deleteInitiated);
+
                     break;
                 }
+
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }
         }

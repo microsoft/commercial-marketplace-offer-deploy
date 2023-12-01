@@ -275,34 +275,41 @@ export const Default = () => {
     }
   };
 
-  const _items: ICommandBarItemProps[] = [
-    // {
-    //   key: 'redeploy',
-    //   text: 'Redeploy',
-    //   iconProps: { iconName: 'Upload' },
-    //   onClick: () => console.log('Redeploy clicked'),
-    // },
-    {
-        key: 'delete',
-        text: 'Delete Installer',
-        iconProps: { iconName: 'Delete' }, // Using 'Delete' as the iconName
-        onClick: () => setIsConfirmDialogVisible(true),
+//   const _items: ICommandBarItemProps[] = [
+//     // {
+//     //   key: 'redeploy',
+//     //   text: 'Redeploy',
+//     //   iconProps: { iconName: 'Upload' },
+//     //   onClick: () => console.log('Redeploy clicked'),
+//     // },
+//     {
+//         key: 'delete',
+//         text: 'Delete Installer',
+//         iconProps: { iconName: 'Delete' }, // Using 'Delete' as the iconName
+//         onClick: () => setIsConfirmDialogVisible(true),
+//     }
+//   ];
+
+  const _items = React.useMemo(() => {
+    const items = [
+        // Include other command items here if needed
+    ];
+
+    if (isHealthy) {
+        items.push({
+            key: 'delete',
+            text: 'Delete Installer',
+            iconProps: { iconName: 'Delete' },
+            onClick: () => setIsConfirmDialogVisible(true),
+        });
     }
-  ];
+
+    return items;
+  }, [isHealthy]); // Re-calculate _items when isHealthy changes
 
   const earliestTimestamp = deployedResources.length > 0
   ? new Date(Math.min(...deployedResources.map(resource => new Date(resource.timestamp).getTime())))
   : null;
-
-//   if (!isHealthy) {
-//     return <>
-//     <div className='row'>
-//         <div className='col-3'><h4>Starting up...</h4></div>
-//     </div>
-    
-    
-//     </>;
-//   }
 
   return (
     <>
@@ -403,19 +410,18 @@ export const Default = () => {
       </div>
 
       <Dialog
-  hidden={!isConfirmDialogVisible}
-  onDismiss={() => setIsConfirmDialogVisible(false)}
-  dialogContentProps={{
-    type: DialogType.normal,
-    title: 'Confirm Deletion',
-    subText: 'Are you sure you want to delete the installer?'
-  }}
->
-  <DialogFooter>
-    <PrimaryButton onClick={handleConfirmDelete} text="Yes" />
-    <DefaultButton onClick={() => setIsConfirmDialogVisible(false)} text="No" />
-  </DialogFooter>
-</Dialog>
+        hidden={!isConfirmDialogVisible}
+        onDismiss={() => setIsConfirmDialogVisible(false)}
+        dialogContentProps={{
+            type: DialogType.normal,
+            title: 'Confirm Deletion',
+            subText: 'Are you sure you want to delete the installer?'
+        }}>
+        <DialogFooter>
+            <PrimaryButton onClick={handleConfirmDelete} text="Yes" />
+            <DefaultButton onClick={() => setIsConfirmDialogVisible(false)} text="No" />
+        </DialogFooter>
+      </Dialog>   
 
     </>
   );
