@@ -24,6 +24,7 @@ export const Default = () => {
   const [deploymentResourceGroup, setDeploymentResourceGroup] = React.useState<string | null>(null);
   const [deployedResources, setDeployedResources] = React.useState<DeploymentResource[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
+  const [isFinal, setIsFinal] = React.useState<boolean>(false);
   const [isHealthy, setIsHealthy] = React.useState(false);
   const [enableFocusTrap, setEnableFocusTrap] = React.useState(false);
   const { userToken } = useAuth();
@@ -74,6 +75,10 @@ export const Default = () => {
 
   const isValidOfferName = (deployment) => {
     return deployment?.offerName ?? null;
+  }
+
+  const isDeploymentFinal = (deployment) => {
+    return deployment?.status === "success" || deployment?.status === "failed";
   }
 
   const isValidSubscriptionId = (deployment) => {
@@ -128,6 +133,9 @@ export const Default = () => {
         if (deploymentStatus) {
             setDeploymentStatus(deploymentStatus);
         }
+
+        const isFinal = isDeploymentFinal(result.deployment);
+        setIsFinal(isFinal);
           
         if (result.deployment.resources) {
           const formattedResources = result.deployment.resources.map((resource: any) => ({
@@ -295,7 +303,7 @@ export const Default = () => {
         // Include other command items here if needed
     ];
 
-    if (isHealthy) {
+    if (isFinal) {
         items.push({
             key: 'delete',
             text: 'Delete Installer',
@@ -305,7 +313,7 @@ export const Default = () => {
     }
 
     return items;
-  }, [isHealthy]); // Re-calculate _items when isHealthy changes
+  }, [isFinal]); // Re-calculate _items when isFinal changes
 
   const earliestTimestamp = deployedResources.length > 0
   ? new Date(Math.min(...deployedResources.map(resource => new Date(resource.timestamp).getTime())))

@@ -14,6 +14,7 @@ namespace Modm.Deployments
         public DeploymentClient(HttpClient client, ILogger<DeploymentClient> logger)
 		{
 			this.client = client;
+            this.logger = logger;
 		}
 
 		public async Task<GetDeploymentResponse> GetDeploymentInfo()
