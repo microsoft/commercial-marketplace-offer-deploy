@@ -28,14 +28,14 @@
                 "description": "The base URI where artifacts required by this template are located including a trailing '/'"
             }
         },
-        "autoDelete": {
+        "applicationInstallerAutoDelete": {
             "type": "bool",
             "defaultValue": false,
             "metadata": {
                 "description": "Indicates whether the resources should be automatically deleted."
             }
         },
-        "installUtcTime": {
+        "applicationInstallerInstallUtcTime": {
             "type": "string",
             "defaultValue": "[utcNow()]",
             "metadata": {
@@ -252,7 +252,7 @@
                         "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
                     ],
                     "properties": {
-                        "value": "[parameters('installUtcTime')]",
+                        "value": "[parameters('applicationInstallerInstallUtcTime')]",
                         "contentType": "text/plain"
                     }
                 },
@@ -264,7 +264,7 @@
                         "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
                     ],
                     "properties": {
-                        "value": "[if(parameters('autoDelete'), variables('autoDeleteExireInMinutes'), '-1')]",
+                        "value": "[if(parameters('applicationInstallerAutoDelete'), variables('autoDeleteExireInMinutes'), '-1')]",
                         "contentType": "text/plain"
                     }
                 }
