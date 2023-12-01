@@ -34,7 +34,14 @@
             "metadata": {
                 "description": "Indicates whether the resources should be automatically deleted."
             }
-        }
+        },
+        "installUtcTime": {
+            "type": "string",
+            "defaultValue": "[utcNow()]",
+            "metadata": {
+                "description": "The time in utc when the deployment takes place."
+            }
+        },
     },
     "variables": {
         "location": "[resourceGroup().location]",
@@ -245,7 +252,7 @@
                         "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
                     ],
                     "properties": {
-                        "value": "[utcNow()]",
+                        "value": "[parameters('installUtcTime')]",
                         "contentType": "text/plain"
                     }
                 },
