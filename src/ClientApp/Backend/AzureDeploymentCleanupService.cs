@@ -29,6 +29,7 @@ namespace ClientApp.Backend
 		{
             this.deploymentClient = deploymentClient;
             this.configuration = configuration;
+            this.mediator = mediator;
             this.autoDeleteTime = CalculateAutoDeleteTime();
         }
 
