@@ -19,6 +19,9 @@ namespace ClientApp.Backend
         private readonly IConfiguration configuration;
         private bool executeSelfDelete;
 
+        private const string InstalledTimeKey = "InstalledTime";
+        private const string ExpireInKey = "ExpireIn";
+
         public AzureDeploymentCleanupService(
             DeploymentClient deploymentClient,
             IMediator mediator,
@@ -31,13 +34,13 @@ namespace ClientApp.Backend
 
         private DateTime CalculateAutoDeleteTime()
         {
-            var installedTimeString = this.configuration["InstalledTime"];
+            var installedTimeString = this.configuration[InstalledTimeKey];
             if (!DateTime.TryParse(installedTimeString, out var installedTime))
             {
                 installedTime = DateTime.UtcNow;
             }
 
-            var expireInString = this.configuration["ExpireIn"];
+            var expireInString = this.configuration[ExpireInKey];
             if (int.TryParse(expireInString, out var expireInMinutes) && expireInMinutes > -1)
             {
                 this.executeSelfDelete = true;

@@ -110,38 +110,6 @@ namespace Modm.Azure
 
             return (resourcesToDelete.Count == 0);
         }
-
-        //private async Task<List<GenericResource>> GetResourcesToDelete(string resourceGroupName, string phase)
-        //{
-        //    var subscription = await client.GetDefaultSubscriptionAsync();
-        //    var response = await subscription.GetResourceGroupAsync(resourceGroupName);
-        //    var resourceGroup = response.Value;
-
-        //    var resourcesToDelete = new List<GenericResource>();
-
-        //    await foreach (var resource in resourceGroup.GetGenericResourcesAsync())
-        //    {
-        //        if (resource.Data.Tags != null && resource.Data.Tags.TryGetValue("modm", out var tagValue) && tagValue == phase)
-        //        {
-        //            resourcesToDelete.Add(resource);
-        //        }
-        //    }
-
-        //    return resourcesToDelete;
-        //}
-
-        //private async Task<bool> TryDeleteResource(GenericResource resource)
-        //{
-        //    try
-        //    {
-        //        await resource.DeleteAsync(WaitUntil.Started);
-        //        return true;
-        //    }
-        //    catch
-        //    {
-        //        return false; // Return false if deletion fails
-        //    }
-        //}
     }
 }
 

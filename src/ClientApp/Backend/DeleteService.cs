@@ -10,12 +10,13 @@ namespace ClientApp.Backend
         bool controllerStarted;
         string resourceGroupName;
 
-        private readonly AzureDeploymentCleanup cleanup;
-       // private const string DataDirectory = "/home/site/wwwroot/data";
-        private const string DeleteFileName = "delete.txt";
-        const int DefaultWaitDelaySeconds = 30;
         private readonly DeleteServiceOptions options;
+        private readonly AzureDeploymentCleanup cleanup;
 
+        private const string DeleteFileName = "delete.txt";
+
+        const int DefaultWaitDelaySeconds = 30;
+        
         public DeleteService(IAzureResourceManager resourceManager, IOptions<DeleteServiceOptions> options)
 		{
             this.cleanup = new AzureDeploymentCleanup(resourceManager);
@@ -34,13 +35,15 @@ namespace ClientApp.Backend
 
         async Task WaitForControllerToStart(CancellationToken cancellationToken)
         {
-            while (!controllerStarted)
+            while (!controllerStarted || String.IsNullOrEmpty(this.resourceGroupName))
             {
                 await Task.Delay(DefaultWaitDelaySeconds * 1000, cancellationToken);
 
-                if (DeleteFileExists())
+                string stateFileContent = ReadStateFile();
+                if (!String.IsNullOrEmpty(stateFileContent))
                 {
                     this.controllerStarted = true;
+                    this.resourceGroupName = stateFileContent;
                 }
             }
         }
@@ -49,21 +52,26 @@ namespace ClientApp.Backend
         {
             this.resourceGroupName = resourceGroupName;
             this.controllerStarted = true;
-            WriteStateFile();
+            WriteStateFile(resourceGroupName);
         }
 
-        private bool DeleteFileExists()
+        private string ReadStateFile()
         {
             string filePath = Path.Combine(this.options.DataDirectory, DeleteFileName);
-            return File.Exists(filePath);
+
+            if (File.Exists(filePath))
+            {
+                return File.ReadAllText(filePath);
+            }
+
+            return null;
         }
 
-        private void WriteStateFile()
+        private void WriteStateFile(string resourceGroupName)
         {
-            string content = $"Delete initiated - {DateTime.UtcNow:O}";
             string filePath = Path.Combine(this.options.DataDirectory, DeleteFileName);
             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-            File.WriteAllText(filePath, content);
+            File.WriteAllText(filePath, resourceGroupName);
         }
     }
 }
