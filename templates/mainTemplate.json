@@ -41,7 +41,7 @@
             "metadata": {
                 "description": "The time in utc when the deployment takes place."
             }
-        },
+        }
     },
     "variables": {
         "location": "[resourceGroup().location]",
