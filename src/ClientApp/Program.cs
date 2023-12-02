@@ -10,7 +10,7 @@ using Microsoft.Azure.Management.Storage.Fluent.Models;
 using System.Web.Services.Description;
 using Microsoft.Extensions.Azure;
 using Azure.Identity;
-using ClientApp.Notifications;
+using ClientApp.Commands;
 using ClientApp;
 using System.Configuration;
 
@@ -51,11 +51,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-var dataDirectory = builder.Environment.IsDevelopment()
-        ? builder.Configuration["DataDirectory"]
-        : builder.Configuration["AppServiceDataDirectory"];
-
-builder.Services.Configure<DeleteServiceOptions>(options => options.DataDirectory = dataDirectory);
 
 builder.Services.Configure<HostOptions>(hostOptions =>
 {
@@ -68,18 +63,16 @@ builder.Services.AddAzureClients(clientBuilder =>
     clientBuilder.UseCredential(new DefaultAzureCredential());
 });
 
-builder.Services.AddSingleton<IAzureResourceManager, AzureResourceManager>();
+builder.Services.AddSingleton<IAzureResourceManagerClient, AzureResourceManagerClient>();
+builder.Services.AddSingleton<AzureDeploymentCleanup>();
 
 builder.Services.AddSingletonHostedService<DeleteService>();
-builder.Services.AddSingletonHostedService<AzureDeploymentCleanupService>();
-
+builder.Services.AddSingletonHostedService<InstallerCleanupService>();
 
 builder.Services.AddMediatR(c =>
 {
-    c.RegisterServicesFromAssemblyContaining<DeleteInitiated>();
+    c.RegisterServicesFromAssemblyContaining<InitiateDelete>();
 });
-
-
 
 builder.Configuration.AddEnvironmentVariables();
 builder.Configuration.AddAppConfigurationSafely(builder.Environment);

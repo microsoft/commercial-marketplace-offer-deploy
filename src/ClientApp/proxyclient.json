@@ -4,7 +4,7 @@
         "api/deployments": {
             "deployment": {
                 "id": 1,
-                "status": "running",
+                "status": "success",
                 "resourceGroup": "rg-64-20230921101915",
                 "subscriptionId": "<Enter subscription here>",
                 "offerName": "Local Offer",
