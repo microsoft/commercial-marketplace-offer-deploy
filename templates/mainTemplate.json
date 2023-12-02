@@ -267,6 +267,18 @@
                         "value": "[if(parameters('applicationInstallerAutoDelete'), variables('autoDeleteExireInMinutes'), '-1')]",
                         "contentType": "text/plain"
                     }
+                },
+                {
+                    "type": "keyValues",
+                    "name": "DeleteFileDirectory",
+                    "apiVersion": "2021-10-01-preview",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+                    ],
+                    "properties": {
+                        "value": "/home/site/wwwroot/data",
+                        "contentType": "text/plain"
+                    }
                 }
             ],
             "tags": "[variables('commonTags')]"

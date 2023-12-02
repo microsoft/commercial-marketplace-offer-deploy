@@ -29,7 +29,7 @@ namespace ClientApp.Backend
             var installedTimeString = this.configuration[InstalledTimeKey];
             if (!DateTime.TryParseExact(
                 installedTimeString,
-                "yyyy-MM-ddTHH:mm:ss.fffffffZ",
+                "yyyyMMddTHHmmssZ",
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
                 out var installedTime))
