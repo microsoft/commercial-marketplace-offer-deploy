@@ -8,6 +8,7 @@ namespace Modm.Tests.UnitTests
     {
         private readonly string resourceGroupName;
         private readonly string subscriptionId;
+        private readonly string ownerName;
         private readonly IConfiguration configuration;
 
         public AppServiceAppConfigurationResourceProviderTests()
@@ -15,10 +16,12 @@ namespace Modm.Tests.UnitTests
             resourceGroupName = Test.RandomString(20);
             subscriptionId = Guid.NewGuid().ToString();
 
+            ownerName = string.Concat(subscriptionId, "+", resourceGroupName, "-", "EastUSWebsite");
+
             this.configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string?> {
                     { AppServiceAppConfigurationResourceProvider.EnvironmentVariable_ResourceGroupName, resourceGroupName },
-                    { AppServiceAppConfigurationResourceProvider.EnvironmentVariable_SubscriptionId, subscriptionId }
+                    { AppServiceAppConfigurationResourceProvider.EnvironmentVariable_OwnerName, ownerName }
                 }).Build();
         }
 
