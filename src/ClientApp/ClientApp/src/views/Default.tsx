@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DetailsList, DetailsListLayoutMode, SelectionMode, IColumn, ConstrainMode } from '@fluentui/react/lib/DetailsList';
+import { Dialog, DialogType, DialogFooter, PrimaryButton, DefaultButton } from '@fluentui/react';
 import { FocusTrapZone } from '@fluentui/react/lib/FocusTrapZone';
 import { CommandBar, ICommandBarItemProps } from '@fluentui/react/lib/CommandBar';
 import { AppConstants } from '../constants/app-constants';
@@ -9,11 +10,10 @@ import StyledFailureIcon from './StyledFailureIcon';
 import { toLocalDateTime } from '../utils/DateUtils';
 import { Separator } from '@fluentui/react';
 import { useAuth } from '../security/AuthContext';
-import { ProgressIndicator } from '@fluentui/react/lib/ProgressIndicator';
 
 export const Default = () => {
-
   const [filter, setFilter] = React.useState<'All' | 'Succeeded' | 'Failed'>('All');
+  const [isConfirmDialogVisible, setIsConfirmDialogVisible] = useState(false);
   const [offerName, setOfferName] = React.useState<string | null>(null);
   const [deploymentId, setDeploymentId] = React.useState<string | null>(null);
   const [deploymentType, setDeploymentType] = React.useState<string | null>(null);
@@ -22,6 +22,7 @@ export const Default = () => {
   const [deploymentResourceGroup, setDeploymentResourceGroup] = React.useState<string | null>(null);
   const [deployedResources, setDeployedResources] = React.useState<DeploymentResource[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
+  const [isFinal, setIsFinal] = React.useState<boolean>(false);
   const [isHealthy, setIsHealthy] = React.useState(false);
   const [enableFocusTrap, setEnableFocusTrap] = React.useState(false);
   const { userToken } = useAuth();
@@ -41,7 +42,6 @@ export const Default = () => {
     try {
         const backendUrl = AppConstants.baseUrl;
         const headers = getAuthHeader();
-        console.log(`inside checkEngineHealth with a backendUrl of ${backendUrl}}`);
         const response = await fetch(`${backendUrl}/api/status`, {
           headers: {
             Accept: 'application/json',
@@ -54,7 +54,6 @@ export const Default = () => {
         }
 
         const statusData = await response.json();
-        console.log(JSON.stringify(statusData));
         setIsHealthy(statusData.isHealthy);
         setLoading(false);
     } catch (error) {
@@ -74,6 +73,10 @@ export const Default = () => {
     return deployment?.offerName ?? null;
   }
 
+  const isDeploymentFinal = (deployment) => {
+    return deployment?.status === "success" || deployment?.status === "failed";
+  }
+
   const isValidSubscriptionId = (deployment) => {
     return deployment?.subscriptionId ?? null;
   }
@@ -84,10 +87,8 @@ export const Default = () => {
 
   const getDeployedResources = async () => {
     try {
-        console.log(`inside getDeployedResources`);
         const backendUrl = AppConstants.baseUrl;
         const headers = getAuthHeader();
-        console.log(`calling get deployments`);
         const response = await fetch(`${backendUrl}/api/Deployments`, {
           headers: {
             Accept: 'application/json',
@@ -100,7 +101,6 @@ export const Default = () => {
         }
   
         const result = await response.json();
-        console.log(JSON.stringify(result, null, 2));
         
         const deploymentType = isValidDeploymentType(result.deployment);
         if (deploymentType) {
@@ -126,6 +126,9 @@ export const Default = () => {
         if (deploymentStatus) {
             setDeploymentStatus(deploymentStatus);
         }
+
+        const isFinal = isDeploymentFinal(result.deployment);
+        setIsFinal(isFinal);
           
         if (result.deployment.resources) {
           const formattedResources = result.deployment.resources.map((resource: any) => ({
@@ -196,42 +199,30 @@ export const Default = () => {
   ];
 
     useEffect(() => {
-        console.log(`inside useEffect for checkEngineHealth`);
         startEngineHealthCheck(); 
-        console.log(`inside useEffect for checkEngineHealth after startEngineHealthCheck`);
         return () => {
-            console.log(`inside useEffect for checkEngineHealth return`);
             if (checkEngineIntervalRef.current) {
-            console.log(`inside useEffect for checkEngineHealth return clearInterval`);
-            clearInterval(checkEngineIntervalRef.current);
+                clearInterval(checkEngineIntervalRef.current);
             }
         };
     }, []);
     
       
     useEffect(() => {
-        console.log(`inside useEffect for startGettingResources`);
         if (isHealthy) {
-            console.log(`inside useEffect for startGettingResources isHealthy`);
             getDeployedResources();  
             startGettingResources();
-            console.log(`inside useEffect for startGettingResources after startGettingResources`);
 
             if (checkEngineIntervalRef.current) {
-                console.log(`inside useEffect for startGettingResources clearInterval`);
                 clearInterval(checkEngineIntervalRef.current);
-                console.log(`inside useEffect for startGettingResources after clearInterval`);
                 checkEngineIntervalRef.current = null;
             }
         }
     
         // Cleanup function to clear the resources interval when the component unmounts
         return () => {
-            console.log(`inside useEffect for startGettingResources return`);
           if (updateResourcesIntervalRef.current) {
-            console.log(`inside useEffect for startGettingResources return clearInterval`);
             clearInterval(updateResourcesIntervalRef.current);
-            console.log(`inside useEffect for startGettingResources return after clearInterval`);
           }
         };
     }, [isHealthy]);
@@ -250,55 +241,63 @@ export const Default = () => {
     [],
   );
 
-  const _items: ICommandBarItemProps[] = [
-    // {
-    //   key: 'redeploy',
-    //   text: 'Redeploy',
-    //   iconProps: { iconName: 'Upload' },
-    //   onClick: () => console.log('Redeploy clicked'),
-    // },
-    {
-        key: 'delete',
-        text: 'Delete Installer',
-        iconProps: { iconName: 'Delete' }, // Using 'Delete' as the iconName
-        onClick: async () => {
-          // Here, you can make your API call or any other logic for the delete action
-          try {
-            const backendUrl = AppConstants.baseUrl;
-            const headers = getAuthHeader();
-            const deleteResponse = await fetch(`${backendUrl}/api/resources/${deploymentResourceGroup}/deletemodmresources`, {
-              method: 'POST',
-              headers: {
-                Accept: 'application/json',
-              ...headers,
-              },
-            });
-            if (!deleteResponse.ok) {
-              throw new Error(`HTTP error! status: ${deleteResponse.status}`);
-            }
-            const deleteResult = await deleteResponse.json();
-            console.log(deleteResult);
-            // You can also update your component's state or trigger other side effects here if necessary
-          } catch (error) {
-            console.error("Error deleting:", error);
-          }
+  const handleConfirmDelete = async () => {
+    setIsConfirmDialogVisible(false); // Close the dialog
+    try {
+      const backendUrl = AppConstants.baseUrl;
+      const headers = getAuthHeader();
+      const deleteResponse = await fetch(`${backendUrl}/api/resources/${deploymentResourceGroup}/deletemodmresources`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          ...headers,
         },
+      });
+      if (!deleteResponse.ok) {
+        throw new Error(`HTTP error! status: ${deleteResponse.status}`);
       }
-  ];
+      const deleteResult = await deleteResponse.json();
+      // Add any additional logic needed after successful deletion
+    } catch (error) {
+      console.error("Error deleting:", error);
+    }
+  };
+
+//   const _items: ICommandBarItemProps[] = [
+//     // {
+//     //   key: 'redeploy',
+//     //   text: 'Redeploy',
+//     //   iconProps: { iconName: 'Upload' },
+//     //   onClick: () => console.log('Redeploy clicked'),
+//     // },
+//     {
+//         key: 'delete',
+//         text: 'Delete Installer',
+//         iconProps: { iconName: 'Delete' }, // Using 'Delete' as the iconName
+//         onClick: () => setIsConfirmDialogVisible(true),
+//     }
+//   ];
+
+  const _items = React.useMemo(() => {
+    const items = [
+        // Include other command items here if needed
+    ];
+
+    if (isFinal) {
+        items.push({
+            key: 'delete',
+            text: 'Delete Installer',
+            iconProps: { iconName: 'Delete' },
+            onClick: () => setIsConfirmDialogVisible(true),
+        });
+    }
+
+    return items;
+  }, [isFinal]); // Re-calculate _items when isFinal changes
 
   const earliestTimestamp = deployedResources.length > 0
   ? new Date(Math.min(...deployedResources.map(resource => new Date(resource.timestamp).getTime())))
   : null;
-
-//   if (!isHealthy) {
-//     return <>
-//     <div className='row'>
-//         <div className='col-3'><h4>Starting up...</h4></div>
-//     </div>
-    
-    
-//     </>;
-//   }
 
   return (
     <>
@@ -397,6 +396,20 @@ export const Default = () => {
         layoutMode={DetailsListLayoutMode.justified}
       />
       </div>
+
+      <Dialog
+        hidden={!isConfirmDialogVisible}
+        onDismiss={() => setIsConfirmDialogVisible(false)}
+        dialogContentProps={{
+            type: DialogType.normal,
+            title: 'Confirm Deletion',
+            subText: 'Are you sure you want to delete the installer?'
+        }}>
+        <DialogFooter>
+            <PrimaryButton onClick={handleConfirmDelete} text="Yes" />
+            <DefaultButton onClick={() => setIsConfirmDialogVisible(false)} text="No" />
+        </DialogFooter>
+      </Dialog>   
 
     </>
   );

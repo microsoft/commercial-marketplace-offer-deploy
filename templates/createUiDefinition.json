@@ -22,7 +22,16 @@
                                 "options": {
                                     "text": "The Marketplace Application Installer installs the application from the Azure Marketplace. It is a prerequisite for the application to be deployed to Azure."
                                 }
+                            },
+                            {
+                                "name": "autoDelete",
+                                "type": "Microsoft.Common.CheckBox",
+                                "label": "Auto delete in 24 hours",
+                                "defaultValue": false,
+                                "toolTip": "Check this box if you want the resources to be automatically deleted in 24 hours.",
+                                "visible": true
                             }
+                            
                         ]
                     },
                     {
@@ -77,7 +86,8 @@
         ],
         "outputs": {
             "applicationInstallerUserName": "[steps('installer').dashboard.username]",
-            "applicationInstallerPassword": "[steps('installer').dashboard.password]"
+            "applicationInstallerPassword": "[steps('installer').dashboard.password]",
+            "applicationInstallerAutoDelete": "[steps('installer').autoDelete]"
         }
     }
 }

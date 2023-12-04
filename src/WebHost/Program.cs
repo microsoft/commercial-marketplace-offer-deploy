@@ -1,5 +1,6 @@
 using Modm.WebHost;
 using Modm.Extensions;
+using Modm.Azure;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddWebHost(builder.Configuration, builder.Environment);
@@ -12,6 +13,7 @@ builder.Services.AddCors(options =>
         builder.WithOrigins("https://localhost:44482");
     });
 });
+builder.Services.AddSingleton<IAzureResourceManagerClient, AzureResourceManagerClient>();
 
 builder.Services.AddJwtBearerAuthentication(builder.Configuration);
 builder.Configuration.AddAppConfigurationSafely(builder.Environment);

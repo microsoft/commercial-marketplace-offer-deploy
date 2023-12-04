@@ -4,6 +4,10 @@ using Modm.Deployments;
 using Modm.Diagnostics;
 using Modm.Engine;
 using ClientApp.Backend;
+using Azure.ResourceManager;
+using Modm.Azure;
+using MediatR;
+using ClientApp.Commands;
 
 namespace Modm.ClientApp.Controllers
 {
@@ -28,15 +32,7 @@ namespace Modm.ClientApp.Controllers
             this.clientFactory = clientFactory;
         }
 
-        [HttpPost]
-        [Route("resources/{resourceGroupName}/deletemodmresources")]
-        public async Task<IActionResult> DeleteResourcesWithTagAsync([FromRoute] string resourceGroupName)
-        {
-            var relativeUri = string.Format(Routes.DeleteInstallerFormat, resourceGroupName);
-            return await Client.PostAsync(relativeUri);
-        }
-
-
+        
         [HttpGet("deployments")]
         public async Task<IActionResult> GetDeployments()
         {

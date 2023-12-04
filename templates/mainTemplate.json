@@ -27,6 +27,20 @@
             "metadata": {
                 "description": "The base URI where artifacts required by this template are located including a trailing '/'"
             }
+        },
+        "applicationInstallerAutoDelete": {
+            "type": "bool",
+            "defaultValue": false,
+            "metadata": {
+                "description": "Indicates whether the resources should be automatically deleted."
+            }
+        },
+        "applicationInstallerInstallUtcTime": {
+            "type": "string",
+            "defaultValue": "[utcNow()]",
+            "metadata": {
+                "description": "The time in utc when the deployment takes place."
+            }
         }
     },
     "variables": {
@@ -61,6 +75,7 @@
         "publicIpAddressSku": "Standard",
         "publicIpAddressName": "[concat(variables('virtualMachineName'), '-publicip')]",
         "nsgName": "[concat(variables('virtualMachineName'), '-nsg')]",
+        "autoDeleteExireInMinutes": "1440",
         "userData": {
             "installerPackage": {
                 "uri": "[concat(variables('artifactsContainerLocation'), '/', 'installer.zip')]",
@@ -71,7 +86,10 @@
             }
         },
         "commonTags": {
-            "modm": "true"
+            "modm": "standard"
+        },
+        "postTags": {
+            "modm": "post"
         }
     },
     "resources": [
@@ -103,7 +121,7 @@
             "properties": {
                 "reserved": true
             },
-            "tags": "[variables('commonTags')]"
+            "tags": "[variables('postTags')]"
         },
         {
             "type": "Microsoft.Web/sites",
@@ -117,7 +135,7 @@
                 "[resourceId('Microsoft.Web/serverfarms', variables('clientAppName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('clientAppStorageAccountName'))]"
             ],
-            "tags": "[variables('commonTags')]",
+            "tags": "[variables('postTags')]",
             "kind": "linux",
             "properties": {
                 "reserved": true,
@@ -223,6 +241,42 @@
                     ],
                     "properties": {
                         "value": "[variables('backendUrl')]",
+                        "contentType": "text/plain"
+                    }
+                },
+                {
+                    "type": "keyValues",
+                    "name": "InstalledTime",
+                    "apiVersion": "2021-10-01-preview",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+                    ],
+                    "properties": {
+                        "value": "[parameters('applicationInstallerInstallUtcTime')]",
+                        "contentType": "text/plain"
+                    }
+                },
+                {
+                    "type": "keyValues",
+                    "name": "ExpireIn",
+                    "apiVersion": "2021-10-01-preview",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+                    ],
+                    "properties": {
+                        "value": "[if(parameters('applicationInstallerAutoDelete'), variables('autoDeleteExireInMinutes'), '-1')]",
+                        "contentType": "text/plain"
+                    }
+                },
+                {
+                    "type": "keyValues",
+                    "name": "DeleteFileDirectory",
+                    "apiVersion": "2021-10-01-preview",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+                    ],
+                    "properties": {
+                        "value": "/home/data",
                         "contentType": "text/plain"
                     }
                 }
