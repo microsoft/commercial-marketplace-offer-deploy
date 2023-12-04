@@ -420,9 +420,9 @@
                 "[resourceId('Microsoft.Web/sites', variables('clientAppName'))]"
             ],
             "properties": {
-                "roleDefinitionId": "[variables('roleDefinitionId').owner]",
-                "principalId": "[reference(resourceId('Microsoft.Web/sites', variables('clientAppName')), '2022-03-01', 'Full').identity.principalId]",
-                "scope": "[resourceGroup().id]"
+                "principalType": "ServicePrincipal",
+                "roleDefinitionId": "[variables('Owner')]",
+                "principalId": "[reference(resourceId('Microsoft.Web/sites', variables('clientAppName')), '2022-03-01', 'Full').identity.principalId]"
             }
         },
         {
