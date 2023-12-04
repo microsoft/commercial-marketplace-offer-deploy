@@ -26,7 +26,7 @@
                             {
                                 "name": "autoDelete",
                                 "type": "Microsoft.Common.CheckBox",
-                                "label": "Auto delete",
+                                "label": "Auto delete in 24 hours",
                                 "defaultValue": false,
                                 "toolTip": "Check this box if you want the resources to be automatically deleted in 24 hours.",
                                 "visible": true
