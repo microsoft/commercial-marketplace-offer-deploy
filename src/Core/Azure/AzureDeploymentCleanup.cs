@@ -5,17 +5,19 @@ using Azure.ResourceManager;
 using Azure.ResourceManager.Resources;
 using Azure.ResourceManager.Resources.Models;
 using System.Threading.Tasks;
-
+using Microsoft.Extensions.Logging;
 
 namespace Modm.Azure
 {
     public class AzureDeploymentCleanup
 	{
         private readonly IAzureResourceManagerClient azureResourceManager;
+        private readonly ILogger<AzureDeploymentCleanup> logger;
 
-        public AzureDeploymentCleanup(IAzureResourceManagerClient azureResourceManager)
+        public AzureDeploymentCleanup(IAzureResourceManagerClient azureResourceManager, ILogger<AzureDeploymentCleanup> logger)
 		{
             this.azureResourceManager = azureResourceManager;
+            this.logger = logger;
         }
 
         public async Task<bool> DeleteResourcePostDeployment(string resourceGroupName)
@@ -24,6 +26,7 @@ namespace Modm.Azure
 
             foreach (string currentPhase in deletePhases)
             {
+                this.logger.LogInformation($"deleting resources in {resourceGroupName} with tag {currentPhase}");
                 bool deleted = await DeleteResourcesWithPhaseTag(resourceGroupName, currentPhase);
 
                 if (!deleted)
@@ -45,13 +48,15 @@ namespace Modm.Azure
             {
                 var resource = resourcesToDelete[0];
 
+                this.logger.LogInformation($"Attempting to delete {resource}");
                 if (await this.azureResourceManager.TryDeleteResourceAsync(resource))
                 {
+                    this.logger.LogInformation("Delete succeeded");
                     resourcesToDelete.RemoveAt(0);
                 }
                 else
                 {
-                    // If deletion fails, move the resource to the end of the list
+                    this.logger.LogInformation("Delete failed.  Moving to end of list");
                     resourcesToDelete.RemoveAt(0);
                     resourcesToDelete.Add(resource);
                 }

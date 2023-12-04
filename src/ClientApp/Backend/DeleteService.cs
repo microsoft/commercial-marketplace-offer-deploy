@@ -12,24 +12,29 @@ namespace ClientApp.Backend
 
         private readonly AzureDeploymentCleanup cleanup;
         private readonly IConfiguration configuration;
+        private ILogger<DeleteService> logger;
 
         private const string DeleteFileName = "delete.txt";
         private const string DeleteFileDirectoryKey = "DeleteFileDirectory";
 
         const int DefaultWaitDelaySeconds = 30;
         
-        public DeleteService(AzureDeploymentCleanup cleanup, IConfiguration configuration)
+        public DeleteService(AzureDeploymentCleanup cleanup, IConfiguration configuration, ILogger<DeleteService> logger)
 		{
             this.cleanup = cleanup;
             this.configuration = configuration;
+            this.logger = logger;
 		}
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
+            this.logger.LogInformation("Waiting for delete...");
             await WaitForDelete(cancellationToken);
+
 
             if (!cancellationToken.IsCancellationRequested)
             {
+                this.logger.LogInformation($"Calling DeleteResourcePostDeployment with {this.resourceGroupName}");
                 await this.cleanup.DeleteResourcePostDeployment(this.resourceGroupName);
             }
         }
@@ -43,6 +48,7 @@ namespace ClientApp.Backend
                 string stateFileContent = ReadStateFile();
                 if (!String.IsNullOrEmpty(stateFileContent))
                 {
+                    this.logger.LogInformation("State file read");
                     this.deleteStarted = true;
                     this.resourceGroupName = stateFileContent;
                 }
