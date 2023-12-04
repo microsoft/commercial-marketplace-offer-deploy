@@ -12,7 +12,7 @@ namespace Modm.Configuration
     /// </summary>
     public class AppServiceAppConfigurationResourceProvider : IAppConfigurationResourceProvider
 	{
-        public const string EnvironmentVariable_SubscriptionId = "WEBSITE_OWNER_NAME";
+        public const string EnvironmentVariable_OwnerName = "WEBSITE_OWNER_NAME";
         public const string EnvironmentVariable_ResourceGroupName = "WEBSITE_RESOURCE_GROUP";
 
         private readonly string subscriptionId;
@@ -20,7 +20,9 @@ namespace Modm.Configuration
 
         public AppServiceAppConfigurationResourceProvider(IConfiguration configuration)
 		{
-            this.subscriptionId = configuration[EnvironmentVariable_SubscriptionId];
+            var websiteOwnerName = configuration[EnvironmentVariable_OwnerName];
+
+            this.subscriptionId = websiteOwnerName[..websiteOwnerName.IndexOf('+')];
             this.resourceGroupName = configuration[EnvironmentVariable_ResourceGroupName];
 		}
 
