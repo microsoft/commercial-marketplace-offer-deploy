@@ -276,7 +276,7 @@
                         "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
                     ],
                     "properties": {
-                        "value": "/home/site/wwwroot/data",
+                        "value": "/home/data",
                         "contentType": "text/plain"
                     }
                 }
