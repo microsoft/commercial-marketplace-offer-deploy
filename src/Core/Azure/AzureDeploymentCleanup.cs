@@ -9,60 +9,11 @@ using System.Threading.Tasks;
 
 namespace Modm.Azure
 {
-    public interface IAzureResourceManager
-    {
-        Task<List<GenericResource>> GetResourcesToDeleteAsync(string resourceGroupName, string phase);
-        Task<bool> TryDeleteResourceAsync(GenericResource resource);
-    }
-
-    public class AzureResourceManager : IAzureResourceManager
-    {
-        private readonly ArmClient client;
-
-        public AzureResourceManager(ArmClient client)
-        {
-            this.client = client;
-        }
-
-        public async Task<List<GenericResource>> GetResourcesToDeleteAsync(string resourceGroupName, string phase)
-        {
-            var subscription = await client.GetDefaultSubscriptionAsync();
-            var response = await subscription.GetResourceGroupAsync(resourceGroupName);
-            var resourceGroup = response.Value;
-
-            var resourcesToDelete = new List<GenericResource>();
-
-            await foreach (var resource in resourceGroup.GetGenericResourcesAsync())
-            {
-                if (resource.Data.Tags != null && resource.Data.Tags.TryGetValue("modm", out var tagValue) && tagValue == phase)
-                {
-                    resourcesToDelete.Add(resource);
-                }
-            }
-
-            return resourcesToDelete;
-        }
-
-        public async Task<bool> TryDeleteResourceAsync(GenericResource resource)
-        {
-            try
-            {
-                await resource.DeleteAsync(WaitUntil.Started);
-                return true;
-            }
-            catch
-            {
-                return false; // Return false if deletion fails
-            }
-        }
-    }
-
     public class AzureDeploymentCleanup
 	{
-        private readonly IAzureResourceManager azureResourceManager;
+        private readonly IAzureResourceManagerClient azureResourceManager;
 
-
-        public AzureDeploymentCleanup(IAzureResourceManager azureResourceManager)
+        public AzureDeploymentCleanup(IAzureResourceManagerClient azureResourceManager)
 		{
             this.azureResourceManager = azureResourceManager;
         }

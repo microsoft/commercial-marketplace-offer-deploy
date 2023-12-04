@@ -56,7 +56,7 @@ namespace Modm.Tests.UnitTests
         public async Task DeleteResourcePostDeployment_Should_ReturnTrue_When_AllResourcesDeleted()
         {
             // Arrange
-            var mockAzureResourceManager = Substitute.For<IAzureResourceManager>();
+            var mockAzureResourceManager = Substitute.For<IAzureResourceManagerClient>();
             var resourceGroupName = "test-rg";
             var cleanup = new AzureDeploymentCleanup(mockAzureResourceManager);
 

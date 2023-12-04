@@ -10,17 +10,18 @@ namespace ClientApp.Backend
         bool deleteStarted;
         string resourceGroupName;
 
-        private readonly DeleteServiceOptions options;
         private readonly AzureDeploymentCleanup cleanup;
+        private readonly IConfiguration configuration;
 
         private const string DeleteFileName = "delete.txt";
+        private const string DeleteFileDirectoryKey = "DeleteFileDirectory";
 
         const int DefaultWaitDelaySeconds = 30;
         
-        public DeleteService(IAzureResourceManager resourceManager, IOptions<DeleteServiceOptions> options)
+        public DeleteService(AzureDeploymentCleanup cleanup, IConfiguration configuration)
 		{
-            this.cleanup = new AzureDeploymentCleanup(resourceManager);
-            this.options = options.Value;
+            this.cleanup = cleanup;
+            this.configuration = configuration;
 		}
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -52,12 +53,13 @@ namespace ClientApp.Backend
         {
             this.resourceGroupName = resourceGroupName;
             this.deleteStarted = true;
+
             WriteStateFile(resourceGroupName);
         }
 
         private string ReadStateFile()
         {
-            string filePath = Path.Combine(this.options.DataDirectory, DeleteFileName);
+            string filePath = Path.Combine(this.configuration[DeleteFileDirectoryKey], DeleteFileName);
 
             if (File.Exists(filePath))
             {
@@ -69,7 +71,7 @@ namespace ClientApp.Backend
 
         private void WriteStateFile(string resourceGroupName)
         {
-            string filePath = Path.Combine(this.options.DataDirectory, DeleteFileName);
+            string filePath = Path.Combine(this.configuration[DeleteFileDirectoryKey], DeleteFileName);
             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
             File.WriteAllText(filePath, resourceGroupName);
         }

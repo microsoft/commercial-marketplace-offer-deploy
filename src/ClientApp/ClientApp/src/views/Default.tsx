@@ -10,10 +10,8 @@ import StyledFailureIcon from './StyledFailureIcon';
 import { toLocalDateTime } from '../utils/DateUtils';
 import { Separator } from '@fluentui/react';
 import { useAuth } from '../security/AuthContext';
-import { ProgressIndicator } from '@fluentui/react/lib/ProgressIndicator';
 
 export const Default = () => {
-
   const [filter, setFilter] = React.useState<'All' | 'Succeeded' | 'Failed'>('All');
   const [isConfirmDialogVisible, setIsConfirmDialogVisible] = useState(false);
   const [offerName, setOfferName] = React.useState<string | null>(null);
@@ -44,7 +42,6 @@ export const Default = () => {
     try {
         const backendUrl = AppConstants.baseUrl;
         const headers = getAuthHeader();
-        console.log(`inside checkEngineHealth with a backendUrl of ${backendUrl}}`);
         const response = await fetch(`${backendUrl}/api/status`, {
           headers: {
             Accept: 'application/json',
@@ -57,7 +54,6 @@ export const Default = () => {
         }
 
         const statusData = await response.json();
-        console.log(JSON.stringify(statusData));
         setIsHealthy(statusData.isHealthy);
         setLoading(false);
     } catch (error) {
@@ -91,10 +87,8 @@ export const Default = () => {
 
   const getDeployedResources = async () => {
     try {
-        console.log(`inside getDeployedResources`);
         const backendUrl = AppConstants.baseUrl;
         const headers = getAuthHeader();
-        console.log(`calling get deployments`);
         const response = await fetch(`${backendUrl}/api/Deployments`, {
           headers: {
             Accept: 'application/json',
@@ -107,7 +101,6 @@ export const Default = () => {
         }
   
         const result = await response.json();
-        console.log(JSON.stringify(result, null, 2));
         
         const deploymentType = isValidDeploymentType(result.deployment);
         if (deploymentType) {
@@ -206,42 +199,30 @@ export const Default = () => {
   ];
 
     useEffect(() => {
-        console.log(`inside useEffect for checkEngineHealth`);
         startEngineHealthCheck(); 
-        console.log(`inside useEffect for checkEngineHealth after startEngineHealthCheck`);
         return () => {
-            console.log(`inside useEffect for checkEngineHealth return`);
             if (checkEngineIntervalRef.current) {
-            console.log(`inside useEffect for checkEngineHealth return clearInterval`);
-            clearInterval(checkEngineIntervalRef.current);
+                clearInterval(checkEngineIntervalRef.current);
             }
         };
     }, []);
     
       
     useEffect(() => {
-        console.log(`inside useEffect for startGettingResources`);
         if (isHealthy) {
-            console.log(`inside useEffect for startGettingResources isHealthy`);
             getDeployedResources();  
             startGettingResources();
-            console.log(`inside useEffect for startGettingResources after startGettingResources`);
 
             if (checkEngineIntervalRef.current) {
-                console.log(`inside useEffect for startGettingResources clearInterval`);
                 clearInterval(checkEngineIntervalRef.current);
-                console.log(`inside useEffect for startGettingResources after clearInterval`);
                 checkEngineIntervalRef.current = null;
             }
         }
     
         // Cleanup function to clear the resources interval when the component unmounts
         return () => {
-            console.log(`inside useEffect for startGettingResources return`);
           if (updateResourcesIntervalRef.current) {
-            console.log(`inside useEffect for startGettingResources return clearInterval`);
             clearInterval(updateResourcesIntervalRef.current);
-            console.log(`inside useEffect for startGettingResources return after clearInterval`);
           }
         };
     }, [isHealthy]);
@@ -276,7 +257,6 @@ export const Default = () => {
         throw new Error(`HTTP error! status: ${deleteResponse.status}`);
       }
       const deleteResult = await deleteResponse.json();
-      console.log(deleteResult);
       // Add any additional logic needed after successful deletion
     } catch (error) {
       console.error("Error deleting:", error);

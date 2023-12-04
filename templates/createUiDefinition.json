@@ -87,7 +87,7 @@
         "outputs": {
             "applicationInstallerUserName": "[steps('installer').dashboard.username]",
             "applicationInstallerPassword": "[steps('installer').dashboard.password]",
-            "autoDelete": "[steps('installer').autoDelete]"
+            "applicationInstallerAutoDelete": "[steps('installer').autoDelete]"
         }
     }
 }

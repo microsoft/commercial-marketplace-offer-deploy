@@ -7,7 +7,7 @@ using ClientApp.Backend;
 using Azure.ResourceManager;
 using Modm.Azure;
 using MediatR;
-using ClientApp.Notifications;
+using ClientApp.Commands;
 
 namespace Modm.ClientApp.Controllers
 {
@@ -19,10 +19,6 @@ namespace Modm.ClientApp.Controllers
         private readonly ProxyClientFactory clientFactory;
         private IProxyClient client;
 
-        private readonly IAzureResourceManager resourceManager;
-        private readonly IMediator mediator;
-        private readonly ILogger<ProxyController> logger;
-
         /// <summary>
         /// The instance of the proxy client based on the incoming http request
         /// </summary>
@@ -31,25 +27,12 @@ namespace Modm.ClientApp.Controllers
             get { return client ??= clientFactory.Create(HttpContext.Request); }
         }
 
-        public ProxyController(ProxyClientFactory clientFactory, IMediator mediator, IAzureResourceManager resourceManager, ILogger<ProxyController> logger)
+        public ProxyController(ProxyClientFactory clientFactory)
         {
             this.clientFactory = clientFactory;
-            this.mediator = mediator;
-            this.resourceManager = resourceManager;
-            this.logger = logger;
         }
 
-        [HttpPost]
-        [Route("resources/{resourceGroupName}/deletemodmresources")]
-        public async Task<IActionResult> DeleteResourcesWithTagAsync([FromRoute] string resourceGroupName)
-        {
-            var deleteInitiated = new DeleteInitiated(resourceGroupName);
-            await this.mediator.Send(deleteInitiated);
-
-            return Ok("Successfully submitted a delete");
-        }
-
-
+        
         [HttpGet("deployments")]
         public async Task<IActionResult> GetDeployments()
         {

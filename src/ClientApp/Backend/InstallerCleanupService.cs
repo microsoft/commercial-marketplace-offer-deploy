@@ -1,10 +1,10 @@
 ﻿using System.Globalization;
-using ClientApp.Notifications;
+using ClientApp.Commands;
 using MediatR;
 
 namespace ClientApp.Backend
 {
-    public class AzureDeploymentCleanupService : BackgroundService
+    public class InstallerCleanupService : BackgroundService
     {
         private DateTime autoDeleteTime;
         private readonly IMediator mediator;
@@ -15,7 +15,7 @@ namespace ClientApp.Backend
         private const string ExpireInKey = "ExpireIn";
         private const string ResourceGroupNameKey = "WEBSITE_RESOURCE_GROUP";
 
-        public AzureDeploymentCleanupService(
+        public InstallerCleanupService(
             IMediator mediator,
             IConfiguration configuration)
 		{
@@ -29,7 +29,7 @@ namespace ClientApp.Backend
             var installedTimeString = this.configuration[InstalledTimeKey];
             if (!DateTime.TryParseExact(
                 installedTimeString,
-                "yyyy-MM-ddTHH:mm:ss.fffffffZ",
+                "yyyyMMddTHHmmssZ",
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
                 out var installedTime))
@@ -55,7 +55,7 @@ namespace ClientApp.Backend
                 if (DateTime.UtcNow > autoDeleteTime)
                 {
                     var resourceGroupName = configuration[ResourceGroupNameKey];
-                    var deleteInitiated = new DeleteInitiated(resourceGroupName);
+                    var deleteInitiated = new InitiateDelete(resourceGroupName);
 
                     await mediator.Send(deleteInitiated);
 

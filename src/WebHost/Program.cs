@@ -13,7 +13,7 @@ builder.Services.AddCors(options =>
         builder.WithOrigins("https://localhost:44482");
     });
 });
-builder.Services.AddSingleton<IAzureResourceManager, AzureResourceManager>();
+builder.Services.AddSingleton<IAzureResourceManagerClient, AzureResourceManagerClient>();
 
 builder.Services.AddJwtBearerAuthentication(builder.Configuration);
 builder.Configuration.AddAppConfigurationSafely(builder.Environment);
