@@ -49,17 +49,28 @@ namespace Modm.Azure
                 var resource = resourcesToDelete[0];
 
                 this.logger.LogInformation($"Attempting to delete {resource}");
-                if (await this.azureResourceManager.TryDeleteResourceAsync(resource))
+
+                try
                 {
-                    this.logger.LogInformation("Delete succeeded");
-                    resourcesToDelete.RemoveAt(0);
+                    if (await this.azureResourceManager.TryDeleteResourceAsync(resource))
+                    {
+                        this.logger.LogInformation("Delete succeeded");
+                        resourcesToDelete.RemoveAt(0);
+                    }
+                    else
+                    {
+                        this.logger.LogInformation("Delete failed.  Moving to end of list");
+                        resourcesToDelete.RemoveAt(0);
+                        resourcesToDelete.Add(resource);
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    this.logger.LogInformation("Delete failed.  Moving to end of list");
+                    this.logger.LogError(ex.Message);
                     resourcesToDelete.RemoveAt(0);
                     resourcesToDelete.Add(resource);
                 }
+                
 
                 attempt++;
             }
