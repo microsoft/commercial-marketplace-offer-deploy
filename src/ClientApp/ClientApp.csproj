@@ -48,6 +48,7 @@
     <None Remove="Backend\" />
     <None Remove="Commands\" />
     <None Remove="Handlers\" />
+    <None Remove="Cleanup\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -57,6 +58,7 @@
     <Folder Include="Backend\" />
     <Folder Include="Commands\" />
     <Folder Include="Handlers\" />
+    <Folder Include="Cleanup\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj">
