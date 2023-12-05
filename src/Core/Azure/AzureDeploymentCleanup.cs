@@ -31,7 +31,8 @@ namespace Modm.Azure
 
                 if (!deleted)
                 {
-                    return false;
+                    //TODO: throw event indicating delete was unsuccessful
+                    this.logger.LogError($"Reached unsuccessful delete with phase {currentPhase}");
                 }
             }
 
@@ -59,7 +60,7 @@ namespace Modm.Azure
                     }
                     else
                     {
-                        this.logger.LogInformation("Delete failed.  Moving to end of list");
+                        this.logger.LogError($"Delete failed for resource {resource.Id}.  Moving to end of list");
                         resourcesToDelete.RemoveAt(0);
                         resourcesToDelete.Add(resource);
                     }

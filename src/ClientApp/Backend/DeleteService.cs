@@ -35,7 +35,7 @@ namespace ClientApp.Backend
             if (!cancellationToken.IsCancellationRequested)
             {
                 this.logger.LogInformation($"Calling DeleteResourcePostDeployment with {this.resourceGroupName}");
-                await this.cleanup.DeleteResourcePostDeployment(this.resourceGroupName);
+                bool success = await this.cleanup.DeleteResourcePostDeployment(this.resourceGroupName);
             }
         }
 
