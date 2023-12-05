@@ -1,6 +1,7 @@
 ﻿using Azure;
 using Azure.Core;
 using Azure.ResourceManager;
+using Azure.ResourceManager.Compute;
 using Azure.ResourceManager.Resources;
 
 namespace ClientApp.Cleanup
@@ -9,34 +10,41 @@ namespace ClientApp.Cleanup
     {
         public ResourceIdentifier ResourceId { get; }
 
-        public DeleteVirtualMachine(ResourceIdentifier identifier)
+        public ResourceGroupResource ResourceGroup { get; }
+
+        public DeleteVirtualMachine(ResourceGroupResource resourceGroup, ResourceIdentifier identifier)
         {
+            ResourceGroup = resourceGroup;
             ResourceId = identifier;
         }
     }
 
-    [RetryPolicy(RetryCount = 3, SleepDuration = 1000)]
+    [RetryPolicy]
     public class DeleteVirtualMachineHandler : DeleteResourceHandler<DeleteVirtualMachine>
     {
         public DeleteVirtualMachineHandler(ILoggerFactory loggerFactory, ArmClient client) : base(loggerFactory, client)
         {
         }
 
-        public override async Task<DeleteResourceResult> DeleteAsync(GenericResource resource)
+        protected override async Task<DeleteResourceResult> DeleteAsync(ResourceGroupResource resourceGroup, ResourceIdentifier id)
         {
-            var operation = await resource.DeleteAsync(WaitUntil.Started);
-            var response = await operation.WaitForCompletionResponseAsync();
+            Response<VirtualMachineResource> response = await resourceGroup.GetVirtualMachineAsync(id.Name);
+            var vm = response.Value;
 
-            if (response.IsError)
+            // TODO: disassociate nic
+
+            var operation = await vm.DeleteAsync(WaitUntil.Started);
+            var completion = await operation.WaitForCompletionResponseAsync();
+
+            if (completion.IsError)
             {
                 Logger.LogError("Deletion of resource {id} failed with status {status}. Reason: {reason}",
-                    resource.Id, response.Status, response.ReasonPhrase);
+                    vm.Id, completion.Status, completion.ReasonPhrase);
 
-                return new DeleteResourceResult { Succeeeded = false };
+                return new DeleteResourceResult { Succeeded = false };
             }
 
-            return new DeleteResourceResult { Succeeeded = true };
+            return new DeleteResourceResult { Succeeded = true };
         }
     }
 }
-

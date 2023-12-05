@@ -3,7 +3,7 @@ namespace ClientApp.Cleanup
 {
 	public class DeleteResourceResult
 	{
-		public bool Succeeeded { get; set; }
+		public bool Succeeded { get; set; }
 	}
 }
 

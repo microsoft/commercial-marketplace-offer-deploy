@@ -6,7 +6,7 @@ namespace ClientApp.Cleanup
     public class RetryPolicyAttribute : Attribute
     {
         public int RetryCount { get; set; } = 3;
-        public int SleepDuration { get; set; } = 500;
+        public int SleepDuration { get; set; } = 2000;
 
 
         public Func<int, TimeSpan> GetSleepDurationProvider()

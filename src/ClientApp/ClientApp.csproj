@@ -21,6 +21,7 @@
 
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Web' " />
   <ItemGroup>
+    <PackageReference Include="Azure.ResourceManager.Compute" Version="1.2.1" />
     <PackageReference Include="jenkinsnet" Version="1.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.13" />
     <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="7.0.13">

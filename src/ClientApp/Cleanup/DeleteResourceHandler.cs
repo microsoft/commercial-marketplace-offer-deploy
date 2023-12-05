@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Azure.Core;
 using Azure.ResourceManager;
+using Azure.ResourceManager.Compute;
 using Azure.ResourceManager.Resources;
 using MediatR;
 using Modm.Azure;
@@ -14,11 +15,6 @@ namespace ClientApp.Cleanup
         protected readonly ILogger Logger;
         protected readonly ArmClient Client;
 
-        /// <summary>
-        /// The delete request being handled
-        /// </summary>
-        protected TRequest Request;
-
         public DeleteResourceHandler(ILoggerFactory loggerFactory, ArmClient client)
 		{
             this.Logger = loggerFactory.CreateLogger(GetType());
@@ -27,8 +23,6 @@ namespace ClientApp.Cleanup
 
         public async Task<DeleteResourceResult> Handle(TRequest request, CancellationToken cancellationToken)
         {
-            Request = request;
-
             var retryPolicy = GetType().GetCustomAttribute<RetryPolicyAttribute>();
             if (retryPolicy == null)
             {
@@ -49,22 +43,14 @@ namespace ClientApp.Cleanup
             }
         }
 
-        public abstract Task<DeleteResourceResult> DeleteAsync(GenericResource resource);
+        protected abstract Task<DeleteResourceResult> DeleteAsync(ResourceGroupResource resourceGroup, ResourceIdentifier id);
 
         protected virtual async Task<DeleteResourceResult> ExecuteAsync(TRequest request)
         {
-            var resource = await GetResourceAsync(request.ResourceId);
-            return await DeleteAsync(resource);
-        }
+            var subscription = await Client.GetDefaultSubscriptionAsync();
+            var resourceGroup = await subscription.GetResourceGroups().GetAsync(request.ResourceId.ResourceGroupName);
 
-        /// <summary>
-        /// Gets the resource by id
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        protected virtual async Task<GenericResource> GetResourceAsync(ResourceIdentifier id)
-        {
-            return await Client.GetGenericResource(id).GetAsync();
+            return await DeleteAsync(resourceGroup, request.ResourceId);
         }
     }
 }
