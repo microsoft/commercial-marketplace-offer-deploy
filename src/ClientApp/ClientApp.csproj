@@ -39,6 +39,7 @@
     <PackageReference Include="Azure.ResourceManager.Network" Version="1.6.0" />
     <PackageReference Include="Azure.ResourceManager.AppConfiguration" Version="1.1.0" />
     <PackageReference Include="Azure.ResourceManager.AppService" Version="1.0.2" />
+    <PackageReference Include="Azure.ResourceManager.Storage" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup>
