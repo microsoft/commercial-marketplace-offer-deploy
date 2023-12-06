@@ -40,7 +40,7 @@ namespace Modm.Tests.UnitTests
         {
             protected FakeGenericResource(): base()
             {
-
+                //this.
             }
 
             public static GenericResource New()
