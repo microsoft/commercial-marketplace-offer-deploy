@@ -8,22 +8,22 @@ using Modm.Azure;
 
 namespace ClientApp.Cleanup
 {
-	public class CleanupService : ICleanupService
+	public class DeleteProcessor : IDeleteProcessor
 	{
         private readonly IAzureResourceManagerClient azureResourceManagerClient;
         private readonly IMediator mediator;
-        private readonly ILogger<CleanupService> logger;
+        private readonly ILogger<DeleteProcessor> logger;
         private readonly string standardTag = "standard";
         private readonly string postTag = "post";
 
-		public CleanupService(IAzureResourceManagerClient azureResourceManagerClient, IMediator mediator, ILogger<CleanupService> logger)
+		public DeleteProcessor(IAzureResourceManagerClient azureResourceManagerClient, IMediator mediator, ILogger<DeleteProcessor> logger)
 		{
             this.azureResourceManagerClient = azureResourceManagerClient;
             this.mediator = mediator;
             this.logger = logger;
 		}
 
-        public async Task<bool> CleanupInstallAsync(string resourceGroup)
+        public async Task<bool> DeleteInstallResourcesAsync(string resourceGroup)
         {
             bool success = true;
 

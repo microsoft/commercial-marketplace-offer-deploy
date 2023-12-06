@@ -71,8 +71,8 @@ builder.Services.AddMediatR(c =>
     c.RegisterServicesFromAssemblyContaining<InitiateDelete>();
 });
 
-builder.Services.AddSingleton<ICleanupService, CleanupService>();
-builder.Services.AddSingletonHostedService<DeleteService>();
+builder.Services.AddSingleton<IDeleteProcessor, ClientApp.Cleanup.DeleteProcessor>();
+builder.Services.AddSingletonHostedService<ClientApp.Backend.DeleteService>();
 builder.Services.AddSingletonHostedService<InstallerCleanupService>();
 
 builder.Configuration.AddEnvironmentVariables();
