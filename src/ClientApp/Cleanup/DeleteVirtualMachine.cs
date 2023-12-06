@@ -33,11 +33,11 @@ namespace ClientApp.Cleanup
             Response<VirtualMachineResource> response = await resourceGroup.GetVirtualMachineAsync(id.Name);
             var vm = response.Value;
 
-            bool success = await DisassociateNics(vm);
-            if (!success)
-            {
-                return new DeleteResourceResult { Succeeded = false };
-            }    
+            //bool success = await DisassociateNics(vm);
+            //if (!success)
+            //{
+            //    return new DeleteResourceResult { Succeeded = false };
+            //}    
 
             var operation = await vm.DeleteAsync(WaitUntil.Started);
             var completion = await operation.WaitForCompletionResponseAsync();
