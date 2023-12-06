@@ -22,7 +22,7 @@ namespace ClientApp.Cleanup
     }
 
     [RetryPolicy]
-    public class DeleteAppServiceHandler : DeleteResourceHandler<DeleteAppServiceConfig>
+    public class DeleteAppServiceHandler : DeleteResourceHandler<DeleteAppService>
     {
         public DeleteAppServiceHandler(ILoggerFactory loggerFactory, ArmClient client) : base(loggerFactory, client)
         {

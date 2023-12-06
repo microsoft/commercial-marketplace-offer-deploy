@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Microsoft.Extensions.Options;
+using ClientApp.Cleanup;
 using Modm.Azure;
 
 namespace ClientApp.Backend
@@ -10,7 +11,7 @@ namespace ClientApp.Backend
         bool deleteStarted;
         string resourceGroupName;
 
-        private readonly AzureDeploymentCleanup cleanup;
+        private readonly ICleanupService cleanup;
         private readonly IConfiguration configuration;
         private ILogger<DeleteService> logger;
 
@@ -19,7 +20,7 @@ namespace ClientApp.Backend
 
         const int DefaultWaitDelaySeconds = 30;
         
-        public DeleteService(AzureDeploymentCleanup cleanup, IConfiguration configuration, ILogger<DeleteService> logger)
+        public DeleteService(ICleanupService cleanup, IConfiguration configuration, ILogger<DeleteService> logger)
 		{
             this.cleanup = cleanup;
             this.configuration = configuration;
@@ -35,7 +36,7 @@ namespace ClientApp.Backend
             if (!cancellationToken.IsCancellationRequested)
             {
                 this.logger.LogInformation($"Calling DeleteResourcePostDeployment with {this.resourceGroupName}");
-                bool success = await this.cleanup.DeleteResourcePostDeployment(this.resourceGroupName);
+                bool success = await this.cleanup.CleanupInstallAsync(this.resourceGroupName);
             }
         }
 

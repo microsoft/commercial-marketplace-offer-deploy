@@ -9,13 +9,13 @@ using Microsoft.CodeAnalysis;
 
 namespace ClientApp.Cleanup
 {
-    public class DeleteAppServiceConfig : IDeleteResourceRequest
+    public class DeleteAppConfiguration : IDeleteResourceRequest
     {
         public ResourceIdentifier ResourceId { get; }
 
         public ResourceGroupResource ResourceGroup { get; }
 
-        public DeleteAppServiceConfig(ResourceGroupResource resourceGroup, ResourceIdentifier identifier)
+        public DeleteAppConfiguration(ResourceGroupResource resourceGroup, ResourceIdentifier identifier)
         {
             ResourceGroup = resourceGroup;
             ResourceId = identifier;
@@ -23,9 +23,9 @@ namespace ClientApp.Cleanup
     }
 
     [RetryPolicy]
-    public class DeleteAppServiceConfigHandler : DeleteResourceHandler<DeleteAppServiceConfig>
+    public class DeleteAppConfigurationHandler : DeleteResourceHandler<DeleteAppConfiguration>
     {
-        public DeleteAppServiceConfigHandler(ILoggerFactory loggerFactory, ArmClient client) : base(loggerFactory, client)
+        public DeleteAppConfigurationHandler(ILoggerFactory loggerFactory, ArmClient client) : base(loggerFactory, client)
         {
 
         }

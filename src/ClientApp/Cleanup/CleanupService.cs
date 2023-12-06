@@ -13,6 +13,8 @@ namespace ClientApp.Cleanup
         private readonly IAzureResourceManagerClient azureResourceManagerClient;
         private readonly IMediator mediator;
         private readonly ILogger<CleanupService> logger;
+        private readonly string standardTag = "standard";
+        private readonly string postTag = "post";
 
 		public CleanupService(IAzureResourceManagerClient azureResourceManagerClient, IMediator mediator, ILogger<CleanupService> logger)
 		{
@@ -24,93 +26,56 @@ namespace ClientApp.Cleanup
         public async Task<bool> CleanupInstallAsync(string resourceGroup)
         {
             bool success = true;
+
             var resourceGroupResource = await this.azureResourceManagerClient.GetResourceGroupResourceAsync(resourceGroup);
 
-            var standardResourcesToDelete = await this.azureResourceManagerClient.GetResourcesToDeleteAsync(resourceGroup, "standard");
-           
+            var standardResourcesToDelete = await this.azureResourceManagerClient.GetResourcesToDeleteAsync(resourceGroup, this.standardTag);
             var standardCleanupOperations = new List<Func<Task<DeleteResourceResult>>>
             {
-                () => CleanupVirtualMachine(resourceGroupResource, standardResourcesToDelete),
-                () => CleanupVirtualNetwork(resourceGroupResource, standardResourcesToDelete),
-                () => CleanupNetworkSecurityGroup(resourceGroupResource, standardResourcesToDelete),
-                () => CleanupAppConfiguration(resourceGroupResource, standardResourcesToDelete),
-                () => CleanupStorageAccount(resourceGroupResource, standardResourcesToDelete)
+                () => Cleanup<DeleteVirtualMachine>("Microsoft.Compute", "virtualMachines", resourceGroupResource, standardResourcesToDelete),
+                () => Cleanup<DeleteVirtualNetwork>("Microsoft.Network", "virtualNetworks", resourceGroupResource, standardResourcesToDelete),
+                () => Cleanup<DeleteNetworkSecurityGroup>("Microsoft.Network", "networkSecurityGroups", resourceGroupResource, standardResourcesToDelete),
+                () => Cleanup<DeleteAppConfiguration>("Microsoft.AppConfiguration", "configurationStores", resourceGroupResource, standardResourcesToDelete),
+                () => Cleanup<DeleteStorageAccount>("Microsoft.Storage", "storageAccounts", resourceGroupResource, standardResourcesToDelete),
             };
+            await ProcessCleanupOperations(standardCleanupOperations);
 
-            foreach (var cleanupOperation in standardCleanupOperations)
-            {
-                var result = await cleanupOperation();
-                if (!result.Succeeded)
-                {
-                    //TODO: handle failure
-                }
-            }
-
-            var postResourcesToDelete = await this.azureResourceManagerClient.GetResourcesToDeleteAsync(resourceGroup, "post");
-
+            var postResourcesToDelete = await this.azureResourceManagerClient.GetResourcesToDeleteAsync(resourceGroup, this.postTag);
             var postCleanupOperations = new List<Func<Task<DeleteResourceResult>>>
             {
-                () => CleanupAppService(resourceGroupResource, standardResourcesToDelete)
+                () => Cleanup<DeleteAppService>("Microsoft.Web", "sites", resourceGroupResource, postResourcesToDelete)
             };
-
-            foreach (var cleanupOperation in postCleanupOperations)
-            {
-                var result = await cleanupOperation();
-                if (!result.Succeeded)
-                {
-                    //TODO: handle failure
-                }
-            }
+            await ProcessCleanupOperations(postCleanupOperations);
 
             return success;
         }
 
-        private async Task<DeleteResourceResult> CleanupStorageAccount(ResourceGroupResource resourceGroupResource, List<GenericResource> resourcesToDelete)
+        private async Task ProcessCleanupOperations(List<Func<Task<DeleteResourceResult>>> cleanupOperations)
         {
-            var storageAccountResource = FindResource("Microsoft.Storage", "storageAccounts", resourcesToDelete);
-            var deleteStorageAccountCommand = CreateCommand<DeleteVirtualMachine>(storageAccountResource, resourceGroupResource);
-            var deleteStorageAccountResult = await this.mediator.Send(deleteStorageAccountCommand);
-            return deleteStorageAccountResult;
+            foreach (var operation in cleanupOperations)
+            {
+                var result = await operation();
+                if (!result.Succeeded)
+                {
+                    logger.LogError($"A cleanup operation was not successful");
+                }
+            }
         }
 
-        private async Task<DeleteResourceResult> CleanupAppConfiguration(ResourceGroupResource resourceGroupResource, List<GenericResource> resourcesToDelete)
+        private async Task<DeleteResourceResult> Cleanup<TCommand>(
+            string resourceNamespace,
+            string resourceType,
+            ResourceGroupResource resourceGroupResource,
+            List<GenericResource> cleanupResources) where TCommand : IDeleteResourceRequest
         {
-            var appConfigurationResource = FindResource("Microsoft.AppConfiguration", "configurationStores", resourcesToDelete);
-            var deleteAppConfigurationCommand = CreateCommand<DeleteVirtualMachine>(appConfigurationResource, resourceGroupResource);
-            var deleteAppConfigurationResult = await this.mediator.Send(deleteAppConfigurationCommand);
-            return deleteAppConfigurationResult;
-        }
+            var resource = FindResource(resourceNamespace, resourceType, cleanupResources);
+            if (resource != null)
+            {
+                var deleteCommand = CreateCommand<TCommand>(resource, resourceGroupResource);
+                return await mediator.Send(deleteCommand);
+            }
 
-        private async Task<DeleteResourceResult> CleanupAppService(ResourceGroupResource resourceGroupResource, List<GenericResource> resourcesToDelete)
-        {
-            var appServiceResource = FindResource("Microsoft.Web", "sites", resourcesToDelete);
-            var deleteAppServiceCommand = CreateCommand<DeleteVirtualMachine>(appServiceResource, resourceGroupResource);
-            var deleteAppServiceResult = await this.mediator.Send(deleteAppServiceCommand);
-            return deleteAppServiceResult;
-        }
-
-        private async Task<DeleteResourceResult> CleanupNetworkSecurityGroup(ResourceGroupResource resourceGroupResource, List<GenericResource> resourcesToDelete)
-        {
-            var nsgResource = FindResource("Microsoft.Network", "networkSecurityGroups", resourcesToDelete);
-            var deleteNsgCommand = CreateCommand<DeleteVirtualMachine>(nsgResource, resourceGroupResource);
-            var deleteNsgResult = await this.mediator.Send(deleteNsgCommand);
-            return deleteNsgResult;
-        }
-
-        private async Task<DeleteResourceResult> CleanupVirtualMachine(ResourceGroupResource resourceGroupResource, List<GenericResource> resourcesToDelete)
-        {
-            var virtualMachineResource = FindResource("Microsoft.Compute", "virtualMachines", resourcesToDelete);
-            var deleteVmCommand = CreateCommand<DeleteVirtualMachine>(virtualMachineResource, resourceGroupResource);
-            var deleteVmResult = await this.mediator.Send(deleteVmCommand);
-            return deleteVmResult;
-        }
-
-        private async Task<DeleteResourceResult> CleanupVirtualNetwork(ResourceGroupResource resourceGroupResource, List<GenericResource> resourcesToDelete)
-        {
-            var virtualNetworkResource = FindResource("Microsoft.Network", "virtualNetworks", resourcesToDelete);
-            var deleteVnetCommand = CreateCommand<DeleteVirtualNetwork>(virtualNetworkResource, resourceGroupResource);
-            var deleteVnetResult = await this.mediator.Send(deleteVnetCommand);
-            return deleteVnetResult;
+            return new DeleteResourceResult { Succeeded = true };
         }
 
         private GenericResource FindResource(string resourceNamespace, string resourceType, List<GenericResource> resources)
@@ -121,7 +86,9 @@ namespace ClientApp.Cleanup
             return foundResource;
         }
 
-        private T CreateCommand<T>(GenericResource resource, ResourceGroupResource resourceGroupResource) where T : IDeleteResourceRequest
+        private T CreateCommand<T>(
+            GenericResource resource,
+            ResourceGroupResource resourceGroupResource) where T : IDeleteResourceRequest
         {
             var constructorInfo = typeof(T).GetConstructor(new Type[] { typeof(ResourceGroupResource), typeof(ResourceIdentifier) });
 
