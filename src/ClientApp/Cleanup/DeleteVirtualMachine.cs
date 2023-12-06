@@ -42,6 +42,8 @@ namespace ClientApp.Cleanup
             var operation = await vm.DeleteAsync(WaitUntil.Started);
             var completion = await operation.WaitForCompletionResponseAsync();
 
+            Logger.LogInformation($"The Delete Virtual Machine handler operation completed - status:{completion.IsError}");
+
             if (completion.IsError)
             {
                 Logger.LogError("Deletion of resource {id} failed with status {status}. Reason: {reason}",
