@@ -16,6 +16,7 @@ using Azure.ResourceManager.Resources;
 using Azure.ResourceManager;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
+using Azure.Core;
 
 namespace Modm.Tests.UnitTests
 {
@@ -40,7 +41,7 @@ namespace Modm.Tests.UnitTests
             var credential = new DefaultAzureCredential();
             var armClient = new ArmClient(credential);
 
-            Services.AddSingleton<DeleteProcessor>(new TestDeleteProcessor(armClient, mockMediator, mockLogger));
+          //  Services.AddSingleton<DeleteProcessor>(new TestDeleteProcessor(armClient, mockMediator, mockLogger));
         }
 
         [Fact]
@@ -177,51 +178,73 @@ namespace Modm.Tests.UnitTests
 
     }
 
-    public class TestDeleteProcessor : DeleteProcessor
-    {
-        public TestDeleteProcessor(ArmClient client, IMediator mediator, ILogger<DeleteProcessor> logger) : base(client, mediator, logger)
-        {
+    //public class TestDeleteProcessor : DeleteProcessor
+    //{
+    //    public TestDeleteProcessor(ArmClient client, IMediator mediator, ILogger<DeleteProcessor> logger) : base(client, mediator, logger)
+    //    {
 
-        }
+    //    }
 
-        protected override Task<ResourceGroupResource> GetResourceGroupResourceAsync(string resourceGroupName)
-        {
-            return Task.FromResult(Substitute.For<ResourceGroupResource>());
-        }
+    //    protected override Task<ResourceGroupResource> GetResourceGroupResourceAsync(string resourceGroupName)
+    //    {
+    //        return Task.FromResult(Substitute.For<ResourceGroupResource>());
+    //    }
 
-        protected override Task<List<GenericResource>> GetResourcesToDeleteAsync(string resourceGroupName, string phase)
-        {
-            var fakeResources = new List<GenericResource>() { FakeVirtualMachineResource.New() };
-            return Task.FromResult(fakeResources);
-        }
-    }
+    //    protected override Task<List<GenericResource>> GetResourcesToDeleteAsync(string resourceGroupName, string phase)
+    //    {
+    //        var fakeResources = new List<GenericResource>() { FakeVirtualMachineResource.New() };
+    //        return Task.FromResult(fakeResources);
+    //    }
+    //}
 
-    public class FakeVirtualMachineResource : GenericResource
-    {
-        protected FakeVirtualMachineResource() : base()
-        {
+    //public class FakeVirtualMachineResource : GenericResource
+    //{
+    //    protected FakeVirtualMachineResource() : base()
+    //    {
 
-        }
+    //    }
 
-        public static FakeVirtualMachineResource New()
-        {
-            var fakeVirtualMachine = new FakeVirtualMachineResource();
-            fakeVirtualMachine.Data.Tags.Add("modm", "standard");
-            return fakeVirtualMachine;
-        }
-    }
+    //    public static FakeVirtualMachineResource New()
+    //    {
+    //        var fakeVirtualMachine = new FakeVirtualMachineResource();
+    //        var data = fakeVirtualMachine.Data;
+            
+    //        fakeVirtualMachine.Data.Tags.Add("modm", "standard");
+    //        fakeVirtualMachine.Data.r
 
-    public class FakeGenericResource : GenericResource
-    {
-        protected FakeGenericResource() : base()
-        {
-            //this.
-        }
 
-        public static GenericResource New()
-        {
-            return new FakeGenericResource();
-        }
-    }
+    //        return fakeVirtualMachine;
+    //    }
+
+    //    public override GenericResourceData Data => FakeGenericResourceData.New();
+    //}
+
+    //public class FakeGenericResourceData : GenericResourceData
+    //{
+
+    //    protected FakeGenericResourceData() : base(new AzureLocation("eastus2"))
+    //    {
+
+    //    }
+
+        
+    //    public static FakeGenericResourceData New()
+    //    {
+    //        return new FakeGenericResourceData();
+    //    }
+    //}
+
+    //public class FakeGenericResource : GenericResource
+    //{
+    //    protected FakeGenericResource() : base()
+    //    {
+    //        //this.
+    //    }
+
+    //    public static GenericResource New()
+    //    {
+    //        return new FakeGenericResource();
+    //    }
+    //}
 }
 
