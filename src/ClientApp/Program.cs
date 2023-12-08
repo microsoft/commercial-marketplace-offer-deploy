@@ -13,6 +13,7 @@ using Azure.Identity;
 using ClientApp.Commands;
 using ClientApp;
 using System.Configuration;
+using ClientApp.Cleanup;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,15 +65,15 @@ builder.Services.AddAzureClients(clientBuilder =>
 });
 
 builder.Services.AddSingleton<IAzureResourceManagerClient, AzureResourceManagerClient>();
-builder.Services.AddSingleton<AzureDeploymentCleanup>();
-
-builder.Services.AddSingletonHostedService<DeleteService>();
-builder.Services.AddSingletonHostedService<InstallerCleanupService>();
 
 builder.Services.AddMediatR(c =>
 {
     c.RegisterServicesFromAssemblyContaining<InitiateDelete>();
 });
+
+builder.Services.AddSingleton<IDeleteProcessor, ClientApp.Cleanup.DeleteProcessor>();
+builder.Services.AddSingletonHostedService<ClientApp.Backend.DeleteService>();
+builder.Services.AddSingletonHostedService<InstallerCleanupService>();
 
 builder.Configuration.AddEnvironmentVariables();
 builder.Configuration.AddAppConfigurationSafely(builder.Environment);

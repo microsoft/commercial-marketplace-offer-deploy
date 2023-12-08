@@ -33,6 +33,14 @@ namespace Modm.Azure
             return resourcesToDelete;
         }
 
+        public async Task<ResourceGroupResource> GetResourceGroupResourceAsync(string resourceGroupName)
+        {
+            var subscription = await client.GetDefaultSubscriptionAsync();
+            var response = await subscription.GetResourceGroupAsync(resourceGroupName);
+            var resourceGroup = response.Value;
+            return resourceGroup;
+        }
+
         public async Task<bool> TryDeleteResourceAsync(GenericResource resource)
         {
             try

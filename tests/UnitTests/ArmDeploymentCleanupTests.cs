@@ -36,6 +36,18 @@ namespace Modm.Tests.UnitTests
         }
 
 
+        public class FakeGenericResource : GenericResource
+        {
+            protected FakeGenericResource(): base()
+            {
+                //this.
+            }
+
+            public static GenericResource New()
+            {
+                return new FakeGenericResource();
+            }
+        }
     }
 }
 
