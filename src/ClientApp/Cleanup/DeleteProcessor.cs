@@ -25,10 +25,9 @@ namespace ClientApp.Cleanup
             this.logger = logger;
 		}
 
-        public async Task<bool> DeleteInstallResourcesAsync(string resourceGroup, CancellationToken cancellationToken)
+        public async Task DeleteInstallResourcesAsync(string resourceGroup, CancellationToken cancellationToken)
         {
-            bool success = true;
-
+            this.logger.LogInformation("Inside DeleteInstallResourcesAsync");
             var resourceGroupResource = await this.GetResourceGroupResourceAsync(resourceGroup);
 
             var standardResourcesToDelete = await this.GetResourcesToDeleteAsync(resourceGroup, DeleteProcessor.StandardTag);
@@ -49,7 +48,6 @@ namespace ClientApp.Cleanup
             };
             await ProcessCleanupOperations(postCleanupOperations);
 
-            return success;
         }
 
         protected virtual async Task<List<GenericResource>> GetResourcesToDeleteAsync(string resourceGroupName, string phase)
@@ -83,10 +81,15 @@ namespace ClientApp.Cleanup
         {
             foreach (var operation in cleanupOperations)
             {
+                this.logger.LogInformation($"Executing delete command {operation}");
                 var result = await operation();
-                if (!result.Succeeded)
+                if (result.Succeeded)
                 {
-                    logger.LogError($"A cleanup operation was not successful");
+                    logger.LogInformation($"Delete operation {operation} succeeded");
+                }
+                else
+                {
+                    logger.LogError($"Delete operation {operation} failed");
                 }
             }
         }

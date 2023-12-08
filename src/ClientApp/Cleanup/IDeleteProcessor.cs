@@ -3,7 +3,7 @@ namespace ClientApp.Cleanup
 {
 	public interface IDeleteProcessor
 	{
-		Task<bool> DeleteInstallResourcesAsync(string resourceGroup, CancellationToken cancellationToken);
+		Task DeleteInstallResourcesAsync(string resourceGroup, CancellationToken cancellationToken);
 	}
 }
 

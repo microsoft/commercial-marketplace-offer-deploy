@@ -11,7 +11,7 @@ namespace ClientApp.Backend
         bool deleteStarted;
         string resourceGroupName;
 
-        private readonly IDeleteProcessor cleanup;
+        private readonly IDeleteProcessor deleteProcessor;
         private readonly IConfiguration configuration;
         private ILogger<DeleteService> logger;
 
@@ -22,7 +22,7 @@ namespace ClientApp.Backend
         
         public DeleteService(IDeleteProcessor deleteProcessor, IConfiguration configuration, ILogger<DeleteService> logger)
 		{
-            this.cleanup = deleteProcessor;
+            this.deleteProcessor = deleteProcessor;
             this.configuration = configuration;
             this.logger = logger;
 		}
@@ -36,7 +36,7 @@ namespace ClientApp.Backend
             if (!cancellationToken.IsCancellationRequested)
             {
                 this.logger.LogInformation($"Calling DeleteResourcePostDeployment with {this.resourceGroupName}");
-                bool success = await this.cleanup.DeleteInstallResourcesAsync(this.resourceGroupName, cancellationToken);
+                await this.deleteProcessor.DeleteInstallResourcesAsync(this.resourceGroupName, cancellationToken);
             }
         }
 
