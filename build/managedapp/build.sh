@@ -106,8 +106,13 @@ function createServiceDefinition() {
         --output tsv \
         --query connectionString)
     
+    echo "storage_account_connection_string: $storage_account_connection_string"
   
     expiry=$(getExpiry)
+    echo "expiry: $expiry"
+
+
+    echo "Generating SAS token for app.zip." with Storage Account Connection String: $storage_account_connection_string, expiry: $expiry, storage account name: $STORAGE_ACCOUNT_NAME, storage container name: $STORAGE_CONTAINER_NAME, blob name: app.zip"
     blob=$(az storage blob generate-sas \
         --account-name $STORAGE_ACCOUNT_NAME \
         --container-name $STORAGE_CONTAINER_NAME \
@@ -118,6 +123,7 @@ function createServiceDefinition() {
         --https-only \
         --full-uri \
         --output tsv)
+    
     
     roleid=$(az role definition list --name Owner --query [].name --output tsv)
     groupid="d391271a-216a-49e1-a36e-c24b2c619f14"
