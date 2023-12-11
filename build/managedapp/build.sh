@@ -30,7 +30,7 @@ function getExpiry() {
     else
         expiry=$(date -v +730d '+%Y-%m-%dT%H:%MZ')
     fi
-    echo "$expiry"
+    echo $expiry
 }
 
 function createApplicationPackage() {
