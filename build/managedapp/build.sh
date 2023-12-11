@@ -112,7 +112,7 @@ function createServiceDefinition() {
     echo "expiry: $expiry"
 
 
-    echo "Generating SAS token for app.zip." with Storage Account Connection String: $storage_account_connection_string expiry: $expiry storage account name: $STORAGE_ACCOUNT_NAME, storage container name: $STORAGE_CONTAINER_NAME"
+    echo "Generating SAS token for app.zip with Storage Account Connection String: $storage_account_connection_string expiry: $expiry storage account name: $STORAGE_ACCOUNT_NAME, storage container name: $STORAGE_CONTAINER_NAME"
 
     blob=$(az storage blob generate-sas \
         --account-name $STORAGE_ACCOUNT_NAME \
