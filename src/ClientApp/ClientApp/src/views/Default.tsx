@@ -275,7 +275,7 @@ export const Default = () => {
   };
 
   const getDeleteFlag = () => {
-    return `MODM_DELETE_${deploymentResourceGroup}_${deploymentId}_${offerName}`;
+    return `true`;
   };
 
 //   const _items: ICommandBarItemProps[] = [
@@ -333,9 +333,9 @@ export const Default = () => {
       <div style={{ display: 'flex', alignItems: 'center' }}>
     
             {(() => {
+              if (isDeleting) return <h4>Installer Deleting...</h4>;
               if (!isHealthy) return <h4>Deployment pending...</h4>; 
-              if (isDeleting) return <h4>Deleting...</h4>;
-
+              
               const failedCount = deployedResources.filter(r => r.state === "Failed").length;
               const successCount = deployedResources.filter(r => r.state === "Succeeded").length;
 
