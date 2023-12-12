@@ -1,52 +1,51 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.DependencyInjection;
-using Modm.Deployments;
-using Modm.Engine;
-using Modm.Engine.Pipelines;
-using Modm.Extensions;
-using Modm.Azure;
-using Modm.Tests.Utils;
-using Modm.Packaging;
-using FluentValidation;
-using NSubstitute;
-using FluentValidation.Results;
-using MediatR;
+﻿using Modm.Tests.Utils;
 using ClientApp.Cleanup;
-using Azure.ResourceManager.Resources;
-using Azure.ResourceManager;
-using Azure.Identity;
-using Microsoft.Extensions.Logging;
 using Azure.Core;
+using Azure.ResourceManager;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using MediatR;
+using Modm.Tests.Resources;
+using Azure.ResourceManager.Resources;
+using NSubstitute;
+using NSubstitute.Extensions;
+using Modm.Tests.Utils.Fakes;
 
 namespace Modm.Tests.UnitTests
 {
-	public class DeleteProcessorTests : AbstractTest<DeleteProcessorTests>
-	{
-		public DeleteProcessorTests()
-		{
-		}
+    public class DeleteProcessorTests : AbstractTest<DeleteProcessorTests>
+    {
+        private readonly IMediator mediator;
+        private readonly string resourceGroupName;
+        private readonly DeleteProcessorSpy processor;
 
-        protected override void ConfigureServices()
+        public DeleteProcessorTests() : base()
         {
-            //var mockAzureResourceManagerClient = Mock.Create<IAzureResourceManagerClient>();
-            var mockMediator = Mock.Create<IMediator>();
-            var mockLogger = Mock.Logger<DeleteProcessor>();
+            var client = Provider.GetRequiredService<ArmClient>();
+            var logger = Provider.GetRequiredService<ILogger<DeleteProcessor>>();
 
-            //string standardTagName = "standard"; 
-            //string postTagName = "post";
-
-            Services.AddSingleton(mockMediator);
-            Services.AddSingleton(mockLogger);
-
-            //var credential = new DefaultAzureCredential();
-            //var armClient = new ArmClient(credential);
-
+            this.mediator = Provider.GetRequiredService<IMediator>();
+            this.resourceGroupName = Test.RandomString(10);
+            this.processor = new DeleteProcessorSpy(client, mediator, logger);
         }
 
         [Fact]
-        public async Task Main_Template_Has_Proper_Resources()
+        public void should_have_specifically_ordered_resource_types()
         {
-            string[] expectedStandardTypes = new string[]
+            var types = DeleteProcessor.ResourceTypes.Keys.ToArray();
+
+            Assert.True(types[0].Equals(new ResourceType("Microsoft.Compute/virtualMachines")));
+            Assert.True(types[1].Equals(new ResourceType("Microsoft.Network/virtualNetworks")));
+            Assert.True(types[2].Equals(new ResourceType("Microsoft.Network/networkSecurityGroups")));
+            Assert.True(types[3].Equals(new ResourceType("Microsoft.AppConfiguration/configurationStores")));
+            Assert.True(types[4].Equals(new ResourceType("Microsoft.Storage/storageAccounts")));
+            Assert.True(types[5].Equals(new ResourceType("Microsoft.Web/sites")));
+        }
+
+        [Fact]
+        public void Main_Template_Has_Proper_Resources()
+        {
+            var expectedTypes = new string[]
             {
                 "Microsoft.Storage/storageAccounts",
                 "Microsoft.AppConfiguration/configurationStores",
@@ -54,196 +53,91 @@ namespace Modm.Tests.UnitTests
                 "Microsoft.Network/networkSecurityGroups",
                 "Microsoft.Network/networkInterfaces",
                 "Microsoft.Network/publicIpAddresses",
-                "Microsoft.Compute/virtualMachines"
-            };
-
-            string[] expectedPostTypes = new string[]
-            {
+                "Microsoft.Compute/virtualMachines",
                 "Microsoft.Web/serverfarms",
                 "Microsoft.Web/sites"
             };
 
-            var testFilePath = new Uri(typeof(DeleteProcessorTests).Assembly.Location).LocalPath;
-            var testDirectory = Path.GetDirectoryName(testFilePath);
+            var mainTemplate = MainTemplate.Get();
+            var resources = mainTemplate.GetResourcesByCommonTag();
 
-            var relativePathToMainTemplate = "../../../../templates/mainTemplate.json";
-            var mainTemplatePath = Path.GetFullPath(Path.Combine(testDirectory, relativePathToMainTemplate));
-
-
-            var jsonContent = await File.ReadAllTextAsync(mainTemplatePath);
-            Assert.NotEmpty(jsonContent);
-
-            using var doc = JsonDocument.Parse(jsonContent);
-            var root = doc.RootElement;
-
-            var resources = root.GetProperty("resources").EnumerateArray();
-            var standardResources = new List<JsonElement>();
-            var postResources = new List<JsonElement>();
-
-            FindResources(doc.RootElement, standardResources, postResources);
-
-            Assert.NotEmpty(standardResources);
-            Assert.NotEmpty(postResources);
-
-            var standardResourceTypes = ExtractResourceTypes(standardResources);
-            var postResourceTypes = ExtractResourceTypes(postResources);
-
-            foreach (var currentStandardType in expectedStandardTypes)
-            {
-                Assert.Contains(currentStandardType, standardResourceTypes);
-            }
-
-            foreach (var currentPostType in expectedPostTypes)
-            {
-                Assert.Contains(currentPostType, postResourceTypes);
-            }
+            Assert.Equal(expectedTypes.Length, resources.Count);
         }
 
-        private void FindResources(JsonElement element, List<JsonElement> standardResources, List<JsonElement> postResources)
+        [Fact]
+        public async Task should_delete_resources_from_resource_group()
         {
-            if (element.ValueKind == JsonValueKind.Object)
-            {
-                foreach (var property in element.EnumerateObject())
-                {
-                    if (property.Name == "tags" && property.Value.ValueKind == JsonValueKind.String)
-                    {
-                        var tagReference = property.Value.GetString();
-                        if (tagReference == "[variables('commonTags')]")
-                        {
-                            standardResources.Add(element);
-                        }
-                        else if (tagReference == "[variables('postTags')]")
-                        {
-                            postResources.Add(element);
-                        }
-                    }
-                    else
-                    {
-                        FindResources(property.Value, standardResources, postResources);
-                    }
-                }
-            }
-            else if (element.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var item in element.EnumerateArray())
-                {
-                    FindResources(item, standardResources, postResources);
-                }
-            }
+            await processor.DeleteResourcesAsync(resourceGroupName);
+
+            Assert.Equal(resourceGroupName, processor.ReceivedResourceGroup);
         }
 
-        private List<string> ExtractResourceTypes(List<JsonElement> resources)
+        [Fact]
+        public async Task should_delete_all_resource_types()
         {
-            var types = new List<string>();
-            foreach (var resource in resources)
-            {
-                if (resource.TryGetProperty("type", out var typeElement) && typeElement.ValueKind == JsonValueKind.String)
-                {
-                    types.Add(typeElement.GetString());
-                }
-            }
-            return types;
+            await processor.DeleteResourcesAsync(resourceGroupName);
+
+            await mediator.ReceivedWithAnyArgs(DeleteProcessor.ResourceTypes.Count)
+                          .Send(Arg.Any<IRequest<DeleteResourceResult>>(),
+                                Arg.Any<CancellationToken>());
         }
 
-        //[Fact]
-        //public async Task DeleteInstallResourcesAsync_CallsOperationsInCorrectOrder()
-        //{
-        //    // Arrange
-        //    var operationOrder = new List<string>();
-        //    var mockMediator = Provider.GetRequiredService<IMediator>();
+        [Fact]
+        public async Task should_delete_in_order_matching_resource_types()
+        {
+            await processor.DeleteResourcesAsync(resourceGroupName);
 
-        //    mockMediator.Send(Arg.Do<IDeleteResourceRequest>(request =>
-        //        operationOrder.Add(request.GetType().Name)))
-        //        .Returns(new DeleteResourceResult { Succeeded = true });
+            Received.InOrder(() =>
+            {
+                mediator.Send(Arg.Any<DeleteVirtualMachine>(), Arg.Any<CancellationToken>());
+                mediator.Send(Arg.Any<DeleteVirtualNetwork>(), Arg.Any<CancellationToken>());
+                mediator.Send(Arg.Any<DeleteNetworkSecurityGroup>(), Arg.Any<CancellationToken>());
+                mediator.Send(Arg.Any<DeleteAppConfiguration>(), Arg.Any<CancellationToken>());
+                mediator.Send(Arg.Any<DeleteStorageAccount>(), Arg.Any<CancellationToken>());
+                mediator.Send(Arg.Any<DeleteAppService>(), Arg.Any<CancellationToken>());
+            });
+        }
 
-        //    var deleteProcessor = Provider.GetRequiredService<DeleteProcessor>();
+        protected override void ConfigureServices()
+        {
+            ConfigureMocks(c =>
+            {
+                c.Logger<DeleteProcessor>();
+                c.ArmClient();
 
-        //    // Act
-        //    await deleteProcessor.DeleteInstallResourcesAsync("testResourceGroup", CancellationToken.None);
+                c.Configure(services =>
+                {
+                    services.AddSingleton(c.Create<IMediator>(m =>
+                    {
+                        m.Send(Arg.Any<IRequest<DeleteResourceResult>>(), CancellationToken.None)
+                         .ReturnsForAnyArgs(new DeleteResourceResult());
+                    }));
+                });
+            });
+        }
 
-        //    // Assert
-        //    var expectedOrder = new List<string>
-        //    {
-        //        "DeleteVirtualMachine",
-        //        "DeleteVirtualNetwork",
-        //        "DeleteNetworkSecurityGroup",
-        //        "DeleteAppConfiguration",
-        //        "DeleteStorageAccount",
-        //        "DeleteAppService" // for post operation
-        //    };
 
-        //    Assert.Equal(expectedOrder, operationOrder);
-        //}
+        class DeleteProcessorSpy : DeleteProcessor
+        {
+            public string? ReceivedResourceGroup { get; set; }
 
+            public DeleteProcessorSpy(ArmClient client, IMediator mediator, ILogger<DeleteProcessor> logger) : base(client, mediator, logger)
+            {
+            }
+
+            protected override Task<List<GenericResource>> GetResourcesToDeleteAsync(string resourceGroupName)
+            {
+                ReceivedResourceGroup = resourceGroupName;
+                return Task.FromResult(ResourceTypes.Select(type => FakeGenericResource.New(r =>
+                {
+                    r.Configure().Id.Returns(Test.AzureResourceIdentifier(resourceGroupName, type.Key));
+                })).ToList());
+            }
+
+            protected override Task<ResourceGroupResource> GetResourceGroupResourceAsync(string resourceGroupName)
+            {
+                return Task.FromResult(FakeResourceGroupResource.New());
+            }
+        }
     }
-
-    //public class TestDeleteProcessor : DeleteProcessor
-    //{
-    //    public TestDeleteProcessor(ArmClient client, IMediator mediator, ILogger<DeleteProcessor> logger) : base(client, mediator, logger)
-    //    {
-
-    //    }
-
-    //    protected override Task<ResourceGroupResource> GetResourceGroupResourceAsync(string resourceGroupName)
-    //    {
-    //        return Task.FromResult(Substitute.For<ResourceGroupResource>());
-    //    }
-
-    //    protected override Task<List<GenericResource>> GetResourcesToDeleteAsync(string resourceGroupName, string phase)
-    //    {
-    //        var fakeResources = new List<GenericResource>() { FakeVirtualMachineResource.New() };
-    //        return Task.FromResult(fakeResources);
-    //    }
-    //}
-
-    //public class FakeVirtualMachineResource : GenericResource
-    //{
-    //    protected FakeVirtualMachineResource() : base()
-    //    {
-
-    //    }
-
-    //    public static FakeVirtualMachineResource New()
-    //    {
-    //        var fakeVirtualMachine = new FakeVirtualMachineResource();
-    //        var data = fakeVirtualMachine.Data;
-            
-    //        fakeVirtualMachine.Data.Tags.Add("modm", "standard");
-    //        fakeVirtualMachine.Data.r
-
-
-    //        return fakeVirtualMachine;
-    //    }
-
-    //    public override GenericResourceData Data => FakeGenericResourceData.New();
-    //}
-
-    //public class FakeGenericResourceData : GenericResourceData
-    //{
-
-    //    protected FakeGenericResourceData() : base(new AzureLocation("eastus2"))
-    //    {
-
-    //    }
-
-        
-    //    public static FakeGenericResourceData New()
-    //    {
-    //        return new FakeGenericResourceData();
-    //    }
-    //}
-
-    //public class FakeGenericResource : GenericResource
-    //{
-    //    protected FakeGenericResource() : base()
-    //    {
-    //        //this.
-    //    }
-
-    //    public static GenericResource New()
-    //    {
-    //        return new FakeGenericResource();
-    //    }
-    //}
 }
-

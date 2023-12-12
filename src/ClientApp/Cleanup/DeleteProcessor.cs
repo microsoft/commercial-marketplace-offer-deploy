@@ -1,89 +1,52 @@
-﻿using System;
-using System.Threading;
+﻿using System.Collections.Immutable;
 using Azure.Core;
 using Azure.ResourceManager;
-using Azure.ResourceManager.Compute;
 using Azure.ResourceManager.Resources;
 using MediatR;
-using Modm.Azure;
 
 namespace ClientApp.Cleanup
 {
-	public class DeleteProcessor : IDeleteProcessor
+    public class DeleteProcessor : IDeleteProcessor
 	{
-        public const string StandardTag = "standard";
-        public const string PostTag = "post";
+        /// <summary>
+        /// The list of resource types that will be deleted in this specific order
+        /// </summary>
+        public static readonly Dictionary<ResourceType, Type> ResourceTypes = new(6) {
+            { new ResourceType("Microsoft.Compute/virtualMachines"), typeof(DeleteVirtualMachine) },
+            { new ResourceType("Microsoft.Network/virtualNetworks"), typeof(DeleteVirtualNetwork) },
+            { new ResourceType("Microsoft.Network/networkSecurityGroups"), typeof(DeleteNetworkSecurityGroup) },
+            { new ResourceType("Microsoft.AppConfiguration/configurationStores"), typeof(DeleteAppConfiguration) },
+            { new ResourceType("Microsoft.Storage/storageAccounts"), typeof(DeleteStorageAccount) },
+            { new ResourceType("Microsoft.Web/sites"), typeof(DeleteAppService) }
+        };
 
-        private readonly ArmClient armClient;
+        public const string TagName = "modm";
+
+        private readonly ArmClient client;
         private readonly IMediator mediator;
         private readonly ILogger<DeleteProcessor> logger;
         
-		public DeleteProcessor(ArmClient azureResourceManagerClient, IMediator mediator, ILogger<DeleteProcessor> logger)
+		public DeleteProcessor(ArmClient client, IMediator mediator, ILogger<DeleteProcessor> logger)
 		{
-            this.armClient = azureResourceManagerClient;
+            this.client = client;
             this.mediator = mediator;
             this.logger = logger;
 		}
 
-        public async Task DeleteInstallResourcesAsync(string resourceGroup, CancellationToken cancellationToken)
+        public async Task DeleteResourcesAsync(string resourceGroupName, CancellationToken cancellationToken = default)
         {
-            this.logger.LogInformation("Inside DeleteInstallResourcesAsync");
-            var resourceGroupResource = await this.GetResourceGroupResourceAsync(resourceGroup);
-
-            var standardResourcesToDelete = await this.GetResourcesToDeleteAsync(resourceGroup, DeleteProcessor.StandardTag);
-            var standardCleanupOperations = new List<Func<Task<DeleteResourceResult>>>
-            {
-                () => Cleanup<DeleteVirtualMachine>("Microsoft.Compute", "virtualMachines", resourceGroupResource, standardResourcesToDelete, cancellationToken),
-                () => Cleanup<DeleteVirtualNetwork>("Microsoft.Network", "virtualNetworks", resourceGroupResource, standardResourcesToDelete, cancellationToken),
-                () => Cleanup<DeleteNetworkSecurityGroup>("Microsoft.Network", "networkSecurityGroups", resourceGroupResource, standardResourcesToDelete, cancellationToken),
-                () => Cleanup<DeleteAppConfiguration>("Microsoft.AppConfiguration", "configurationStores", resourceGroupResource, standardResourcesToDelete, cancellationToken),
-                () => Cleanup<DeleteStorageAccount>("Microsoft.Storage", "storageAccounts", resourceGroupResource, standardResourcesToDelete, cancellationToken),
-            };
-            await ProcessCleanupOperations(standardCleanupOperations);
-
-            var postResourcesToDelete = await this.GetResourcesToDeleteAsync(resourceGroup, DeleteProcessor.PostTag);
-            var postCleanupOperations = new List<Func<Task<DeleteResourceResult>>>
-            {
-                () => Cleanup<DeleteAppService>("Microsoft.Web", "sites", resourceGroupResource, postResourcesToDelete, cancellationToken)
-            };
-            await ProcessCleanupOperations(postCleanupOperations);
-
+            var deleteOperations = await GetDeleteOperations(resourceGroupName, cancellationToken);
+            await Execute(deleteOperations);
         }
 
-        protected virtual async Task<List<GenericResource>> GetResourcesToDeleteAsync(string resourceGroupName, string phase)
+        private async Task Execute(ImmutableList<Func<Task<DeleteResourceResult>>> operations)
         {
-            var subscription = await this.armClient.GetDefaultSubscriptionAsync();
-            var response = await subscription.GetResourceGroupAsync(resourceGroupName);
-            var resourceGroup = response.Value;
-
-            var resourcesToDelete = new List<GenericResource>();
-
-            await foreach (var resource in resourceGroup.GetGenericResourcesAsync())
-            {
-                if (resource.Data.Tags != null && resource.Data.Tags.TryGetValue("modm", out var tagValue) && tagValue == phase)
-                {
-                    resourcesToDelete.Add(resource);
-                }
-            }
-
-            return resourcesToDelete;
-        }
-
-        protected virtual async Task<ResourceGroupResource> GetResourceGroupResourceAsync(string resourceGroupName)
-        {
-            var subscription = await this.armClient.GetDefaultSubscriptionAsync();
-            var response = await subscription.GetResourceGroupAsync(resourceGroupName);
-            var resourceGroup = response.Value;
-            return resourceGroup;
-        }
-
-        private async Task ProcessCleanupOperations(List<Func<Task<DeleteResourceResult>>> cleanupOperations)
-        {
-            foreach (var operation in cleanupOperations)
+            foreach (var operation in operations)
             {
                 this.logger.LogInformation($"Executing delete command {operation}");
                 var result = await operation();
-                if (result.Succeeded)
+
+                if (!result.Succeeded)
                 {
                     logger.LogInformation($"Delete operation {operation} succeeded");
                 }
@@ -94,45 +57,83 @@ namespace ClientApp.Cleanup
             }
         }
 
-        private async Task<DeleteResourceResult> Cleanup<TCommand>(
-            string resourceNamespace,
-            string resourceType,
-            ResourceGroupResource resourceGroupResource,
-            List<GenericResource> cleanupResources,
-            CancellationToken cancellationToken) where TCommand : IDeleteResourceRequest
+        private async Task<ImmutableList<Func<Task<DeleteResourceResult>>>> GetDeleteOperations(string resourceGroupName, CancellationToken cancellationToken)
         {
-            var resource = FindResource(resourceNamespace, resourceType, cleanupResources);
-            if (resource != null)
+            var options = new DeleteResourceOptions
             {
-                var deleteCommand = CreateCommand<TCommand>(resource, resourceGroupResource);
-                return await mediator.Send(deleteCommand, cancellationToken);
-            }
+                ResourceGroup = await this.GetResourceGroupResourceAsync(resourceGroupName),
+                Resources = await this.GetResourcesToDeleteAsync(resourceGroupName)
+            };
 
-            return new DeleteResourceResult { Succeeded = true };
+            var deleteOperations = ResourceTypes
+                .Select(item => new Func<Task<DeleteResourceResult>>(() => Delete(item.Key, item.Value, options, cancellationToken)))
+                .ToImmutableList();
+            return deleteOperations;
         }
 
-        private GenericResource FindResource(string resourceNamespace, string resourceType, List<GenericResource> resources)
+        protected virtual async Task<List<GenericResource>> GetResourcesToDeleteAsync(string resourceGroupName)
         {
-            var foundResource = resources.FirstOrDefault(x => x.Data.ResourceType.Namespace.Equals(resourceNamespace)
-                && x.Data.ResourceType.Type.Equals(resourceType));
+            var subscription = await this.client.GetDefaultSubscriptionAsync();
+            var response = await subscription.GetResourceGroupAsync(resourceGroupName);
+            var resourceGroup = response.Value;
 
-            return foundResource;
-        }
+            var resourcesToDelete = new List<GenericResource>();
 
-        private T CreateCommand<T>(
-            GenericResource resource,
-            ResourceGroupResource resourceGroupResource) where T : IDeleteResourceRequest
-        {
-            var constructorInfo = typeof(T).GetConstructor(new Type[] { typeof(ResourceGroupResource), typeof(ResourceIdentifier) });
-
-            if (constructorInfo == null)
+            await foreach (var resource in resourceGroup.GetGenericResourcesAsync())
             {
-                throw new InvalidOperationException($"The type {typeof(T).Name} does not have a constructor with the required signature.");
+                if (resource.Data.Tags != null && resource.Data.Tags.TryGetValue(TagName, out var tagValue) && tagValue == "true")
+                {
+                    resourcesToDelete.Add(resource);
+                }
             }
 
-            var command = (T)constructorInfo.Invoke(new object[] { resourceGroupResource, resource.Id });
-            return command;
+            return resourcesToDelete;
+        }
+
+        protected virtual async Task<ResourceGroupResource> GetResourceGroupResourceAsync(string resourceGroupName)
+        {
+            var subscription = await this.client.GetDefaultSubscriptionAsync();
+            var response = await subscription.GetResourceGroupAsync(resourceGroupName);
+            var resourceGroup = response.Value;
+
+            return resourceGroup;
+        }
+
+        private async Task<DeleteResourceResult> Delete(ResourceType resourceType, Type commandType, DeleteResourceOptions options, CancellationToken cancellationToken)
+        {
+            var command = options.CreateCommand(resourceType, commandType);
+
+            if (command is null)
+            {
+                return new DeleteResourceResult { Succeeded = true };
+            }
+
+            var result = await mediator.Send(command, cancellationToken);
+
+            if (!result.Succeeded)
+            {
+                logger.LogError("Delete operation {name} was not successful", commandType.Name);
+            }
+
+            return result;
+        }
+
+        public record DeleteResourceOptions
+        {
+            public ResourceGroupResource ResourceGroup { get; init; }
+            public List<GenericResource> Resources { get; init; }
+
+            public IDeleteResourceRequest CreateCommand(ResourceType resourceType, Type commandType)
+            {
+                var resource = Resources.FirstOrDefault(r => r.Id.ResourceType == resourceType);
+
+                if (resource is null)
+                {
+                    return null;
+                }
+
+                return (IDeleteResourceRequest)Activator.CreateInstance(commandType, ResourceGroup, resource.Id);
+            }
         }
     }
 }
-

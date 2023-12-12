@@ -1,9 +1,7 @@
-﻿using System;
-using ClientApp.Backend;
-using ClientApp.Commands;
+﻿using ClientApp.Commands;
 using MediatR;
 
-namespace ClientApp.Handlers
+namespace ClientApp.Cleanup
 {
     public class InitiateDeleteHandler : IRequestHandler<InitiateDelete>
     {

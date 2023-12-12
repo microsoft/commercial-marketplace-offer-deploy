@@ -1,10 +1,8 @@
 ﻿using System.Reflection;
 using Azure.Core;
 using Azure.ResourceManager;
-using Azure.ResourceManager.Compute;
 using Azure.ResourceManager.Resources;
 using MediatR;
-using Modm.Azure;
 using Polly;
 
 namespace ClientApp.Cleanup

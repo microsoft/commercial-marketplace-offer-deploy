@@ -50,12 +50,14 @@
     <None Remove="Data\" />
     <None Remove="Data\azureclientapp.zip" />
     <None Remove="Data\installer.zip" />
+    <None Remove="Resources\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="UnitTests\" />
     <Folder Include="Utils\" />
     <Folder Include="Utils\Fakes\" />
     <Folder Include="Data\" />
+    <Folder Include="Resources\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Data\installer.zip">
