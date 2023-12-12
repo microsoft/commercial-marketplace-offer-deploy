@@ -32,16 +32,15 @@ namespace Modm.Tests.UnitTests
             var mockMediator = Mock.Create<IMediator>();
             var mockLogger = Mock.Logger<DeleteProcessor>();
 
-            string standardTagName = "standard"; 
-            string postTagName = "post";
+            //string standardTagName = "standard"; 
+            //string postTagName = "post";
 
             Services.AddSingleton(mockMediator);
             Services.AddSingleton(mockLogger);
 
-            var credential = new DefaultAzureCredential();
-            var armClient = new ArmClient(credential);
+            //var credential = new DefaultAzureCredential();
+            //var armClient = new ArmClient(credential);
 
-          //  Services.AddSingleton<DeleteProcessor>(new TestDeleteProcessor(armClient, mockMediator, mockLogger));
         }
 
         [Fact]

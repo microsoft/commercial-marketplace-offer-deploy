@@ -24,13 +24,12 @@
 # ------------------------------------------------------------
 
 function getExpiry() {
-    local expiry
-    if command -v gdate &> /dev/null; then
-        expiry=$(gdate -d "+730 days" '+%Y-%m-%dT%H:%MZ')
-    else
-        expiry=$(date -v +730d '+%Y-%m-%dT%H:%MZ')
+    if command -v gdate &> /dev/null
+    then
+        alias date=gdate
     fi
-    echo "$expiry"
+    local expiry=$(date -d "+730 days" '+%Y-%m-%dT%H:%MZ')
+    echo $expiry
 }
 
 function createApplicationPackage() {
