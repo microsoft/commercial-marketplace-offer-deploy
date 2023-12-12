@@ -51,7 +51,7 @@
             "appConfigReader": "516239f1-63e1-4d78-a4de-a74fb236a071"
         },
         "configStoreName": "[concat('modmconfig-', substring(uniqueString(resourceGroup().id), 0, 8))]",
-        "clientAppName": "[substring(parameters('applicationInstallerUrl'), 12, 12)]",
+        "clientAppName": "[concat('modm', substring(parameters('applicationInstallerUrl'), 12, 12))]",
         "clientAppUrl": "[parameters('applicationInstallerUrl')]",
         "clientAppCredentials": "[base64(concat(trim(parameters('applicationInstallerUserName')), '|', trim(parameters('applicationInstallerPassword'))))]",
         "clientAppSigningKey": "[uniqueString(resourceGroup().id, variables('clientAppName'))]",
