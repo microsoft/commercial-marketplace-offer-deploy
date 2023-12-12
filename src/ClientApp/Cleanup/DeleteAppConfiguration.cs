@@ -1,11 +1,8 @@
-﻿using System;
-using Azure;
+﻿using Azure;
 using Azure.Core;
 using Azure.ResourceManager;
 using Azure.ResourceManager.AppConfiguration;
-using Azure.ResourceManager.Network;
 using Azure.ResourceManager.Resources;
-using Microsoft.CodeAnalysis;
 
 namespace ClientApp.Cleanup
 {
@@ -27,7 +24,6 @@ namespace ClientApp.Cleanup
     {
         public DeleteAppConfigurationHandler(ILoggerFactory loggerFactory, ArmClient client) : base(loggerFactory, client)
         {
-
         }
 
         protected override async Task<DeleteResourceResult> DeleteAsync(ResourceGroupResource resourceGroup, ResourceIdentifier id)

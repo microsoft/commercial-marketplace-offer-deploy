@@ -86,10 +86,7 @@
             }
         },
         "commonTags": {
-            "modm": "standard"
-        },
-        "postTags": {
-            "modm": "post"
+            "modm": "true"
         }
     },
     "resources": [
@@ -121,7 +118,7 @@
             "properties": {
                 "reserved": true
             },
-            "tags": "[variables('postTags')]"
+            "tags": "[variables('commonTags')]"
         },
         {
             "type": "Microsoft.Web/sites",
@@ -135,7 +132,7 @@
                 "[resourceId('Microsoft.Web/serverfarms', variables('clientAppName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('clientAppStorageAccountName'))]"
             ],
-            "tags": "[variables('postTags')]",
+            "tags": "[variables('commonTags')]",
             "kind": "linux",
             "properties": {
                 "reserved": true,

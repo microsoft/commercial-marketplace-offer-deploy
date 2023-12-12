@@ -2,7 +2,7 @@
 using ClientApp.Commands;
 using MediatR;
 
-namespace ClientApp.Backend
+namespace ClientApp.Cleanup
 {
     public class InstallerCleanupService : BackgroundService
     {

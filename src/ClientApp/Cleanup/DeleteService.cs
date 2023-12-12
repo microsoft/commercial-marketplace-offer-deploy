@@ -1,12 +1,6 @@
-﻿using System;
-using System.Threading;
-using Microsoft.Extensions.Options;
-using ClientApp.Cleanup;
-using Modm.Azure;
-
-namespace ClientApp.Backend
+﻿namespace ClientApp.Cleanup
 {
-	public class DeleteService : BackgroundService
+    public class DeleteService : BackgroundService
     {
         bool deleteStarted;
         string resourceGroupName;
@@ -36,7 +30,7 @@ namespace ClientApp.Backend
             if (!cancellationToken.IsCancellationRequested)
             {
                 this.logger.LogInformation($"Calling DeleteResourcePostDeployment with {this.resourceGroupName}");
-                await this.deleteProcessor.DeleteInstallResourcesAsync(this.resourceGroupName, cancellationToken);
+                await this.deleteProcessor.DeleteResourcesAsync(this.resourceGroupName, cancellationToken);
             }
         }
 
@@ -84,4 +78,3 @@ namespace ClientApp.Backend
         }
     }
 }
-

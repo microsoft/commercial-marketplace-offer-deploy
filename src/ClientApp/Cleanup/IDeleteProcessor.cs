@@ -1,9 +1,7 @@
-﻿using System;
-namespace ClientApp.Cleanup
+﻿namespace ClientApp.Cleanup
 {
-	public interface IDeleteProcessor
+    public interface IDeleteProcessor
 	{
-		Task DeleteInstallResourcesAsync(string resourceGroup, CancellationToken cancellationToken);
+		Task DeleteResourcesAsync(string resourceGroup, CancellationToken cancellationToken = default);
 	}
 }
-
