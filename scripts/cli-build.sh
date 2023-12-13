@@ -6,10 +6,6 @@
 # copy files to resources folder to include them in the distributable
 echo "Building Python Library."
 
-# prefix output with indent
-exec > >(trap "" INT TERM; sed 's/^/  /')
-exec 2> >(trap "" INT TERM; sed 's/^/   (stderr) /' >&2)
-
 echo "copying files to resources folder."
 
 echo "Installing build tools."
