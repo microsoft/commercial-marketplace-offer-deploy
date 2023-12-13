@@ -24,6 +24,7 @@ export const Default = () => {
   const [loading, setLoading] = React.useState<boolean>(true);
   const [isFinal, setIsFinal] = React.useState<boolean>(false);
   const [isHealthy, setIsHealthy] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
   const [enableFocusTrap, setEnableFocusTrap] = React.useState(false);
   const { userToken } = useAuth();
 
@@ -207,6 +208,15 @@ export const Default = () => {
         };
     }, []);
     
+    useEffect(() => {
+        const aleardyDeleting = window.localStorage.getItem('MODM_DELETING');
+        if (aleardyDeleting !== null) {
+            const deleteFlag = getDeleteFlag();
+            if (aleardyDeleting === deleteFlag) {
+                setIsDeleting(true);
+            }
+        }
+      });
       
     useEffect(() => {
         if (isHealthy) {
@@ -257,10 +267,15 @@ export const Default = () => {
         throw new Error(`HTTP error! status: ${deleteResponse.status}`);
       }
       const deleteResult = await deleteResponse.json();
-      // Add any additional logic needed after successful deletion
+      setIsDeleting(true);
+      window.localStorage.setItem('MODM_DELETING', getDeleteFlag());
     } catch (error) {
       console.error("Error deleting:", error);
     }
+  };
+
+  const getDeleteFlag = () => {
+    return `true`;
   };
 
 //   const _items: ICommandBarItemProps[] = [
@@ -283,7 +298,7 @@ export const Default = () => {
         // Include other command items here if needed
     ];
 
-    if (isFinal) {
+    if (isFinal && !isDeleting) {
         items.push({
             key: 'delete',
             text: 'Delete Installer',
@@ -318,8 +333,9 @@ export const Default = () => {
       <div style={{ display: 'flex', alignItems: 'center' }}>
     
             {(() => {
+              if (isDeleting) return <h4>Installer Deleting...</h4>;
               if (!isHealthy) return <h4>Deployment pending...</h4>; 
-
+              
               const failedCount = deployedResources.filter(r => r.state === "Failed").length;
               const successCount = deployedResources.filter(r => r.state === "Succeeded").length;
 

@@ -105,6 +105,7 @@ function createServiceDefinition() {
         --output tsv \
         --query connectionString)
     
+  
     expiry=$(getExpiry)
     blob=$(az storage blob generate-sas \
         --account-name $STORAGE_ACCOUNT_NAME \

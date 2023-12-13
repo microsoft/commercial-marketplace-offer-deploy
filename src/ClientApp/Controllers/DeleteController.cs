@@ -27,11 +27,19 @@ namespace ClientApp.Controllers
         {
             this.logger.LogInformation("Delete request received");
             var initiateDelete = new InitiateDelete(resourceGroupName);
-            await this.mediator.Send(initiateDelete);
+            this.logger.LogInformation("Dispatching initiateDelete");
 
-            return Ok("Successfully submitted a delete");
+            try
+            {
+                await this.mediator.Send(initiateDelete);
+                return Ok(new { Message = "Delete operation successfully submitted." });
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Error initiating delete");
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Delete operation failed." });
+            }
         }
-
     }
 }
 

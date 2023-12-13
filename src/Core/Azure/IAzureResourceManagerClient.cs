@@ -6,6 +6,7 @@ namespace Modm.Azure
     public interface IAzureResourceManagerClient
     {
         Task<List<GenericResource>> GetResourcesToDeleteAsync(string resourceGroupName, string phase);
+        Task<ResourceGroupResource> GetResourceGroupResourceAsync(string resourceGroupName);
         Task<bool> TryDeleteResourceAsync(GenericResource resource);
     }
 }

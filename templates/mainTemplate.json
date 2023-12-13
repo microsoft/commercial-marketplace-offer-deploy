@@ -23,7 +23,7 @@
         },
         "applicationInstallerUrl": {
             "type": "string",
-            "defaultValue": "[concat('https://', 'modm', substring(uniqueString(parameters('_artifactsLocation')), 0, 12), '.azurewebsites.net')]",
+            "defaultValue": "[concat('https://', 'modm', substring(uniqueString(newGuid()), 0, 12), '.azurewebsites.net')]",
             "metadata": {
                 "description": "The base URI where artifacts required by this template are located including a trailing '/'"
             }
@@ -51,7 +51,7 @@
             "appConfigReader": "516239f1-63e1-4d78-a4de-a74fb236a071"
         },
         "configStoreName": "[concat('modmconfig-', substring(uniqueString(resourceGroup().id), 0, 8))]",
-        "clientAppName": "[concat('modm', substring(uniqueString(parameters('_artifactsLocation')), 0, 12))]",
+        "clientAppName": "[concat('modm', substring(parameters('applicationInstallerUrl'), 12, 12))]",
         "clientAppUrl": "[parameters('applicationInstallerUrl')]",
         "clientAppCredentials": "[base64(concat(trim(parameters('applicationInstallerUserName')), '|', trim(parameters('applicationInstallerPassword'))))]",
         "clientAppSigningKey": "[uniqueString(resourceGroup().id, variables('clientAppName'))]",
@@ -86,10 +86,7 @@
             }
         },
         "commonTags": {
-            "modm": "standard"
-        },
-        "postTags": {
-            "modm": "post"
+            "modm": "true"
         }
     },
     "resources": [
@@ -121,7 +118,7 @@
             "properties": {
                 "reserved": true
             },
-            "tags": "[variables('postTags')]"
+            "tags": "[variables('commonTags')]"
         },
         {
             "type": "Microsoft.Web/sites",
@@ -135,7 +132,7 @@
                 "[resourceId('Microsoft.Web/serverfarms', variables('clientAppName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('clientAppStorageAccountName'))]"
             ],
-            "tags": "[variables('postTags')]",
+            "tags": "[variables('commonTags')]",
             "kind": "linux",
             "properties": {
                 "reserved": true,
@@ -410,6 +407,19 @@
                 "principalType": "ServicePrincipal",
                 "roleDefinitionId": "[variables('Owner')]",
                 "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), '2022-03-01', 'Full').identity.principalId]"
+            }
+        },
+        {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2020-04-01-preview",
+            "name": "[guid(concat('OwnerRoleAssignment-', resourceGroup().id, '-', variables('clientAppName')))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('clientAppName'))]"
+            ],
+            "properties": {
+                "principalType": "ServicePrincipal",
+                "roleDefinitionId": "[variables('Owner')]",
+                "principalId": "[reference(resourceId('Microsoft.Web/sites', variables('clientAppName')), '2022-03-01', 'Full').identity.principalId]"
             }
         },
         {

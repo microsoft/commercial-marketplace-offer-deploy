@@ -1,36 +1,36 @@
-﻿using System;
-using System.Threading;
-using Microsoft.Extensions.Options;
-using Modm.Azure;
-
-namespace ClientApp.Backend
+﻿namespace ClientApp.Cleanup
 {
-	public class DeleteService : BackgroundService
+    public class DeleteService : BackgroundService
     {
         bool deleteStarted;
         string resourceGroupName;
 
-        private readonly AzureDeploymentCleanup cleanup;
+        private readonly IDeleteProcessor deleteProcessor;
         private readonly IConfiguration configuration;
+        private ILogger<DeleteService> logger;
 
         private const string DeleteFileName = "delete.txt";
         private const string DeleteFileDirectoryKey = "DeleteFileDirectory";
 
         const int DefaultWaitDelaySeconds = 30;
         
-        public DeleteService(AzureDeploymentCleanup cleanup, IConfiguration configuration)
+        public DeleteService(IDeleteProcessor deleteProcessor, IConfiguration configuration, ILogger<DeleteService> logger)
 		{
-            this.cleanup = cleanup;
+            this.deleteProcessor = deleteProcessor;
             this.configuration = configuration;
+            this.logger = logger;
 		}
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
+            this.logger.LogInformation("Waiting for delete...");
             await WaitForDelete(cancellationToken);
+
 
             if (!cancellationToken.IsCancellationRequested)
             {
-                await this.cleanup.DeleteResourcePostDeployment(this.resourceGroupName);
+                this.logger.LogInformation($"Calling DeleteResourcePostDeployment with {this.resourceGroupName}");
+                await this.deleteProcessor.DeleteResourcesAsync(this.resourceGroupName, cancellationToken);
             }
         }
 
@@ -43,6 +43,7 @@ namespace ClientApp.Backend
                 string stateFileContent = ReadStateFile();
                 if (!String.IsNullOrEmpty(stateFileContent))
                 {
+                    this.logger.LogInformation("State file read");
                     this.deleteStarted = true;
                     this.resourceGroupName = stateFileContent;
                 }
@@ -77,4 +78,3 @@ namespace ClientApp.Backend
         }
     }
 }
-
