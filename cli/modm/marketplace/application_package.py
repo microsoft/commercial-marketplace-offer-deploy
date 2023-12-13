@@ -87,7 +87,7 @@ class ApplicationPackage:
         finalizer = MainTemplateFinalizer(options.resources.main_template)
         self.main_template = finalizer.finalize(
             template_parameters=self.info.template_parameters,
-            reference_info=options.resources.release_reference,
+            release_info=options.resources.release_reference,
             installer_package=installer_package,
             use_vmi_reference=options.use_vmi_reference,
             vmi_reference_id=options.vmi_reference_id,

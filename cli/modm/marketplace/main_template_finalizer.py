@@ -20,7 +20,7 @@ class MainTemplateFinalizer:
         main_template.set_parameters(kwargs.get("template_parameters", []))
         main_template.user_data.set_installer_package_hash(kwargs.get("installer_package").hash)
 
-        reference_info: ReferenceInfo = kwargs.get("reference_info")
+        release_info: ReferenceInfo = kwargs.get("release_info")
         use_vmi_reference = kwargs.get("use_vmi_reference", False)
         vmi_reference_id = kwargs.get("vmi_reference_id", None)
 
@@ -28,10 +28,10 @@ class MainTemplateFinalizer:
             if vmi_reference_id is not None:
                 main_template.vmi_reference_id = vmi_reference_id
             else:
-                main_template.vmi_reference_id = reference_info.vmi
+                main_template.vmi_reference_id = release_info.vmi
         else:
-            if reference_info is None:
+            if release_info is None:
                 raise ValueError("reference_info is required when not passing a VMI reference")
-            main_template.vm_offer = reference_info.offer.serialize()
+            main_template.vm_offer = release_info.reference.offer.serialize()
 
         return main_template
