@@ -6,14 +6,14 @@
             "reference": {
                 "offer": {
                     "plan": {
-                        "name": "modmplan",
-                        "publisher": "test_test_gps_americas_code-with1694019817347",
-                        "product": "modm-preview"
+                        "name": "modm_base_vm",
+                        "publisher": "microsoft_commercial_marketplace_services",
+                        "product": "modm_vm"
                     },
                     "imageReference": {
-                        "publisher": "test_test_gps_americas_code-with1694019817347",
-                        "offer": "modm-preview",
-                        "sku": "modmplan",
+                        "publisher": "microsoft_commercial_marketplace_services",
+                        "offer": "modm_vm",
+                        "sku": "modm_base_vm",
                         "version": "latest"
                     }
                 },
