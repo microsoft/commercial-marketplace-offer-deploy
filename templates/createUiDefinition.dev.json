@@ -51,6 +51,7 @@
                                 "name": "username",
                                 "type": "Microsoft.Common.TextBox",
                                 "label": "Admin Username",
+                                "placeholder": "",
                                 "defaultValue": "admin",
                                 "toolTip": "Use only allowed characters",
                                 "constraints": {
@@ -67,7 +68,7 @@
                                     "password": "Password",
                                     "confirmPassword": "Confirm password"
                                 },
-                                "toolTip": "Password must be at least 8 characters long, contain only numbers and letters",
+                                "toolTip": "",
                                 "constraints": {
                                     "required": true,
                                     "regex": "^[a-zA-Z0-9]{8,}$",
@@ -86,7 +87,7 @@
         "outputs": {
             "applicationInstallerUserName": "[steps('installer').dashboard.username]",
             "applicationInstallerPassword": "[steps('installer').dashboard.password]",
-            "applicationInstallerAutoDelete": "[steps('installer').stepInfo.autoDelete]"
+            "applicationInstallerAutoDelete": "[steps('installer').autoDelete]"
         }
     }
 }
