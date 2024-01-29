@@ -56,22 +56,16 @@
                 "description": "The location of the deployment."
             }
         },
-        "virtualMachineSize": {
+        "applicationInstallerVMSize": {
             "type": "string",
             "defaultValue": "Standard_D2s_v3",
             "metadata": {
                 "description": "The size of the installer virtual machine."
             }
-        },
-        "virtualMachineUsername": {
-            "type": "string",
-            "defaultValue": "modmadmin",
-            "metadata": {
-                "description": "The admin username of virtual machine."
-            }
         }
     },
     "variables": {
+        "location": "[parameters('location')]",
         "roleDefinitionId": {
             "owner": "8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
             "contributor": "b24988ac-6180-42a0-ab88-20f7382dd24c",
@@ -86,14 +80,13 @@
         "clientAppPackageUrl": "[concat(variables('artifactsContainerLocation'), '/', 'clientapp.zip')]",
         "vmiReferenceId": "{{vmiReferenceId}}",
         "virtualMachineName": "modm",
-        "virtualMachinePwd": "[concat('Modm-', substring( uniqueString(resourceGroup().id), 0, 8))]",
         "vnetName": "[concat(variables('virtualMachineName'), '-vnet')]",
         "subnetName": "default",
         "artifactsContainerLocation": "[substring(parameters('_artifactsLocation'), 0, lastIndexOf(parameters('_artifactsLocation'), '/'))]",
         "artifactsLocationSasToken": "[parameters('_artifactsLocationSasToken')]",
         "vmResourceId": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]",
         "dnsLabel": "[concat('modm', uniqueString(variables('vmResourceId')))]",
-        "publicFqdn": "[concat(variables('dnsLabel'), '.', parameters('location'), '.cloudapp.azure.com')]",
+        "publicFqdn": "[concat(variables('dnsLabel'), '.', variables('location'), '.cloudapp.azure.com')]",
         "backendUrl": "[concat('https://', variables('publicFqdn'), '/')]",
         "Owner": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
         "networkInterfaceName": "[concat(variables('virtualMachineName'), substring(uniqueString(resourceGroup().name), 0, 4))]",
@@ -122,7 +115,7 @@
             "apiVersion": "2022-05-01",
             "name": "[variables('clientAppStorageAccountName')]",
             "comments": "Storage account for the azure function which will serve up the dashboard",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "sku": {
                 "name": "Standard_LRS"
             },
@@ -138,7 +131,7 @@
             "type": "Microsoft.Web/serverfarms",
             "apiVersion": "2022-03-01",
             "name": "[variables('clientAppName')]",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "sku": {
                 "name": "B2"
             },
@@ -151,7 +144,7 @@
             "type": "Microsoft.Web/sites",
             "apiVersion": "2022-03-01",
             "name": "[variables('clientAppName')]",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "identity": {
                 "type": "SystemAssigned"
             },
@@ -211,7 +204,7 @@
             "type": "Microsoft.AppConfiguration/configurationStores",
             "apiVersion": "2021-10-01-preview",
             "name": "[variables('configStoreName')]",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "sku": {
                 "name": "standard"
             },
@@ -311,7 +304,7 @@
             "name": "[variables('vnetName')]",
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2021-08-01",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "tags": "[variables('commonTags')]",
             "properties": {
                 "addressSpace": {
@@ -325,7 +318,7 @@
             "name": "[concat(variables('vnetName'), '/', variables('subnetName'))]",
             "type": "Microsoft.Network/virtualNetworks/subnets",
             "apiVersion": "2021-08-01",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
             ],
@@ -337,7 +330,7 @@
             "type": "Microsoft.Network/networkSecurityGroups",
             "apiVersion": "2021-08-01",
             "name": "[variables('nsgName')]",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "tags": "[variables('commonTags')]",
             "properties": {
                 "securityRules": [
@@ -374,7 +367,7 @@
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('networkInterfaceName')]",
             "apiVersion": "2021-08-01",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "tags": "[variables('commonTags')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]",
@@ -411,7 +404,7 @@
             "type": "Microsoft.Network/publicIpAddresses",
             "apiVersion": "2020-08-01",
             "name": "[variables('publicIpAddressName')]",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "tags": "[variables('commonTags')]",
             "properties": {
                 "publicIpAllocationMethod": "[variables('publicIpAddressType')]",
@@ -498,7 +491,7 @@
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2022-03-01",
             "name": "[variables('virtualMachineName')]",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "tags": "[variables('commonTags')]",
             "identity": {
                 "type": "SystemAssigned"
@@ -510,7 +503,7 @@
             ],
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "[parameters('virtualMachineSize')]"
+                    "vmSize": "[parameters('applicationInstallerVMSize')]"
                 },
                 "userData": "[base64(string(variables('userData')))]",
                 "storageProfile": {
@@ -537,8 +530,8 @@
                 },
                 "osProfile": {
                     "computerName": "[variables('virtualMachineName')]",
-                    "adminUsername": "[parameters('virtualMachineUsername')]",
-                    "adminPassword": "[variables('virtualMachinePwd')]",
+                    "adminUsername": "[format('{0}{1}', 'modm', 'admin')]",
+                    "adminPassword": "[substring(format('Modm2-{0}', uniqueString(base64(variables('vmResourceId')))), 0, 16)]",
                     "linuxConfiguration": {
                         "patchSettings": {
                             "patchMode": "ImageDefault"
@@ -554,9 +547,9 @@
         }
     ],
     "outputs": {
-        "virtualMachinePwd": {
+        "Location": {
             "type": "string",
-            "value": "[variables('virtualMachinePassword')]"
+            "value": "[variables('location')]"
         }
     }
 }

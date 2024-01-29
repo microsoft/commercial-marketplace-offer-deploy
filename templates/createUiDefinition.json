@@ -84,6 +84,7 @@
             }
         ],
         "outputs": {
+            "location": "[location()]",
             "applicationInstallerUserName": "[steps('installer').dashboard.username]",
             "applicationInstallerPassword": "[steps('installer').dashboard.password]",
             "applicationInstallerAutoDelete": "[steps('installer').stepInfo.autoDelete]"
