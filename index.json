@@ -1,6 +1,31 @@
 {
     "releases": [
         {
+            "version": "v2.0.1",
+            "description": "v2.0.1 release that references 1st party VM offer.",
+            "reference": {
+                "offer": {
+                    "plan": {
+                        "name": "modm_base_vm",
+                        "publisher": "microsoft_commercial_marketplace_services",
+                        "product": "modm_vm"
+                    },
+                    "imageReference": {
+                        "publisher": "microsoft_commercial_marketplace_services",
+                        "offer": "modm_vm",
+                        "sku": "modm_base_vm",
+                        "version": "latest"
+                    }
+                },
+                "vmi": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/modm-dev-vmi/providers/Microsoft.Compute/galleries/modm.dev.sig/images/modm/versions/2.0.208"
+            },
+            "resources": {
+                "downloadUrl": "https://github.com/microsoft/commercial-marketplace-offer-deploy/releases/download/v2.0.1/resources-v2.0.1.tar.gz",
+                "filename": "resources-v2.0.1.tar.gz",
+                "sha256Digest": "ec94ebeeacba3a5f27e4ec13aeb4ac5b9184a91839063bb39fca71202fe9c667"
+            }
+        },
+        {
             "version": "v2.0.0",
             "description": "v2.0.0 initial release that uses DevTest reference for VM offer.",
             "reference": {
