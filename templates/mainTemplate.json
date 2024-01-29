@@ -531,7 +531,7 @@
                 "osProfile": {
                     "computerName": "[variables('virtualMachineName')]",
                     "adminUsername": "[format('{0}{1}', 'modm', 'admin')]",
-                    "adminPassword": "[substring(format('Modm2-{0}', uniqueString(base64(variables('vmResourceId')))), 0, 16)]",
+                    "adminPassword": "[substring(format('Modm2!{0}', uniqueString(base64(variables('vmResourceId')))), 0, 16)]",
                     "linuxConfiguration": {
                         "patchSettings": {
                             "patchMode": "ImageDefault"
