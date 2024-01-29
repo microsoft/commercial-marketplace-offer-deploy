@@ -17,7 +17,9 @@ dependencies = [
   'click == 8.1.7',
   'msrest == 0.7.1',
   'pybars3 == 0.9.7',
-  'knack == 0.11.0'
+  'knack == 0.11.0',
+  'jsonschema ~=4.19.1',
+  'jsonschema-specifications ~=2023.7.1'
 ]
 classifiers=[
   "Programming Language :: Python :: 3",
