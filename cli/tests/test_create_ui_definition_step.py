@@ -27,3 +27,13 @@ class TestCreateUiDefinitionInstallerStep(TestCaseBase):
 
         for key, _ in installer_step.outputs.items():
             self.assertEqual(outputs[key], installer_step.outputs[key])
+    
+    def test_append_to_should_not_overwrite_existing_output_value(self):
+        create_ui_definition = deepcopy(self.create_ui_definition)
+        installer_step = from_file(self.template_file)
+        installer_step.outputs["location"] = "overridden value"
+
+        installer_step.append_to(create_ui_definition)
+
+        self.assertIn("location", create_ui_definition.document["parameters"]["outputs"])
+        self.assertNotEqual(create_ui_definition.document["parameters"]["outputs"]["location"], "overridden value")

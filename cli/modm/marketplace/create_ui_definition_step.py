@@ -22,7 +22,9 @@ class CreateUiDefinitionInstallerStep:
         steps.append(self.step)
 
         outputs: dict = document["parameters"]["outputs"]
-        outputs.update(self.outputs)
+        for key, value in self.outputs.items():
+            if key not in outputs:
+                outputs[key] = value
 
 
 def from_file(file_path) -> CreateUiDefinitionInstallerStep:
