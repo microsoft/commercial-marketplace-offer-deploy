@@ -1,5 +1,10 @@
 provider "azurerm" {
   features {}
+  skip_provider_registration=true
+}
+
+variable "artifactsLocationSasToken" {
+  type = string
 }
 
 variable "location" {

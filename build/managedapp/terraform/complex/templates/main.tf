@@ -1,5 +1,6 @@
 provider "azurerm" {
   features {}
+  skip_provider_registration=true
 }
 
 variable "resourceGroupName" {
@@ -7,6 +8,9 @@ variable "resourceGroupName" {
   type        = string
 }
 
+variable "artifactsLocationSasToken" {
+  type = string
+}
 
 variable "location" {
   description = "Azure region for the resources"
