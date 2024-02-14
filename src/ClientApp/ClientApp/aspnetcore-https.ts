@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 // This script sets up HTTPS for the application using the ASP.NET Core HTTPS certificate
 import * as fs from 'fs';
 import { spawn } from 'child_process';

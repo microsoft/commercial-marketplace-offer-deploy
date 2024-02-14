@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 from enum import Enum
 from modm.terraform.input_variable import TerraformInputVariable
 from modm.terraform.variable_types import TerraformInputVariableType

@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 ﻿using WebHost.Controllers;
 using FluentValidation;
 using Microsoft.Extensions.Azure;

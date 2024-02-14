@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 using Modm.Extensions;
 using Modm.ServiceHost;
 

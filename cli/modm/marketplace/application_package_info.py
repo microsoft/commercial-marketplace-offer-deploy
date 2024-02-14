@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import json
 from .create_ui_definition import CreateUiDefinition
 from modm.installer import ManifestInfo

@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import unittest
 from modm.installer.reserved_template_parameter import ReservedTemplateParameter, is_reserved
 

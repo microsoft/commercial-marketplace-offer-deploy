@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 ﻿using System.Text;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core.DAG;
 using Modm.Azure;

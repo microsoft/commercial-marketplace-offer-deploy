@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 ﻿using System.Net;
 using System.Text.Json;
 using Modm.Azure.Model;

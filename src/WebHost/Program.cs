@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 using Modm.WebHost;
 using Modm.Extensions;
 using Modm.Azure;

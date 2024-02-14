@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Modm.Deployments;

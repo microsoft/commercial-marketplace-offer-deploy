@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 
 export const DeploymentConstants = {
     "defaultDeploymentName": "bobjac_test1",

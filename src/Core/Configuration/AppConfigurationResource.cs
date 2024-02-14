@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 ﻿using Modm.Azure;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Azure.Core;

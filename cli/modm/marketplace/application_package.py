@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 from pathlib import Path
 from zipfile import ZipFile
 from modm.marketplace.application_package_resources import ApplicationPackageResources

@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 ﻿using System.Reflection;
 using Azure.Core;
 using Azure.ResourceManager;

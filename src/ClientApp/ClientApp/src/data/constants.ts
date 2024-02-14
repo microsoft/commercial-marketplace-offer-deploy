@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 export const constants = {
     version: "pubpreview_1.0",
     projectFormTempKey: "projectForm",

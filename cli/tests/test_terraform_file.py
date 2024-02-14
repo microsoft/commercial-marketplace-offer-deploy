@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import unittest
 import os
 from modm.terraform.terraform_file import TerraformFile

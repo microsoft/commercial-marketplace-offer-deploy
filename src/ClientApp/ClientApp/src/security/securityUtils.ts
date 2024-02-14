@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { AppConstants } from '../constants/app-constants';
 
 export interface AuthToken {

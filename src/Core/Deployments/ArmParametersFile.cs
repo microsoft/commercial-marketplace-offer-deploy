@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.WindowsAzure.ResourceStack.Common.Extensions;

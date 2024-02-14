@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 ﻿using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;

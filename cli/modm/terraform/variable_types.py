@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 
 # create a class enum for the terraform variable types
 from enum import Enum

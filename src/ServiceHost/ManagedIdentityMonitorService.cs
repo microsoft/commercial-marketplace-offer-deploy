@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 ﻿using Modm.Azure;
 using MediatR;
 using Modm.ServiceHost.Notifications;

@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import os
 import unittest
 from modm.arm.arm_template_parameter import ArmTemplateParameter

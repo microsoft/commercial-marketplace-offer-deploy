@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 ﻿using FluentValidation;
 using MediatR;
 using MediatR.Pipeline;

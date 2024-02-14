@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import hcl2
 from .input_variable import TerraformInputVariable
 

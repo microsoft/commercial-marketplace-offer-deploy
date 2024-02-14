@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 ﻿using Modm.Tests.Utils;
 using ClientApp.Cleanup;
 using Azure.Core;

@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import tempfile
 from modm.marketplace.application_package_resources import ApplicationPackageResources
 from modm.release.release_provider import ReleaseProvider

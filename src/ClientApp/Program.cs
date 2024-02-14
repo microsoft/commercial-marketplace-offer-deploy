@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 using Modm.ClientApp.Controllers;
 using ClientApp.Security;
 using Microsoft.IdentityModel.Logging;

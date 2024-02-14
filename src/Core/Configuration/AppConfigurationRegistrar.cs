@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 ﻿using Azure.ResourceManager;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;

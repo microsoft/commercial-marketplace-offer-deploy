@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 ﻿using Ductus.FluentDocker.Model.Common;
 using Ductus.FluentDocker.Builders;
 using Ductus.FluentDocker.Services;

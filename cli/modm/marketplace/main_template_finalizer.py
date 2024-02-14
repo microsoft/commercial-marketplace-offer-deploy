@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import copy
 from modm.release.release_info import ReferenceInfo
 from .main_template import MainTemplate

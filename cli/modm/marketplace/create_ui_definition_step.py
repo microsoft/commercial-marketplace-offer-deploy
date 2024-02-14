@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import os
 import json
 from modm.marketplace.create_ui_definition import CreateUiDefinition

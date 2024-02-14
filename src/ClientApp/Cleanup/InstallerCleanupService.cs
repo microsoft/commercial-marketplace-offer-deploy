@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 ﻿using System.Globalization;
 using ClientApp.Commands;
 using MediatR;

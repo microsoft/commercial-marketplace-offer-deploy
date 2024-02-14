@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 ﻿using MediatR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

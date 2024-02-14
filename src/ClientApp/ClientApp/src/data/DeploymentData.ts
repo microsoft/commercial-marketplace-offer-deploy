@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { AxiosRequestConfig } from "axios";
 import { AppConstants } from "../constants/app-constants";
 import { DeploymentConstants, ProvisionState } from "../constants/deployment.constants";

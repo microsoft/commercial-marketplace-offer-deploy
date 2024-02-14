@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 ﻿using System;
 using Microsoft.WindowsAzure.ResourceStack.Common.Extensions;
 using Modm.Azure.Model;

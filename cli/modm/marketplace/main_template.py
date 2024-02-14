@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import json
 import os
 from modm.arm.arm_template import ArmTemplate
