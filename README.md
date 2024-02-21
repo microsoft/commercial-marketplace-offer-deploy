@@ -36,7 +36,8 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 
 ## Walkthrough
 
-There is a Jupyter notebook that contains a walkthrough of the packaging process for MODM located [here](./docs/notebooks/package-terraform-solution.ipynb). To execute the the walkthrough, you will need to install the following pre-requisites:
+There is a Jupyter notebook that contains a walkthrough of the packaging process for MODM located [here](./docs/notebooks/package-terraform-solution.ipynb). 
+To execute the the walkthrough, you will need to install the following pre-requisites:
 
 - [Python version 3.10 or higher](https://www.python.org/downloads)
 - [Jupyter Notebooks](https://jupyter.org/install)  
