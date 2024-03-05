@@ -1,5 +1,6 @@
 param location string
 param resourceGroupName string
+param artifactsLocationSasToken string
 // param resourceGroupName string = 'managedKubeflowRg'
 param projectName string = 'managedApp'
 var vNetName = '${projectName}BootstrapVnet'
