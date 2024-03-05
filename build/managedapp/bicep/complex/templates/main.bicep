@@ -102,7 +102,7 @@ module virtualMachinesRoleDefinition 'modules/virtualMachinesRoleDefinition.bice
 
 module virtualMachineAKSRoleDefinition 'modules/virtualMachineAKSRoleDefinition.bicep' = {
   name: 'virtualMachineAKSRoleDefinition'
-  scope: az.resourceGroup('managedKubeflowAKS')
+  scope: az.resourceGroup('resourceGroupName')
   params: {
     vmName: vmName
     vmPrincipalId: virtualMachine.outputs.vmPrincipalId
@@ -133,7 +133,7 @@ module AKSCluster 'modules/AKSCluster.bicep' = {
     location: location
     clusterName: clusterName
     dnsPrefix: dnsPrefix
-    nodeResourceGroup: 'managedKubeflowAKS'
+    nodeResourceGroup: resourceGroupName
     agentCount: agentCount
     vmSize: vmSize
     osDiskSizeGB: osDiskSizeGB
