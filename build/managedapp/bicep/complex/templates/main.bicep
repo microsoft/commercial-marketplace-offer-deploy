@@ -102,7 +102,7 @@ module virtualMachinesRoleDefinition 'modules/virtualMachinesRoleDefinition.bice
 
 module virtualMachineAKSRoleDefinition 'modules/virtualMachineAKSRoleDefinition.bicep' = {
   name: 'virtualMachineAKSRoleDefinition'
-  scope: az.resourceGroup('resourceGroupName')
+  scope: az.resourceGroup(resourceGroupName)
   params: {
     vmName: vmName
     vmPrincipalId: virtualMachine.outputs.vmPrincipalId
