@@ -10,7 +10,7 @@ param vNetName string
 param vNetSubnetName string
 param vnetSubnetId string
 
-resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-05-02-preview' = {
+resource aksCluster 'Microsoft.ContainerService/managedClusters@2021-07-01' = {
   name: clusterName
   location: location
   identity: {
