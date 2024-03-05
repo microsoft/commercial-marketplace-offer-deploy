@@ -133,7 +133,7 @@ module AKSCluster 'modules/AKSCluster.bicep' = {
     location: location
     clusterName: clusterName
     dnsPrefix: dnsPrefix
-    nodeResourceGroup: resourceGroupName
+    nodeResourceGroup: 'bobjactestgroup'
     agentCount: agentCount
     vmSize: vmSize
     osDiskSizeGB: osDiskSizeGB
