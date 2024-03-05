@@ -9,6 +9,7 @@
         "steps": [],
         "outputs": {
             "location": "[location()]",
+            "artifactsLocationSasToken": "",
             "vNetAddressPrefixes": "172.18.0.0/16",
             "agentCount": 3,
             "adminUsername": "ubuntu",
