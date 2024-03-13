@@ -82,7 +82,11 @@ In Partner Center, once the offer has hit "Publisher signoff" state, use the "Az
 
 After the deployment is complete, grab the `applicationInstallerUrl` from the Deployment Inputs and load in your browser.  It will take a few minutes to be available, and the URL will look something like: `https://modmquxaa353lmpr.azurewebsites.net/diagnostics`
 
+![](img/modm-deployment-url.png)
 
+Once the dashboard loads, it will look like:
+
+![](img/modm-dashboard.png)
 
 ## How to Contribute
 
