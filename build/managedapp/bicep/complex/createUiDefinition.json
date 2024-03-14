@@ -1,0 +1,24 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+    "handler": "Microsoft.Azure.CreateUIDef",
+    "version": "0.1.2-preview",
+    "parameters": {
+        "basics": [
+            {}
+        ],
+        "steps": [],
+        "outputs": {
+            "location": "[location()]",
+            "artifactsLocationSasToken": "",
+            "vNetAddressPrefixes": "172.18.0.0/16",
+            "agentCount": 3,
+            "adminUsername": "ubuntu",
+            "vNetSubnetAddressPrefix": "172.18.0.0/24",
+            "projectName": "managedApp",
+            "vmSize": "Standard_D2s_v3",
+            "dnsPrefix": "kubeflow",
+            "osDiskSizeGB": 250,
+            "clusterName": "managedKubeflowCluster"
+        }
+    }
+}
