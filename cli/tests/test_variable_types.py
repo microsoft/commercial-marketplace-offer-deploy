@@ -1,5 +1,5 @@
 import unittest
-from packaging.terraform.variable_types import TerraformInputVariableType
+from modm.terraform.variable_types import TerraformInputVariableType
 
 class TestVariableType(unittest.TestCase):
     def test_to_list(self):

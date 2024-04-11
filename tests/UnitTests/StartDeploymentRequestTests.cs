@@ -80,7 +80,9 @@ namespace Modm.Tests.UnitTests
             Services.AddLogging();
             Services.AddSingleton<IMetadataService, LocalMetadataService>();
             Services.AddSingleton<IManagedIdentityService, LocalManagedIdentityService>();
+            Services.AddSingleton<ParametersFileFactory>();
             Services.AddScoped<DeploymentFile>();
+            Services.AddScoped<AuditFile>();
 
             Services.AddMediatR(c => c.RegisterServicesFromAssemblyContaining<IDeploymentEngine>());
             Services.AddPipeline<IPipeline<StartDeploymentRequest, StartDeploymentResult>, StartDeploymentRequestPipeline>(c => c.AddStartDeploymentRequestPipeline());

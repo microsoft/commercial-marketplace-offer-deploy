@@ -1,0 +1,39 @@
+﻿{
+    "description": "Dev purposes. copied to the runtime folder. Set ProxyClient appsettings to Json to use this instead of live backend for debugging",
+    "routes": {
+        "api/deployments": {
+            "deployment": {
+                "id": 1,
+                "status": "success",
+                "resourceGroup": "rg-64-20230921101915",
+                "subscriptionId": "<Enter subscription here>",
+                "offerName": "Local Offer",
+                "definition": {
+                    "workingDirectory": "/Users/kehilli/Workspace/github.com/microsoft/commercial-marketplace-offer-deploy/home/content",
+                    "mainTemplatePath": "main.tf",
+                    "parametersFilePath": "/Users/kehilli/Workspace/github.com/microsoft/commercial-marketplace-offer-deploy/home/content/terraform.tfvars.json",
+                    "deploymentType": "terraform",
+                    "source": {
+                        "value": null
+                    },
+                    "parameters": {
+                        "location": "eastus",
+                        "resource_group_name": "rg-64-20230921101915"
+                    }
+                },
+                "isStartable": false,
+                "resources": [
+                    {
+                        "name": "rg-64-20230921101915",
+                        "type": "Microsoft.Resources/resourceGroups",
+                        "state": "Succeeded",
+                        "timestamp": "2021-09-21T10:19:15.0000000Z"
+                    }
+                ]
+            }
+        },
+        "api/status": {
+            "isHealthy": true
+        }
+    }
+}

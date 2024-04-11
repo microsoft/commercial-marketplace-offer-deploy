@@ -1,8 +1,12 @@
-import { useRoutes } from 'react-router-dom';
+// routes/index.tsx
 
-// routes
+import React from 'react';
+import { useRoutes, RouteObject } from 'react-router-dom';
 import MainRoutes from './MainRoutes';
 
-export default function ThemeRoutes() {
-    return useRoutes([MainRoutes]);
-}
+const ThemeRoutes = () => {
+  const routing = useRoutes(MainRoutes as RouteObject[]);
+  return routing;
+};
+
+export default ThemeRoutes;

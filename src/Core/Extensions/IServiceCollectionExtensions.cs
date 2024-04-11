@@ -9,6 +9,8 @@ using Modm.Engine;
 using Modm.Jenkins.Client;
 using Modm.Engine.Pipelines;
 using Modm.Jenkins;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Modm.Security;
 
 namespace Modm.Extensions
 {
@@ -39,6 +41,7 @@ namespace Modm.Extensions
 		{
             services.AddScoped<IValidator<PackageFile>, PackageFileValidator>();
             services.AddSingleton<PackageFileFactory>();
+            services.AddSingleton<ParametersFileFactory>();
 
             if (environment.IsDevelopment())
             {
@@ -56,6 +59,7 @@ namespace Modm.Extensions
             services.AddSingleton<ApiTokenClient>();
             services.AddSingleton<JenkinsClientFactory>();
             services.AddSingleton<DeploymentFile>();
+            services.AddSingleton<AuditFile>();
             services.AddSingleton<IDeploymentRepository, DefaultDeploymentRepository>();
 
             services.AddSingleton<IDeploymentEngine, JenkinsDeploymentEngine>();
@@ -91,6 +95,26 @@ namespace Modm.Extensions
         public static IServiceCollection AddDefaultHttpClient(this IServiceCollection services)
         {
             services.AddHttpClient();
+            return services;
+        }
+
+        /// <summary>
+        /// Adds MODM jwt bearer token authentication
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="configuration"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddJwtBearerAuthentication(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(new JwtBearerConfigurator(configuration).Configure);
+
+            services.AddAuthorization();
+
             return services;
         }
     }

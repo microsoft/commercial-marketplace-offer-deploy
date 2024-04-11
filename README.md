@@ -34,6 +34,19 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
+## Walkthrough
+
+There is a Jupyter notebook that contains a walkthrough of the packaging process for MODM located [here](./docs/notebooks/package-terraform-solution.ipynb). To execute the the walkthrough, you will need to install the following pre-requisites:
+
+- [Python version 3.10 or higher](https://www.python.org/downloads)
+- [Jupyter Notebooks](https://jupyter.org/install)  
+
+Once you have installed the required pre-requisited, you can launch the Jupyter Notebook. More information on launching the notebook can be found at [https://docs.jupyter.org/en/latest](https://docs.jupyter.org/en/latest).
+
+## Video Tutorials
+
+- [Packaging Terraform Solutions](https://youtu.be/j-8jTDjU7S4?si=zhr_-XcbGHxPupah)
+- [Installing Published Solutions](https://youtu.be/uA-8PpxexbY?si=7dO80qgTqKQPwxv7)
 
 ## Trademarks
 

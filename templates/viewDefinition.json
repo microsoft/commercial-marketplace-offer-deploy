@@ -4,21 +4,10 @@
     "views": [
       {
         "kind": "Overview",
-        "name": "overview",
         "properties": {
-          "displayName": "Overview",
-          "version": "1.0.0",
-          "header": "{{offerName}} Details",   
-          "description": "{{offerDescription}}  <br /><a href=\"{{dashboardUrl}}\">Dashboard</a>",
-          "commands": [
-            {
-              "displayName": "Visit VM FQDN",
-              "path": "[[vmFQDN]]",
-              "icon": "Go"
-            }
-          ]
+          "header": "{{offerName}}",   
+          "description": "{{offerDescription}} <br /><h3>App Installer Dashboard</h3>The dashboard URL and credentials to login can be found in the Azure portal menu under <strong>Settings > Parameters and Outputs</strong> under <em>outputs</em>."
         }
       }
     ]
-  }
-  
+}

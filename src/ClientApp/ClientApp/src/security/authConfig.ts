@@ -4,7 +4,7 @@
  */
 
 import { LogLevel, RedirectRequest } from "@azure/msal-browser";
-import appSettings from "config/appSettings";
+import appSettings from "../config/appSettings"
 
 // TODO: need to get client id and tenant id to set
 

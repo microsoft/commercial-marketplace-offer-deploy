@@ -20,12 +20,13 @@ namespace Modm.Jenkins.Client
         /// <returns></returns>
         Task<MasterComputer> GetBuiltInNode();
 
+        Task<int?> GetLastBuildNumberAsync(string jobName);
 
         Task<string> GetBuildStatus(string jobName, int buildNumber);
 
         Task<bool> IsJobRunningOrWasAlreadyQueued(string jobName);
 
-        Task<(int?, string)> Build(string jobName);
+        Task<int?> Build(string jobName);
 
         Task<string> GetBuildLogs(string jobName, int buildNumber);
 

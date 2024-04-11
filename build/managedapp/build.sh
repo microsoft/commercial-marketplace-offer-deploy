@@ -23,6 +23,15 @@
 # shared functions
 # ------------------------------------------------------------
 
+function getExpiry() {
+    if command -v gdate &> /dev/null
+    then
+        alias date=gdate
+    fi
+    local expiry=$(date -d "+730 days" '+%Y-%m-%dT%H:%MZ')
+    echo $expiry
+}
+
 function createApplicationPackage() {
     echo "Creating application package."
 
@@ -33,8 +42,12 @@ function createApplicationPackage() {
     echo "Creating resources tarball."
     echo ""
 
-    modm util create-resources-tarball -t ./templates -f src/Functions/Functions.csproj -o ./bin
+    modm util create-resources-archive -t ./templates -f src/ClientApp/ClientApp.csproj -o ./bin
     resources_file=./bin/resources.tar.gz
+
+    # Extract mainTemplate, default to "main.tf" if not present
+    main_template=$(jq -r '.mainTemplate // "main.tf"' $SCENARIO_PATH/manifest.json)
+    
 
     # build application package, e.g. app.zip
     modm package build \
@@ -42,7 +55,7 @@ function createApplicationPackage() {
         --description "$(echo $info | jq .offer.name -r)" \
         --resources-file $resources_file \
         --vmi-reference-id $IMAGE_ID \
-        --main-template $SCENARIO_PATH/templates/main.tf \
+        --main-template $SCENARIO_PATH/templates/$main_template \
         --create-ui-definition $SCENARIO_PATH/createUiDefinition.json \
         --out-dir ./bin
 
@@ -86,10 +99,24 @@ function createServiceDefinition() {
         --file $PACKAGE_FILE \
         --overwrite
 
-
-    blob=$(az storage blob url --account-name $STORAGE_ACCOUNT_NAME \
+    storage_account_connection_string=$(az storage account show-connection-string \
+        --name $STORAGE_ACCOUNT_NAME \
+        --resource-group $RESOURCE_GROUP \
+        --output tsv \
+        --query connectionString)
+    
+  
+    expiry=$(getExpiry)
+    blob=$(az storage blob generate-sas \
+        --account-name $STORAGE_ACCOUNT_NAME \
         --container-name $STORAGE_CONTAINER_NAME \
-        --name app.zip --output tsv)
+        --connection-string $storage_account_connection_string \
+        --name app.zip \
+        --permissions r \
+        --expiry $expiry \
+        --https-only \
+        --full-uri \
+        --output tsv)
     
     roleid=$(az role definition list --name Owner --query [].name --output tsv)
     groupid="d391271a-216a-49e1-a36e-c24b2c619f14"

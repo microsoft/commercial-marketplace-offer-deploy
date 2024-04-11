@@ -1,0 +1,41 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+    "handler": "Microsoft.Azure.CreateUIDef",
+    "version": "0.1.2-preview",
+    "parameters": {
+        "basics": [
+            {}
+        ],
+        "steps": [
+            {
+                "name": "setup",
+                "label": "App Setup",
+                "elements": [
+                    {
+                        "name": "sqlAdminPassword",
+                        "type": "Microsoft.Common.PasswordBox",
+                        "label": {
+                            "password": "Password",
+                            "confirmPassword": "Confirm password"
+                        },
+                        "toolTip": "Password must be at least 8 characters long, contain only numbers and letters",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^[a-zA-Z0-9]{8,}$",
+                            "validationMessage": "Password must be at least 8 characters long, contain only numbers and letters"
+                        },
+                        "options": {
+                            "hideConfirmation": false
+                        },
+                        "visible": true
+                    }
+                ]
+            }
+        ],
+        "outputs": {
+            "location": "[location()]",
+            "sql_admin_username": "adminuser",
+            "sql_admin_password": "[steps('setup').sqlAdminPassword]"
+        }
+    }
+}

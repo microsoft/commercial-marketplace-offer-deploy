@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Security.Cryptography;
+using Microsoft.Extensions.DependencyInjection;
 using Modm.Packaging;
 using Modm.Tests.Utils;
 
@@ -30,7 +31,7 @@ namespace Modm.Tests.UnitTests
         [Fact]
         public void hash_should_validate()
         {
-            const string expectedHash = "692c18ed56f41ce23ac4296f482c66c3dee8b2b7d440ce2f4974d5a0adf63301";
+            const string expectedHash = "8016f746d03de6312283396c6e0f95504dcd14d58162f0f14bea28bf96c09663";
             Assert.True(file.IsValidHash(expectedHash));
         }
 

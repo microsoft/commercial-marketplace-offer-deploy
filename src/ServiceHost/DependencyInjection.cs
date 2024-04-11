@@ -3,6 +3,7 @@ using Modm.Azure;
 using Modm.Deployments;
 using Modm.Engine;
 using Modm.Extensions;
+using Modm.Security;
 using Polly;
 
 namespace Modm.ServiceHost
@@ -37,6 +38,8 @@ namespace Modm.ServiceHost
             services.AddSingleton<EngineChecker>();
 
             services.AddMediatR(c => c.RegisterServicesFromAssemblyContaining<ControllerService>());
+
+            services.AddSingleton<JwtTokenFactory>();
 
             return services;
         }

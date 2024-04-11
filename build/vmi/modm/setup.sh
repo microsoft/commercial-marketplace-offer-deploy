@@ -40,6 +40,7 @@ sudo docker build . -t jenkins -f ./build/container/Dockerfile.jenkins
 # setup daemon
 # ----------------------------------
 echo "Installing ServiceHost as systemd service."
+
 sudo cp $out_path/publish/modm /usr/sbin/modm
 
 sudo cp $out_path/publish/appsettings.json $service_path
@@ -48,6 +49,9 @@ sudo cp /tmp/modm.service /etc/systemd/system/modm.service
 # activate and start
 sudo systemctl daemon-reload
 sudo systemctl start modm
+
+sudo systemctl status modm.service
+sudo journalctl -xeu modm.service
 
 # support start on boot
 sudo systemctl enable modm

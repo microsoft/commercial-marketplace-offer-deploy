@@ -141,6 +141,7 @@ namespace Modm.Engine.Pipelines
 
         private async Task Publish(Deployment deployment, CancellationToken cancellationToken)
         {
+            this.logger.LogInformation("Inside SubmitDeployment:Publish - publishing DeploymentStarted");
             await mediator.Publish(new DeploymentStarted
             {
                 Id = deployment.Id,
@@ -151,31 +152,54 @@ namespace Modm.Engine.Pipelines
         private async Task<bool> TryToSubmit(Deployment deployment)
         {
             using var client = await clientFactory.Create();
-            var (id, status) = await client.Build(deployment.Definition.DeploymentType);
-            deployment.Status = status;
+            this.logger.LogInformation($"Prior to calling client.Build  - {DateTime.UtcNow}");
 
-            if (id.HasValue)
+
+            var id = await client.Build(deployment.Definition.DeploymentType);
+
+            // this was added in replace of commented section
+            if (!id.HasValue)
             {
-                deployment.Id = id.Value;
-                return true;
+                this.logger.LogInformation("id does not have value in TryToSubmit");
+                return false;
             }
-            return false;
+
+            // If we get here, it means we have a valid build ID
+            deployment.Id = id.Value;
+            deployment.Status = DeploymentStatus.Undefined;
+            this.logger.LogInformation($"The deployment.Id has a value of {deployment.Id}");
+            return true;
         }
     }
 
     // #3
     public class WriteDeploymentToDisk : IRequestPostProcessor<StartDeploymentRequest, StartDeploymentResult>
     {
-        private readonly DeploymentFile file;
+        private readonly DeploymentFile deploymentFile;
+        private readonly AuditFile auditFile;
+        private readonly ILogger<WriteDeploymentToDisk> logger;
 
-        public WriteDeploymentToDisk(DeploymentFile file) => this.file = file;
-
+        public WriteDeploymentToDisk(DeploymentFile deploymentFile, AuditFile auditFile, ILogger<WriteDeploymentToDisk> logger)
+        {
+            this.deploymentFile = deploymentFile;
+            this.auditFile = auditFile;
+            this.logger = logger;
+        }
         public async Task Process(
             StartDeploymentRequest request,
             StartDeploymentResult response,
             CancellationToken cancellationToken)
         {
-            await file.Write(response.Deployment, cancellationToken);
+            this.logger.LogInformation("Inside WriteDeploymentToDisk:Process");
+
+            var deployment = await this.deploymentFile.ReadAsync(cancellationToken);
+            await deploymentFile.WriteAsync(deployment, cancellationToken);
+
+            var auditRecords = await this.auditFile.ReadAsync(cancellationToken);
+            var auditRecord = new AuditRecord();
+            auditRecord.AdditionalData.Add("WriteDeploymentToDisk:Process", response.Deployment);
+            auditRecords.Add(auditRecord);
+            await this.auditFile.WriteAsync(auditRecords, cancellationToken);
         }
     }
 

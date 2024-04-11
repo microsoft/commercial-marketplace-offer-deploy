@@ -36,25 +36,24 @@ namespace Modm.Engine
             this.logger = logger;
         }
 
-        public async Task<EngineInfo> GetInfo()
+        public Task<EngineInfo> GetInfo()
         {
-            var result = EngineInfo.Default();
-            this.logger.LogInformation("Inside JenkinsDeploymentEngine:GetInfo()");
-            return this.readinessService.GetEngineInfo();
+            this.logger.LogTrace("Inside JenkinsDeploymentEngine:GetInfo()");
+            return Task.FromResult(this.readinessService.GetEngineInfo());
         }
 
         public async Task<string> GetLogs()
         {
             using var client = await clientFactory.Create();
 
-            var deployment = await file.Read();
+            var deployment = await file.ReadAsync();
             return await client.GetBuildLogs(deployment.Definition.DeploymentType, deployment.Id);
         }
 
         public async Task<Deployment> Get()
         {
-            var deployment = await file.Read();
-           
+            var deployment = await file.ReadAsync();
+
             // load up the resources
             var compute = (await metadataService.GetAsync()).Compute;
 

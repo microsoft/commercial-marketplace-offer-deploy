@@ -115,20 +115,61 @@ namespace Modm.Jenkins.Client
 
             try
             {
+                this.logger.LogInformation($"Inside GetBuildStatus prior to calling jenkinsNetClient.Builds.GetAsync with jobName:{jobName} and buildNumber:{buildNumber.ToString()}");
                 var build = await jenkinsNetClient.Builds.GetAsync<JenkinsBuildBase>(jobName, buildNumber.ToString());
                 if (build != null && !string.IsNullOrEmpty(build.Result))
                 {
                     status = build.Result.ToLower();
                 }
+                
             }
-            catch // unfortunately we have to just catch all since the jenkinsNet client will throw if it doesn't exist
+            catch(Exception ex) // unfortunately we have to just catch all since the jenkinsNet client will throw if it doesn't exist
             {
+                this.logger.LogError(ex.Message);
             }
 
             return status;
         }
 
-        public async Task<(int?, string)> Build(string jobName)
+        public async Task<int?> Build(string jobName)
+        {
+            var (id, status) = await ExecuteBuild(jobName);
+            if (!id.HasValue)
+            {
+                bool isBuildStarted = false;
+                int maxAttempts = 20;
+                int attempt = 0;
+                int delay = 5000;
+
+                while (!isBuildStarted && attempt < maxAttempts)
+                {
+                    attempt++;
+                    this.logger.LogInformation($"Waiting for build to start. Attempt: {attempt}");
+
+                    await Task.Delay(delay);
+
+                    id = await GetLastBuildNumberAsync(jobName);
+
+                    if (id.HasValue)
+                    {
+                        this.logger.LogInformation("id.HasValue was true");
+                        status = await GetBuildStatus(jobName, id.Value);
+                        this.logger.LogInformation($"returned the following status - {status}");
+                    }
+
+                    isBuildStarted = (id.HasValue);
+                }
+
+                if (!isBuildStarted)
+                {
+                    this.logger.LogInformation("Build did not start after polling attempts.");
+                }
+            }
+
+            return id;
+        }
+
+        private async Task<(int?, string)> ExecuteBuild(string jobName)
         {
             var response = await jenkinsNetClient.Jobs.BuildAsync(jobName);
             var queueId = response.GetQueueItemNumber().GetValueOrDefault(0);
@@ -145,11 +186,32 @@ namespace Modm.Jenkins.Client
 
             if (!buildNumber.HasValue)
             {
-                return(null, DeploymentStatus.Undefined);
+                return (null, DeploymentStatus.Undefined);
             }
 
             return (buildNumber.Value, DeploymentStatus.Running);
         }
+
+        public async Task<int?> GetLastBuildNumberAsync(string jobName)
+        {
+            try
+            {
+                
+                var lastBuild = await jenkinsNetClient.Builds.GetAsync<JenkinsBuildBase>(jobName, "lastBuild");
+
+                if (lastBuild != null)
+                {
+                    return lastBuild.Number;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Failed to fetch the last build number for job {jobName}.");
+            }
+
+            return null;
+        }
+
 
         public async Task<bool> IsJobRunningOrWasAlreadyQueued(string jobName)
         {

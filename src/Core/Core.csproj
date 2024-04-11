@@ -8,13 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Identity" Version="1.10.2" />
-    <PackageReference Include="Azure.ResourceManager" Version="1.7.0" />
+    <PackageReference Include="Azure.Identity" Version="1.10.3" />
+    <PackageReference Include="Azure.ResourceManager" Version="1.9.0" />
+    <PackageReference Include="Azure.ResourceManager.AppConfiguration" Version="1.0.0" />
     <PackageReference Include="Azure.ResourceManager.Resources" Version="1.6.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.17.0" />
     <PackageReference Include="FluentValidation" Version="11.7.1" />
     <PackageReference Include="jenkinsnet" Version="1.0.4" />
     <PackageReference Include="MediatR" Version="12.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.13" />
+    <PackageReference Include="Microsoft.Azure.AppConfiguration.AspNetCore" Version="6.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Azure" Version="1.7.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
     <PackageReference Include="Azure.Deployments.Expression" Version="1.0.1040" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.0.0" />
@@ -41,7 +45,6 @@
     <None Remove="Configuration\" />
     <None Remove="Azure\Model\" />
     <None Remove="Engine\Notifications\" />
-    <None Remove="Engine\Behaviors\" />
     <None Remove="Engine\Pipelines\" />
     <None Remove="Http\" />
     <None Remove="Serialization\" />
@@ -49,12 +52,13 @@
     <None Remove="IO\" />
     <None Remove="Compression\" />
     <None Remove="Jenkins\" />
+    <None Remove="Security\" />
+    <None Remove="Azure\Notifications\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Configuration\" />
     <Folder Include="Azure\Model\" />
     <Folder Include="Engine\Notifications\" />
-    <Folder Include="Engine\Behaviors\" />
     <Folder Include="Engine\Pipelines\" />
     <Folder Include="Http\" />
     <Folder Include="Serialization\" />
@@ -62,5 +66,7 @@
     <Folder Include="IO\" />
     <Folder Include="Compression\" />
     <Folder Include="Jenkins\" />
+    <Folder Include="Security\" />
+    <Folder Include="Azure\Notifications\" />
   </ItemGroup>
 </Project>

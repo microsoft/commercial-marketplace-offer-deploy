@@ -1,0 +1,5 @@
+{
+    "releases_index_url": "https://raw.githubusercontent.com/microsoft/commercial-marketplace-offer-deploy/main/index.json",
+    "latest_release_url": "https://api.github.com/repos/microsoft/commercial-marketplace-offer-deploy/releases/latest",
+    "release_by_tag_url_format": "https://api.github.com/repos/microsoft/commercial-marketplace-offer-deploy/releases/tags/{}"
+}

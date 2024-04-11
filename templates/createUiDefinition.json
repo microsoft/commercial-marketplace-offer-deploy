@@ -4,49 +4,89 @@
     "version": "0.1.2-preview",
     "parameters": {
         "basics": [
-            {}
         ],
         "steps": [
             {
-                "name": "setup",
-                "label": "App Setup",
+                "name": "installer",
+                "label": "App Installer settings",
                 "elements": [
                     {
-                        "name": "tbAdminUser",
-                        "type": "Microsoft.Common.TextBox",
-                        "label": "Admin Username",
-                        "placeholder": "",
-                        "defaultValue": "modmadmin",
-                        "toolTip": "Use only allowed characters",
-                        "constraints": {
-                            "required": true,
-                            "regex": "^[a-z0-9A-Z]{1,30}$",
-                            "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-30 characters long."
-                        },
-                        "visible": true
+                        "name": "stepInfo",
+                        "type": "Microsoft.Common.Section",
+                        "label": "Marketplace Application Installer details",
+                        "elements": [
+                            {
+                                "name": "descriptionText",
+                                "type": "Microsoft.Common.TextBlock",
+                                "visible": true,
+                                "options": {
+                                    "text": "The Marketplace Application Installer installs the application from the Azure Marketplace. It is a prerequisite for the application to be deployed to Azure."
+                                }
+                            },
+                            {
+                                "name": "autoDelete",
+                                "type": "Microsoft.Common.CheckBox",
+                                "label": "Auto delete in 24 hours",
+                                "toolTip": "Check this box if you want the resources to be automatically deleted in 24 hours.",
+                                "visible": true
+                            }
+                            
+                        ]
                     },
                     {
-                        "name": "pbAdminPassword",
-                        "type": "Microsoft.Common.PasswordBox",
-                        "label": {
-                            "password": "Password",
-                            "confirmPassword": "Confirm password"
-                        },
-                        "toolTip": "",
-                        "constraints": {
-                            "required": true,
-                            "regex": "^[a-zA-Z0-9]{8,}$",
-                            "validationMessage": "Password must be at least 8 characters long, contain only numbers and letters"
-                        },
-                        "options": {
-                            "hideConfirmation": false
-                        },
-                        "visible": true
+                        "name": "dashboard",
+                        "type": "Microsoft.Common.Section",
+                        "label": "Dashboard details",
+                        "elements": [
+                            {
+                                "name": "descriptionText",
+                                "type": "Microsoft.Common.TextBlock",
+                                "visible": true,
+                                "options": {
+                                    "text": "To access the Marketplace Application Installer's dashboard, enter values for a username and password to access. The dashboard URL will be found in the application's Settings > Parameters and Outputs after you select Create."
+                                }
+                            },
+                            {
+                                "name": "username",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Admin Username",
+                                "defaultValue": "admin",
+                                "toolTip": "Use only allowed characters",
+                                "constraints": {
+                                    "required": true,
+                                    "regex": "^[a-z0-9A-Z]{1,30}$",
+                                    "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-30 characters long."
+                                },
+                                "visible": true
+                            },
+                            {
+                                "name": "password",
+                                "type": "Microsoft.Common.PasswordBox",
+                                "label": {
+                                    "password": "Password",
+                                    "confirmPassword": "Confirm password"
+                                },
+                                "toolTip": "Password must be at least 8 characters long, contain only numbers and letters",
+                                "constraints": {
+                                    "required": true,
+                                    "regex": "^[a-zA-Z0-9]{8,}$",
+                                    "validationMessage": "Password must be at least 8 characters long, contain only numbers and letters"
+                                },
+                                "options": {
+                                    "hideConfirmation": false
+                                },
+                                "visible": true
+                            }
+                        ]
                     }
                 ]
             }
         ],
         "outputs": {
+            "location": "[location()]",
+            "applicationInstallerUserName": "[steps('installer').dashboard.username]",
+            "applicationInstallerPassword": "[steps('installer').dashboard.password]",
+            "applicationInstallerAutoDelete": "[steps('installer').stepInfo.autoDelete]"
         }
     }
 }

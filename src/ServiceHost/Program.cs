@@ -1,12 +1,17 @@
+using Modm.Extensions;
 using Modm.ServiceHost;
 
 var host = Host.CreateDefaultBuilder(args)
     .UseSystemd()
-    .ConfigureAppConfiguration(builder =>
+    .ConfigureAppConfiguration((context, builder) =>
     {
         builder.AddEnvironmentVariables();
+        builder.AddAppConfigurationSafely(context.HostingEnvironment);
     })
-    .ConfigureServices((context, services) => services.AddServiceHost(context))
+    .ConfigureServices((context, services) =>
+    {
+        services.AddServiceHost(context);
+    })
     .Build();
 
 await host.RunAsync();

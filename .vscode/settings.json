@@ -15,6 +15,10 @@
         "--line-length",
         "150"
     ],
+    "pylint.args": [
+        "--rcfile=.pylintrc"
+    ],
+    "flake8.ignorePatterns": ["*.py"],
     "editor.indentSize": "tabSize",
     "azureFunctions.projectSubpath": "src/Functions",
     "azureFunctions.deploySubpath": "src/Functions/bin/Release/net7.0/publish",

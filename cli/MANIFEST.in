@@ -1,2 +1,1 @@
-include resources/**/*.json
-include resources/*.json
+include modm/release/config.json

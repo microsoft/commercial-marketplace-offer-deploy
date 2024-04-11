@@ -1,0 +1,25 @@
+{
+    "id": 1,
+    "timestamp": "2023-11-16T05:04:17.686304+00:00",
+    "status": "undefined",
+    "resourceGroup": null,
+    "subscriptionId": null,
+    "offerName": null,
+    "definition": {
+      "workingDirectory": "/Users/bobjacobs/work/src/github.com/microsoft/commercial-marketplace-offer-deploy/home/installer",
+      "mainTemplatePath": "main.tf",
+      "parametersFilePath": "/Users/bobjacobs/work/src/github.com/microsoft/commercial-marketplace-offer-deploy/home/installer/terraform.tfvars.json",
+      "deploymentType": "terraform",
+      "source": {
+        "value": null
+      },
+      "installerPackageHash": "6f3555dc5733c1889d96972f7582bc0fc4d5ac748f7a6520f77c9af2a14120e7",
+      "parameters": {
+        "resource_group_name": "rg-91-20230925204412",
+        "location": "eastus",
+        "sql_admin_password": "GPSCodeWith123"
+      }
+    },
+    "resources": [],
+    "isStartable": true
+  }

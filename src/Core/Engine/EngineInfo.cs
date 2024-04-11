@@ -15,15 +15,12 @@ namespace Modm.Engine
         [JsonPropertyName("message")]
         public required string Message { get; set; }
 
-        [JsonPropertyName("engineType")]
-		public required EngineType EngineType { get; set; }
-
         [JsonPropertyName("version")]
 		public required string Version { get; set; }
 
 		public static EngineInfo Default()
         {
-			return new EngineInfo { EngineType = EngineType.Jenkins, IsHealthy = false, Version = "Unknown", Message = string.Empty };
+			return new EngineInfo { IsHealthy = false, Version = "Unknown", Message = string.Empty };
         }
 	}
 }
