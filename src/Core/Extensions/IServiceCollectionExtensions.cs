@@ -77,6 +77,7 @@ namespace Modm.Extensions
             });
 
             services.AddPipeline<IPipeline<StartDeploymentRequest, StartDeploymentResult>, StartDeploymentRequestPipeline>(c => c.AddStartDeploymentRequestPipeline());
+            services.AddPipeline<IPipeline<StartRedeploymentRequest, StartRedeploymentResult>, StartRedeploymentRequestPipeline>(c => c.AddStartRedeploymentRequestPipeline());
 
             return services;
 		}

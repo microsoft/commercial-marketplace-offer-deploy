@@ -38,7 +38,7 @@ namespace Modm.Deployments
             if (!File.Exists(path))
             {
                 logger.LogWarning($"{path} was not found");
-                return default; // Return default value for T
+                return default; 
             }
 
             var json = await File.ReadAllTextAsync(path, cancellationToken);
@@ -51,6 +51,19 @@ namespace Modm.Deployments
             logger.LogInformation($"Writing data to {FileName}");
             await File.WriteAllTextAsync(GetFilePath(), json, cancellationToken);
         }
+
+        public Task DeleteAsync()
+        {
+            var path = GetFilePath();
+
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+            return Task.CompletedTask;
+        }
+
     }
 }
 

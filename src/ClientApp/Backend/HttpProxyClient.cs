@@ -46,6 +46,40 @@ namespace ClientApp.Backend
             }
         }
 
+        public async Task<IActionResult> PostAsync<T>(string relativeUri, HttpContent content = default)
+        {
+            try
+            {
+                var response = await client.PostAsync(relativeUri, content);
+                if (response.IsSuccessStatusCode)
+                {
+                    var value = await DeserializeResponse<T>(response);
+                    return new OkObjectResult(value);
+                }
+
+                return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
+            }
+            catch (HttpRequestException e)
+            {
+                const string message = "Unable to reach the backend service.";
+                logger.LogError(e, message);
+                return StatusCode(503, message);
+            }
+            catch (JsonException e)
+            {
+                const string message = "Error parsing the response from the backend service.";
+                logger.LogError(e, message);
+                return StatusCode(500, message);
+            }
+            catch (Exception e)
+            {
+                const string message = "An unexpected error occurred.";
+                logger.LogError(e, message);
+                return StatusCode(500, message);
+            }
+        }
+
+
         public async Task<IActionResult> GetAsync<T>(string relativeUri)
         {
             try

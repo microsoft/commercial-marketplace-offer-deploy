@@ -14,15 +14,17 @@ namespace Modm.Engine
         private readonly JenkinsClientFactory clientFactory;
         private readonly DeploymentResourcesClient deploymentResourcesClient;
         private readonly IPipeline<StartDeploymentRequest, StartDeploymentResult> pipeline;
+        private readonly IPipeline<StartRedeploymentRequest, StartRedeploymentResult> redeploymentPipeline;
         private readonly IMetadataService metadataService;
         private readonly ILogger<JenkinsDeploymentEngine> logger;
         private readonly JenkinsReadinessService readinessService;
 
-        public JenkinsDeploymentEngine(DeploymentFile file,
+        public JenkinsDeploymentEngine(
+            DeploymentFile file,
             JenkinsClientFactory clientFactory,
             DeploymentResourcesClient deploymentResourcesClient,
-            IPipeline<StartDeploymentRequest,
-            StartDeploymentResult> pipeline,
+            IPipeline<StartDeploymentRequest,StartDeploymentResult> pipeline,
+            IPipeline<StartRedeploymentRequest, StartRedeploymentResult> redeploymentPipeline,
             IMetadataService metadataService,
             JenkinsReadinessService readinessService,
             ILogger<JenkinsDeploymentEngine> logger)
@@ -31,6 +33,7 @@ namespace Modm.Engine
             this.clientFactory = clientFactory;
             this.deploymentResourcesClient = deploymentResourcesClient;
             this.pipeline = pipeline;
+            this.redeploymentPipeline = redeploymentPipeline;
             this.metadataService = metadataService;
             this.readinessService = readinessService;
             this.logger = logger;
@@ -74,7 +77,22 @@ namespace Modm.Engine
         /// </remarks>
         public async Task<StartDeploymentResult> Start(StartDeploymentRequest request, CancellationToken cancellationToken)
         {
+            this.logger.LogTrace("Inside JenkinsDeploymentEngine:Start()");
             var result = await pipeline.Execute(request, cancellationToken);
+            return result;
+        }
+
+       /// <summary>
+        /// starts a redeployment
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks>
+        /// see <see cref="Engine.Pipelines.StartRedeploymentRequestPipeline"/> for implementation of full processing
+        /// </remarks>
+        public async Task<StartRedeploymentResult> Redeploy(StartRedeploymentRequest request, CancellationToken cancellationToken)
+        {
+            this.logger.LogTrace("Inside JenkinsDeploymentEngine:Redeploy()");
+            var result = await redeploymentPipeline.Execute(request, cancellationToken);
             return result;
         }
     }

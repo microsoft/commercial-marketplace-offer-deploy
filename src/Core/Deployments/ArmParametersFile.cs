@@ -25,6 +25,11 @@ namespace Modm.Deployments
             await File.WriteAllTextAsync(FullPath, json);
         }
 
+        public Task Delete()
+        {
+            return Task.Run(() => File.Delete(FullPath));
+        }
+
         class ArmParametersFileContent
         {
             [JsonPropertyName("$schema")]
