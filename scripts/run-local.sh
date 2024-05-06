@@ -6,7 +6,7 @@
 #
 #
 # Example:
-#   ./scripts/run-local.sh --build
+#   ./scripts/run-local.sh --build true
 # ==========================================================
 
 POSITIONAL_ARGS=()

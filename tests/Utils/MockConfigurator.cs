@@ -8,6 +8,7 @@ using Modm.Jenkins.Client;
 using NSubstitute;
 using Azure.ResourceManager;
 using Modm.Tests.Utils.Fakes;
+using System.IO.Compression;
 
 namespace Modm.Tests.Utils
 {
@@ -82,6 +83,20 @@ namespace Modm.Tests.Utils
                 var configuration = Substitute.For<IConfiguration>();
                 configuration.GetValue<string>(EnvironmentVariable.Names.HomeDirectory).Returns(dir.FullName);
 
+                // Paths for files
+                var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                var sourceDeploymentJsonPath = Path.Combine(baseDirectory, "Data", "deployment.json");
+                var sourceInstallerZipPath = Path.Combine(baseDirectory, "Data", "installer.zip");
+                var destinationDeploymentJsonPath = Path.Combine(dir.FullName, "deployment.json");
+                var destinationInstallerZipPath = Path.Combine(dir.FullName, "installer.zip");
+
+                // Copy deployment.json
+                CopyFileToDirectory(sourceDeploymentJsonPath, destinationDeploymentJsonPath);
+
+                // Copy and unzip installer.zip
+                CopyFileToDirectory(sourceInstallerZipPath, destinationInstallerZipPath);
+                UnzipFile(destinationInstallerZipPath, dir.FullName);
+
                 services.AddSingleton<IConfiguration>(configuration);
 
                 return configuration;
@@ -114,6 +129,30 @@ namespace Modm.Tests.Utils
                 services.AddSingleton(instance);
 
                 return instance;
+            }
+
+            private void CopyFileToDirectory(string sourcePath, string destinationPath)
+            {
+                if (File.Exists(sourcePath))
+                {
+                    File.Copy(sourcePath, destinationPath, overwrite: true);
+                }
+                else
+                {
+                    throw new FileNotFoundException($"The file {sourcePath} could not be found.");
+                }
+            }
+
+            private void UnzipFile(string filePath, string extractPath)
+            {
+                if (File.Exists(filePath))
+                {
+                    ZipFile.ExtractToDirectory(filePath, extractPath, overwriteFiles: true);
+                }
+                else
+                {
+                    throw new FileNotFoundException($"The file {filePath} could not be found.");
+                }
             }
         }
     }

@@ -11,7 +11,7 @@ namespace Modm.Deployments
 		/// <summary>
 		/// The ID of the deployment that you wish to redeploy
 		/// </summary>
-		public string DeploymentId { get; set; }
+		public int DeploymentId { get; set; }
 
 		/// <summary>
 		/// The deployment parameters

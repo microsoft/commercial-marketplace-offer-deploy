@@ -10,6 +10,7 @@ using FluentValidation;
 using NSubstitute;
 using FluentValidation.Results;
 using MediatR;
+using Microsoft.WindowsAzure.ResourceStack.Common.Extensions;
 
 namespace Modm.Tests.UnitTests
 {
@@ -23,7 +24,7 @@ namespace Modm.Tests.UnitTests
             this.pipeline = GetPipeline();
             this.request = new StartRedeploymentRequest
             {
-                DeploymentId = "1",
+                DeploymentId = 1,
                 Parameters = GetParameters()
             };
 
@@ -31,9 +32,14 @@ namespace Modm.Tests.UnitTests
 
         private Dictionary<string, object> GetParameters()
         {
-            return new Dictionary<string, object>();
+            return new Dictionary<string, object>
+            {
+                { "resource_group_name", "rg-91-20230925204412" },
+                { "location", "eastus" },
+                { "sql_admin_password", "GPSCodeWith123" }
+            };
         }
-
+            
         private StartRedeploymentRequestPipeline GetPipeline()
         {
             var pipeline = Provider.GetRequiredService<IPipeline<StartRedeploymentRequest, StartRedeploymentResult>>();

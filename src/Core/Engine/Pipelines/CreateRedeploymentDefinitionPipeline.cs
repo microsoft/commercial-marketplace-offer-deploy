@@ -1,8 +1,6 @@
-﻿using FluentValidation;
-using MediatR;
+﻿using MediatR;
 using MediatR.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
-using Modm.Packaging;
 using Modm.Deployments;
 using Microsoft.Extensions.Logging;
 
@@ -18,13 +16,9 @@ namespace Modm.Engine.Pipelines
             // start with behaviors order from bottom --> up
             // since we're going to handle the build up of the definition
    
-            c.AddBehavior<CreateParametersFile>();
-            c.AddBehavior<ReadManifestFile>();
-            c.AddRequestPostProcessor<WriteToDisk>();
-
+            c.AddBehavior<RecreateParametersFile>();
+            c.AddRequestPostProcessor<RewriteToDisk>();
             c.RegisterServicesFromAssemblyContaining<CreateDeploymentDefinitionHandler>();
-
-   
             return c;
         }
     }
@@ -36,55 +30,40 @@ namespace Modm.Engine.Pipelines
     /// </summary>
     public class CreateRedeploymentDefinitionHandler : IRequestHandler<CreateRedeploymentDefinition, DeploymentDefinition>
     {
-        public Task<DeploymentDefinition> Handle(CreateRedeploymentDefinition request, CancellationToken cancellationToken)
-        {
-            return Task.FromResult(new DeploymentDefinition
-            {
-                Source = request.GetUri(),
-                InstallerPackageHash = request.PackageHash,
-                Parameters = request.Parameters
-            });
-        }
-    }
+        private DeploymentFile deploymentFile;
 
-    public class ReadDeploymentFile : IPipelineBehavior<CreateRedeploymentDefinition, DeploymentDefinition>
-    {
-        private readonly DeploymentFile deploymentFile;
-
-        public ReadDeploymentFile(DeploymentFile deploymentFile)
+        public CreateRedeploymentDefinitionHandler(DeploymentFile deploymentFile)
         {
             this.deploymentFile = deploymentFile;
-
         }
 
-        public async Task<DeploymentDefinition> Handle(CreateRedeploymentDefinition request, RequestHandlerDelegate<DeploymentDefinition> next, CancellationToken cancellationToken)
+        public async Task<DeploymentDefinition> Handle(CreateRedeploymentDefinition request, CancellationToken cancellationToken)
         {
-            var result = await next();
-
             var deployment = await this.deploymentFile.ReadAsync(cancellationToken);
-           // result.
 
-            return result;
-        }
-    }
-
-    
-
-    // #2
-    public class RereadManifestFile : IPipelineBehavior<CreateRedeploymentDefinition, DeploymentDefinition>
-    {
-        public async Task<DeploymentDefinition> Handle(CreateRedeploymentDefinition request, RequestHandlerDelegate<DeploymentDefinition> next, CancellationToken cancellationToken)
-        {
-            var definition = await next();
-
-            var manifest = await ManifestFile.Read(definition.WorkingDirectory);
-
-            definition.MainTemplatePath = manifest.MainTemplate;
-            definition.DeploymentType = manifest.DeploymentType;
+            var definition = deployment.Definition;
+            definition.Parameters = request.Parameters;
 
             return definition;
         }
     }
+
+
+    // #2
+    //public class RereadManifestFile : IPipelineBehavior<CreateRedeploymentDefinition, DeploymentDefinition>
+    //{
+    //    public async Task<DeploymentDefinition> Handle(CreateRedeploymentDefinition request, RequestHandlerDelegate<DeploymentDefinition> next, CancellationToken cancellationToken)
+    //    {
+    //        var definition = await next();
+
+    //        var manifest = await ManifestFile.Read(definition.WorkingDirectory);
+
+    //        definition.MainTemplatePath = manifest.MainTemplate;
+    //        definition.DeploymentType = manifest.DeploymentType;
+
+    //        return definition;
+    //    }
+    //}
 
     // #3
     public class RecreateParametersFile : IPipelineBehavior<CreateRedeploymentDefinition, DeploymentDefinition>
@@ -99,7 +78,9 @@ namespace Modm.Engine.Pipelines
         public async Task<DeploymentDefinition> Handle(CreateRedeploymentDefinition request, RequestHandlerDelegate<DeploymentDefinition> next, CancellationToken cancellationToken)
         {
             var definition = await next();
-            var file = factory.Create(definition.DeploymentType, definition.GetMainTemplateDirectoryName());
+            var directory = definition.GetMainTemplateDirectoryName();
+            var file = factory.Create(definition.DeploymentType, directory);
+            await file.Delete();
 
             // the file must always have at least an empty object
             await file.Write(request.Parameters ?? new Dictionary<string, object>());

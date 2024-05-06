@@ -22,6 +22,13 @@ namespace WebHost.Controllers
         {
             return await this.engine.GetInfo();
         }
+
+        [HttpGet]
+        [Route("{name}")]
+        public async Task<string> GetAsync([FromRoute] string name)
+        {
+            var modmHome = Environment.GetEnvironmentVariable("MODM_HOME");
+            return $"Hello, {modmHome}";
+        }
     }
 }
-

@@ -35,7 +35,7 @@ namespace Modm.ClientApp.Controllers
         }
 
         [HttpPost("deployments/{deploymentId}/redeploy")]
-        public async Task<IActionResult> PostRedeploy(string deploymentId, [FromBody] Dictionary<string, object> parameters)
+        public async Task<IActionResult> PostRedeploy(int deploymentId, [FromBody] Dictionary<string, object> parameters)
         {
             var request = new StartRedeploymentRequest
             {

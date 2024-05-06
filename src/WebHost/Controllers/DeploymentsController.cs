@@ -86,15 +86,9 @@ namespace WebHost.Controllers
             return Results.Created("/deployments", result);
         }
 
-        [HttpPost("{deploymentId}/redeploy")]
-        public async Task<IResult> Redeploy(string deploymentId, [FromBody] StartRedeploymentRequest request, CancellationToken cancellationToken)
+        [HttpPost("redeploy")]
+        public async Task<IResult> Redeploy([FromBody] StartRedeploymentRequest request, CancellationToken cancellationToken)
         {
-            // You may want to ensure the deploymentId in the URL matches the one in the request body, or simply use one source.
-            if (deploymentId != request.DeploymentId)
-            {
-                return Results.BadRequest("Deployment ID mismatch.");
-            }
-
             // Validate the request
             var validationResult = await redeploymentValidator.ValidateAsync(request, cancellationToken);
             if (!validationResult.IsValid)
@@ -111,7 +105,7 @@ namespace WebHost.Controllers
                     return Results.Problem(string.Join(", ", result.Errors));
                 }
 
-                return Results.Created($"/deployments/{deploymentId}", result.Deployment);
+                return Results.Created($"/deployments/{request.DeploymentId}", result.Deployment);
             }
             catch (Exception ex)
             {

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.IO.Compression;
+using Microsoft.Extensions.DependencyInjection;
 using Modm.Deployments;
 using Modm.Engine;
 using Modm.Engine.Pipelines;
@@ -33,7 +34,7 @@ namespace Modm.Tests.UnitTests
             redeploymentPipeline = GetRedeploymentPipeline();
             redeploymentRequest = new StartRedeploymentRequest
             {
-                DeploymentId = "1",
+                DeploymentId = 1,
                 Parameters = GetRedeploymentParameters()
             };
         }
@@ -47,13 +48,6 @@ namespace Modm.Tests.UnitTests
         private Dictionary<string, object> GetRedeploymentParameters()
         {
             return new Dictionary<string, object>();
-        }
-
-        [Fact]
-        public async Task should_submit_a_redeployment_request()
-        {
-            var result = await redeploymentPipeline.Execute(redeploymentRequest);
-            Assert.NotNull(result);
         }
 
         [Fact]

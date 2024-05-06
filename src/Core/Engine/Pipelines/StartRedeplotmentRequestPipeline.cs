@@ -1,13 +1,9 @@
-using JenkinsNET.Models;
-using JenkinsNET.Exceptions;
 using MediatR;
-using MediatR.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Modm.Deployments;
 using Modm.Jenkins.Client;
 using Modm.Engine.Notifications;
-using static Microsoft.WindowsAzure.ResourceStack.Common.Utilities.FastActivator;
 
 namespace Modm.Engine.Pipelines
 {
@@ -26,13 +22,12 @@ namespace Modm.Engine.Pipelines
         public static MediatRServiceConfiguration AddStartRedeploymentRequestPipeline(this MediatRServiceConfiguration c)
         {
             // add sub pipeline which is a dependency for establishing the definition
-            //c.AddCreateDeploymentDefinitionPipeline();
+            c.AddCreateRedeploymentDefinitionPipeline();
 
             c.RegisterServicesFromAssemblyContaining<StartRedeploymentRequestHandler>();
 
             //c.AddRequestPostProcessor<WriteDeploymentToDisk>();
             c.AddBehavior<SubmitRedeployment>();
-            c.AddBehavior<DeleteParametersFile>();
             return c;
         }
     }
@@ -48,24 +43,19 @@ namespace Modm.Engine.Pipelines
 
         public async Task<StartRedeploymentResult> Handle(StartRedeploymentRequest request, CancellationToken cancellationToken)
         {
-            var returnedString = await GetString();
-
+            var definition = await CreateDefinition(request, cancellationToken);
+            
             return new StartRedeploymentResult
             {
                 Deployment = new Deployment
                 {
-                    Definition = new DeploymentDefinition { DeploymentType = DeploymentType.Terraform, MainTemplatePath = returnedString }
+                    Definition = definition
                 }
             };
         }
 
-        private async Task<string> GetString()
-        {
-            return "test";
-        }
-
-        //private async Task<DeploymentDefinition> CreateDefinition(StartDeploymentRequest request, CancellationToken cancellationToken)
-        //    => await mediator.Send<DeploymentDefinition>(new CreateDeploymentDefinition(request), cancellationToken);
+        private async Task<DeploymentDefinition> CreateDefinition(StartRedeploymentRequest request, CancellationToken cancellationToken)
+            => await mediator.Send<DeploymentDefinition>(new CreateRedeploymentDefinition(request.DeploymentId, request), cancellationToken);
     }
 
     public class SubmitRedeployment : IPipelineBehavior<StartRedeploymentRequest, StartRedeploymentResult>
@@ -83,20 +73,18 @@ namespace Modm.Engine.Pipelines
 
         public async Task<StartRedeploymentResult> Handle(StartRedeploymentRequest request, RequestHandlerDelegate<StartRedeploymentResult> next, CancellationToken cancellationToken)
         {
-            int x = 0;
-
             var result = await next();
 
             result.Errors ??= new List<string>();
 
             var deployment = result.Deployment;
 
-            if (!deployment.IsStartable)
-            {
-                deployment.Id = -1;
-                AddError(result, "Deployment is not startable");
-                return result;
-            }
+            //if (!deployment.IsStartable)
+            //{
+            //    deployment.Id = -1;
+            //    AddError(result, "Deployment is not startable");
+            //    return result;
+            //}
 
             try
             {
@@ -129,8 +117,8 @@ namespace Modm.Engine.Pipelines
         private async Task<bool> TryToSubmit(Deployment deployment)
         {
             using var client = await clientFactory.Create();
-            this.logger.LogInformation($"Prior to calling client.Build  - {DateTime.UtcNow}");
-
+            var logMessage = $"Prior to calling client.Build  - {DateTime.UtcNow}";
+            this.logger.LogInformation(logMessage);
 
             var id = await client.Build(deployment.Definition.DeploymentType);
 
@@ -156,32 +144,6 @@ namespace Modm.Engine.Pipelines
             }
 
             result.Errors.Add(error);
-        }
-    }
-
-    public class DeleteParametersFile : IPipelineBehavior<StartRedeploymentRequest, StartRedeploymentResult>
-    {
-        private readonly ParametersFileFactory factory;
-        private readonly IMediator mediator;
-        private readonly ILogger<SubmitRedeployment> logger;
-
-        public DeleteParametersFile(ParametersFileFactory factory, IMediator mediator, ILogger<SubmitRedeployment> logger)
-        {
-            this.factory = factory;
-            this.mediator = mediator;
-            this.logger = logger;
-        }
-
-        public async Task<StartRedeploymentResult> Handle(StartRedeploymentRequest request, RequestHandlerDelegate<StartRedeploymentResult> next, CancellationToken cancellationToken)
-        {
-         //   request.
-         //   var file = factory.Create(definition.DeploymentType, definition.GetMainTemplateDirectoryName());
-            var startDeploymentResult = new StartRedeploymentResult
-            {
-                Deployment = new Deployment { Id = 0 }
-            };
-      //      int y = 0;
-            return startDeploymentResult;
         }
     }
 }
