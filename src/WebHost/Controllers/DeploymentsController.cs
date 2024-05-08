@@ -48,14 +48,10 @@ namespace WebHost.Controllers
                     throw new FileNotFoundException();
                 }
 
-                string content = await System.IO.File.ReadAllTextAsync(parametersFilePath);
+                var content = await System.IO.File.ReadAllTextAsync(parametersFilePath);
+                var jsonData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(content);
 
-                return new ContentResult
-                {
-                    ContentType = "application/json",
-                    Content = content,
-                    StatusCode = 200
-                };
+                return Ok(jsonData);
             }
             catch (FileNotFoundException)
             {

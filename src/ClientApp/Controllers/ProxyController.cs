@@ -50,6 +50,15 @@ namespace Modm.ClientApp.Controllers
             return await Client.PostAsync<StartRedeploymentResult>($"api/deployments/{deploymentId}/redeploy", content);
         }
 
+        /// <summary>
+        /// Gets the parameters associated with a deployment
+        /// </summary>
+        [HttpGet("deployments/{deploymentId}/parameters")]
+        public async Task<IActionResult> GetParametersFileContent(string deploymentId)
+        {
+            var result = await Client.GetAsync<Dictionary<string, object>>(String.Format(Routes.GetDeploymentParameters, deploymentId));
+            return result;
+        }
 
         [HttpGet("deployments")]
         public async Task<IActionResult> GetDeployments()

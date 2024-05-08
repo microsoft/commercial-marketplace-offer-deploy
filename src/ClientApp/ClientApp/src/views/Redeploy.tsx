@@ -59,7 +59,9 @@ export const Redeploy = () => {
     }, [deploymentId]);
 
     const handleTextFieldChange = (key, event) => {
+        console.log(`inside handleTextFieldChange with key: ${key} and value: ${event.target.value}`);
         setDeploymentParams({ ...deploymentParams, [key]: event.target.value });
+        console.log(`deploymentParams: ${JSON.stringify(deploymentParams)}`);
     };
 
     const renderDeploymentParams = () => {
