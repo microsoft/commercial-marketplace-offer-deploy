@@ -90,6 +90,7 @@ export const Default = () => {
   }
 
   const getDeployedResources = async () => {
+    console.log('Getting deployed resources');
     try {
         const backendUrl = AppConstants.baseUrl;
         const headers = getAuthHeader();
@@ -105,6 +106,7 @@ export const Default = () => {
         }
   
         const result = await response.json();
+        console.log(`Deployed resources result - ${JSON.stringify(result, null, 2)}`);
         
         const deploymentType = isValidDeploymentType(result.deployment);
         if (deploymentType) {
