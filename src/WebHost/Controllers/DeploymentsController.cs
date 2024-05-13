@@ -109,6 +109,5 @@ namespace WebHost.Controllers
                 return Results.Problem("An error occurred during redeployment.");
             }
         }
-
     }
 }

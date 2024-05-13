@@ -71,20 +71,16 @@ namespace Modm.Engine.Pipelines
             this.logger = logger;
         }
 
-        public async Task<StartRedeploymentResult> Handle(StartRedeploymentRequest request, RequestHandlerDelegate<StartRedeploymentResult> next, CancellationToken cancellationToken)
+        public async Task<StartRedeploymentResult> Handle(
+            StartRedeploymentRequest request,
+            RequestHandlerDelegate<StartRedeploymentResult> next,
+            CancellationToken cancellationToken)
         {
             var result = await next();
 
             result.Errors ??= new List<string>();
 
             var deployment = result.Deployment;
-
-            //if (!deployment.IsStartable)
-            //{
-            //    deployment.Id = -1;
-            //    AddError(result, "Deployment is not startable");
-            //    return result;
-            //}
 
             try
             {

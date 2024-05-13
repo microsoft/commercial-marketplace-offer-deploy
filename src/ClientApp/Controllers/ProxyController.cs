@@ -34,9 +34,10 @@ namespace Modm.ClientApp.Controllers
             this.clientFactory = clientFactory;
         }
 
-        [HttpPost("deployments/{deploymentId}/redeploy")]
-        public async Task<IActionResult> PostRedeploy(int deploymentId, [FromBody] Dictionary<string, object> parameters)
+        [HttpPost("deployments/redeploy")]
+        public async Task<IActionResult> PostRedeploy([FromBody] Dictionary<string, object> parameters)
         {
+            int deploymentId = 1;
             var request = new StartRedeploymentRequest
             {
                 DeploymentId = deploymentId,
@@ -47,7 +48,7 @@ namespace Modm.ClientApp.Controllers
             var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
             // Use the client to forward the redeployment request
-            return await Client.PostAsync<StartRedeploymentResult>($"api/deployments/{deploymentId}/redeploy", content);
+            return await Client.PostAsync<StartRedeploymentResult>($"api/deployments/redeploy", content);
         }
 
         /// <summary>

@@ -10,10 +10,12 @@ import StyledFailureIcon from './StyledFailureIcon';
 import { toLocalDateTime } from '../utils/DateUtils';
 import { Separator } from '@fluentui/react';
 import { useAuth } from '../security/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export const Default = () => {
   const [filter, setFilter] = React.useState<'All' | 'Succeeded' | 'Failed'>('All');
   const [isConfirmDialogVisible, setIsConfirmDialogVisible] = useState(false);
+  const [isRedeployDialogVisible, setIsRedeployDialogVisible] = useState(false);
   const [offerName, setOfferName] = React.useState<string | null>(null);
   const [deploymentId, setDeploymentId] = React.useState<string | null>(null);
   const [deploymentType, setDeploymentType] = React.useState<string | null>(null);
@@ -27,6 +29,7 @@ export const Default = () => {
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [enableFocusTrap, setEnableFocusTrap] = React.useState(false);
   const { userToken } = useAuth();
+  const navigate = useNavigate();
 
   const checkEngineIntervalRef = useRef<number | null>(null);
   const updateResourcesIntervalRef = useRef<number | null>(null);
@@ -274,6 +277,11 @@ export const Default = () => {
     }
   };
 
+  const handleConfirmRedeploy = () => {
+    setIsRedeployDialogVisible(false); // Close the dialog
+    navigate('/redeploy'); // Navigate to redeploy route
+  };
+
   const getDeleteFlag = () => {
     return `true`;
   };
@@ -304,6 +312,12 @@ export const Default = () => {
             text: 'Delete Installer',
             iconProps: { iconName: 'Delete' },
             onClick: () => setIsConfirmDialogVisible(true),
+        },
+        {
+            key: 'redeploy',
+            text: 'Redeploy',
+            iconProps: { iconName: 'Refresh' }, // Add redeploy icon
+            onClick: () => setIsRedeployDialogVisible(true), // Open redeploy dialog
         });
     }
 
@@ -426,6 +440,20 @@ export const Default = () => {
             <DefaultButton onClick={() => setIsConfirmDialogVisible(false)} text="No" />
         </DialogFooter>
       </Dialog>   
+
+      <Dialog
+        hidden={!isRedeployDialogVisible} 
+        onDismiss={() => setIsRedeployDialogVisible(false)}
+        dialogContentProps={{
+          type: DialogType.normal,
+          title: 'Confirm Redeployment',
+          subText: 'Are you sure you want to redeploy?'
+        }}>
+        <DialogFooter>
+          <PrimaryButton onClick={handleConfirmRedeploy} text="Yes" />
+          <DefaultButton onClick={() => setIsRedeployDialogVisible(false)} text="No" />
+        </DialogFooter>
+      </Dialog>
 
     </>
   );

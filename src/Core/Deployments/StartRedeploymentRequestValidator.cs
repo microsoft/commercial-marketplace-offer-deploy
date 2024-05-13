@@ -7,7 +7,7 @@ namespace Modm.Deployments
         public StartRedeploymentRequestValidator()
         {
             RuleFor(x => x.Parameters).NotNull();
-            RuleFor(x => x.DeploymentId).NotEmpty();
+          //  RuleFor(x => x.DeploymentId).NotEmpty();
         }
     }
 }
