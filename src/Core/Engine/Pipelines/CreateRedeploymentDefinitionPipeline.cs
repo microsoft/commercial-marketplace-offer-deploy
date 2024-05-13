@@ -48,24 +48,6 @@ namespace Modm.Engine.Pipelines
         }
     }
 
-
-    // #2
-    //public class RereadManifestFile : IPipelineBehavior<CreateRedeploymentDefinition, DeploymentDefinition>
-    //{
-    //    public async Task<DeploymentDefinition> Handle(CreateRedeploymentDefinition request, RequestHandlerDelegate<DeploymentDefinition> next, CancellationToken cancellationToken)
-    //    {
-    //        var definition = await next();
-
-    //        var manifest = await ManifestFile.Read(definition.WorkingDirectory);
-
-    //        definition.MainTemplatePath = manifest.MainTemplate;
-    //        definition.DeploymentType = manifest.DeploymentType;
-
-    //        return definition;
-    //    }
-    //}
-
-    // #3
     public class RecreateParametersFile : IPipelineBehavior<CreateRedeploymentDefinition, DeploymentDefinition>
     {
         private readonly ParametersFileFactory factory;
@@ -90,7 +72,6 @@ namespace Modm.Engine.Pipelines
         }
     }
 
-    // #4
     public class RewriteToDisk : IRequestPostProcessor<CreateRedeploymentDefinition, DeploymentDefinition>
     {
         private readonly DeploymentFile deploymentFile;
