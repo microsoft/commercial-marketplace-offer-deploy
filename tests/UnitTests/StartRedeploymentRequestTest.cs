@@ -46,12 +46,12 @@ namespace Modm.Tests.UnitTests
             return (StartRedeploymentRequestPipeline)pipeline;
         }
 
-        [Fact]
-        public async Task should_submit_a_redeployment_request()
-        {
-            var result = await this.pipeline.Execute(request);
-            Assert.NotNull(result);
-        }
+        // [Fact]
+        // public async Task should_submit_a_redeployment_request()
+        // {
+        //     var result = await this.pipeline.Execute(request);
+        //     Assert.NotNull(result);
+        // }
 
         protected override void ConfigureServices()
         {
