@@ -32,9 +32,9 @@ namespace Modm.Engine.Pipelines
     {
         private DeploymentFile deploymentFile;
 
-        public CreateRedeploymentDefinitionHandler(DeploymentFile deploymentFile)
+        public CreateRedeploymentDefinitionHandler(IDeploymentFileFactory deploymentFileFactory)
         {
-            this.deploymentFile = deploymentFile;
+            this.deploymentFile = deploymentFileFactory.Create();
         }
 
         public async Task<DeploymentDefinition> Handle(CreateRedeploymentDefinition request, CancellationToken cancellationToken)
@@ -78,9 +78,9 @@ namespace Modm.Engine.Pipelines
         private readonly AuditFile auditFile;
         private ILogger<WriteToDisk> logger;
 
-        public RewriteToDisk(DeploymentFile deploymentFile, AuditFile auditFile, ILogger<WriteToDisk> logger)
+        public RewriteToDisk(IDeploymentFileFactory deploymentFileFactory, AuditFile auditFile, ILogger<WriteToDisk> logger)
         {
-            this.deploymentFile = deploymentFile;
+            this.deploymentFile = deploymentFileFactory.Create();
             this.auditFile = auditFile;
             this.logger = logger;
         }

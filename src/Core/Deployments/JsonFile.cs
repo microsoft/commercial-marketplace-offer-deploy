@@ -31,7 +31,7 @@ namespace Modm.Deployments
             return Path.GetFullPath(Path.Combine(configuration.GetHomeDirectory(), FileName));
         }
 
-        public async Task<T> ReadAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<T> ReadAsync(CancellationToken cancellationToken = default)
         {
             var path = GetFilePath();
 
@@ -45,7 +45,7 @@ namespace Modm.Deployments
             return JsonSerializer.Deserialize<T>(json, serializerOptions);
         }
 
-        public async Task WriteAsync(T data, CancellationToken cancellationToken)
+        public virtual async Task WriteAsync(T data, CancellationToken cancellationToken)
         {
             var json = JsonSerializer.Serialize(data, serializerOptions);
             logger.LogInformation($"Writing data to {FileName}");

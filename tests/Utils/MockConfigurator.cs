@@ -9,6 +9,7 @@ using NSubstitute;
 using Azure.ResourceManager;
 using Modm.Tests.Utils.Fakes;
 using System.IO.Compression;
+using Microsoft.WindowsAzure.ResourceStack.Common.Extensions;
 
 namespace Modm.Tests.Utils
 {
@@ -72,6 +73,44 @@ namespace Modm.Tests.Utils
 
                 services.AddSingleton<JenkinsClientFactory>(instance);
 
+                return instance;
+            }
+
+            public IDeploymentFileFactory DeploymentFileFactory(Action<IDeploymentFileFactory>? configure = default)
+            {
+                var dir = Test.Directory<TTest>();
+
+                var mockConfiguration = new ConfigurationBuilder()
+                    .AddInMemoryCollection(new Dictionary<string, string>
+                    {
+                        {"MODM_HOME", dir.FullName }
+                    })
+                    .Build();
+
+                // var mockConfiguration = Substitute.For<IConfiguration>();
+                
+                var mockLogger = Substitute.For<ILogger<DeploymentFile>>();
+                var mockDeploymentFile = Substitute.For<DeploymentFile>(mockConfiguration, mockLogger);
+                mockDeploymentFile.FileName.Returns("mockFileName.json");
+
+                var mockDeployment = new Deployment
+                {
+                    Definition = new DeploymentDefinition {
+                        Parameters = new Dictionary<string, object>(),
+                        WorkingDirectory = dir.FullName,
+                        MainTemplatePath = dir.FullName,
+                        DeploymentType = DeploymentType.Terraform,
+                        InstallerPackageHash = "aaa",
+                        ParametersFilePath = Path.Combine(dir.FullName, "terraform.tfvars.json")
+                    }
+                };
+                mockDeploymentFile.ReadAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(mockDeployment));
+                mockDeploymentFile.WriteAsync(Arg.Any<Deployment>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+
+                var instance = Substitute.For<IDeploymentFileFactory>();
+                instance.Create().Returns(mockDeploymentFile);
+
+                services.AddSingleton(instance);
                 return instance;
             }
 

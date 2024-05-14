@@ -61,6 +61,7 @@ namespace Modm.Tests.UnitTests
                 m.DeploymentRepository();
                 m.JenkinsClient();
                 m.JenkinsClientFactory();
+                m.DeploymentFileFactory();
                 m.Configuration();
 
                 m.Create<IValidator<PackageFile>>(instance =>
