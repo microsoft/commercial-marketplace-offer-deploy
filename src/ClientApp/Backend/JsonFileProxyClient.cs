@@ -74,6 +74,11 @@ namespace ClientApp.Backend
 
             return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultFileName);
         }
+
+        public Task<IActionResult> PostAsync<T>(string relativeUri, HttpContent content = null)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 

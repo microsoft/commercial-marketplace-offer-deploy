@@ -44,7 +44,6 @@ namespace Modm.WebHost
 
             services.AddValidatorsFromAssemblyContaining<StartDeploymentRequestValidator>();
 
- 
             return services;
 		}
 	}

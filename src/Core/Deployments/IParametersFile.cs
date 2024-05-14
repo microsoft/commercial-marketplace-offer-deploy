@@ -4,5 +4,6 @@
     {
         string FullPath { get; }
         Task Write(IDictionary<string, object> parameters);
+        Task Delete();
     }
 }

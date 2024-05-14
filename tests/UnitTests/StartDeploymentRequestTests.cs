@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.IO.Compression;
+using Microsoft.Extensions.DependencyInjection;
 using Modm.Deployments;
 using Modm.Engine;
 using Modm.Engine.Pipelines;
@@ -18,6 +19,9 @@ namespace Modm.Tests.UnitTests
 		readonly StartDeploymentRequestPipeline pipeline;
         private readonly StartDeploymentRequest request;
 
+        readonly StartRedeploymentRequestPipeline redeploymentPipeline;
+        private readonly StartRedeploymentRequest redeploymentRequest;
+
         public StartDeploymentRequestTests() : base()
         {
             pipeline = GetPipeline();
@@ -26,9 +30,27 @@ namespace Modm.Tests.UnitTests
                 PackageUri = "https://dummy-package-installer-url/installer.zip",
                 Parameters = new Dictionary<string, object>()
             };
+
+            redeploymentPipeline = GetRedeploymentPipeline();
+            redeploymentRequest = new StartRedeploymentRequest
+            {
+                DeploymentId = 1,
+                Parameters = GetRedeploymentParameters()
+            };
         }
 
-		[Fact]
+        private StartRedeploymentRequestPipeline GetRedeploymentPipeline()
+        {
+            var pipeline = Provider.GetRequiredService<IPipeline<StartRedeploymentRequest, StartRedeploymentResult>>();
+            return (StartRedeploymentRequestPipeline)pipeline;
+        }
+
+        private Dictionary<string, object> GetRedeploymentParameters()
+        {
+            return new Dictionary<string, object>();
+        }
+
+        [Fact]
 		public async Task should_read_from_repository()
 		{
 			await pipeline.Execute(request);
@@ -86,6 +108,7 @@ namespace Modm.Tests.UnitTests
 
             Services.AddMediatR(c => c.RegisterServicesFromAssemblyContaining<IDeploymentEngine>());
             Services.AddPipeline<IPipeline<StartDeploymentRequest, StartDeploymentResult>, StartDeploymentRequestPipeline>(c => c.AddStartDeploymentRequestPipeline());
+            Services.AddPipeline<IPipeline<StartRedeploymentRequest, StartRedeploymentResult>, StartRedeploymentRequestPipeline>(c => c.AddStartRedeploymentRequestPipeline());
         }
     }
 }
