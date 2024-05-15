@@ -18,5 +18,6 @@ module "storage" {
   source = "./storage"
 
   location = var.location
+  tier = var.tier
   resource_group_name = var.resourceGroupName
 }
