@@ -6,10 +6,29 @@
         "basics": [
             {}
         ],
-        "steps": [],
+        "steps": [
+            {
+                "name": "simplebicep",
+                "label": "Simple Bicep",
+                "elements": [
+                    {
+                        "name": "tier",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Tier",
+                        "defaultValue": "Hot",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^[a-zA-Z0-9]*$",
+                            "validationMessage": "The tier must be a string with no special characters"
+                        },
+                        "visible": true
+                    }
+                ]
+            }
+        ],
         "outputs": {
             "location": "[location()]",
-            "artifactsLocationSasToken": ""
+            "tier": "[steps('simplebicep').tier]"
         }
     }
 }
