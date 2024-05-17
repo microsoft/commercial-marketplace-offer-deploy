@@ -62,7 +62,20 @@ namespace ClientApp.Backend
         public Task<IActionResult> PostAsync(string relativeUri, HttpContent content = null)
         {
             logger.LogInformation("Backend request: {relativeUri}", relativeUri);
-            return Task.FromResult<IActionResult>(new OkObjectResult(new { }));
+            object value = new { };
+
+            var routes = json.RootElement.GetProperty("routes");
+
+            try
+            {
+                value = routes.GetProperty(relativeUri);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                logger.LogWarning(ex, "Route {relativeUri} doesn't exist in {filePath}", relativeUri, filePath);
+            }
+
+            return Task.FromResult<IActionResult>(new OkObjectResult(value));
         }
 
         private static string GetFilePath(string clientType)
@@ -77,7 +90,21 @@ namespace ClientApp.Backend
 
         public Task<IActionResult> PostAsync<T>(string relativeUri, HttpContent content = null)
         {
-            throw new NotImplementedException();
+            logger.LogInformation("Backend request: {relativeUri}", relativeUri);
+            object value = new { };
+
+            var routes = json.RootElement.GetProperty("routes");
+
+            try
+            {
+                value = routes.GetProperty(relativeUri);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                logger.LogWarning(ex, "Route {relativeUri} doesn't exist in {filePath}", relativeUri, filePath);
+            }
+
+            return Task.FromResult<IActionResult>(new OkObjectResult(value));
         }
     }
 }
