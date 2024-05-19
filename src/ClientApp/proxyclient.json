@@ -2,37 +2,162 @@
     "description": "Dev purposes. copied to the runtime folder. Set ProxyClient appsettings to Json to use this instead of live backend for debugging",
     "routes": {
         "api/deployments": {
-            "deployment": {
-                "id": 1,
-                "status": "running",
-                "resourceGroup": "rg-64-20230921101915",
-                "subscriptionId": "<Enter subscription here>",
-                "definition": {
-                    "workingDirectory": "/Users/kehilli/Workspace/github.com/microsoft/commercial-marketplace-offer-deploy/home/content",
-                    "mainTemplatePath": "main.tf",
-                    "parametersFilePath": "/Users/kehilli/Workspace/github.com/microsoft/commercial-marketplace-offer-deploy/home/content/terraform.tfvars.json",
-                    "deploymentType": "terraform",
-                    "source": {
-                        "value": null
-                    },
-                    "parameters": {
-                        "location": "eastus",
-                        "resource_group_name": "rg-64-20230921101915"
-                    }
-                },
-                "isStartable": false,
-                "resources": [
-                    {
-                        "name": "rg-64-20230921101915",
-                        "type": "Microsoft.Resources/resourceGroups",
-                        "state": "Succeeded",
-                        "timestamp": "2021-09-21T10:19:15.0000000Z"
-                    }
-                ]
-            }
+          "deployment": {
+            "id": 20,
+            "timestamp": "2024-05-14T18:19:12.970117+00:00",
+            "status": "success",
+            "resourceGroup": "bobjacdemo5",
+            "subscriptionId": "31e9f9a0-9fd2-4294-a0a3-0101246d9700",
+            "offerName": "Local Offer",
+            "definition": {
+              "workingDirectory": "/Users/bobjacobs/work/src/github.com/microsoft/commercial-marketplace-offer-deploy/home/installer",
+              "mainTemplatePath": "main.tf",
+              "parametersFilePath": "/Users/bobjacobs/work/src/github.com/microsoft/commercial-marketplace-offer-deploy/home/installer/terraform.tfvars.json",
+              "deploymentType": "terraform",
+              "source": {
+                "value": null
+              },
+              "installerPackageHash": "9a29f7b74c64338600b3482b9757c06d7e2e2609a16a06d7072448d157c55e76",
+              "parameters": {
+                "resourceGroupName": "bobjacdemo5",
+                "artifactsLocationSasToken": "",
+                "location": "eastus",
+                "sql_admin_password": "GPSCodeWith1234!",
+                "sql_admin_username": "adminuser"
+              }
+            },
+            "resources": [
+              {
+                "name": "stg395943",
+                "type": "Microsoft.Storage/storageAccounts",
+                "state": "Succeeded",
+                "timestamp": "2024-05-06T20:59:12.2779969+00:00"
+              },
+              {
+                "name": "stgbobjac9439594396",
+                "type": "Microsoft.Storage/storageAccounts",
+                "state": "Succeeded",
+                "timestamp": "2024-05-06T20:59:12.2963363+00:00"
+              },
+              {
+                "name": "modmvnet-bobjac9439594396",
+                "type": "Microsoft.Network/virtualNetworks",
+                "state": "Succeeded",
+                "timestamp": "2024-05-06T20:59:12.2991315+00:00"
+              },
+              {
+                "name": "modmnsg-bobjac9439594396",
+                "type": "Microsoft.Network/networkSecurityGroups",
+                "state": "Succeeded",
+                "timestamp": "2024-05-06T20:59:12.309934+00:00"
+              },
+              {
+                "name": "modmpip-bobjac9439594396",
+                "type": "Microsoft.Network/publicIPAddresses",
+                "state": "Succeeded",
+                "timestamp": "2024-05-06T20:59:12.329879+00:00"
+              },
+              {
+                "name": "appsvcplan-bobjac9439594396",
+                "type": "Microsoft.Web/serverFarms",
+                "state": "Succeeded",
+                "timestamp": "2024-05-06T20:59:12.419004+00:00"
+              },
+              {
+                "name": "sqlsrv-bobjac9439594396",
+                "type": "Microsoft.Sql/servers",
+                "state": "Succeeded",
+                "timestamp": "2024-05-06T20:59:12.5177965+00:00"
+              },
+              {
+                "name": "cosmosdb-bobjac9439594396",
+                "type": "Microsoft.DocumentDB/databaseAccounts",
+                "state": "Succeeded",
+                "timestamp": "2024-05-06T20:59:13.3703251+00:00"
+              },
+              {
+                "name": "modmnic-bobjac9439594396",
+                "type": "Microsoft.Network/networkInterfaces",
+                "state": "Succeeded",
+                "timestamp": "2024-05-06T20:59:20.6872583+00:00"
+              },
+              {
+                "name": "appsvc-bobjac9439594396",
+                "type": "Microsoft.Web/sites",
+                "state": "Succeeded",
+                "timestamp": "2024-05-06T20:59:30.563824+00:00"
+              },
+              {
+                "name": "modmvm-bobjac9439594396",
+                "type": "Microsoft.Compute/virtualMachines",
+                "state": "Succeeded",
+                "timestamp": "2024-05-06T20:59:31.8522729+00:00"
+              },
+              {
+                "name": "osdisk",
+                "type": "Microsoft.Compute/disks",
+                "state": "Succeeded",
+                "timestamp": "2024-05-06T20:59:34.1133819+00:00"
+              },
+              {
+                "name": "sqlsrv-bobjac9439594396/sqldb-bobjac9439594396",
+                "type": "Microsoft.Sql/servers/databases",
+                "state": "Succeeded",
+                "timestamp": "2024-05-06T21:00:32.7582513+00:00"
+              },
+              {
+                "name": "sqlsrv-bobjac9439594396/master",
+                "type": "Microsoft.Sql/servers/databases",
+                "state": "Succeeded",
+                "timestamp": "2024-05-06T21:00:36.6284777+00:00"
+              },
+              {
+                "name": "modmvm-bobjac9439594396/OmsAgentForLinux",
+                "type": "Microsoft.Compute/virtualMachines/extensions",
+                "state": "Succeeded",
+                "timestamp": "2024-05-06T21:17:46.4867569+00:00"
+              },
+              {
+                "name": "modmvm-bobjac9439594396/MDE.Linux",
+                "type": "Microsoft.Compute/virtualMachines/extensions",
+                "state": "Succeeded",
+                "timestamp": "2024-05-06T21:35:10.6326585+00:00"
+              },
+              {
+                "name": "modmvnet-bobjac9439594396-modmsubnet-bobjac9439594396-nsg-eastus",
+                "type": "Microsoft.Network/networkSecurityGroups",
+                "state": "Succeeded",
+                "timestamp": "2024-05-06T22:14:21.1366999+00:00"
+              },
+              {
+                "name": "stg395943-74dcdbb9-9d16-4f22-a4d9-44fe8c0bf918",
+                "type": "Microsoft.EventGrid/systemTopics",
+                "state": "Succeeded",
+                "timestamp": "2024-05-07T08:07:19.7600021+00:00"
+              },
+              {
+                "name": "stgbobjac9439594396-d80df49f-6445-4570-9200-339e9f7dc561",
+                "type": "Microsoft.EventGrid/systemTopics",
+                "state": "Succeeded",
+                "timestamp": "2024-05-07T08:07:20.1006047+00:00"
+              }
+            ],
+            "isStartable": true
+          }
         },
         "api/status": {
             "isHealthy": true
+        },
+        "api/deployments/0/parameters": {
+            "resourceGroupName": "bobjacdemo5",
+            "artifactsLocationSasToken": "",
+            "location": "eastus",
+            "sql_admin_password": "GPSCodeWith1234!",
+            "sql_admin_username": "adminuser"
+        },
+        "api/deployments/redeploy": {
+            "deployment": null,
+            "errors": null
         }
     }
 }

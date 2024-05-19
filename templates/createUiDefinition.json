@@ -22,7 +22,15 @@
                                 "options": {
                                     "text": "The Marketplace Application Installer installs the application from the Azure Marketplace. It is a prerequisite for the application to be deployed to Azure."
                                 }
+                            },
+                            {
+                                "name": "autoDelete",
+                                "type": "Microsoft.Common.CheckBox",
+                                "label": "Auto delete in 24 hours",
+                                "toolTip": "Check this box if you want the resources to be automatically deleted in 24 hours.",
+                                "visible": true
                             }
+                            
                         ]
                     },
                     {
@@ -42,7 +50,6 @@
                                 "name": "username",
                                 "type": "Microsoft.Common.TextBox",
                                 "label": "Admin Username",
-                                "placeholder": "",
                                 "defaultValue": "admin",
                                 "toolTip": "Use only allowed characters",
                                 "constraints": {
@@ -59,7 +66,7 @@
                                     "password": "Password",
                                     "confirmPassword": "Confirm password"
                                 },
-                                "toolTip": "",
+                                "toolTip": "Password must be at least 8 characters long, contain only numbers and letters",
                                 "constraints": {
                                     "required": true,
                                     "regex": "^[a-zA-Z0-9]{8,}$",
@@ -76,8 +83,10 @@
             }
         ],
         "outputs": {
+            "location": "[location()]",
             "applicationInstallerUserName": "[steps('installer').dashboard.username]",
-            "applicationInstallerPassword": "[steps('installer').dashboard.password]"
+            "applicationInstallerPassword": "[steps('installer').dashboard.password]",
+            "applicationInstallerAutoDelete": "[steps('installer').stepInfo.autoDelete]"
         }
     }
 }

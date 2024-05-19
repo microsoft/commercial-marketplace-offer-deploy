@@ -26,15 +26,12 @@ namespace Modm.Extensions
 		{
             // determine based on whether the env is present, which is provided by app service
             // see: https://learn.microsoft.com/en-us/azure/app-service/reference-app-settings?tabs=kudu%2Cdotnet
-            const string environmentVariablePlatformVersion = "WEBSITE_PLATFORM_VERSION";
-			const string environmentVariableSku = "WEBSITE_SKU";
-
-			var (PlatformVersion, Sku) = (
-                configuration.GetValue<string>(environmentVariablePlatformVersion),
-				configuration.GetValue<string>(environmentVariableSku)
+			var (RunFromPackage, Sku) = (
+                configuration.GetValue<string>("WEBSITE_RUN_FROM_PACKAGE"),
+				configuration.GetValue<string>("WEBSITE_SKU")
 			);
 
-			return !string.IsNullOrEmpty(PlatformVersion) && !string.IsNullOrEmpty(Sku);
+			return !string.IsNullOrEmpty(RunFromPackage) && !string.IsNullOrEmpty(Sku);
         }
 	}
 }

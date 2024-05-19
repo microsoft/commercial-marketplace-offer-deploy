@@ -27,11 +27,31 @@ namespace Modm.Deployments
 
         public async Task Write(IDictionary<string, object> parameters)
         {
-            var json = JsonSerializer.Serialize(parameters, new JsonSerializerOptions
+            if (Directory.Exists(destinationDirectory))
             {
-                Converters = { new DictionaryStringObjectJsonConverter() }
-            });
-            await File.WriteAllTextAsync(FullPath, json);
+                var json = JsonSerializer.Serialize(parameters, new JsonSerializerOptions
+                {
+                    Converters = { new DictionaryStringObjectJsonConverter() }
+                });
+
+                // Validate write permission and file creation
+                using (FileStream fs = new FileStream(FullPath, FileMode.Create, FileAccess.Write))
+                {
+                    using (StreamWriter writer = new StreamWriter(fs))
+                    {
+                        await writer.WriteAsync(json);
+                    }
+                }
+            }
+
+        }
+
+        public async Task Delete()
+        {
+            if (File.Exists(FullPath))
+            {
+                await Task.Run(() => File.Delete(FullPath));
+            }
         }
     }
 }

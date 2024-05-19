@@ -9,6 +9,13 @@
             },
             "defaultValue": "[deployment().properties.templateLink.uri]"
         },
+        "_artifactsLocationSasToken": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The sas token for used with the _artifactsLocation"
+            },
+            "defaultValue": ""
+        },
         "applicationInstallerUserName": {
             "type": "string",
             "metadata": {
@@ -16,41 +23,67 @@
             }
         },
         "applicationInstallerPassword": {
-            "type": "string",
+            "type": "securestring",
             "metadata": {
                 "description": "The base URI where artifacts required by this template are located including a trailing '/'"
             }
         },
         "applicationInstallerUrl": {
             "type": "string",
-            "defaultValue": "[concat('https://', 'modm', substring(uniqueString(parameters('_artifactsLocation')), 0, 12), '.azurewebsites.net')]",
+            "defaultValue": "[concat('https://', 'modm', substring(uniqueString(newGuid()), 0, 12), '.azurewebsites.net')]",
             "metadata": {
                 "description": "The base URI where artifacts required by this template are located including a trailing '/'"
+            }
+        },
+        "applicationInstallerAutoDelete": {
+            "type": "bool",
+            "defaultValue": false,
+            "metadata": {
+                "description": "Indicates whether the resources should be automatically deleted."
+            }
+        },
+        "applicationInstallerInstallUtcTime": {
+            "type": "string",
+            "defaultValue": "[utcNow()]",
+            "metadata": {
+                "description": "The time in utc when the deployment takes place."
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "The location of the deployment."
+            }
+        },
+        "applicationInstallerVMSize": {
+            "type": "string",
+            "defaultValue": "Standard_D2s_v3",
+            "metadata": {
+                "description": "The size of the installer virtual machine."
             }
         }
     },
     "variables": {
-        "location": "[resourceGroup().location]",
+        "location": "[parameters('location')]",
         "roleDefinitionId": {
             "owner": "8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
             "contributor": "b24988ac-6180-42a0-ab88-20f7382dd24c",
             "appConfigReader": "516239f1-63e1-4d78-a4de-a74fb236a071"
         },
         "configStoreName": "[concat('modmconfig-', substring(uniqueString(resourceGroup().id), 0, 8))]",
-        "clientAppName": "[concat('modm', substring(uniqueString(parameters('_artifactsLocation')), 0, 12))]",
+        "clientAppName": "[concat('modm', substring(parameters('applicationInstallerUrl'), 12, 12))]",
         "clientAppUrl": "[parameters('applicationInstallerUrl')]",
         "clientAppCredentials": "[base64(concat(trim(parameters('applicationInstallerUserName')), '|', trim(parameters('applicationInstallerPassword'))))]",
         "clientAppSigningKey": "[uniqueString(resourceGroup().id, variables('clientAppName'))]",
         "clientAppStorageAccountName": "[format('modm{0}', uniqueString(resourceGroup().id))]",
         "clientAppPackageUrl": "[concat(variables('artifactsContainerLocation'), '/', 'clientapp.zip')]",
         "vmiReferenceId": "{{vmiReferenceId}}",
-        "virtualMachineSize": "Standard_D2s_v3",
         "virtualMachineName": "modm",
-        "virtualMachineUsername": "modmadmin",
-        "virtualMachinePassword": "[concat('Modm-', substring( uniqueString(resourceGroup().id), 0, 8))]",
         "vnetName": "[concat(variables('virtualMachineName'), '-vnet')]",
         "subnetName": "default",
         "artifactsContainerLocation": "[substring(parameters('_artifactsLocation'), 0, lastIndexOf(parameters('_artifactsLocation'), '/'))]",
+        "artifactsLocationSasToken": "[parameters('_artifactsLocationSasToken')]",
         "vmResourceId": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Compute/virtualMachines', variables('virtualMachineName'))]",
         "dnsLabel": "[concat('modm', uniqueString(variables('vmResourceId')))]",
         "publicFqdn": "[concat(variables('dnsLabel'), '.', variables('location'), '.cloudapp.azure.com')]",
@@ -61,13 +94,15 @@
         "publicIpAddressSku": "Standard",
         "publicIpAddressName": "[concat(variables('virtualMachineName'), '-publicip')]",
         "nsgName": "[concat(variables('virtualMachineName'), '-nsg')]",
+        "autoDeleteExireInMinutes": "1440",
         "userData": {
             "installerPackage": {
                 "uri": "[concat(variables('artifactsContainerLocation'), '/', 'installer.zip')]",
                 "hash": "{{installerPackageHash}}"
             },
             "parameters": {
-                "resourceGroupName": "[resourceGroup().name]"
+                "resourceGroupName": "[resourceGroup().name]",
+                "artifactsLocationSasToken": "[variables('artifactsLocationSasToken')]"
             }
         },
         "commonTags": {
@@ -225,6 +260,42 @@
                         "value": "[variables('backendUrl')]",
                         "contentType": "text/plain"
                     }
+                },
+                {
+                    "type": "keyValues",
+                    "name": "InstalledTime",
+                    "apiVersion": "2021-10-01-preview",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+                    ],
+                    "properties": {
+                        "value": "[parameters('applicationInstallerInstallUtcTime')]",
+                        "contentType": "text/plain"
+                    }
+                },
+                {
+                    "type": "keyValues",
+                    "name": "ExpireIn",
+                    "apiVersion": "2021-10-01-preview",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+                    ],
+                    "properties": {
+                        "value": "[if(parameters('applicationInstallerAutoDelete'), variables('autoDeleteExireInMinutes'), '-1')]",
+                        "contentType": "text/plain"
+                    }
+                },
+                {
+                    "type": "keyValues",
+                    "name": "DeleteFileDirectory",
+                    "apiVersion": "2021-10-01-preview",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName'))]"
+                    ],
+                    "properties": {
+                        "value": "/home/data",
+                        "contentType": "text/plain"
+                    }
                 }
             ],
             "tags": "[variables('commonTags')]"
@@ -360,6 +431,19 @@
         },
         {
             "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2020-04-01-preview",
+            "name": "[guid(concat('OwnerRoleAssignment-', resourceGroup().id, '-', variables('clientAppName')))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('clientAppName'))]"
+            ],
+            "properties": {
+                "principalType": "ServicePrincipal",
+                "roleDefinitionId": "[variables('Owner')]",
+                "principalId": "[reference(resourceId('Microsoft.Web/sites', variables('clientAppName')), '2022-03-01', 'Full').identity.principalId]"
+            }
+        },
+        {
+            "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2020-10-01-preview",
             "scope": "[format('Microsoft.AppConfiguration/configurationStores/{0}', variables('configStoreName'))]",
             "name": "[guid(resourceId('Microsoft.AppConfiguration/configurationStores', variables('configStoreName')), resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachineName')), subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionId').owner))]",
@@ -419,7 +503,7 @@
             ],
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "[variables('virtualMachineSize')]"
+                    "vmSize": "[parameters('applicationInstallerVMSize')]"
                 },
                 "userData": "[base64(string(variables('userData')))]",
                 "storageProfile": {
@@ -446,8 +530,8 @@
                 },
                 "osProfile": {
                     "computerName": "[variables('virtualMachineName')]",
-                    "adminUsername": "[variables('virtualMachineUsername')]",
-                    "adminPassword": "[variables('virtualMachinePassword')]",
+                    "adminUsername": "[format('{0}{1}', 'modm', 'admin')]",
+                    "adminPassword": "[substring(format('Modm2!{0}', uniqueString(base64(variables('vmResourceId')))), 0, 16)]",
                     "linuxConfiguration": {
                         "patchSettings": {
                             "patchMode": "ImageDefault"
@@ -463,9 +547,9 @@
         }
     ],
     "outputs": {
-        "virtualMachinePassword": {
+        "Location": {
             "type": "string",
-            "value": "[variables('virtualMachinePassword')]"
+            "value": "[variables('location')]"
         }
     }
 }

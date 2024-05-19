@@ -4,6 +4,16 @@ using Microsoft.IdentityModel.Logging;
 using Modm.Security;
 using Modm.Extensions;
 using ClientApp.Backend;
+using Modm.Azure;
+using MediatR;
+using Microsoft.Azure.Management.Storage.Fluent.Models;
+using System.Web.Services.Description;
+using Microsoft.Extensions.Azure;
+using Azure.Identity;
+using ClientApp.Commands;
+using ClientApp;
+using System.Configuration;
+using ClientApp.Cleanup;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +25,13 @@ builder.Services.AddHttpClient<ProxyController>().ConfigureHttpClient((provider,
 {
     var backendUrl = provider.GetRequiredService<IConfiguration>()
                                 .GetValue<string>(ProxyClientFactory.BackendUrlSettingName);
+    client.BaseAddress = new Uri(backendUrl ?? string.Empty);
+});
+
+builder.Services.AddHttpClient<Modm.Deployments.DeploymentClient>().ConfigureHttpClient((provider, client) =>
+{
+    var backendUrl = provider.GetRequiredService<IConfiguration>()
+                              .GetValue<string>(ProxyClientFactory.BackendUrlSettingName); 
     client.BaseAddress = new Uri(backendUrl ?? string.Empty);
 });
 
@@ -30,10 +47,33 @@ builder.Services.AddCors(options =>
         builder
             .WithOrigins("https://localhost:44482", "https://localhost:7153", "http://localhost:5207", "http://localhost:44482")
             .AllowAnyMethod()
-            .AllowAnyHeader();
+        .AllowAnyHeader();
         
     });
 });
+
+
+builder.Services.Configure<HostOptions>(hostOptions =>
+{
+    hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+});
+
+builder.Services.AddAzureClients(clientBuilder =>
+{
+    clientBuilder.AddArmClient(builder.Configuration.GetSection("Azure"));
+    clientBuilder.UseCredential(new DefaultAzureCredential());
+});
+
+builder.Services.AddSingleton<IAzureResourceManagerClient, AzureResourceManagerClient>();
+
+builder.Services.AddMediatR(c =>
+{
+    c.RegisterServicesFromAssemblyContaining<InitiateDelete>();
+});
+
+builder.Services.AddSingleton<IDeleteProcessor, DeleteProcessor>();
+builder.Services.AddSingletonHostedService<DeleteService>();
+builder.Services.AddSingletonHostedService<InstallerCleanupService>();
 
 builder.Configuration.AddEnvironmentVariables();
 builder.Configuration.AddAppConfigurationSafely(builder.Environment);
