@@ -6,6 +6,10 @@ variable "resource_group_name" {
   type = string
 }
 
+variable "tier" {
+    type = string
+}
+
 resource "random_id" "storage_account_name_unique" {
   byte_length = 8
 }
@@ -16,4 +20,5 @@ resource "azurerm_storage_account" "example" {
   location                 = var.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
+  access_tier              = var.tier
 }

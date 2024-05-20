@@ -59,6 +59,7 @@ namespace Modm.Extensions
             services.AddSingleton<ApiTokenClient>();
             services.AddSingleton<JenkinsClientFactory>();
             services.AddSingleton<DeploymentFile>();
+            services.AddSingleton<IDeploymentFileFactory, DeploymentFileFactory>();
             services.AddSingleton<AuditFile>();
             services.AddSingleton<IDeploymentRepository, DefaultDeploymentRepository>();
 
@@ -77,6 +78,7 @@ namespace Modm.Extensions
             });
 
             services.AddPipeline<IPipeline<StartDeploymentRequest, StartDeploymentResult>, StartDeploymentRequestPipeline>(c => c.AddStartDeploymentRequestPipeline());
+            services.AddPipeline<IPipeline<StartRedeploymentRequest, StartRedeploymentResult>, StartRedeploymentRequestPipeline>(c => c.AddStartRedeploymentRequestPipeline());
 
             return services;
 		}

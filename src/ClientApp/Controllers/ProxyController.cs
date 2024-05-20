@@ -8,6 +8,8 @@ using Azure.ResourceManager;
 using Modm.Azure;
 using MediatR;
 using ClientApp.Commands;
+using System.Text;
+using System.Text.Json;
 
 namespace Modm.ClientApp.Controllers
 {
@@ -32,7 +34,33 @@ namespace Modm.ClientApp.Controllers
             this.clientFactory = clientFactory;
         }
 
-        
+        [HttpPost("deployments/redeploy")]
+        public async Task<IActionResult> PostRedeploy([FromBody] Dictionary<string, object> parameters)
+        {
+            int deploymentId = 1;
+            var request = new StartRedeploymentRequest
+            {
+                DeploymentId = deploymentId,
+                Parameters = parameters
+            };
+
+            // Use the client to forward the redeployment request
+            var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+            // Use the client to forward the redeployment request
+            return await Client.PostAsync<StartRedeploymentResult>($"api/deployments/redeploy", content);
+        }
+
+        /// <summary>
+        /// Gets the parameters associated with a deployment
+        /// </summary>
+        [HttpGet("deployments/{deploymentId}/parameters")]
+        public async Task<IActionResult> GetParametersFileContent(string deploymentId)
+        {
+            var result = await Client.GetAsync<Dictionary<string, object>>(String.Format(Routes.GetDeploymentParameters, deploymentId));
+            return result;
+        }
+
         [HttpGet("deployments")]
         public async Task<IActionResult> GetDeployments()
         {

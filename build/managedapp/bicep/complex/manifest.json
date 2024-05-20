@@ -1,0 +1,8 @@
+{
+    "deploymentType": "arm",
+    "mainTemplate": "main.bicep",
+    "offer": {
+        "name": "Complex Bicep",
+        "description": "description"
+    }
+}

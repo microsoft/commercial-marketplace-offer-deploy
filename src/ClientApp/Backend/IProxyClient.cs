@@ -7,6 +7,7 @@ namespace ClientApp.Backend
     {
         Task<IActionResult> GetAsync<T>(string relativeUri);
         Task<IActionResult> PostAsync(string relativeUri, HttpContent content = default);
+        Task<IActionResult> PostAsync<T>(string relativeUri, HttpContent content = default);
     }
 
     public static class ProxyClientType

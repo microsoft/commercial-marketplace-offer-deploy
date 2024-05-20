@@ -4,20 +4,22 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "commercial-marketplace-offer-deploy"
-version = "2.0.0"
+version = "2.0.2"
 authors = [
   { name="Kevin Hillinger", email="kevin.hillinger@outlook.com" },
 ]
-description = "A small example package"
+description = "The Microsoft commercial marketplace app installer packaging SDK"
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 dependencies = [
   'python-hcl2 >= 4.3.2',
   'click == 8.1.7',
   'msrest == 0.7.1',
   'pybars3 == 0.9.7',
-  'knack == 0.11.0'
+  'knack == 0.11.0',
+  'jsonschema ~=4.19.1',
+  'jsonschema-specifications ~=2023.7.1'
 ]
 classifiers=[
   "Programming Language :: Python :: 3",
