@@ -133,6 +133,7 @@ build {
 
   post-processor "shell-local" {
     inline = [
+          "az login --service-principal -u ${var.client_id} -p ${var.client_secret} --tenant ${var.tenant_id}",
           "az image delete -n ${var.image_name}-${var.image_version} -g ${var.resource_group} --subscription ${var.subscription_id}"
         ]
   }

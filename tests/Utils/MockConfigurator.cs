@@ -8,6 +8,8 @@ using Modm.Jenkins.Client;
 using NSubstitute;
 using Azure.ResourceManager;
 using Modm.Tests.Utils.Fakes;
+using System.IO.Compression;
+using Microsoft.WindowsAzure.ResourceStack.Common.Extensions;
 
 namespace Modm.Tests.Utils
 {
@@ -74,6 +76,44 @@ namespace Modm.Tests.Utils
                 return instance;
             }
 
+            public IDeploymentFileFactory DeploymentFileFactory(Action<IDeploymentFileFactory>? configure = default)
+            {
+                var dir = Test.Directory<TTest>();
+
+                var mockConfiguration = new ConfigurationBuilder()
+                    .AddInMemoryCollection(new Dictionary<string, string>
+                    {
+                        {"MODM_HOME", dir.FullName }
+                    })
+                    .Build();
+
+                // var mockConfiguration = Substitute.For<IConfiguration>();
+                
+                var mockLogger = Substitute.For<ILogger<DeploymentFile>>();
+                var mockDeploymentFile = Substitute.For<DeploymentFile>(mockConfiguration, mockLogger);
+                mockDeploymentFile.FileName.Returns("mockFileName.json");
+
+                var mockDeployment = new Deployment
+                {
+                    Definition = new DeploymentDefinition {
+                        Parameters = new Dictionary<string, object>(),
+                        WorkingDirectory = dir.FullName,
+                        MainTemplatePath = dir.FullName,
+                        DeploymentType = DeploymentType.Terraform,
+                        InstallerPackageHash = "aaa",
+                        ParametersFilePath = Path.Combine(dir.FullName, "terraform.tfvars.json")
+                    }
+                };
+                mockDeploymentFile.ReadAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(mockDeployment));
+                mockDeploymentFile.WriteAsync(Arg.Any<Deployment>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+
+                var instance = Substitute.For<IDeploymentFileFactory>();
+                instance.Create().Returns(mockDeploymentFile);
+
+                services.AddSingleton(instance);
+                return instance;
+            }
+
             public IConfiguration Configuration()
             {
                 var dir = Test.Directory<TTest>();
@@ -81,6 +121,20 @@ namespace Modm.Tests.Utils
 
                 var configuration = Substitute.For<IConfiguration>();
                 configuration.GetValue<string>(EnvironmentVariable.Names.HomeDirectory).Returns(dir.FullName);
+
+                // Paths for files
+                var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                var sourceDeploymentJsonPath = Path.Combine(baseDirectory, "Data", "deployment.json");
+                var sourceInstallerZipPath = Path.Combine(baseDirectory, "Data", "installer.zip");
+                var destinationDeploymentJsonPath = Path.Combine(dir.FullName, "deployment.json");
+                var destinationInstallerZipPath = Path.Combine(dir.FullName, "installer.zip");
+
+                // Copy deployment.json
+                CopyFileToDirectory(sourceDeploymentJsonPath, destinationDeploymentJsonPath);
+
+                // Copy and unzip installer.zip
+                CopyFileToDirectory(sourceInstallerZipPath, destinationInstallerZipPath);
+                UnzipFile(destinationInstallerZipPath, dir.FullName);
 
                 services.AddSingleton<IConfiguration>(configuration);
 
@@ -114,6 +168,30 @@ namespace Modm.Tests.Utils
                 services.AddSingleton(instance);
 
                 return instance;
+            }
+
+            private void CopyFileToDirectory(string sourcePath, string destinationPath)
+            {
+                if (File.Exists(sourcePath))
+                {
+                    File.Copy(sourcePath, destinationPath, overwrite: true);
+                }
+                else
+                {
+                    throw new FileNotFoundException($"The file {sourcePath} could not be found.");
+                }
+            }
+
+            private void UnzipFile(string filePath, string extractPath)
+            {
+                if (File.Exists(filePath))
+                {
+                    ZipFile.ExtractToDirectory(filePath, extractPath, overwriteFiles: true);
+                }
+                else
+                {
+                    throw new FileNotFoundException($"The file {filePath} could not be found.");
+                }
             }
         }
     }

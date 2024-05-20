@@ -31,26 +31,39 @@ namespace Modm.Deployments
             return Path.GetFullPath(Path.Combine(configuration.GetHomeDirectory(), FileName));
         }
 
-        public async Task<T> ReadAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<T> ReadAsync(CancellationToken cancellationToken = default)
         {
             var path = GetFilePath();
 
             if (!File.Exists(path))
             {
                 logger.LogWarning($"{path} was not found");
-                return default; // Return default value for T
+                return default; 
             }
 
             var json = await File.ReadAllTextAsync(path, cancellationToken);
             return JsonSerializer.Deserialize<T>(json, serializerOptions);
         }
 
-        public async Task WriteAsync(T data, CancellationToken cancellationToken)
+        public virtual async Task WriteAsync(T data, CancellationToken cancellationToken)
         {
             var json = JsonSerializer.Serialize(data, serializerOptions);
             logger.LogInformation($"Writing data to {FileName}");
             await File.WriteAllTextAsync(GetFilePath(), json, cancellationToken);
         }
+
+        public Task DeleteAsync()
+        {
+            var path = GetFilePath();
+
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+            return Task.CompletedTask;
+        }
+
     }
 }
 

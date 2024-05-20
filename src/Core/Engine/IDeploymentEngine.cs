@@ -6,6 +6,8 @@ namespace Modm.Engine
     {
         Task<StartDeploymentResult> Start(StartDeploymentRequest request, CancellationToken cancellationToken);
 
+        Task<StartRedeploymentResult> Redeploy(StartRedeploymentRequest request, CancellationToken cancellationToken);
+
         /// <summary>
         /// Gets the status of the engine
         /// </summary>

@@ -18,11 +18,30 @@ namespace Modm.Deployments
 
         public async Task Write(IDictionary<string, object> parameters)
         {
-            var json = JsonSerializer.Serialize(new ArmParametersFileContent
+            if (Directory.Exists(destinationDirectory))
             {
-                Parameters = parameters?.ToDictionary(p => p.Key, p => ArmParameter.From(p.Value))
-            });
-            await File.WriteAllTextAsync(FullPath, json);
+                var json = JsonSerializer.Serialize(new ArmParametersFileContent
+                {
+                    Parameters = parameters?.ToDictionary(p => p.Key, p => ArmParameter.From(p.Value))
+                }, new JsonSerializerOptions { WriteIndented = true });
+
+                // Validate write permission and file creation
+                using (FileStream fs = new FileStream(FullPath, FileMode.Create, FileAccess.Write))
+                {
+                    using (StreamWriter writer = new StreamWriter(fs))
+                    {
+                        await writer.WriteAsync(json);
+                    }
+                }
+            }
+        }
+
+        public async Task Delete()
+        {
+            if (File.Exists(FullPath))
+            {
+                await Task.Run(() => File.Delete(FullPath));
+            }
         }
 
         class ArmParametersFileContent

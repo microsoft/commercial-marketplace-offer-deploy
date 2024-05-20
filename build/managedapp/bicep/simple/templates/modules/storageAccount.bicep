@@ -2,6 +2,9 @@
 @description('Deployment Location')
 param location string
 
+@description('Storage Account Access Tier')
+param tier string
+
 
 var storageAccountName = toLower(format('sa{0}', uniqueString(resourceGroup().id)))
 
@@ -15,7 +18,7 @@ resource st 'Microsoft.Storage/storageAccounts@2022-09-01' = {
   }
   kind: 'StorageV2'
    properties: {
-     accessTier: 'Hot'
+     accessTier: tier
    }
   tags: {
     environment: 'DevTest'
