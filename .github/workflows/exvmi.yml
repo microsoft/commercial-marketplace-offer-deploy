@@ -1,0 +1,52 @@
+name: Export Virtual Machine Image
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_dispatch:
+
+env:
+  export_version: ${{ vars.major_version_number }}.${{ vars.minor_version_number }}.${{ github.run_number }}
+
+jobs:
+  export-vmi:
+    runs-on: ubuntu-latest
+    environment: dev  
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: '100'
+
+    - name: Setup tools
+      run: |
+        echo "installing jq and azcopy"
+        sudo apt-get update && sudo apt-get install -y jq
+        wget -O azcopy.tar.gz https://aka.ms/downloadazcopylinux64
+        tar -xf azcopy.tar.gz
+        sudo ./install.sh
+
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: Export Virtual Machine Image
+      run: |
+        latest_version=$(az sig image-version list -g ${{ vars.IMAGE_RESOURCE_GROUP }} -i ${{ vars.IMAGE_NAME }} -r ${{ vars.IMAGE_GALLERY_NAME }} -o json | jq -r 'sort_by(.name | split(".") | map(tonumber))[-1].name')
+        echo "pulled latest version $latest_version"
+        
+        vmi_reference_id="/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.IMAGE_RESOURCE_GROUP }}/providers/Microsoft.Compute/galleries/${{ vars.IMAGE_GALLERY_NAME }}/images/${{ vars.IMAGE_NAME }}/versions/$latest_version"
+        
+        ./scripts/export-vmi.sh -g ${{ vars.IMAGE_RESOURCE_GROUP }} \
+          -l ${{ vars.IMAGE_LOCATION }} \
+          -n ${{ vars.IMAGE_NAME }} \
+          -i $vmi_reference_id \
+          -a ${{ vars.STORAGE_ACCOUNT_NAME }} \
+          -c ${{ vars.STORAGE_CONTAINER_NAME }} \
+          -e ${{ vars.EXPIRY_DATE }}
+
