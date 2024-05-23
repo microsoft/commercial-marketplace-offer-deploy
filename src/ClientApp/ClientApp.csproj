@@ -54,7 +54,6 @@
     <None Remove="Commands\" />
     <None Remove="Handlers\" />
     <None Remove="Cleanup\" />
-    <None Remove="ClientApp\package-lock.json" />
   </ItemGroup>
 
   <ItemGroup>
