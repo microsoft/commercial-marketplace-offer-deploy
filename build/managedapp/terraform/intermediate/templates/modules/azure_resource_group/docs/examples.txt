@@ -1,0 +1,5 @@
+# Example 1
+resource_groups = {
+  "rg-infraops-eastus2-prod-01" = "eastus2"
+  "rg-infraops-westus2-prod-01" = "westus2"
+}

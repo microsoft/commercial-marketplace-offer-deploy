@@ -1,0 +1,31 @@
+# Example 1 - OpenAI account w/ public access disabled & a private endpoint
+cognitive_accounts = {
+  oai-test-usgovvirginia = {
+    custom_subdomain_name = "test-usgovvirginia"
+    kind                  = "OpenAI"
+    location              = "usgovvirginia"
+    private_endpoints = {
+      pep-oai-test-usgovvirginia = {
+        subnet = {
+          name                 = "subnet-test-01"
+          resource_group_name  = "rg-test-01"
+          virtual_network_name = "vnet-test-usgovvirginia-01"
+        }
+      }
+    }
+    resource_group_name = "rg-test-01"
+    sku_name            = "S0"
+  }
+}
+
+# Example 2 - OpenAI accouunt w/ public access enabled
+cognitive_accounts = {
+  oai-test-usgovvirginia = {
+    custom_subdomain_name         = "test-usgovvirginia"
+    kind                          = "OpenAI"
+    location                      = "usgovvirginia"
+    public_network_access_enabled = true
+    resource_group_name           = "rg-test-01"
+    sku_name                      = "S0"
+  }
+}

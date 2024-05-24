@@ -1,0 +1,221 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+    "handler": "Microsoft.Azure.CreateUIDef",
+    "version": "0.1.2-preview",
+    "parameters": {
+      "basics": [
+        {
+          "name": "resourceGroupName",
+          "type": "Microsoft.Common.TextBox",
+          "label": "Resource Group Name",
+          "defaultValue": "myResourceGroup",
+          "constraints": {
+            "required": true
+          }
+        },
+        {
+          "name": "location",
+          "type": "Microsoft.Common.Location",
+          "label": "Location",
+          "defaultValue": "West US",
+          "constraints": {
+            "required": true
+          }
+        }
+      ],
+      "steps": [
+        {
+          "name": "appServicePlans",
+          "label": "App Service Plans",
+          "elements": [
+            {
+              "name": "appServicePlans",
+              "type": "Microsoft.Common.Array",
+              "label": "App Service Plans",
+              "elements": [
+                {
+                  "name": "location",
+                  "type": "Microsoft.Common.Location",
+                  "label": "Location",
+                  "defaultValue": "West US",
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "osType",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "OS Type",
+                  "options": [
+                    {
+                      "label": "Windows",
+                      "value": "Windows"
+                    },
+                    {
+                      "label": "Linux",
+                      "value": "Linux"
+                    }
+                  ],
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "skuName",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "SKU Name",
+                  "options": [
+                    {
+                      "label": "B1",
+                      "value": "B1"
+                    },
+                    {
+                      "label": "S1",
+                      "value": "S1"
+                    },
+                    {
+                      "label": "P1v2",
+                      "value": "P1v2"
+                    }
+                  ],
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "resourceGroupName",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Resource Group Name",
+                  "defaultValue": "myResourceGroup",
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "tags",
+                  "type": "Microsoft.Common.MultiLineTextBox",
+                  "label": "Tags",
+                  "constraints": {
+                    "required": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "cognitiveAccounts",
+          "label": "Cognitive Accounts",
+          "elements": [
+            {
+              "name": "cognitiveAccounts",
+              "type": "Microsoft.Common.Array",
+              "label": "Cognitive Accounts",
+              "elements": [
+                {
+                  "name": "location",
+                  "type": "Microsoft.Common.Location",
+                  "label": "Location",
+                  "defaultValue": "West US",
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "kind",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Kind",
+                  "options": [
+                    {
+                      "label": "CognitiveServices",
+                      "value": "CognitiveServices"
+                    }
+                  ],
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "skuName",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "SKU Name",
+                  "options": [
+                    {
+                      "label": "F0",
+                      "value": "F0"
+                    },
+                    {
+                      "label": "S1",
+                      "value": "S1"
+                    }
+                  ],
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "resourceGroupName",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Resource Group Name",
+                  "defaultValue": "myResourceGroup",
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "tags",
+                  "type": "Microsoft.Common.MultiLineTextBox",
+                  "label": "Tags",
+                  "constraints": {
+                    "required": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "sqlAdminCredentials",
+          "label": "SQL Admin Credentials",
+          "elements": [
+            {
+              "name": "sqlAdminUsername",
+              "type": "Microsoft.Common.TextBox",
+              "label": "SQL Admin Username",
+              "defaultValue": "adminuser",
+              "constraints": {
+                "required": true
+              }
+            },
+            {
+              "name": "sqlAdminPassword",
+              "type": "Microsoft.Common.PasswordBox",
+              "label": {
+                "password": "SQL Admin Password",
+                "confirmPassword": "Confirm Password"
+              },
+              "toolTip": "Password must be at least 8 characters long, contain only numbers and letters",
+              "constraints": {
+                "required": true,
+                "regex": "^[a-zA-Z0-9]{8,}$",
+                "validationMessage": "Password must be at least 8 characters long, contain only numbers and letters"
+              },
+              "options": {
+                "hideConfirmation": false
+              },
+              "visible": true
+            }
+          ]
+        }
+      ],
+      "outputs": {
+        "resourceGroupName": "[basics('resourceGroupName')]",
+        "location": "[basics('location')]",
+        "sql_admin_username": "[steps('sqlAdminCredentials').sqlAdminUsername]",
+        "sql_admin_password": "[steps('sqlAdminCredentials').sqlAdminPassword]",
+        "app_service_plans": "[steps('appServicePlans').appServicePlans]",
+        "cognitive_accounts": "[steps('cognitiveAccounts').cognitiveAccounts]"
+      }
+    }
+  }
+  
