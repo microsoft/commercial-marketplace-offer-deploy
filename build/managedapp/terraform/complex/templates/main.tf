@@ -41,7 +41,7 @@ locals {
   pip_name          = "modmpip-${local.timestamp_suffix}"
   nsg_name          = "modmnsg-${local.timestamp_suffix}"
   storage_name_suffix  = formatdate("YYYYMMDDHHmmss", timestamp())
-  os_disk_name         = "modemosdisk-${local.timestamp_suffix}" # Added for OS disk naming
+  os_disk_name         = "modmosdisk-${local.timestamp_suffix}" # Added for OS disk naming
 }
 
 module "networking" {
