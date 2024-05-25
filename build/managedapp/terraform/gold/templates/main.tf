@@ -2,17 +2,14 @@ module "azure_app_service_plan" {
   for_each = var.app_service_plans
   source   = "./modules/azure_app_service_plan"
 
-  location                        = each.value.location
+  location                        = var.location
   maximum_elastic_worker_count    = each.value.maximum_elastic_worker_count
   monitor_diagnostic_destinations = local.monitor_diagnostic_destinations
   name                            = each.key
   os_type                         = each.value.os_type
   per_site_scaling_enabled        = each.value.per_site_scaling_enabled
   required_tags                   = merge(var.default_tags, each.value.tags)
-  resource_group_name = try(
-    module.azure_resource_group[each.value.resource_group_name].name,
-    each.value.resource_group_name
-  )
+  resource_group_name             = var.resourceGroupName
   sku_name               = each.value.sku_name
   worker_count           = each.value.worker_count
   zone_balancing_enabled = each.value.zone_balancing_enabled
@@ -29,17 +26,14 @@ module "azure_cognitive_account" {
   fqdns                              = each.value.fqdns
   kind                               = each.value.kind
   local_auth_enabled                 = each.value.local_auth_enabled
-  location                           = each.value.location
+  location                           = var.location
   monitor_diagnostic_destinations    = local.monitor_diagnostic_destinations
   name                               = each.key
   outbound_network_access_restricted = each.value.outbound_network_access_restricted
   private_endpoints                  = each.value.private_endpoints
   public_network_access_enabled      = each.value.public_network_access_enabled
   required_tags                      = merge(var.default_tags, each.value.tags)
-  resource_group_name = try(
-    module.azure_resource_group[each.value.resource_group_name].name,
-    each.value.resource_group_name
-  )
+  resource_group_name                = var.resourceGroupName
   sku_name = each.value.sku_name
 
   depends_on = [
@@ -56,16 +50,13 @@ module "azure_key_vault" {
   enabled_for_disk_encryption     = each.value.enabled_for_disk_encryption
   enabled_for_template_deployment = each.value.enabled_for_template_deployment
   key_vault_name                  = each.key
-  location                        = each.value.location
+  location                        = var.location
   monitor_diagnostic_destinations = local.monitor_diagnostic_destinations
   private_endpoints               = each.value.private_endpoints
   public_network_access_enabled   = each.value.public_network_access_enabled
   purge_protection_enabled        = each.value.purge_protection_enabled
   required_tags                   = merge(var.default_tags, each.value.tags)
-  resource_group_name = try(
-    module.azure_resource_group[each.value.resource_group_name].name,
-    each.value.resource_group_name
-  )
+  resource_group_name            = var.resourceGroupName
   sku                        = each.value.sku
   soft_delete_retention_days = each.value.soft_delete_retention_days
 
@@ -79,16 +70,13 @@ module "azure_linux_web_app" {
   custom_domains                  = each.value.custom_domains
   enabled                         = each.value.enabled
   https_only                      = each.value.https_only
-  location                        = each.value.location
+  location                        = var.location
   monitor_diagnostic_destinations = local.monitor_diagnostic_destinations
   name                            = each.key
   private_endpoints               = each.value.private_endpoints
   public_network_access_enabled   = each.value.public_network_access_enabled
   required_tags                   = merge(var.default_tags, each.value.tags)
-  resource_group_name = try(
-    module.azure_resource_group[each.value.resource_group_name].name,
-    each.value.resource_group_name
-  )
+  resource_group_name             = var.resourceGroupName
   service_plan_id                                = module.azure_app_service_plan[each.value.service_plan_key].id
   site_config                                    = each.value.site_config
   webdeploy_publish_basic_authentication_enabled = each.value.webdeploy_publish_basic_authentication_enabled
@@ -109,16 +97,13 @@ module "azure_postgresql_flexible_server" {
   geo_redundant_backup_enabled    = each.value.geo_redundant_backup_enabled
   high_availability               = each.value.high_availability
   is_gov                          = local.is_gov
-  location                        = each.value.location
+  location                        = var.location
   maintenance_window              = each.value.maintenance_window
   monitor_diagnostic_destinations = local.monitor_diagnostic_destinations
   name                            = each.key
   postgresql_version              = each.value.version
   required_tags                   = merge(var.default_tags, each.value.tags)
-  resource_group_name = try(
-    module.azure_resource_group[each.value.resource_group_name].name,
-    each.value.resource_group_name
-  )
+  resource_group_name             = var.resourceGroupName
   sku_name         = each.value.sku_name
   storage_mb       = each.value.storage_mb
   storage_tier     = each.value.storage_tier
@@ -134,22 +119,10 @@ module "azure_private_dns_zone" {
 
   name          = each.key
   required_tags = merge(var.default_tags, each.value.tags)
-  resource_group_name = try(
-    module.azure_resource_group[each.value.resource_group_name].name,
-    each.value.resource_group_name
-  )
+  resource_group_name = var.resourceGroupName
   virtual_network_links = each.value.virtual_network_links
 
   depends_on = [module.azure_resource_provider_registration["Microsoft.Network"]]
-}
-
-module "azure_resource_group" {
-  for_each = var.resource_groups
-  source   = "./modules/azure_resource_group"
-
-  location            = each.value
-  required_tags       = var.default_tags
-  resource_group_name = each.key
 }
 
 module "azure_resource_provider_registration" {
@@ -168,7 +141,7 @@ module "azure_search_service" {
   authentication_failure_mode     = each.value.authentication_failure_mode
   hosting_mode                    = each.value.hosting_mode
   local_authentication_enabled    = each.value.local_authentication_enabled
-  location                        = each.value.location
+  location                        = var.location
   monitor_diagnostic_destinations = local.monitor_diagnostic_destinations
   name                            = each.key
   partition_count                 = each.value.partition_count
@@ -176,10 +149,7 @@ module "azure_search_service" {
   public_network_access_enabled   = each.value.public_network_access_enabled
   replica_count                   = each.value.replica_count
   required_tags                   = merge(var.default_tags, each.value.tags)
-  resource_group_name = try(
-    module.azure_resource_group[each.value.resource_group_name].name,
-    each.value.resource_group_name
-  )
+  resource_group_name             = var.resourceGroupName
   semantic_search_sku = each.value.semantic_search_sku
   sku                 = each.value.sku
 
@@ -198,17 +168,14 @@ module "azure_storage_account" {
   account_replication_type        = each.value.account_replication_type
   account_tier                    = each.value.account_tier
   containers                      = each.value.containers
-  location                        = each.value.location
+  location                        = var.location
   monitor_diagnostic_destinations = local.monitor_diagnostic_destinations
   name                            = each.key
   network_rules                   = each.value.network_rules
   private_endpoints               = each.value.private_endpoints
   public_network_access_enabled   = each.value.public_network_access_enabled
   required_tags                   = merge(var.default_tags, each.value.tags)
-  resource_group_name = try(
-    module.azure_resource_group[each.value.resource_group_name].name,
-    each.value.resource_group_name
-  )
+  resource_group_name             = var.resourceGroupName
 
   depends_on = [
     module.azure_resource_provider_registration["Microsoft.Network"],

@@ -1,3 +1,14 @@
+variable "resourceGroupName" {
+  description = "The name of the resource group in which all resources will be deployed"
+  type        = string
+}
+
+variable "location" {
+  description = "Azure region for the resources"
+  type = string
+  default     = "West US"
+}
+
 variable "app_service_plans" {
   default     = {}
   description = "A collection of App Service Service Plans to deploy"
