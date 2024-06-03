@@ -41,6 +41,7 @@ locals {
   pip_name          = "modmpip-${local.timestamp_suffix}"
   nsg_name          = "modmnsg-${local.timestamp_suffix}"
   storage_name_suffix  = formatdate("YYYYMMDDHHmmss", timestamp())
+  os_disk_name         = "modmosdisk-${local.timestamp_suffix}" # Added for OS disk naming
 }
 
 module "networking" {
@@ -76,7 +77,7 @@ resource "azurerm_virtual_machine" "example_vm" {
   vm_size               = "Standard_F2"
 
   storage_os_disk {
-    name              = "osdisk"
+    name              = local.os_disk_name
     caching           = "ReadWrite"
     create_option     = "FromImage"
     managed_disk_type = "Standard_LRS"
