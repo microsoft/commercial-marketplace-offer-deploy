@@ -356,7 +356,7 @@ export const Default = () => {
               const successCount = deployedResources.filter(r => r.state === "Succeeded").length;
 
               const failedCountIndicatesFailure = failedCount > 0 && (failedCount + successCount) === deployedResources.length;
-              if (failedCountIndicatesFailure || deploymentStatus === "failed") {
+              if (failedCountIndicatesFailure || deploymentStatus === "failure") {
                 return <h4>{offerName} failed</h4>;
               }
               if (deploymentStatus === "success") {
