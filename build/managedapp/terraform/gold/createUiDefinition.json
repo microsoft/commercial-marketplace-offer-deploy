@@ -1,0 +1,385 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+    "handler": "Microsoft.Azure.CreateUIDef",
+    "version": "0.1.2-preview",
+    "parameters": {
+      "basics": [
+        {}
+      ],
+      "steps": [
+        {
+          "name": "appServicePlans",
+          "label": "App Service Plans",
+          "elements": [
+            {
+              "name": "appServicePlanSection",
+              "type": "Microsoft.Common.Section",
+              "label": "App Service Plan",
+              "elements": [
+                {
+                  "name": "location",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Location",
+                  "options": [
+                    { "label": "East US", "value": "East US" },
+                    { "label": "West US", "value": "West US" },
+                    { "label": "North Europe", "value": "North Europe" },
+                    { "label": "West Europe", "value": "West Europe" },
+                    { "label": "Southeast Asia", "value": "Southeast Asia" },
+                    { "label": "Japan East", "value": "Japan East" }
+                  ],
+                  "defaultValue": "West US",
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "osType",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "OS Type",
+                  "options": [
+                    {
+                      "label": "Windows",
+                      "value": "Windows"
+                    },
+                    {
+                      "label": "Linux",
+                      "value": "Linux"
+                    }
+                  ],
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "skuName",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "SKU Name",
+                  "options": [
+                    {
+                      "label": "B1",
+                      "value": "B1"
+                    },
+                    {
+                      "label": "S1",
+                      "value": "S1"
+                    },
+                    {
+                      "label": "P1v2",
+                      "value": "P1v2"
+                    }
+                  ],
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "resourceGroupName",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Resource Group Name",
+                  "defaultValue": "myResourceGroup",
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "tags",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Tags",
+                  "constraints": {
+                    "required": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "linuxWebApps",
+          "label": "Linux Web Apps",
+          "elements": [
+            {
+              "name": "linuxWebAppSection",
+              "type": "Microsoft.Common.Section",
+              "label": "Linux Web App",
+              "elements": [
+                {
+                  "name": "resource_group_name",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Resource Group Name",
+                  "defaultValue": "myResourceGroup",
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "location",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Location",
+                  "options": [
+                    { "label": "East US", "value": "East US" },
+                    { "label": "West US", "value": "West US" },
+                    { "label": "North Europe", "value": "North Europe" },
+                    { "label": "West Europe", "value": "West Europe" },
+                    { "label": "Southeast Asia", "value": "Southeast Asia" },
+                    { "label": "Japan East", "value": "Japan East" }
+                  ],
+                  "defaultValue": "West US",
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "custom_domains",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Custom Domains",
+                  "constraints": {
+                    "required": false
+                  }
+                },
+                {
+                  "name": "enabled",
+                  "type": "Microsoft.Common.CheckBox",
+                  "label": "Enabled",
+                  "defaultValue": true,
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "https_only",
+                  "type": "Microsoft.Common.CheckBox",
+                  "label": "HTTPS Only",
+                  "defaultValue": true,
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "service_plan_key",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Service Plan Key",
+                  "defaultValue": "asp-plan1",
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "always_on",
+                  "type": "Microsoft.Common.CheckBox",
+                  "label": "Always On",
+                  "defaultValue": true,
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "linux_fx_version",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Linux FX Version",
+                  "defaultValue": "DOTNETCORE|2.1",
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "app_settings_name",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "App Settings Name",
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "app_settings_value",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "App Settings Value",
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "webdeploy_publish_basic_authentication_enabled",
+                  "type": "Microsoft.Common.CheckBox",
+                  "label": "Web Deploy Publish Basic Authentication Enabled",
+                  "defaultValue": false,
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "private_dns_zone_name",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Private DNS Zone Name",
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "subresource_names",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Subresource Names",
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "subnet_name",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Subnet Name",
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "subnet_resource_group_name",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Subnet Resource Group Name",
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "virtual_network_name",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Virtual Network Name",
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "tags",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Tags",
+                  "constraints": {
+                    "required": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "cognitiveAccounts",
+          "label": "Cognitive Accounts",
+          "elements": [
+            {
+              "name": "cognitiveAccountSection",
+              "type": "Microsoft.Common.Section",
+              "label": "Cognitive Account",
+              "elements": [
+                {
+                  "name": "location",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Location",
+                  "options": [
+                    { "label": "East US", "value": "East US" },
+                    { "label": "West US", "value": "West US" },
+                    { "label": "North Europe", "value": "North Europe" },
+                    { "label": "West Europe", "value": "West Europe" },
+                    { "label": "Southeast Asia", "value": "Southeast Asia" },
+                    { "label": "Japan East", "value": "Japan East" }
+                  ],
+                  "defaultValue": "West US",
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "kind",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "Kind",
+                  "options": [
+                    {
+                      "label": "CognitiveServices",
+                      "value": "CognitiveServices"
+                    }
+                  ],
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "skuName",
+                  "type": "Microsoft.Common.DropDown",
+                  "label": "SKU Name",
+                  "options": [
+                    {
+                      "label": "F0",
+                      "value": "F0"
+                    },
+                    {
+                      "label": "S1",
+                      "value": "S1"
+                    }
+                  ],
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "resourceGroupName",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Resource Group Name",
+                  "defaultValue": "myResourceGroup",
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "tags",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Tags",
+                  "constraints": {
+                    "required": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "sqlAdminCredentials",
+          "label": "SQL Admin Credentials",
+          "elements": [
+            {
+              "name": "sqlAdminUsername",
+              "type": "Microsoft.Common.TextBox",
+              "label": "SQL Admin Username",
+              "defaultValue": "adminuser",
+              "constraints": {
+                "required": true
+              }
+            },
+            {
+              "name": "sqlAdminPassword",
+              "type": "Microsoft.Common.PasswordBox",
+              "label": {
+                "password": "SQL Admin Password",
+                "confirmPassword": "Confirm Password"
+              },
+              "toolTip": "Password must be at least 8 characters long, contain only numbers and letters",
+              "constraints": {
+                "required": true,
+                "regex": "^[a-zA-Z0-9]{8,}$",
+                "validationMessage": "Password must be at least 8 characters long, contain only numbers and letters"
+              },
+              "options": {
+                "hideConfirmation": false
+              },
+              "visible": true
+            }
+          ]
+        }
+      ],
+      "outputs": {
+        "location": "[location()]",
+        "sql_admin_username": "[steps('sqlAdminCredentials').sqlAdminUsername]",
+        "sql_admin_password": "[steps('sqlAdminCredentials').sqlAdminPassword]",
+        "app_service_plans": "[steps('appServicePlans').appServicePlanSection]",
+        "cognitive_accounts": "[steps('cognitiveAccounts').cognitiveAccountSection]",
+        "linux_web_apps": "[steps('linuxWebApps').linuxWebAppSection]"
+      }
+    }
+  }
+  
