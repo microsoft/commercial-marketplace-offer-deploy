@@ -137,7 +137,7 @@
                 },
                 {
                   "name": "custom_domains",
-                  "type": "Microsoft.Common.TextBox",
+                  "type": "Microsoft.Common.MultiLineTextBox",
                   "label": "Custom Domains",
                   "constraints": {
                     "required": false
@@ -370,7 +370,7 @@
       "outputs": {
         "location": "[location()]",
         "name": "[steps('linuxWebApps').linuxWebAppSection.name]",
-        "custom_domains": "[steps('linuxWebApps').linuxWebAppSection.custom_domains]",
+        "custom_domains": "[json(concat('[\"', replace(steps('linuxWebApps').linuxWebAppSection.custom_domains, '\n', '\",\"'), '\"]'))]",
         "enabled": "[steps('linuxWebApps').linuxWebAppSection.enabled]",
         "https_only": "[steps('linuxWebApps').linuxWebAppSection.https_only]",
         "service_plan_id": "[steps('linuxWebApps').linuxWebAppSection.service_plan_id]",
