@@ -118,7 +118,6 @@
                   "name": "location",
                   "type": "Microsoft.Common.DropDown",
                   "label": "Location",
-                  "options": [
                     { "label": "East US", "value": "East US" },
                     { "label": "West US", "value": "West US" },
                     { "label": "North Europe", "value": "North Europe" },
@@ -369,7 +368,7 @@
         }
       ],
       "outputs": {
-        "location": "[steps('linuxWebApps').linuxWebAppSection.location]",
+        "location": "[location()]",
         "name": "[steps('linuxWebApps').linuxWebAppSection.name]",
         "custom_domains": "[steps('linuxWebApps').linuxWebAppSection.custom_domains]",
         "enabled": "[steps('linuxWebApps').linuxWebAppSection.enabled]",
