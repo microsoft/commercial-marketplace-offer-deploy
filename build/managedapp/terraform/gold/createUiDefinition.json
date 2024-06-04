@@ -27,13 +27,22 @@
                   "name": "os_type",
                   "type": "Microsoft.Common.DropDown",
                   "label": "OS Type",
-                  "options": [
-                    { "label": "Windows", "value": "Windows" },
-                    { "label": "Linux", "value": "Linux" }
-                  ],
+                  "defaultValue": "Linux",
+                  "toolTip": "",
                   "constraints": {
+                    "allowedValues": [
+                        {
+                            "label": "Linux",
+                            "value": "Linux"
+                        },
+                        {
+                            "label": "Windows",
+                            "value": "Windows"
+                        }
+                    ],
                     "required": true
-                  }
+                  },
+                  "visible": true
                 },
                 {
                   "name": "per_site_scaling_enabled",
@@ -48,14 +57,26 @@
                   "name": "sku_name",
                   "type": "Microsoft.Common.DropDown",
                   "label": "SKU Name",
-                  "options": [
-                    { "label": "B1", "value": "B1" },
-                    { "label": "S1", "value": "S1" },
-                    { "label": "P1v2", "value": "P1v2" }
-                  ],
+                  "defaultValue": "B1",
+                  "toolTip": "",
                   "constraints": {
+                    "allowedValues": [
+                      {
+                        "label": "B1",
+                        "value": "B1"
+                      },
+                      {
+                        "label": "S1",
+                        "value": "S1"
+                      },
+                      {
+                        "label": "P1v2",
+                        "value": "P1v2"
+                      }
+                    ],
                     "required": true
-                  }
+                  },
+                  "visible": true
                 },
                 {
                   "name": "worker_count",
@@ -257,27 +278,39 @@
                   "name": "kind",
                   "type": "Microsoft.Common.DropDown",
                   "label": "Kind",
-                  "options": [
-                    {
-                      "label": "CognitiveServices",
-                      "value": "CognitiveServices"
-                    }
-                  ],
+                  "defaultValue": "CognitiveServices",
+                  "toolTip": "",
                   "constraints": {
+                    "allowedValues": [
+                        {
+                            "label": "CognitiveServices",
+                            "value": "CognitiveServices"
+                        }
+                    ],
                     "required": true
-                  }
+                  },
+                "visible": true
                 },
                 {
                   "name": "skuName",
                   "type": "Microsoft.Common.DropDown",
                   "label": "SKU Name",
-                  "options": [
-                    { "label": "F0", "value": "F0" },
-                    { "label": "S1", "value": "S1" }
-                  ],
+                  "defaultValue": "F0",
+                  "toolTip": "",
                   "constraints": {
+                    "allowedValues": [
+                        {
+                            "label": "F0",
+                            "value": "F0"
+                        },
+                        {
+                            "label": "S1",
+                            "value": "S1"
+                        }
+                    ],
                     "required": true
-                  }
+                  },
+                  "visible": true
                 },
                 {
                   "name": "resourceGroupName",
