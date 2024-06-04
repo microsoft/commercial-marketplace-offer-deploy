@@ -137,11 +137,12 @@
                 },
                 {
                   "name": "custom_domains",
-                  "type": "Microsoft.Common.MultiLineTextBox",
-                  "label": "Custom Domains",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Custom Domains (comma-separated)",
                   "constraints": {
                     "required": false
-                  }
+                  },
+                  "toolTip": "Enter multiple custom domains separated by commas."
                 },
                 {
                   "name": "enabled",
@@ -370,7 +371,7 @@
       "outputs": {
         "location": "[location()]",
         "name": "[steps('linuxWebApps').linuxWebAppSection.name]",
-        "custom_domains": "[json(concat('[\"', replace(steps('linuxWebApps').linuxWebAppSection.custom_domains, '\n', '\",\"'), '\"]'))]",
+        "custom_domains": "[split(steps('linuxWebApps').linuxWebAppSection.custom_domains, ',')]",
         "enabled": "[steps('linuxWebApps').linuxWebAppSection.enabled]",
         "https_only": "[steps('linuxWebApps').linuxWebAppSection.https_only]",
         "service_plan_id": "[steps('linuxWebApps').linuxWebAppSection.service_plan_id]",
