@@ -38,7 +38,7 @@ class CreateUiDefinition:
                 template_parameters_keys.remove(reserved_key)
 
         diff = template_parameters_keys.symmetric_difference(outputs_keys)
-
+        
         if len(diff) > 0:
             validation_results.append(
                 ValueError(

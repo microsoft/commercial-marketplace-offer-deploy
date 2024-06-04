@@ -3,9 +3,7 @@
     "handler": "Microsoft.Azure.CreateUIDef",
     "version": "0.1.2-preview",
     "parameters": {
-      "basics": [
-        {}
-      ],
+      "basics": [{}],
       "steps": [
         {
           "name": "appServicePlans",
@@ -17,67 +15,62 @@
               "label": "App Service Plan",
               "elements": [
                 {
-                  "name": "location",
-                  "type": "Microsoft.Common.DropDown",
-                  "label": "Location",
-                  "options": [
-                    { "label": "East US", "value": "East US" },
-                    { "label": "West US", "value": "West US" },
-                    { "label": "North Europe", "value": "North Europe" },
-                    { "label": "West Europe", "value": "West Europe" },
-                    { "label": "Southeast Asia", "value": "Southeast Asia" },
-                    { "label": "Japan East", "value": "Japan East" }
-                  ],
-                  "defaultValue": "West US",
+                  "name": "maximum_elastic_worker_count",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Maximum Elastic Worker Count",
+                  "defaultValue": "10",
                   "constraints": {
                     "required": true
                   }
                 },
                 {
-                  "name": "osType",
+                  "name": "os_type",
                   "type": "Microsoft.Common.DropDown",
                   "label": "OS Type",
                   "options": [
-                    {
-                      "label": "Windows",
-                      "value": "Windows"
-                    },
-                    {
-                      "label": "Linux",
-                      "value": "Linux"
-                    }
+                    { "label": "Windows", "value": "Windows" },
+                    { "label": "Linux", "value": "Linux" }
                   ],
                   "constraints": {
                     "required": true
                   }
                 },
                 {
-                  "name": "skuName",
+                  "name": "per_site_scaling_enabled",
+                  "type": "Microsoft.Common.CheckBox",
+                  "label": "Per Site Scaling Enabled",
+                  "defaultValue": false,
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "sku_name",
                   "type": "Microsoft.Common.DropDown",
                   "label": "SKU Name",
                   "options": [
-                    {
-                      "label": "B1",
-                      "value": "B1"
-                    },
-                    {
-                      "label": "S1",
-                      "value": "S1"
-                    },
-                    {
-                      "label": "P1v2",
-                      "value": "P1v2"
-                    }
+                    { "label": "B1", "value": "B1" },
+                    { "label": "S1", "value": "S1" },
+                    { "label": "P1v2", "value": "P1v2" }
                   ],
                   "constraints": {
                     "required": true
                   }
                 },
                 {
-                  "name": "resourceGroupName",
+                  "name": "worker_count",
                   "type": "Microsoft.Common.TextBox",
-                  "label": "Resource Group Name",
-                  "defaultValue": "myResourceGroup",
+                  "label": "Worker Count",
+                  "defaultValue": "1",
+                  "constraints": {
+                    "required": true
+                  }
+                },
+                {
+                  "name": "zone_balancing_enabled",
+                  "type": "Microsoft.Common.CheckBox",
+                  "label": "Zone Balancing Enabled",
+                  "defaultValue": false,
                   "constraints": {
                     "required": true
                   }
@@ -103,6 +96,15 @@
               "type": "Microsoft.Common.Section",
               "label": "Linux Web App",
               "elements": [
+                {
+                  "name": "name",
+                  "type": "Microsoft.Common.TextBox",
+                  "label": "Name",
+                  "defaultValue": "",
+                  "constraints": {
+                    "required": true
+                  }
+                },
                 {
                   "name": "resource_group_name",
                   "type": "Microsoft.Common.TextBox",
@@ -156,10 +158,10 @@
                   }
                 },
                 {
-                  "name": "service_plan_key",
+                  "name": "service_plan_id",
                   "type": "Microsoft.Common.TextBox",
-                  "label": "Service Plan Key",
-                  "defaultValue": "asp-plan1",
+                  "label": "Service Plan ID",
+                  "defaultValue": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/bobjaclocaltf/providers/Microsoft.Web/serverFarms/asp-plan1",
                   "constraints": {
                     "required": true
                   }
@@ -304,14 +306,8 @@
                   "type": "Microsoft.Common.DropDown",
                   "label": "SKU Name",
                   "options": [
-                    {
-                      "label": "F0",
-                      "value": "F0"
-                    },
-                    {
-                      "label": "S1",
-                      "value": "S1"
-                    }
+                    { "label": "F0", "value": "F0" },
+                    { "label": "S1", "value": "S1" }
                   ],
                   "constraints": {
                     "required": true
@@ -373,12 +369,28 @@
         }
       ],
       "outputs": {
-        "location": "[location()]",
-        "sql_admin_username": "[steps('sqlAdminCredentials').sqlAdminUsername]",
-        "sql_admin_password": "[steps('sqlAdminCredentials').sqlAdminPassword]",
-        "app_service_plans": "[steps('appServicePlans').appServicePlanSection]",
-        "cognitive_accounts": "[steps('cognitiveAccounts').cognitiveAccountSection]",
-        "linux_web_apps": "[steps('linuxWebApps').linuxWebAppSection]"
+        "location": "[steps('linuxWebApps').linuxWebAppSection.location]",
+        "name": "[steps('linuxWebApps').linuxWebAppSection.name]",
+        "custom_domains": "[steps('linuxWebApps').linuxWebAppSection.custom_domains]",
+        "enabled": "[steps('linuxWebApps').linuxWebAppSection.enabled]",
+        "https_only": "[steps('linuxWebApps').linuxWebAppSection.https_only]",
+        "service_plan_id": "[steps('linuxWebApps').linuxWebAppSection.service_plan_id]",
+        "site_config": "[json(concat('{', '\"always_on\": ', steps('linuxWebApps').linuxWebAppSection.always_on, ',', '\"linux_fx_version\": \"', steps('linuxWebApps').linuxWebAppSection.linux_fx_version, '\",', '\"app_settings\": [{\"name\": \"', steps('linuxWebApps').linuxWebAppSection.app_settings_name, '\", \"value\": \"', steps('linuxWebApps').linuxWebAppSection.app_settings_value, '\"}]', '}'))]",
+        "webdeploy_publish_basic_authentication_enabled": "[steps('linuxWebApps').linuxWebAppSection.webdeploy_publish_basic_authentication_enabled]",
+        "private_endpoints": "[json(concat('{', '\"private_dns_zone_name\": \"', steps('linuxWebApps').linuxWebAppSection.private_dns_zone_name, '\",', '\"subresource_names\": [\"', steps('linuxWebApps').linuxWebAppSection.subresource_names, '\"],', '\"subnet\": {', '\"name\": \"', steps('linuxWebApps').linuxWebAppSection.subnet_name, '\",', '\"resource_group_name\": \"', steps('linuxWebApps').linuxWebAppSection.subnet_resource_group_name, '\",', '\"virtual_network_name\": \"', steps('linuxWebApps').linuxWebAppSection.virtual_network_name, '\"}', '}'))]",
+        "monitor_diagnostic_destinations": "[json(concat('{', '\"log_analytics_workspace_id\": \"', steps('linuxWebApps').linuxWebAppSection.log_analytics_workspace_id, '\",', '\"resource_group_name\": \"', steps('linuxWebApps').linuxWebAppSection.diagnostic_resource_group_name, '\",', '\"subscription_id\": \"', steps('linuxWebApps').linuxWebAppSection.subscription_id, '\"', '}'))]",
+        "app_service_plans": "[json(concat('{', '\"maximum_elastic_worker_count\": ', steps('appServicePlans').appServicePlanSection.maximum_elastic_worker_count, ',', '\"os_type\": \"', steps('appServicePlans').appServicePlanSection.os_type, '\",', '\"per_site_scaling_enabled\": ', steps('appServicePlans').appServicePlanSection.per_site_scaling_enabled, ',', '\"sku_name\": \"', steps('appServicePlans').appServicePlanSection.sku_name, '\",', '\"worker_count\": ', steps('appServicePlans').appServicePlanSection.worker_count, ',', '\"zone_balancing_enabled\": ', steps('appServicePlans').appServicePlanSection.zone_balancing_enabled, ',', '\"tags\": \"', steps('appServicePlans').appServicePlanSection.tags, '\"', '}'))]",
+        "cognitive_accounts": "[json(concat('{', '\"resource_group_name\": \"', steps('cognitiveAccounts').cognitiveAccountSection.resource_group_name, '\",', '\"custom_subdomain_name\": \"', steps('cognitiveAccounts').cognitiveAccountSection.custom_subdomain_name, '\",', '\"dynamic_throttling_enabled\": ', steps('cognitiveAccounts').cognitiveAccountSection.dynamic_throttling_enabled, ',', '\"fqdns\": [\"', steps('cognitiveAccounts').cognitiveAccountSection.fqdns, '\"],', '\"kind\": \"', steps('cognitiveAccounts').cognitiveAccountSection.kind, '\",', '\"local_auth_enabled\": ', steps('cognitiveAccounts').cognitiveAccountSection.local_auth_enabled, ',', '\"location\": \"', steps('cognitiveAccounts').cognitiveAccountSection.location, '\",', '\"outbound_network_access_restricted\": ', steps('cognitiveAccounts').cognitiveAccountSection.outbound_network_access_restricted, ',', '\"public_network_access_enabled\": ', steps('cognitiveAccounts').cognitiveAccountSection.public_network_access_enabled, ',', '\"sku_name\": \"', steps('cognitiveAccounts').cognitiveAccountSection.sku_name, '\",', '\"private_endpoints\": {', '\"private_dns_zone_name\": \"', steps('cognitiveAccounts').cognitiveAccountSection.private_dns_zone_name, '\",', '\"subresource_names\": [\"', steps('cognitiveAccounts').cognitiveAccountSection.subresource_names, '\"],', '\"subnet\": {', '\"name\": \"', steps('cognitiveAccounts').cognitiveAccountSection.subnet_name, '\",', '\"resource_group_name\": \"', steps('cognitiveAccounts').cognitiveAccountSection.subnet_resource_group_name, '\",', '\"virtual_network_name\": \"', steps('cognitiveAccounts').cognitiveAccountSection.virtual_network_name, '\"}', '}', ',', '\"tags\": \"', steps('cognitiveAccounts').cognitiveAccountSection.tags, '\"', '}'))]",
+        "key_vaults": "[json(concat('{', '\"resource_group_name\": \"', steps('keyVaults').keyVaultSection.resource_group_name, '\",', '\"enable_rbac_authorization\": ', steps('keyVaults').keyVaultSection.enable_rbac_authorization, ',', '\"enabled_for_disk_encryption\": ', steps('keyVaults').keyVaultSection.enabled_for_disk_encryption, ',', '\"enabled_for_template_deployment\": ', steps('keyVaults').keyVaultSection.enabled_for_template_deployment, ',', '\"location\": \"', steps('keyVaults').keyVaultSection.location, '\",', '\"public_network_access_enabled\": ', steps('keyVaults').keyVaultSection.public_network_access_enabled, ',', '\"purge_protection_enabled\": ', steps('keyVaults').keyVaultSection.purge_protection_enabled, ',', '\"sku\": \"', steps('keyVaults').keyVaultSection.sku, '\",', '\"soft_delete_retention_days\": ', steps('keyVaults').keyVaultSection.soft_delete_retention_days, ',', '\"private_endpoints\": {', '\"private_dns_zone_name\": \"', steps('keyVaults').keyVaultSection.private_dns_zone_name, '\",', '\"subresource_names\": [\"', steps('keyVaults').keyVaultSection.subresource_names, '\"],', '\"subnet\": {', '\"name\": \"', steps('keyVaults').keyVaultSection.subnet_name, '\",', '\"resource_group_name\": \"', steps('keyVaults').keyVaultSection.subnet_resource_group_name, '\",', '\"virtual_network_name\": \"', steps('keyVaults').keyVaultSection.virtual_network_name, '\"}', '}', ',', '\"tags\": \"', steps('keyVaults').keyVaultSection.tags, '\"', '}'))]",
+        "linux_web_apps": "[json(concat('{', '\"resource_group_name\": \"', steps('linuxWebApps').linuxWebAppSection.resource_group_name, '\",', '\"custom_domains\": [\"', steps('linuxWebApps').linuxWebAppSection.custom_domains, '\"],', '\"enabled\": ', steps('linuxWebApps').linuxWebAppSection.enabled, ',', '\"https_only\": ', steps('linuxWebApps').linuxWebAppSection.https_only, ',', '\"location\": \"', steps('linuxWebApps').linuxWebAppSection.location, '\",', '\"service_plan_key\": \"', steps('linuxWebApps').linuxWebAppSection.service_plan_id, '\",', '\"site_config\": {', '\"always_on\": ', steps('linuxWebApps').linuxWebAppSection.always_on, ',', '\"linux_fx_version\": \"', steps('linuxWebApps').linuxWebAppSection.linux_fx_version, '\",', '\"app_settings\": [{\"name\": \"', steps('linuxWebApps').linuxWebAppSection.app_settings_name, '\", \"value\": \"', steps('linuxWebApps').linuxWebAppSection.app_settings_value, '\"}]', '},', '\"webdeploy_publish_basic_authentication_enabled\": ', steps('linuxWebApps').linuxWebAppSection.webdeploy_publish_basic_authentication_enabled, ',', '\"private_endpoints\": {', '\"private_dns_zone_name\": \"', steps('linuxWebApps').linuxWebAppSection.private_dns_zone_name, '\",', '\"subresource_names\": [\"', steps('linuxWebApps').linuxWebAppSection.subresource_names, '\"],', '\"subnet\": {', '\"name\": \"', steps('linuxWebApps').linuxWebAppSection.subnet_name, '\",', '\"resource_group_name\": \"', steps('linuxWebApps').linuxWebAppSection.subnet_resource_group_name, '\",', '\"virtual_network_name\": \"', steps('linuxWebApps').linuxWebAppSection.virtual_network_name, '\"}', '}', ',', '\"tags\": \"', steps('linuxWebApps').linuxWebAppSection.tags, '\"', '}'))]",
+        "postgresql_flexible_servers": "[json(concat('{', '\"resource_group_name\": \"', steps('postgresqlFlexibleServers').postgresqlSection.resource_group_name, '\",', '\"admin_username\": \"', steps('postgresqlFlexibleServers').postgresqlSection.admin_username, '\",', '\"auto_grow_enabled\": ', steps('postgresqlFlexibleServers').postgresqlSection.auto_grow_enabled, ',', '\"backup_retention_days\": ', steps('postgresqlFlexibleServers').postgresqlSection.backup_retention_days, ',', '\"geo_redundant_backup_enabled\": ', steps('postgresqlFlexibleServers').postgresqlSection.geo_redundant_backup_enabled, ',', '\"location\": \"', steps('postgresqlFlexibleServers').postgresqlSection.location, '\",', '\"maintenance_window\": {', '\"day_of_week\": ', steps('postgresqlFlexibleServers').postgresqlSection.maintenance_day_of_week, ',', '\"start_hour\": ', steps('postgresqlFlexibleServers').postgresqlSection.maintenance_start_hour, ',', '\"start_minute\": ', steps('postgresqlFlexibleServers').postgresqlSection.maintenance_start_minute, '},', '\"sku_name\": \"', steps('postgresqlFlexibleServers').postgresqlSection.sku_name, '\",', '\"storage_mb\": ', steps('postgresqlFlexibleServers').postgresqlSection.storage_mb, ',', '\"storage_tier\": \"', steps('postgresqlFlexibleServers').postgresqlSection.storage_tier, '\",', '\"version\": \"', steps('postgresqlFlexibleServers').postgresqlSection.version, '\",', '\"vnet_integration\": {', '\"private_dns_zone_id\": \"', steps('postgresqlFlexibleServers').postgresqlSection.private_dns_zone_id, '\",', '\"delegated_subnet_name\": \"', steps('postgresqlFlexibleServers').postgresqlSection.delegated_subnet_name, '\",', '\"vnet_name\": \"', steps('postgresqlFlexibleServers').postgresqlSection.vnet_name, '\",', '\"vnet_resource_group_name\": \"', steps('postgresqlFlexibleServers').postgresqlSection.vnet_resource_group_name, '\"}', '},', '\"zone\": ', steps('postgresqlFlexibleServers').postgresqlSection.zone, ',', '\"tags\": \"', steps('postgresqlFlexibleServers').postgresqlSection.tags, '\",', '\"high_availability\": {', '\"mode\": \"', steps('postgresqlFlexibleServers').postgresqlSection.high_availability_mode, '\",', '\"standby_availability_zone\": \"', steps('postgresqlFlexibleServers').postgresqlSection.standby_availability_zone, '\"}', '}'))]",
+        "private_dns_zones": "[json(concat('{', '\"resource_group_name\": \"', steps('privateDnsZones').dnsZoneSection.resource_group_name, '\",', '\"virtual_network_links\": {', '\"virtual_network_id\": \"', steps('privateDnsZones').dnsZoneSection.virtual_network_id, '\",', '\"registration_enabled\": ', steps('privateDnsZones').dnsZoneSection.registration_enabled, ',', '\"resource_group_name\": \"', steps('privateDnsZones').dnsZoneSection.link_resource_group_name, '\"}', '},', '\"tags\": \"', steps('privateDnsZones').dnsZoneSection.tags, '\"', '}'))]",
+        "search_services": "[json(concat('{', '\"resource_group_name\": \"', steps('searchServices').searchSection.resource_group_name, '\",', '\"authentication_failure_mode\": \"', steps('searchServices').searchSection.authentication_failure_mode, '\",', '\"hosting_mode\": \"', steps('searchServices').searchSection.hosting_mode, '\",', '\"local_authentication_enabled\": ', steps('searchServices').searchSection.local_authentication_enabled, ',', '\"location\": \"', steps('searchServices').searchSection.location, '\",', '\"public_network_access_enabled\": ', steps('searchServices').searchSection.public_network_access_enabled, ',', '\"partition_count\": ', steps('searchServices').searchSection.partition_count, ',', '\"replica_count\": ', steps('searchServices').searchSection.replica_count, ',', '\"semantic_search_sku\": \"', steps('searchServices').searchSection.semantic_search_sku, '\",', '\"sku\": \"', steps('searchServices').searchSection.sku, '\",', '\"private_endpoints\": {', '\"private_dns_zone_name\": \"', steps('searchServices').searchSection.private_dns_zone_name, '\",', '\"subresource_names\": [\"', steps('searchServices').searchSection.subresource_names, '\"],', '\"subnet\": {', '\"name\": \"', steps('searchServices').searchSection.subnet_name, '\",', '\"resource_group_name\": \"', steps('searchServices').searchSection.subnet_resource_group_name, '\",', '\"virtual_network_name\": \"', steps('searchServices').searchSection.virtual_network_name, '\"}', '}', ',', '\"tags\": \"', steps('searchServices').searchSection.tags, '\"', '}'))]",
+        "storage_accounts": "[json(concat('{', '\"resource_group_name\": \"', steps('storageAccounts').storageSection.resource_group_name, '\",', '\"access_tier\": \"', steps('storageAccounts').storageSection.access_tier, '\",', '\"account_kind\": \"', steps('storageAccounts').storageSection.account_kind, '\",', '\"account_replication_type\": \"', steps('storageAccounts').storageSection.account_replication_type, '\",', '\"account_tier\": \"', steps('storageAccounts').storageSection.account_tier, '\",', '\"containers\": {', '\"container_access_type\": \"', steps('storageAccounts').storageSection.container_access_type, '\",', '\"encryption_scope_override_enabled\": ', steps('storageAccounts').storageSection.encryption_scope_override_enabled, ',', '\"name\": \"', steps('storageAccounts').storageSection.container_name, '\"}', '},', '\"location\": \"', steps('storageAccounts').storageSection.location, '\",', '\"public_network_access_enabled\": ', steps('storageAccounts').storageSection.public_network_access_enabled, ',', '\"network_rules\": {', '\"bypass\": [\"', steps('storageAccounts').storageSection.network_bypass, '\"],', '\"default_action\": \"', steps('storageAccounts').storageSection.network_default_action, '\",', '\"ip_rules\": [\"', steps('storageAccounts').storageSection.ip_rules, '\"]', '},', '\"private_endpoints\": {', '\"private_dns_zone_name\": \"', steps('storageAccounts').storageSection.private_dns_zone_name, '\",', '\"subresource_name\": \"', steps('storageAccounts').storageSection.subresource_name, '\",', '\"subnet\": {', '\"name\": \"', steps('storageAccounts').storageSection.subnet_name, '\",', '\"resource_group_name\": \"', steps('storageAccounts').storageSection.subnet_resource_group_name, '\",', '\"virtual_network_name\": \"', steps('storageAccounts').storageSection.virtual_network_name, '\"}', '}', ',', '\"tags\": \"', steps('storageAccounts').storageSection.tags, '\"', '}'))]",
+        "default_tags": "[json(steps('tagsSection').tags)]",
+        "required_tags": "[json(concat('{', '\"App\": \"', steps('tagsSection').app, '\",', '\"Environment\": \"', steps('tagsSection').environment, '\",', '\"GBU\": \"', steps('tagsSection').gbu, '\",', '\"ITSM\": \"', steps('tagsSection').itsm, '\",', '\"JobWbs\": \"', steps('tagsSection').job_wbs, '\",', '\"Notes\": \"', steps('tagsSection').notes, '\",', '\"Owner\": \"', steps('tagsSection').owner, '\"', '}'))]",
+        "subscription_id": "[steps('subscriptionSection').subscription_id]",
+        "environment": "[steps('environmentSection').environment]"
       }
     }
   }
