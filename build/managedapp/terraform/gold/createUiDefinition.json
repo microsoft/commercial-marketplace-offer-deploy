@@ -642,7 +642,10 @@
                 },
                 "tags": "[steps('storageAccounts').storageSection.tags]"
             },
-            "default_tags": "[if(empty(steps('tagsSection').tags), json('{}'), json(steps('tagsSection').tags))]",
+            "default_tags": {
+                "name1": "value1",
+                "name2": "value2"
+            },
             "required_tags": {
                 "App": "[steps('tagsSection').app]",
                 "Environment": "[steps('tagsSection').environment]",
