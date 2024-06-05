@@ -375,9 +375,26 @@
         "enabled": "[steps('linuxWebApps').linuxWebAppSection.enabled]",
         "https_only": "[steps('linuxWebApps').linuxWebAppSection.https_only]",
         "service_plan_id": "[steps('linuxWebApps').linuxWebAppSection.service_plan_id]",
-        "site_config": {"always_on": true, "linux_fx_version": "DOTNETCORE|2.1", "app_settings": [{"name": "WEBSITE_RUN_FROM_PACKAGE", "value": "1"}]},
+        "site_config": {
+            "always_on": "[steps('linuxWebApps').linuxWebAppSection.always_on]", 
+            "linux_fx_version": "[steps('linuxWebApps').linuxWebAppSection.linux_fx_version]",
+            "app_settings": [
+                {
+                    "name": "[steps('linuxWebApps').linuxWebAppSection.app_settings_name]",
+                    "value": "[steps('linuxWebApps').linuxWebAppSection.app_settings_value]"
+                }
+            ]
+        },
         "webdeploy_publish_basic_authentication_enabled": "[steps('linuxWebApps').linuxWebAppSection.webdeploy_publish_basic_authentication_enabled]",
-        "private_endpoints": "[json(concat('{', '\"private_dns_zone_name\": \"', steps('linuxWebApps').linuxWebAppSection.private_dns_zone_name, '\",', '\"subresource_names\": [\"', steps('linuxWebApps').linuxWebAppSection.subresource_names, '\"],', '\"subnet\": {', '\"name\": \"', steps('linuxWebApps').linuxWebAppSection.subnet_name, '\",', '\"resource_group_name\": \"', steps('linuxWebApps').linuxWebAppSection.subnet_resource_group_name, '\",', '\"virtual_network_name\": \"', steps('linuxWebApps').linuxWebAppSection.virtual_network_name, '\"}', '}'))]",
+        "private_endpoints": {
+            "private_dns_zone_name": "[steps('linuxWebApps').linuxWebAppSection.private_dns_zone_name]", 
+            "subresource_names": "[steps('linuxWebApps').linuxWebAppSection.subresource_names]", 
+            "subnet": {
+                "name": "[steps('linuxWebApps').linuxWebAppSection.subnet_name]",
+                "resource_group_name": "[steps('linuxWebApps').linuxWebAppSection.subnet_resource_group_name]", 
+                "virtual_network_name": "[steps('linuxWebApps').linuxWebAppSection.virtual_network_name]"
+            }
+        },
         "monitor_diagnostic_destinations": "[json(concat('{', '\"log_analytics_workspace_id\": \"', steps('linuxWebApps').linuxWebAppSection.log_analytics_workspace_id, '\",', '\"resource_group_name\": \"', steps('linuxWebApps').linuxWebAppSection.diagnostic_resource_group_name, '\",', '\"subscription_id\": \"', steps('linuxWebApps').linuxWebAppSection.subscription_id, '\"', '}'))]",
         "app_service_plans": "[json(concat('{', '\"maximum_elastic_worker_count\": ', steps('appServicePlans').appServicePlanSection.maximum_elastic_worker_count, ',', '\"os_type\": \"', steps('appServicePlans').appServicePlanSection.os_type, '\",', '\"per_site_scaling_enabled\": ', steps('appServicePlans').appServicePlanSection.per_site_scaling_enabled, ',', '\"sku_name\": \"', steps('appServicePlans').appServicePlanSection.sku_name, '\",', '\"worker_count\": ', steps('appServicePlans').appServicePlanSection.worker_count, ',', '\"zone_balancing_enabled\": ', steps('appServicePlans').appServicePlanSection.zone_balancing_enabled, ',', '\"tags\": \"', steps('appServicePlans').appServicePlanSection.tags, '\"', '}'))]",
         "cognitive_accounts": "[json(concat('{', '\"resource_group_name\": \"', steps('cognitiveAccounts').cognitiveAccountSection.resource_group_name, '\",', '\"custom_subdomain_name\": \"', steps('cognitiveAccounts').cognitiveAccountSection.custom_subdomain_name, '\",', '\"dynamic_throttling_enabled\": ', steps('cognitiveAccounts').cognitiveAccountSection.dynamic_throttling_enabled, ',', '\"fqdns\": [\"', steps('cognitiveAccounts').cognitiveAccountSection.fqdns, '\"],', '\"kind\": \"', steps('cognitiveAccounts').cognitiveAccountSection.kind, '\",', '\"local_auth_enabled\": ', steps('cognitiveAccounts').cognitiveAccountSection.local_auth_enabled, ',', '\"location\": location(),', '\"outbound_network_access_restricted\": ', steps('cognitiveAccounts').cognitiveAccountSection.outbound_network_access_restricted, ',', '\"public_network_access_enabled\": ', steps('cognitiveAccounts').cognitiveAccountSection.public_network_access_enabled, ',', '\"sku_name\": \"', steps('cognitiveAccounts').cognitiveAccountSection.sku_name, '\",', '\"private_endpoints\": {', '\"private_dns_zone_name\": \"', steps('cognitiveAccounts').cognitiveAccountSection.private_dns_zone_name, '\",', '\"subresource_names\": [\"', steps('cognitiveAccounts').cognitiveAccountSection.subresource_names, '\"],', '\"subnet\": {', '\"name\": \"', steps('cognitiveAccounts').cognitiveAccountSection.subnet_name, '\",', '\"resource_group_name\": \"', steps('cognitiveAccounts').cognitiveAccountSection.subnet_resource_group_name, '\",', '\"virtual_network_name\": \"', steps('cognitiveAccounts').cognitiveAccountSection.virtual_network_name, '\"}', '}', ',', '\"tags\": \"', steps('cognitiveAccounts').cognitiveAccountSection.tags, '\"', '}'))]",
