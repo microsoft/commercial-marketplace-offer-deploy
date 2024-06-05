@@ -366,6 +366,21 @@
                         "visible": true
                     }
                 ]
+            },
+            {
+                "name": "tagsSection",
+                "label": "Tags",
+                "elements": [
+                    {
+                        "name": "tags",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Tags (comma-separated key=value pairs)",
+                        "toolTip": "Enter multiple tags separated by commas. Example: environment=dev,modm=true",
+                        "constraints": {
+                            "required": false
+                        }
+                    }
+                ]
             }
         ],
         "outputs": {
