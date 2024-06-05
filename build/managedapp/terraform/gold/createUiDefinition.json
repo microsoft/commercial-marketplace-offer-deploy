@@ -655,8 +655,8 @@
                 "Notes": "[steps('tagsSection').notes]",
                 "Owner": "[steps('tagsSection').owner]"
             },
-            "subscription_id": "[steps('subscriptionSection').subscription_id]",
-            "environment": "[steps('environmentSection').environment]"
+            "subscription_id": "[subscription().subscriptionId]",
+            "environment": "Dev"
         }
     }
 }
