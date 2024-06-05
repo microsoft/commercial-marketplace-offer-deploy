@@ -35,6 +35,10 @@ jobs:
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+    - name: Make script executable
+      run: |
+        chmod +x ./scripts/export-vmi.sh
+
     - name: Export Virtual Machine Image
       run: |
         latest_version=$(az sig image-version list -g ${{ vars.IMAGE_RESOURCE_GROUP }} -i ${{ vars.IMAGE_NAME }} -r ${{ vars.IMAGE_GALLERY_NAME }} -o json | jq -r 'sort_by(.name | split(".") | map(tonumber))[-1].name')
