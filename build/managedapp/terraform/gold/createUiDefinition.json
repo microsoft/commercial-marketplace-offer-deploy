@@ -3,383 +3,585 @@
     "handler": "Microsoft.Azure.CreateUIDef",
     "version": "0.1.2-preview",
     "parameters": {
-      "basics": [
-        {}
-      ],
-      "steps": [
-        {
-          "name": "appServicePlans",
-          "label": "App Service Plans",
-          "elements": [
+        "basics": [{}],
+        "steps": [
             {
-              "name": "appServicePlanSection",
-              "type": "Microsoft.Common.Section",
-              "label": "App Service Plan",
-              "elements": [
-                {
-                  "name": "location",
-                  "type": "Microsoft.Common.DropDown",
-                  "label": "Location",
-                  "options": [
-                    { "label": "East US", "value": "East US" },
-                    { "label": "West US", "value": "West US" },
-                    { "label": "North Europe", "value": "North Europe" },
-                    { "label": "West Europe", "value": "West Europe" },
-                    { "label": "Southeast Asia", "value": "Southeast Asia" },
-                    { "label": "Japan East", "value": "Japan East" }
-                  ],
-                  "defaultValue": "West US",
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "osType",
-                  "type": "Microsoft.Common.DropDown",
-                  "label": "OS Type",
-                  "options": [
+                "name": "appServicePlans",
+                "label": "App Service Plans",
+                "elements": [
                     {
-                      "label": "Windows",
-                      "value": "Windows"
-                    },
-                    {
-                      "label": "Linux",
-                      "value": "Linux"
+                        "name": "appServicePlanSection",
+                        "type": "Microsoft.Common.Section",
+                        "label": "App Service Plan",
+                        "elements": [
+                            {
+                                "name": "maximum_elastic_worker_count",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Maximum Elastic Worker Count",
+                                "defaultValue": "10",
+                                "constraints": {
+                                    "required": true
+                                }
+                            },
+                            {
+                                "name": "os_type",
+                                "type": "Microsoft.Common.DropDown",
+                                "label": "OS Type",
+                                "defaultValue": "Linux",
+                                "toolTip": "",
+                                "constraints": {
+                                    "allowedValues": [
+                                        {
+                                            "label": "Linux",
+                                            "value": "Linux"
+                                        },
+                                        {
+                                            "label": "Windows",
+                                            "value": "Windows"
+                                        }
+                                    ],
+                                    "required": true
+                                },
+                                "visible": true
+                            },
+                            {
+                                "name": "per_site_scaling_enabled",
+                                "type": "Microsoft.Common.CheckBox",
+                                "label": "Per Site Scaling Enabled",
+                                "defaultValue": false,
+                                "constraints": {
+                                    "required": true
+                                }
+                            },
+                            {
+                                "name": "sku_name",
+                                "type": "Microsoft.Common.DropDown",
+                                "label": "SKU Name",
+                                "defaultValue": "B1",
+                                "toolTip": "",
+                                "constraints": {
+                                    "allowedValues": [
+                                        {
+                                            "label": "B1",
+                                            "value": "B1"
+                                        },
+                                        {
+                                            "label": "S1",
+                                            "value": "S1"
+                                        },
+                                        {
+                                            "label": "P1v2",
+                                            "value": "P1v2"
+                                        }
+                                    ],
+                                    "required": true
+                                },
+                                "visible": true
+                            },
+                            {
+                                "name": "worker_count",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Worker Count",
+                                "defaultValue": "1",
+                                "constraints": {
+                                    "required": true
+                                }
+                            },
+                            {
+                                "name": "zone_balancing_enabled",
+                                "type": "Microsoft.Common.CheckBox",
+                                "label": "Zone Balancing Enabled",
+                                "defaultValue": false,
+                                "constraints": {
+                                    "required": true
+                                }
+                            },
+                            {
+                                "name": "tags",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Tags",
+                                "constraints": {
+                                    "required": false
+                                }
+                            }
+                        ]
                     }
-                  ],
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "skuName",
-                  "type": "Microsoft.Common.DropDown",
-                  "label": "SKU Name",
-                  "options": [
-                    {
-                      "label": "B1",
-                      "value": "B1"
-                    },
-                    {
-                      "label": "S1",
-                      "value": "S1"
-                    },
-                    {
-                      "label": "P1v2",
-                      "value": "P1v2"
-                    }
-                  ],
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "resourceGroupName",
-                  "type": "Microsoft.Common.TextBox",
-                  "label": "Resource Group Name",
-                  "defaultValue": "myResourceGroup",
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "tags",
-                  "type": "Microsoft.Common.TextBox",
-                  "label": "Tags",
-                  "constraints": {
-                    "required": false
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "linuxWebApps",
-          "label": "Linux Web Apps",
-          "elements": [
-            {
-              "name": "linuxWebAppSection",
-              "type": "Microsoft.Common.Section",
-              "label": "Linux Web App",
-              "elements": [
-                {
-                  "name": "resource_group_name",
-                  "type": "Microsoft.Common.TextBox",
-                  "label": "Resource Group Name",
-                  "defaultValue": "myResourceGroup",
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "location",
-                  "type": "Microsoft.Common.DropDown",
-                  "label": "Location",
-                  "options": [
-                    { "label": "East US", "value": "East US" },
-                    { "label": "West US", "value": "West US" },
-                    { "label": "North Europe", "value": "North Europe" },
-                    { "label": "West Europe", "value": "West Europe" },
-                    { "label": "Southeast Asia", "value": "Southeast Asia" },
-                    { "label": "Japan East", "value": "Japan East" }
-                  ],
-                  "defaultValue": "West US",
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "custom_domains",
-                  "type": "Microsoft.Common.TextBox",
-                  "label": "Custom Domains",
-                  "constraints": {
-                    "required": false
-                  }
-                },
-                {
-                  "name": "enabled",
-                  "type": "Microsoft.Common.CheckBox",
-                  "label": "Enabled",
-                  "defaultValue": true,
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "https_only",
-                  "type": "Microsoft.Common.CheckBox",
-                  "label": "HTTPS Only",
-                  "defaultValue": true,
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "service_plan_key",
-                  "type": "Microsoft.Common.TextBox",
-                  "label": "Service Plan Key",
-                  "defaultValue": "asp-plan1",
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "always_on",
-                  "type": "Microsoft.Common.CheckBox",
-                  "label": "Always On",
-                  "defaultValue": true,
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "linux_fx_version",
-                  "type": "Microsoft.Common.TextBox",
-                  "label": "Linux FX Version",
-                  "defaultValue": "DOTNETCORE|2.1",
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "app_settings_name",
-                  "type": "Microsoft.Common.TextBox",
-                  "label": "App Settings Name",
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "app_settings_value",
-                  "type": "Microsoft.Common.TextBox",
-                  "label": "App Settings Value",
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "webdeploy_publish_basic_authentication_enabled",
-                  "type": "Microsoft.Common.CheckBox",
-                  "label": "Web Deploy Publish Basic Authentication Enabled",
-                  "defaultValue": false,
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "private_dns_zone_name",
-                  "type": "Microsoft.Common.TextBox",
-                  "label": "Private DNS Zone Name",
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "subresource_names",
-                  "type": "Microsoft.Common.TextBox",
-                  "label": "Subresource Names",
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "subnet_name",
-                  "type": "Microsoft.Common.TextBox",
-                  "label": "Subnet Name",
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "subnet_resource_group_name",
-                  "type": "Microsoft.Common.TextBox",
-                  "label": "Subnet Resource Group Name",
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "virtual_network_name",
-                  "type": "Microsoft.Common.TextBox",
-                  "label": "Virtual Network Name",
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "tags",
-                  "type": "Microsoft.Common.TextBox",
-                  "label": "Tags",
-                  "constraints": {
-                    "required": false
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "cognitiveAccounts",
-          "label": "Cognitive Accounts",
-          "elements": [
-            {
-              "name": "cognitiveAccountSection",
-              "type": "Microsoft.Common.Section",
-              "label": "Cognitive Account",
-              "elements": [
-                {
-                  "name": "location",
-                  "type": "Microsoft.Common.DropDown",
-                  "label": "Location",
-                  "options": [
-                    { "label": "East US", "value": "East US" },
-                    { "label": "West US", "value": "West US" },
-                    { "label": "North Europe", "value": "North Europe" },
-                    { "label": "West Europe", "value": "West Europe" },
-                    { "label": "Southeast Asia", "value": "Southeast Asia" },
-                    { "label": "Japan East", "value": "Japan East" }
-                  ],
-                  "defaultValue": "West US",
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "kind",
-                  "type": "Microsoft.Common.DropDown",
-                  "label": "Kind",
-                  "options": [
-                    {
-                      "label": "CognitiveServices",
-                      "value": "CognitiveServices"
-                    }
-                  ],
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "skuName",
-                  "type": "Microsoft.Common.DropDown",
-                  "label": "SKU Name",
-                  "options": [
-                    {
-                      "label": "F0",
-                      "value": "F0"
-                    },
-                    {
-                      "label": "S1",
-                      "value": "S1"
-                    }
-                  ],
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "resourceGroupName",
-                  "type": "Microsoft.Common.TextBox",
-                  "label": "Resource Group Name",
-                  "defaultValue": "myResourceGroup",
-                  "constraints": {
-                    "required": true
-                  }
-                },
-                {
-                  "name": "tags",
-                  "type": "Microsoft.Common.TextBox",
-                  "label": "Tags",
-                  "constraints": {
-                    "required": false
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "sqlAdminCredentials",
-          "label": "SQL Admin Credentials",
-          "elements": [
-            {
-              "name": "sqlAdminUsername",
-              "type": "Microsoft.Common.TextBox",
-              "label": "SQL Admin Username",
-              "defaultValue": "adminuser",
-              "constraints": {
-                "required": true
-              }
+                ]
             },
             {
-              "name": "sqlAdminPassword",
-              "type": "Microsoft.Common.PasswordBox",
-              "label": {
-                "password": "SQL Admin Password",
-                "confirmPassword": "Confirm Password"
-              },
-              "toolTip": "Password must be at least 8 characters long, contain only numbers and letters",
-              "constraints": {
-                "required": true,
-                "regex": "^[a-zA-Z0-9]{8,}$",
-                "validationMessage": "Password must be at least 8 characters long, contain only numbers and letters"
-              },
-              "options": {
-                "hideConfirmation": false
-              },
-              "visible": true
+                "name": "linuxWebApps",
+                "label": "Linux Web Apps",
+                "elements": [
+                    {
+                        "name": "linuxWebAppSection",
+                        "type": "Microsoft.Common.Section",
+                        "label": "Linux Web App",
+                        "elements": [
+                            {
+                                "name": "name",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Name",
+                                "defaultValue": "",
+                                "constraints": {
+                                    "required": true
+                                }
+                            },
+                            {
+                                "name": "resource_group_name",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Resource Group Name",
+                                "defaultValue": "myResourceGroup",
+                                "constraints": {
+                                    "required": true
+                                }
+                            },
+                            {
+                                "name": "custom_domains",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Custom Domains (comma-separated)",
+                                "constraints": {
+                                    "required": false
+                                },
+                                "toolTip": "Enter multiple custom domains separated by commas."
+                            },
+                            {
+                                "name": "enabled",
+                                "type": "Microsoft.Common.CheckBox",
+                                "label": "Enabled",
+                                "defaultValue": true,
+                                "constraints": {
+                                    "required": true
+                                }
+                            },
+                            {
+                                "name": "https_only",
+                                "type": "Microsoft.Common.CheckBox",
+                                "label": "HTTPS Only",
+                                "defaultValue": true,
+                                "constraints": {
+                                    "required": true
+                                }
+                            },
+                            {
+                                "name": "service_plan_id",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Service Plan ID",
+                                "defaultValue": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/bobjaclocaltf/providers/Microsoft.Web/serverFarms/asp-plan1",
+                                "constraints": {
+                                    "required": true
+                                }
+                            },
+                            {
+                                "name": "always_on",
+                                "type": "Microsoft.Common.CheckBox",
+                                "label": "Always On",
+                                "defaultValue": true,
+                                "constraints": {
+                                    "required": true
+                                }
+                            },
+                            {
+                                "name": "linux_fx_version",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Linux FX Version",
+                                "defaultValue": "DOTNETCORE|2.1",
+                                "constraints": {
+                                    "required": true
+                                }
+                            },
+                            {
+                                "name": "app_settings_name",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "App Settings Name",
+                                "constraints": {
+                                    "required": true
+                                }
+                            },
+                            {
+                                "name": "app_settings_value",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "App Settings Value",
+                                "constraints": {
+                                    "required": true
+                                }
+                            },
+                            {
+                                "name": "webdeploy_publish_basic_authentication_enabled",
+                                "type": "Microsoft.Common.CheckBox",
+                                "label": "Web Deploy Publish Basic Authentication Enabled",
+                                "defaultValue": false,
+                                "constraints": {
+                                    "required": true
+                                }
+                            },
+                            {
+                                "name": "private_dns_zone_name",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Private DNS Zone Name",
+                                "constraints": {
+                                    "required": true
+                                }
+                            },
+                            {
+                                "name": "subresource_names",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Subresource Names",
+                                "constraints": {
+                                    "required": true
+                                }
+                            },
+                            {
+                                "name": "subnet_name",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Subnet Name",
+                                "constraints": {
+                                    "required": true
+                                }
+                            },
+                            {
+                                "name": "subnet_resource_group_name",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Subnet Resource Group Name",
+                                "constraints": {
+                                    "required": true
+                                }
+                            },
+                            {
+                                "name": "virtual_network_name",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Virtual Network Name",
+                                "constraints": {
+                                    "required": true
+                                }
+                            },
+                            {
+                                "name": "tags",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Tags",
+                                "constraints": {
+                                    "required": false
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "cognitiveAccounts",
+                "label": "Cognitive Accounts",
+                "elements": [
+                    {
+                        "name": "cognitiveAccountSection",
+                        "type": "Microsoft.Common.Section",
+                        "label": "Cognitive Account",
+                        "elements": [
+                            {
+                                "name": "kind",
+                                "type": "Microsoft.Common.DropDown",
+                                "label": "Kind",
+                                "defaultValue": "CognitiveServices",
+                                "toolTip": "",
+                                "constraints": {
+                                    "allowedValues": [
+                                        {
+                                            "label": "CognitiveServices",
+                                            "value": "CognitiveServices"
+                                        }
+                                    ],
+                                    "required": true
+                                },
+                                "visible": true
+                            },
+                            {
+                                "name": "skuName",
+                                "type": "Microsoft.Common.DropDown",
+                                "label": "SKU Name",
+                                "defaultValue": "F0",
+                                "toolTip": "",
+                                "constraints": {
+                                    "allowedValues": [
+                                        {
+                                            "label": "F0",
+                                            "value": "F0"
+                                        },
+                                        {
+                                            "label": "S1",
+                                            "value": "S1"
+                                        }
+                                    ],
+                                    "required": true
+                                },
+                                "visible": true
+                            },
+                            {
+                                "name": "resourceGroupName",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Resource Group Name",
+                                "defaultValue": "myResourceGroup",
+                                "constraints": {
+                                    "required": true
+                                }
+                            },
+                            {
+                                "name": "tags",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Tags",
+                                "constraints": {
+                                    "required": false
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "sqlAdminCredentials",
+                "label": "SQL Admin Credentials",
+                "elements": [
+                    {
+                        "name": "sqlAdminUsername",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "SQL Admin Username",
+                        "defaultValue": "adminuser",
+                        "constraints": {
+                            "required": true
+                        }
+                    },
+                    {
+                        "name": "sqlAdminPassword",
+                        "type": "Microsoft.Common.PasswordBox",
+                        "label": {
+                            "password": "SQL Admin Password",
+                            "confirmPassword": "Confirm Password"
+                        },
+                        "toolTip": "Password must be at least 8 characters long, contain only numbers and letters",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^[a-zA-Z0-9]{8,}$",
+                            "validationMessage": "Password must be at least 8 characters long, contain only numbers and letters"
+                        },
+                        "options": {
+                            "hideConfirmation": false
+                        },
+                        "visible": true
+                    }
+                ]
             }
-          ]
+        ],
+        "outputs": {
+            "location": "[location()]",
+            "name": "[steps('linuxWebApps').linuxWebAppSection.name]",
+            "custom_domains": "[split(steps('linuxWebApps').linuxWebAppSection.custom_domains, ',')]",
+            "enabled": "[steps('linuxWebApps').linuxWebAppSection.enabled]",
+            "https_only": "[steps('linuxWebApps').linuxWebAppSection.https_only]",
+            "service_plan_id": "[steps('linuxWebApps').linuxWebAppSection.service_plan_id]",
+            "site_config": {
+                "always_on": "[steps('linuxWebApps').linuxWebAppSection.always_on]", 
+                "linux_fx_version": "[steps('linuxWebApps').linuxWebAppSection.linux_fx_version]",
+                "app_settings": [
+                    {
+                        "name": "[steps('linuxWebApps').linuxWebAppSection.app_settings_name]",
+                        "value": "[steps('linuxWebApps').linuxWebAppSection.app_settings_value]"
+                    }
+                ]
+            },
+            "webdeploy_publish_basic_authentication_enabled": "[steps('linuxWebApps').linuxWebAppSection.webdeploy_publish_basic_authentication_enabled]",
+            "private_endpoints": {
+                "private_dns_zone_name": "[steps('linuxWebApps').linuxWebAppSection.private_dns_zone_name]", 
+                "subresource_names": "[steps('linuxWebApps').linuxWebAppSection.subresource_names]", 
+                "subnet": {
+                    "name": "[steps('linuxWebApps').linuxWebAppSection.subnet_name]",
+                    "resource_group_name": "[steps('linuxWebApps').linuxWebAppSection.subnet_resource_group_name]", 
+                    "virtual_network_name": "[steps('linuxWebApps').linuxWebAppSection.virtual_network_name]"
+                }
+            },
+            "monitor_diagnostic_destinations": {
+                "log_analytics_workspace_id": "[steps('linuxWebApps').linuxWebAppSection.log_analytics_workspace_id]", 
+                "resource_group_name": "[steps('linuxWebApps').linuxWebAppSection.diagnostic_resource_group_name]",
+                "subscription_id": "[steps('linuxWebApps').linuxWebAppSection.subscription_id]"
+            },
+            "app_service_plans": {
+                "maximum_elastic_worker_count": "[steps('appServicePlans').appServicePlanSection.maximum_elastic_worker_count]",
+                "os_type": "[steps('appServicePlans').appServicePlanSection.os_type]",
+                "per_site_scaling_enabled": "[steps('appServicePlans').appServicePlanSection.per_site_scaling_enabled]",
+                "sku_name": "[steps('appServicePlans').appServicePlanSection.sku_name]",
+                "worker_count": "[steps('appServicePlans').appServicePlanSection.worker_count]",
+                "zone_balancing_enabled": "[steps('appServicePlans').appServicePlanSection.zone_balancing_enabled]",
+                "tags": "[steps('appServicePlans').appServicePlanSection.tags]"
+            },
+            "cognitive_accounts": {
+                "resource_group_name": "[steps('cognitiveAccounts').cognitiveAccountSection.resource_group_name]",
+                "custom_subdomain_name": "[steps('cognitiveAccounts').cognitiveAccountSection.custom_subdomain_name]",
+                "dynamic_throttling_enabled": "[steps('cognitiveAccounts').cognitiveAccountSection.dynamic_throttling_enabled]",
+                "fqdns": "[steps('cognitiveAccounts').cognitiveAccountSection.fqdns]",
+                "kind": "[steps('cognitiveAccounts').cognitiveAccountSection.kind]",
+                "local_auth_enabled": "[steps('cognitiveAccounts').cognitiveAccountSection.local_auth_enabled]",
+                "location": "[location()]",
+                "outbound_network_access_restricted": "[steps('cognitiveAccounts').cognitiveAccountSection.outbound_network_access_restricted]",
+                "public_network_access_enabled": "[steps('cognitiveAccounts').cognitiveAccountSection.public_network_access_enabled]",
+                "sku_name": "[steps('cognitiveAccounts').cognitiveAccountSection.sku_name]",
+                "private_endpoints": {
+                    "private_dns_zone_name": "[steps('cognitiveAccounts').cognitiveAccountSection.private_dns_zone_name]",
+                    "subresource_names": "[steps('cognitiveAccounts').cognitiveAccountSection.subresource_names]",
+                    "subnet": {
+                        "name": "[steps('cognitiveAccounts').cognitiveAccountSection.subnet_name]",
+                        "resource_group_name": "[steps('cognitiveAccounts').cognitiveAccountSection.subnet_resource_group_name]",
+                        "virtual_network_name": "[steps('cognitiveAccounts').cognitiveAccountSection.virtual_network_name]"
+                    }
+                },
+                "tags": "[steps('cognitiveAccounts').cognitiveAccountSection.tags]"
+            },
+            "key_vaults": {
+                "resource_group_name": "[steps('keyVaults').keyVaultSection.resource_group_name]",
+                "enable_rbac_authorization": "[steps('keyVaults').keyVaultSection.enable_rbac_authorization]",
+                "enabled_for_disk_encryption": "[steps('keyVaults').keyVaultSection.enabled_for_disk_encryption]",
+                "enabled_for_template_deployment": "[steps('keyVaults').keyVaultSection.enabled_for_template_deployment]",
+                "location": "[location()]",
+                "public_network_access_enabled": "[steps('keyVaults').keyVaultSection.public_network_access_enabled]",
+                "purge_protection_enabled": "[steps('keyVaults').keyVaultSection.purge_protection_enabled]",
+                "sku": "[steps('keyVaults').keyVaultSection.sku]",
+                "soft_delete_retention_days": "[steps('keyVaults').keyVaultSection.soft_delete_retention_days]",
+                "private_endpoints": {
+                    "private_dns_zone_name": "[steps('keyVaults').keyVaultSection.private_dns_zone_name]",
+                    "subresource_names": "[steps('keyVaults').keyVaultSection.subresource_names]",
+                    "subnet": {
+                        "name": "[steps('keyVaults').keyVaultSection.subnet_name]",
+                        "resource_group_name": "[steps('keyVaults').keyVaultSection.subnet_resource_group_name]",
+                        "virtual_network_name": "[steps('keyVaults').keyVaultSection.virtual_network_name]"
+                    }
+                },
+                "tags": "[steps('keyVaults').keyVaultSection.tags]"
+            },
+            "linux_web_apps": {
+                "resource_group_name": "[steps('linuxWebApps').linuxWebAppSection.resource_group_name]",
+                "custom_domains": "[split(steps('linuxWebApps').linuxWebAppSection.custom_domains, ',')]",
+                "enabled": "[steps('linuxWebApps').linuxWebAppSection.enabled]",
+                "https_only": "[steps('linuxWebApps').linuxWebAppSection.https_only]",
+                "location": "[location()]",
+                "service_plan_key": "[steps('linuxWebApps').linuxWebAppSection.service_plan_id]",
+                "site_config": {
+                    "always_on": "[steps('linuxWebApps').linuxWebAppSection.always_on]",
+                    "linux_fx_version": "[steps('linuxWebApps').linuxWebAppSection.linux_fx_version]",
+                    "app_settings": [
+                        {
+                            "name": "[steps('linuxWebApps').linuxWebAppSection.app_settings_name]",
+                            "value": "[steps('linuxWebApps').linuxWebAppSection.app_settings_value]"
+                        }
+                    ]
+                },
+                "webdeploy_publish_basic_authentication_enabled": "[steps('linuxWebApps').linuxWebAppSection.webdeploy_publish_basic_authentication_enabled]",
+                "private_endpoints": {
+                    "private_dns_zone_name": "[steps('linuxWebApps').linuxWebAppSection.private_dns_zone_name]",
+                    "subresource_names": "[steps('linuxWebApps').linuxWebAppSection.subresource_names]",
+                    "subnet": {
+                        "name": "[steps('linuxWebApps').linuxWebAppSection.subnet_name]",
+                        "resource_group_name": "[steps('linuxWebApps').linuxWebAppSection.subnet_resource_group_name]",
+                        "virtual_network_name": "[steps('linuxWebApps').linuxWebAppSection.virtual_network_name]"
+                    }
+                },
+                "tags": "[steps('linuxWebApps').linuxWebAppSection.tags]"
+            },
+            "postgresql_flexible_servers": {
+                "resource_group_name": "[steps('postgresqlFlexibleServers').postgresqlSection.resource_group_name]",
+                "admin_username": "[steps('postgresqlFlexibleServers').postgresqlSection.admin_username]",
+                "auto_grow_enabled": "[steps('postgresqlFlexibleServers').postgresqlSection.auto_grow_enabled]",
+                "backup_retention_days": "[steps('postgresqlFlexibleServers').postgresqlSection.backup_retention_days]",
+                "geo_redundant_backup_enabled": "[steps('postgresqlFlexibleServers').postgresqlSection.geo_redundant_backup_enabled]",
+                "location": "[location()]",
+                "maintenance_window": {
+                    "day_of_week": "[steps('postgresqlFlexibleServers').postgresqlSection.maintenance_day_of_week]",
+                    "start_hour": "[steps('postgresqlFlexibleServers').postgresqlSection.maintenance_start_hour]",
+                    "start_minute": "[steps('postgresqlFlexibleServers').postgresqlSection.maintenance_start_minute]"
+                },
+                "sku_name": "[steps('postgresqlFlexibleServers').postgresqlSection.sku_name]",
+                "storage_mb": "[steps('postgresqlFlexibleServers').postgresqlSection.storage_mb]",
+                "storage_tier": "[steps('postgresqlFlexibleServers').postgresqlSection.storage_tier]",
+                "version": "[steps('postgresqlFlexibleServers').postgresqlSection.version]",
+                "vnet_integration": {
+                    "private_dns_zone_id": "[steps('postgresqlFlexibleServers').postgresqlSection.private_dns_zone_id]",
+                    "delegated_subnet_name": "[steps('postgresqlFlexibleServers').postgresqlSection.delegated_subnet_name]",
+                    "vnet_name": "[steps('postgresqlFlexibleServers').postgresqlSection.vnet_name]",
+                    "vnet_resource_group_name": "[steps('postgresqlFlexibleServers').postgresqlSection.vnet_resource_group_name]"
+                },
+                "zone": "[steps('postgresqlFlexibleServers').postgresqlSection.zone]",
+                "tags": "[steps('postgresqlFlexibleServers').postgresqlSection.tags]",
+                "high_availability": {
+                    "mode": "[steps('postgresqlFlexibleServers').postgresqlSection.high_availability_mode]",
+                    "standby_availability_zone": "[steps('postgresqlFlexibleServers').postgresqlSection.standby_availability_zone]"
+                }
+            },
+            "private_dns_zones": {
+                "resource_group_name": "[steps('privateDnsZones').dnsZoneSection.resource_group_name]",
+                "virtual_network_links": {
+                    "virtual_network_id": "[steps('privateDnsZones').dnsZoneSection.virtual_network_id]",
+                    "registration_enabled": "[steps('privateDnsZones').dnsZoneSection.registration_enabled]",
+                    "resource_group_name": "[steps('privateDnsZones').dnsZoneSection.link_resource_group_name]"
+                },
+                "tags": "[steps('privateDnsZones').dnsZoneSection.tags]"
+            },
+            "search_services": {
+                "resource_group_name": "[steps('searchServices').searchSection.resource_group_name]",
+                "authentication_failure_mode": "[steps('searchServices').searchSection.authentication_failure_mode]",
+                "hosting_mode": "[steps('searchServices').searchSection.hosting_mode]",
+                "local_authentication_enabled": "[steps('searchServices').searchSection.local_authentication_enabled]",
+                "location": "[location()]",
+                "public_network_access_enabled": "[steps('searchServices').searchSection.public_network_access_enabled]",
+                "partition_count": "[steps('searchServices').searchSection.partition_count]",
+                "replica_count": "[steps('searchServices').searchSection.replica_count]",
+                "semantic_search_sku": "[steps('searchServices').searchSection.semantic_search_sku]",
+                "sku": "[steps('searchServices').searchSection.sku]",
+                "private_endpoints": {
+                    "private_dns_zone_name": "[steps('searchServices').searchSection.private_dns_zone_name]",
+                    "subresource_names": "[steps('searchServices').searchSection.subresource_names]",
+                    "subnet": {
+                        "name": "[steps('searchServices').searchSection.subnet_name]",
+                        "resource_group_name": "[steps('searchServices').searchSection.subnet_resource_group_name]",
+                        "virtual_network_name": "[steps('searchServices').searchSection.virtual_network_name]"
+                    }
+                },
+                "tags": "[steps('searchServices').searchSection.tags]"
+            },
+            "storage_accounts": {
+                "resource_group_name": "[steps('storageAccounts').storageSection.resource_group_name]",
+                "access_tier": "[steps('storageAccounts').storageSection.access_tier]",
+                "account_kind": "[steps('storageAccounts').storageSection.account_kind]",
+                "account_replication_type": "[steps('storageAccounts').storageSection.account_replication_type]",
+                "account_tier": "[steps('storageAccounts').storageSection.account_tier]",
+                "containers": {
+                    "container_access_type": "[steps('storageAccounts').storageSection.container_access_type]",
+                    "encryption_scope_override_enabled": "[steps('storageAccounts').storageSection.encryption_scope_override_enabled]",
+                    "name": "[steps('storageAccounts').storageSection.container_name]"
+                },
+                "location": "[location()]",
+                "public_network_access_enabled": "[steps('storageAccounts').storageSection.public_network_access_enabled]",
+                "network_rules": {
+                    "bypass": "[steps('storageAccounts').storageSection.network_bypass]",
+                    "default_action": "[steps('storageAccounts').storageSection.network_default_action]",
+                    "ip_rules": "[steps('storageAccounts').storageSection.ip_rules]"
+                },
+                "private_endpoints": {
+                    "private_dns_zone_name": "[steps('storageAccounts').storageSection.private_dns_zone_name]",
+                    "subresource_name": "[steps('storageAccounts').storageSection.subresource_name]",
+                    "subnet": {
+                        "name": "[steps('storageAccounts').storageSection.subnet_name]",
+                        "resource_group_name": "[steps('storageAccounts').storageSection.subnet_resource_group_name]",
+                        "virtual_network_name": "[steps('storageAccounts').storageSection.virtual_network_name]"
+                    }
+                },
+                "tags": "[steps('storageAccounts').storageSection.tags]"
+            },
+            "default_tags": "[json(steps('tagsSection').tags)]",
+            "required_tags": {
+                "App": "[steps('tagsSection').app]",
+                "Environment": "[steps('tagsSection').environment]",
+                "GBU": "[steps('tagsSection').gbu]",
+                "ITSM": "[steps('tagsSection').itsm]",
+                "JobWbs": "[steps('tagsSection').job_wbs]",
+                "Notes": "[steps('tagsSection').notes]",
+                "Owner": "[steps('tagsSection').owner]"
+            },
+            "subscription_id": "[steps('subscriptionSection').subscription_id]",
+            "environment": "[steps('environmentSection').environment]"
         }
-      ],
-      "outputs": {
-        "location": "[location()]",
-        "sql_admin_username": "[steps('sqlAdminCredentials').sqlAdminUsername]",
-        "sql_admin_password": "[steps('sqlAdminCredentials').sqlAdminPassword]",
-        "app_service_plans": "[steps('appServicePlans').appServicePlanSection]",
-        "cognitive_accounts": "[steps('cognitiveAccounts').cognitiveAccountSection]",
-        "linux_web_apps": "[steps('linuxWebApps').linuxWebAppSection]"
-      }
     }
-  }
-  
+}

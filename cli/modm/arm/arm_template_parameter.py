@@ -37,28 +37,28 @@ class ArmTemplateParameterType(Enum):
 def from_terraform_input_variable(input_variable: TerraformInputVariable) -> ArmTemplateParameter:
     parameter_type = None
 
-    if input_variable.type == TerraformInputVariableType.string.value:
-        if input_variable.sensitive:
-            parameter_type = ArmTemplateParameterType.securestring
-        else:
-            parameter_type = ArmTemplateParameterType.string
-    
-    if input_variable.type == TerraformInputVariableType.number.value:
+    input_type = input_variable.type
+
+    if input_type == TerraformInputVariableType.string.value:
+        parameter_type = ArmTemplateParameterType.securestring if input_variable.sensitive else ArmTemplateParameterType.string
+
+    elif input_type == TerraformInputVariableType.number.value:
         parameter_type = ArmTemplateParameterType.int
 
-    if input_variable.type == TerraformInputVariableType.bool.value:
+    elif input_type == TerraformInputVariableType.bool.value:
         parameter_type = ArmTemplateParameterType.bool
 
-    if input_variable.type == TerraformInputVariableType.object or input_variable.type == TerraformInputVariableType.map.value:
+    elif input_type in {TerraformInputVariableType.object.value, TerraformInputVariableType.map.value}:
         if input_variable.sensitive:
             parameter_type = ArmTemplateParameterType.secureobject
         else:
             parameter_type = ArmTemplateParameterType.object
-    
-    if input_variable.type == TerraformInputVariableType.list.value or input_variable.type == TerraformInputVariableType.set.value:
+
+    elif input_type in {TerraformInputVariableType.list.value, TerraformInputVariableType.set.value}:
         parameter_type = ArmTemplateParameterType.array
 
-    if parameter_type is None:
-        raise ValueError(f"Unsupported Terraform input variable type {input_variable.type}")
-    
+    else:
+        raise ValueError(f"Unsupported Terraform input variable type {input_type}")
+
     return ArmTemplateParameter(input_variable.name, parameter_type)
+
