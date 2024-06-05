@@ -99,10 +99,11 @@
                             {
                                 "name": "tags",
                                 "type": "Microsoft.Common.TextBox",
-                                "label": "Tags",
+                                "label": "Tags (comma-separated key=value pairs)",
                                 "constraints": {
                                     "required": false
-                                }
+                                },
+                                "toolTip": "Enter multiple tags separated by commas. Example: environment=dev,modm=true"
                             }
                         ]
                     }
@@ -391,7 +392,7 @@
             "https_only": "[steps('linuxWebApps').linuxWebAppSection.https_only]",
             "service_plan_id": "[steps('linuxWebApps').linuxWebAppSection.service_plan_id]",
             "site_config": {
-                "always_on": "[steps('linuxWebApps').linuxWebAppSection.always_on]", 
+                "always_on": "[steps('linuxWebApps').linuxWebAppSection.always_on]",
                 "linux_fx_version": "[steps('linuxWebApps').linuxWebAppSection.linux_fx_version]",
                 "app_settings": [
                     {
@@ -402,16 +403,16 @@
             },
             "webdeploy_publish_basic_authentication_enabled": "[steps('linuxWebApps').linuxWebAppSection.webdeploy_publish_basic_authentication_enabled]",
             "private_endpoints": {
-                "private_dns_zone_name": "[steps('linuxWebApps').linuxWebAppSection.private_dns_zone_name]", 
-                "subresource_names": "[steps('linuxWebApps').linuxWebAppSection.subresource_names]", 
+                "private_dns_zone_name": "[steps('linuxWebApps').linuxWebAppSection.private_dns_zone_name]",
+                "subresource_names": "[steps('linuxWebApps').linuxWebAppSection.subresource_names]",
                 "subnet": {
                     "name": "[steps('linuxWebApps').linuxWebAppSection.subnet_name]",
-                    "resource_group_name": "[steps('linuxWebApps').linuxWebAppSection.subnet_resource_group_name]", 
+                    "resource_group_name": "[steps('linuxWebApps').linuxWebAppSection.subnet_resource_group_name]",
                     "virtual_network_name": "[steps('linuxWebApps').linuxWebAppSection.virtual_network_name]"
                 }
             },
             "monitor_diagnostic_destinations": {
-                "log_analytics_workspace_id": "[steps('linuxWebApps').linuxWebAppSection.log_analytics_workspace_id]", 
+                "log_analytics_workspace_id": "[steps('linuxWebApps').linuxWebAppSection.log_analytics_workspace_id]",
                 "resource_group_name": "[steps('linuxWebApps').linuxWebAppSection.diagnostic_resource_group_name]",
                 "subscription_id": "[steps('linuxWebApps').linuxWebAppSection.subscription_id]"
             },
