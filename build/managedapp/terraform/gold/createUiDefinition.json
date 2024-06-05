@@ -375,7 +375,7 @@
         "enabled": "[steps('linuxWebApps').linuxWebAppSection.enabled]",
         "https_only": "[steps('linuxWebApps').linuxWebAppSection.https_only]",
         "service_plan_id": "[steps('linuxWebApps').linuxWebAppSection.service_plan_id]",
-        "site_config": "[json('{\"always_on\": true, \"linux_fx_version\": \"DOTNETCORE|2.1\", \"app_settings\": [{\"name\": \"WEBSITE_RUN_FROM_PACKAGE\", \"value\": \"1\"}]}')]",
+        "site_config": {"always_on": true, "linux_fx_version": "DOTNETCORE|2.1", "app_settings": [{"name": "WEBSITE_RUN_FROM_PACKAGE", "value": "1"}]},
         "webdeploy_publish_basic_authentication_enabled": "[steps('linuxWebApps').linuxWebAppSection.webdeploy_publish_basic_authentication_enabled]",
         "private_endpoints": "[json(concat('{', '\"private_dns_zone_name\": \"', steps('linuxWebApps').linuxWebAppSection.private_dns_zone_name, '\",', '\"subresource_names\": [\"', steps('linuxWebApps').linuxWebAppSection.subresource_names, '\"],', '\"subnet\": {', '\"name\": \"', steps('linuxWebApps').linuxWebAppSection.subnet_name, '\",', '\"resource_group_name\": \"', steps('linuxWebApps').linuxWebAppSection.subnet_resource_group_name, '\",', '\"virtual_network_name\": \"', steps('linuxWebApps').linuxWebAppSection.virtual_network_name, '\"}', '}'))]",
         "monitor_diagnostic_destinations": "[json(concat('{', '\"log_analytics_workspace_id\": \"', steps('linuxWebApps').linuxWebAppSection.log_analytics_workspace_id, '\",', '\"resource_group_name\": \"', steps('linuxWebApps').linuxWebAppSection.diagnostic_resource_group_name, '\",', '\"subscription_id\": \"', steps('linuxWebApps').linuxWebAppSection.subscription_id, '\"', '}'))]",
