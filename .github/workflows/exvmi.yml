@@ -47,6 +47,7 @@ jobs:
         vmi_reference_id="/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.IMAGE_RESOURCE_GROUP }}/providers/Microsoft.Compute/galleries/${{ vars.IMAGE_GALLERY_NAME }}/images/${{ vars.IMAGE_NAME }}/versions/$latest_version"
         versioned_image_name="${{ vars.IMAGE_NAME }}-${latest_version}"
 
+
         ./scripts/export-vmi.sh -g ${{ vars.EXPORT_IMAGE_RESOURCE_GROUP }} \
           -l ${{ vars.LOCATION }} \
           -n $versioned_image_name \
