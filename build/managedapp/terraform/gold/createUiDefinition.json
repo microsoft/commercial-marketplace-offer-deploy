@@ -373,6 +373,62 @@
                 "label": "Tags",
                 "elements": [
                     {
+                        "name": "app",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "App",
+                        "constraints": {
+                            "required": true
+                        }
+                    },
+                    {
+                        "name": "environment",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Environment",
+                        "constraints": {
+                            "required": true
+                        }
+                    },
+                    {
+                        "name": "gbu",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "GBU",
+                        "constraints": {
+                            "required": true
+                        }
+                    },
+                    {
+                        "name": "itsm",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "ITSM",
+                        "constraints": {
+                            "required": true
+                        }
+                    },
+                    {
+                        "name": "job_wbs",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "JobWbs",
+                        "constraints": {
+                            "required": true
+                        }
+                    },
+                    {
+                        "name": "notes",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Notes",
+                        "constraints": {
+                            "required": true
+                        }
+                    },
+                    {
+                        "name": "owner",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Owner",
+                        "constraints": {
+                            "required": true
+                        }
+                    },
+                    {
                         "name": "tags",
                         "type": "Microsoft.Common.TextBox",
                         "label": "Tags (comma-separated key=value pairs)",
@@ -586,7 +642,7 @@
                 },
                 "tags": "[steps('storageAccounts').storageSection.tags]"
             },
-            "default_tags": "[json(steps('tagsSection').tags)]",
+            "default_tags": "[if(empty(steps('tagsSection').tags), json('{}'), json(steps('tagsSection').tags))]",
             "required_tags": {
                 "App": "[steps('tagsSection').app]",
                 "Environment": "[steps('tagsSection').environment]",
