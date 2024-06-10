@@ -55,13 +55,7 @@ const Header = () => {
 
   return (
     <header className="navbar navbar-dark sticky-top bg-blue flex-md-nowrap p-0">
-       <a className="position-absolute btn-link" role="button"  
-       style={{ left: '20px'}}
-        data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
-          <FontAwesomeIcon icon={faBars} size="sm" inverse />
-        </a>
-
-      <a className="navbar-brand col-md-3 col-lg-2 me-0 px-5 pt-2 pb-2 font-weight-bold" style={{ fontSize: 15, marginLeft: '2em' }} href={'/'}>
+      <a className="navbar-brand col-md-3 col-lg-2 me-0 px-5 pt-2 pb-2 font-weight-bold" style={{ fontSize: 15 }} href={'/'}>
         Marketplace Application Installer 
       </a>
     
