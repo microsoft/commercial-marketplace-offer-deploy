@@ -17,7 +17,7 @@
                         "version": "latest"
                     }
                 },
-                "vmi": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/modm-dev-vmi/providers/Microsoft.Compute/galleries/modm.dev.sig/images/modm/versions/2.0.208"
+                "vmi": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/modm-dev-vmi/providers/Microsoft.Compute/galleries/modm.dev.sig/images/modm/versions/2.0.221"
             },
             "resources": {
                 "downloadUrl": "https://github.com/microsoft/commercial-marketplace-offer-deploy/releases/download/v2.0.2/resources-v2.0.2.tar.gz",
@@ -42,7 +42,7 @@
                         "version": "latest"
                     }
                 },
-                "vmi": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/modm-dev-vmi/providers/Microsoft.Compute/galleries/modm.dev.sig/images/modm/versions/2.0.208"
+                "vmi": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/modm-dev-vmi/providers/Microsoft.Compute/galleries/modm.dev.sig/images/modm/versions/2.0.221"
             },
             "resources": {
                 "downloadUrl": "https://github.com/microsoft/commercial-marketplace-offer-deploy/releases/download/v2.0.1/resources-v2.0.1.tar.gz",
@@ -67,7 +67,7 @@
                         "version": "latest"
                     }
                 },
-                "vmi": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/modm-dev-vmi/providers/Microsoft.Compute/galleries/modm.dev.sig/images/modm/versions/2.0.208"
+                "vmi": "/subscriptions/31e9f9a0-9fd2-4294-a0a3-0101246d9700/resourceGroups/modm-dev-vmi/providers/Microsoft.Compute/galleries/modm.dev.sig/images/modm/versions/2.0.221"
             },
             "resources": {
                 "downloadUrl": "https://github.com/microsoft/commercial-marketplace-offer-deploy/releases/download/v2.0.0/resources-v2.0.0.tar.gz",
